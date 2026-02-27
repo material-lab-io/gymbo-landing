@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "framework": "astro",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "www.getgymbo.com" }],
+      "destination": "https://getgymbo.com/",
+      "permanent": true
+    }
+  ]
+}

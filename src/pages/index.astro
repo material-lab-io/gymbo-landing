@@ -1,0 +1,376 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>gymbo — train smarter</title>
+    <meta name="description" content="gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app." />
+    <!-- Open Graph -->
+    <meta property="og:title" content="gymbo — train smarter" />
+    <meta property="og:description" content="the app built for independent personal trainers." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://getgymbo.com" />
+  </head>
+  <body class="bg-[#2d2d2d] text-[#ebebe6] font-mono">
+
+    <!-- NAV -->
+    <nav class="fixed top-0 w-full z-50 bg-[#2d2d2d]/90 backdrop-blur border-b border-[#ebebe6]/10">
+      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <!-- Brand logo -->
+        <a href="/" class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-sm">G</div>
+          <span class="text-[#ebebe6] font-bold tracking-widest">gymbo</span>
+        </a>
+        <a
+          href="https://app.getgymbo.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-sm text-[#f8623a] border border-[#f8623a] rounded-full px-4 py-1.5 hover:bg-[#f8623a] hover:text-[#2d2d2d] transition-colors"
+        >
+          try the web app →
+        </a>
+      </div>
+    </nav>
+
+    <!-- ── HERO ── -->
+    <section class="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 pb-20">
+      <div class="max-w-3xl mx-auto">
+        <!-- Brand mark -->
+        <div class="w-16 h-16 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-2xl mx-auto mb-8">G</div>
+
+        <h1 class="text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight">
+          your gym.<br />
+          <span class="text-[#f8623a]">your rules.</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-[#ebebe6]/70 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed">
+          gymbo is the all-in-one app for independent personal trainers —<br class="hidden md:block" />
+          clients, workouts, payments, and growth, all in one place.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a
+            href="https://app.getgymbo.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="rounded-full bg-[#f8623a] text-[#2d2d2d] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
+          >
+            try the web app →
+          </a>
+          <a
+            href="#waitlist"
+            class="rounded-full border border-[#ebebe6]/40 text-[#ebebe6] font-bold tracking-widest px-8 py-3 hover:border-[#f8623a] hover:text-[#f8623a] transition-colors w-full sm:w-auto text-center"
+          >
+            join the waitlist
+          </a>
+        </div>
+
+        <!-- App mockup placeholder -->
+        <div class="mt-16 relative">
+          <div class="mx-auto w-64 md:w-72 bg-[#1a1a1a] rounded-[2.5rem] border border-[#ebebe6]/10 p-2 shadow-2xl">
+            <div class="rounded-[2rem] bg-[#232323] overflow-hidden aspect-[9/19]">
+              <!-- Simulated app screen -->
+              <div class="p-4 flex flex-col h-full">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="w-6 h-6 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-xs">G</div>
+                  <div class="text-[10px] text-[#ebebe6]/50">today</div>
+                </div>
+                <div class="text-[10px] text-[#ebebe6]/40 mb-2">upcoming sessions</div>
+                {[
+                  { name: "arjun k.", time: "07:00", type: "strength" },
+                  { name: "priya m.", time: "09:30", type: "hiit" },
+                  { name: "ravi s.", time: "11:00", type: "cardio" },
+                ].map(s => (
+                  <div class="flex items-center gap-2 mb-2 bg-[#2d2d2d] rounded-lg p-2">
+                    <div class="w-6 h-6 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[8px] font-bold text-[#f8623a]">{s.name[0]}</div>
+                    <div>
+                      <div class="text-[9px] text-[#ebebe6] font-bold">{s.name}</div>
+                      <div class="text-[8px] text-[#ebebe6]/50">{s.time} · {s.type}</div>
+                    </div>
+                  </div>
+                ))}
+                <div class="mt-auto pt-3 border-t border-[#ebebe6]/10">
+                  <div class="text-[9px] text-[#ebebe6]/40 mb-1">this month</div>
+                  <div class="flex gap-2">
+                    <div class="flex-1 bg-[#2d2d2d] rounded p-1.5 text-center">
+                      <div class="text-[#4ADE80] font-bold text-xs">₹42k</div>
+                      <div class="text-[7px] text-[#ebebe6]/40">earned</div>
+                    </div>
+                    <div class="flex-1 bg-[#2d2d2d] rounded p-1.5 text-center">
+                      <div class="text-[#f8623a] font-bold text-xs">18</div>
+                      <div class="text-[7px] text-[#ebebe6]/40">sessions</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Glow effect -->
+          <div class="absolute inset-0 -z-10 blur-3xl opacity-20 bg-[#f8623a] rounded-full scale-75"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FEATURES ── -->
+    <section id="features" class="py-24 px-6 border-t border-[#ebebe6]/10">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+          everything you need
+        </h2>
+        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">built for trainers who mean business</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[
+            {
+              icon: "⚡",
+              title: "punch cards",
+              desc: "sell session bundles upfront. clients buy packs of 10, 20, or custom sessions. track every punch automatically.",
+            },
+            {
+              icon: "₹",
+              title: "balances & billing",
+              desc: "know exactly what every client owes. running balances, payment history, and dues — crystal clear.",
+            },
+            {
+              icon: "💳",
+              title: "payments",
+              desc: "upi, cash, or card. log any payment instantly. your books stay reconciled without the spreadsheet headache.",
+            },
+            {
+              icon: "📄",
+              title: "pdf invoices",
+              desc: "professional invoices generated on demand. share with clients in one tap — no accountant needed.",
+            },
+            {
+              icon: "📡",
+              title: "works offline",
+              desc: "no signal at the gym? no problem. gymbo works fully offline. data syncs when you're back online.",
+            },
+            {
+              icon: "📱",
+              title: "phone login",
+              desc: "no passwords to forget. sign in with your phone number and an otp — fast, secure, trainer-first.",
+            },
+          ].map(f => (
+            <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+              <div class="text-3xl mb-4">{f.icon}</div>
+              <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">{f.title}</h3>
+              <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section id="how" class="py-24 px-6 border-t border-[#ebebe6]/10">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+          how it works
+        </h2>
+        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">up and running in minutes</p>
+
+        <div class="flex flex-col md:flex-row gap-8 items-start">
+          {[
+            {
+              step: "01",
+              title: "add your clients",
+              desc: "import from contacts or add manually. client profiles store session history, balances, and notes.",
+            },
+            {
+              step: "02",
+              title: "log sessions",
+              desc: "mark sessions complete in one tap. punches deducted automatically from client's active card.",
+            },
+            {
+              step: "03",
+              title: "get paid",
+              desc: "record payments, generate invoices, track what's owed. your business, fully organised.",
+            },
+          ].map((s, i) => (
+            <div class="flex-1 relative">
+              {i < 2 && (
+                <div class="hidden md:block absolute top-6 left-full w-8 text-center text-[#f8623a]/30 text-xl z-10">→</div>
+              )}
+              <div class="flex flex-col items-center md:items-start text-center md:text-left">
+                <div class="w-12 h-12 rounded-full border-2 border-[#f8623a] flex items-center justify-center font-bold text-[#f8623a] tracking-widest mb-4 text-sm">{s.step}</div>
+                <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2">{s.title}</h3>
+                <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MOBILE APPS COMING SOON ── -->
+    <section id="mobile" class="py-24 px-6 border-t border-[#ebebe6]/10">
+      <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
+          mobile apps
+        </h2>
+        <p class="text-[#ebebe6]/50 tracking-widest mb-12">coming soon — join the waitlist to get early access</p>
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <!-- Android badge (greyed out) -->
+          <div class="opacity-40 cursor-not-allowed select-none">
+            <div class="flex items-center gap-3 border border-[#ebebe6]/30 rounded-xl px-5 py-3 bg-[#232323]">
+              <svg class="w-7 h-7 text-[#ebebe6]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.523 15.341l1.21-2.096a.276.276 0 00-.101-.377.277.277 0 00-.379.1l-1.226 2.122a7.64 7.64 0 01-3.027.613 7.635 7.635 0 01-3.027-.613L9.748 12.97a.277.277 0 00-.379-.1.276.276 0 00-.101.377l1.21 2.096A7.296 7.296 0 013.5 9.5h17a7.296 7.296 0 01-2.977 5.841zM8.5 11a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zM7.313 5.347l1.304-2.26a.3.3 0 00-.11-.41.3.3 0 00-.41.11L6.742 5.11A8.64 8.64 0 003.5 8.5h17a8.64 8.64 0 00-3.242-3.39l-1.355-2.35a.3.3 0 00-.41-.11.3.3 0 00-.11.41l1.304 2.26A8.612 8.612 0 0012 4.5a8.612 8.612 0 00-4.687 1.347z"/>
+              </svg>
+              <div class="text-left">
+                <div class="text-[10px] text-[#ebebe6]/60 tracking-widest">get it on</div>
+                <div class="text-sm font-bold text-[#ebebe6] tracking-widest">google play</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- iOS badge (greyed out) -->
+          <div class="opacity-40 cursor-not-allowed select-none">
+            <div class="flex items-center gap-3 border border-[#ebebe6]/30 rounded-xl px-5 py-3 bg-[#232323]">
+              <svg class="w-7 h-7 text-[#ebebe6]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <div class="text-left">
+                <div class="text-[10px] text-[#ebebe6]/60 tracking-widest">download on the</div>
+                <div class="text-sm font-bold text-[#ebebe6] tracking-widest">app store</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-8 text-xs text-[#ebebe6]/30 tracking-widest">currently available as a web app at app.getgymbo.com</p>
+      </div>
+    </section>
+
+    <!-- ── WAITLIST FORM ── -->
+    <section id="waitlist" class="py-24 px-6 border-t border-[#ebebe6]/10">
+      <div class="max-w-lg mx-auto text-center">
+        <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
+          join the waitlist
+        </h2>
+        <p class="text-[#ebebe6]/50 tracking-widest mb-12">be first to know when the mobile app launches</p>
+
+        <!-- Form with Formspree -->
+        <form
+          id="waitlist-form"
+          action="https://formspree.io/f/xpwzwjkg"
+          method="POST"
+          class="flex flex-col gap-4 text-left"
+        >
+          <div>
+            <label for="name" class="block text-xs tracking-widest text-[#ebebe6]/60 mb-2">name</label>
+            <input
+              id="name"
+              type="text"
+              name="name"
+              required
+              placeholder="your name"
+              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+            />
+          </div>
+
+          <div>
+            <label for="email" class="block text-xs tracking-widest text-[#ebebe6]/60 mb-2">email</label>
+            <input
+              id="email"
+              type="email"
+              name="email"
+              required
+              placeholder="you@example.com"
+              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+            />
+          </div>
+
+          <div>
+            <label for="phone" class="block text-xs tracking-widest text-[#ebebe6]/60 mb-2">
+              phone <span class="text-[#ebebe6]/30">(optional — india +91)</span>
+            </label>
+            <div class="flex gap-2">
+              <div class="bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6]/60 text-sm tracking-widest whitespace-nowrap">+91</div>
+              <input
+                id="phone"
+                type="tel"
+                name="phone"
+                placeholder="98765 43210"
+                class="flex-1 bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="rounded-full bg-[#f8623a] text-[#2d2d2d] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity mt-2"
+          >
+            count me in →
+          </button>
+        </form>
+
+        <!-- Success message (hidden by default) -->
+        <div id="waitlist-success" class="hidden text-center py-8">
+          <div class="text-4xl mb-4">🎉</div>
+          <p class="text-[#4ADE80] font-bold tracking-widest mb-2">you're on the list!</p>
+          <p class="text-[#ebebe6]/50 text-sm tracking-widest">we'll reach out as soon as the mobile app is ready.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="border-t border-[#ebebe6]/10 py-10 px-6">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-xs">G</div>
+          <span class="text-[#ebebe6]/60 text-sm tracking-widest">© 2026 gymbo</span>
+        </div>
+
+        <div class="flex items-center gap-6 text-sm tracking-widest text-[#ebebe6]/40">
+          <a href="/privacy" class="hover:text-[#f8623a] transition-colors">privacy</a>
+          <a href="/terms" class="hover:text-[#f8623a] transition-colors">terms</a>
+          <a
+            href="https://app.getgymbo.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="hover:text-[#f8623a] transition-colors"
+          >
+            app.getgymbo.com ↗
+          </a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Waitlist form JS — inline submit for SPA feel -->
+    <script>
+      const form = document.getElementById('waitlist-form') as HTMLFormElement | null;
+      const success = document.getElementById('waitlist-success');
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!form || !success) return;
+
+        const data = new FormData(form);
+        try {
+          const res = await fetch(form.action, {
+            method: 'POST',
+            body: data,
+            headers: { 'Accept': 'application/json' },
+          });
+          if (res.ok) {
+            form.classList.add('hidden');
+            success.classList.remove('hidden');
+          } else {
+            alert('something went wrong — please try again.');
+          }
+        } catch {
+          alert('network error — please check your connection.');
+        }
+      });
+    </script>
+
+  </body>
+</html>
