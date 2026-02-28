@@ -16,6 +16,33 @@ import '../styles/global.css';
     <meta property="og:description" content="the app built for independent personal trainers." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getgymbo.com" />
+    <link rel="canonical" href="https://getgymbo.com" />
+    <script type="application/ld+json" set:html={JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Gymbo",
+        "url": "https://getgymbo.com",
+        "logo": "https://getgymbo.com/favicon.svg",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "email": "hello@getgymbo.com"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Gymbo",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Android, iOS, Web",
+        "url": "https://getgymbo.com",
+        "description": "Gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0"
+        }
+      }
+    ])} />
   </head>
   <body class="bg-[#2d2d2d] text-[#ebebe6] font-mono">
 
