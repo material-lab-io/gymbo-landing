@@ -1,0 +1,16 @@
+name = "gymbo-analytics"
+main = "worker.js"
+compatibility_date = "2026-02-28"
+account_id = "3fdce42aeb5a7fa4ddbd6965eda8efc1"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gymbo-analytics"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[vars]
+UMAMI_APP_SECRET = "REPLACE_WITH_RANDOM_SECRET"
+
+[[routes]]
+pattern = "analytics.getgymbo.com/*"
+zone_name = "getgymbo.com"
