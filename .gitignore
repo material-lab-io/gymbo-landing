@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# listmonk secrets (use config.toml.example as template)
+ops/listmonk/config.toml

@@ -257,10 +257,10 @@ import '../styles/global.css';
         </h2>
         <p class="text-[#ebebe6]/50 tracking-widest mb-12">be first to know when the mobile app launches</p>
 
-        <!-- Form with Formspree -->
+        <!-- Form — submits via Supabase JS client (no page reload) -->
         <form
           id="waitlist-form"
-          action="https://formspree.io/f/xpwzwjkg"
+          action="#"
           method="POST"
           class="flex flex-col gap-4 text-left"
         >
@@ -344,30 +344,70 @@ import '../styles/global.css';
       </div>
     </footer>
 
-    <!-- Waitlist form JS — inline submit for SPA feel -->
+    <!-- Waitlist form JS — direct PostgREST insert, return=minimal, no page reload -->
     <script>
+      const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+      const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+      const LISTMONK_URL = import.meta.env.PUBLIC_LISTMONK_URL;
+      const LISTMONK_API_TOKEN = import.meta.env.PUBLIC_LISTMONK_API_TOKEN;
+
       const form = document.getElementById('waitlist-form') as HTMLFormElement | null;
       const success = document.getElementById('waitlist-success');
+      const btn = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
 
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!form || !success) return;
 
+        if (btn) btn.disabled = true;
+
         const data = new FormData(form);
+        const phone = (data.get('phone') as string)?.trim() || null;
+
         try {
-          const res = await fetch(form.action, {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
             method: 'POST',
-            body: data,
-            headers: { 'Accept': 'application/json' },
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify({
+              name: data.get('name'),
+              email: data.get('email'),
+              phone,
+            }),
           });
+
           if (res.ok) {
+            // fire-and-forget: add subscriber to Listmonk + send welcome email
+            // signup already succeeded — silent fail is fine here
+            if (LISTMONK_URL && LISTMONK_API_TOKEN) {
+              fetch(`${LISTMONK_URL}/api/tx`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Basic ' + btoa('api:' + LISTMONK_API_TOKEN),
+                },
+                body: JSON.stringify({
+                  subscriber_email: data.get('email'),
+                  template_id: 1,
+                  data: { name: data.get('name') },
+                  content_type: 'html',
+                }),
+              }).catch(() => {});
+            }
+
             form.classList.add('hidden');
             success.classList.remove('hidden');
           } else {
             alert('something went wrong — please try again.');
+            if (btn) btn.disabled = false;
           }
         } catch {
           alert('network error — please check your connection.');
+          if (btn) btn.disabled = false;
         }
       });
     </script>

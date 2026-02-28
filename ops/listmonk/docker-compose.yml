@@ -1,0 +1,17 @@
+# Listmonk — self-hosted newsletter & transactional email
+# Usage:
+#   1. Copy config.toml.example → config.toml and fill in secrets
+#   2. docker compose up -d
+#   3. docker compose run --rm listmonk ./listmonk --install   (first time only)
+#   4. Open http://localhost:9000
+
+services:
+  listmonk:
+    image: listmonk/listmonk:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - TZ=Asia/Kolkata
+    volumes:
+      - ./config.toml:/listmonk/config.toml

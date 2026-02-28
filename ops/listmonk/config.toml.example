@@ -1,0 +1,33 @@
+# Listmonk config — copy to config.toml and fill in secrets
+# Docs: https://listmonk.app/docs/configuration
+
+[app]
+address = "0.0.0.0:9000"
+admin_username = "admin"
+admin_password = "CHANGE_ME"
+
+# Supabase Postgres (direct connection)
+[db]
+host = "db.spldnbrqbuhmlgvwhahj.supabase.co"
+port = 5432
+user = "postgres"
+password = "SUPABASE_DB_PASSWORD"
+database = "postgres"
+ssl_mode = "require"
+max_open = 25
+max_idle = 25
+max_lifetime = "300s"
+
+# Brevo SMTP (300 emails/day free)
+# Get credentials: brevo.com → Settings → SMTP & API
+[smtp "brevo"]
+enabled = true
+host = "smtp-relay.brevo.com"
+port = 587
+auth_protocol = "login"
+username = "BREVO_LOGIN_EMAIL"
+password = "BREVO_SMTP_KEY"
+tls_type = "STARTTLS"
+max_conns = 5
+idle_timeout = "15s"
+wait_timeout = "5s"
