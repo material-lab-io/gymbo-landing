@@ -1,16 +1,9 @@
-name = "gymbo-analytics"
-main = "worker.js"
-compatibility_date = "2026-02-28"
-account_id = "3fdce42aeb5a7fa4ddbd6965eda8efc1"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "gymbo-analytics"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
-
-[vars]
-UMAMI_APP_SECRET = "REPLACE_WITH_RANDOM_SECRET"
-
-[[routes]]
-pattern = "analytics.getgymbo.com/*"
-zone_name = "getgymbo.com"
+# NOTE: Umami is deployed on GT2 (157.180.48.243) via Docker Compose.
+# It is NOT deployed as a CF Worker. This file is kept for reference only.
+#
+# Actual deployment:
+#   - GT2: ~/ops/umami/docker-compose.yml (Umami + Postgres)
+#   - Cloudflare Tunnel: gt2-analytics (45482ab0-e8ef-477a-8cbd-cd222293d515)
+#   - Route: analytics.getgymbo.com → localhost:3001
+#   - DNS: CNAME → tunnel (managed by cloudflared.service on GT2)
+#   - Website ID: 36b8e820-a50a-44b3-a57b-5ee37f719916
