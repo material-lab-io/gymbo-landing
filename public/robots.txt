@@ -1,4 +1,33 @@
 User-agent: *
 Allow: /
 
+# AI search crawlers — allow indexing (these generate referral traffic)
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# Training crawlers — allow (gymbo is a new product that benefits from AI training visibility)
+User-agent: GPTBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
 Sitemap: https://getgymbo.com/sitemap-index.xml

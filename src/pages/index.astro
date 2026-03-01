@@ -13,17 +13,22 @@ import '../styles/global.css';
     <meta name="description" content="gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app." />
     <!-- Open Graph -->
     <meta property="og:title" content="gymbo — train smarter" />
-    <meta property="og:description" content="the app built for independent personal trainers." />
+    <meta property="og:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getgymbo.com" />
     <meta property="og:image" content="https://getgymbo.com/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Gymbo app — today's sessions, client balances, and earnings at a glance" />
+    <meta property="og:site_name" content="Gymbo" />
+    <meta property="og:locale" content="en_IN" />
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="gymbo — train smarter" />
-    <meta name="twitter:description" content="the app built for independent personal trainers." />
+    <meta name="twitter:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
+    <meta name="theme-color" content="#f8623a" />
+    <meta name="author" content="Gymbo" />
     <link rel="canonical" href="https://getgymbo.com" />
     <script type="application/ld+json" set:html={JSON.stringify([
       {
@@ -32,6 +37,8 @@ import '../styles/global.css';
         "name": "Gymbo",
         "url": "https://getgymbo.com",
         "logo": "https://getgymbo.com/favicon.svg",
+        "description": "Fitness management platform for independent personal trainers in India.",
+        "areaServed": "IN",
         "contactPoint": {
           "@type": "ContactPoint",
           "email": "hello@getgymbo.com"
@@ -42,12 +49,18 @@ import '../styles/global.css';
         "@type": "SoftwareApplication",
         "name": "Gymbo",
         "applicationCategory": "HealthApplication",
+        "applicationSubCategory": "Fitness Business Management",
         "operatingSystem": "Android, iOS, Web",
         "url": "https://getgymbo.com",
-        "description": "Gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app.",
+        "description": "Gymbo helps independent personal trainers manage clients, track sessions, handle payments, and grow their business — all in one offline-capable app.",
         "offers": {
           "@type": "Offer",
-          "price": "0"
+          "price": "0",
+          "priceCurrency": "INR"
+        },
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Independent Personal Trainers"
         }
       }
     ])} />
@@ -64,6 +77,11 @@ import '../styles/global.css';
           <div class="w-8 h-8 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-sm">G</div>
           <span class="text-[#ebebe6] font-bold tracking-widest">gymbo</span>
         </a>
+        <div class="hidden md:flex gap-6 items-center">
+          <a href="#features" class="text-sm tracking-widest text-[#ebebe6]/60 hover:text-[#ebebe6] transition-colors">features</a>
+          <a href="#how" class="text-sm tracking-widest text-[#ebebe6]/60 hover:text-[#ebebe6] transition-colors">how it works</a>
+          <a href="#waitlist" class="text-sm tracking-widest text-[#ebebe6]/60 hover:text-[#ebebe6] transition-colors">waitlist</a>
+        </div>
         <a
           href="https://app.getgymbo.com"
           target="_blank"
@@ -86,9 +104,9 @@ import '../styles/global.css';
           <span class="text-[#f8623a]">your rules.</span>
         </h1>
 
-        <p class="text-lg md:text-xl text-[#ebebe6]/70 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed">
-          gymbo is the all-in-one app for independent personal trainers —<br class="hidden md:block" />
-          clients, workouts, payments, and growth, all in one place.
+        <p class="text-lg md:text-xl text-[#ebebe6]/80 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed">
+          stop juggling spreadsheets, whatsapp threads, and cash logs.<br class="hidden md:block" />
+          gymbo gives independent personal trainers one place to run their whole business.
         </p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -248,61 +266,38 @@ import '../styles/global.css';
       </div>
     </section>
 
-    <!-- ── SOCIAL PROOF ── -->
+    <!-- ── WHY TRAINERS LOVE IT ── -->
     <section id="social-proof" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-5xl mx-auto">
 
-        <!-- Stats bar -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-20 text-center">
-          <div>
-            <div class="text-4xl md:text-5xl font-bold text-[#f8623a] tracking-widest mb-2">10+</div>
-            <div class="text-[#ebebe6]/50 text-sm tracking-widest uppercase">trainers</div>
-          </div>
-          <div>
-            <div class="text-4xl md:text-5xl font-bold text-[#f8623a] tracking-widest mb-2">500+</div>
-            <div class="text-[#ebebe6]/50 text-sm tracking-widest uppercase">sessions logged</div>
-          </div>
-          <div>
-            <div class="text-4xl md:text-5xl font-bold text-[#f8623a] tracking-widest mb-2">3</div>
-            <div class="text-[#ebebe6]/50 text-sm tracking-widest uppercase">cities</div>
-          </div>
-        </div>
+        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+          built by trainers, for trainers
+        </h2>
+        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">
+          no spreadsheets. no whatsapp chaos. no awkward payment chases.
+        </p>
 
-        <!-- Testimonials -->
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-12">what trainers say</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          <!-- Testimonial 1 -->
-          <div class="border border-[#ebebe6]/10 rounded-2xl p-8 flex flex-col gap-6">
-            <p class="text-[#ebebe6]/80 leading-relaxed tracking-wide text-sm">
-              "gymbo replaced my spreadsheets and whatsapp chaos overnight. tracking sessions, collecting payments — it just works."
-            </p>
-            <div class="flex items-center gap-4 mt-auto">
-              <div class="w-10 h-10 rounded-full bg-[#f8623a]/20 border border-[#f8623a]/30 flex items-center justify-center text-[#f8623a] font-bold text-sm">R</div>
-              <div>
-                <div class="text-[#ebebe6] font-bold tracking-widest text-sm">rahul s.</div>
-                <div class="text-[#ebebe6]/40 text-xs tracking-widest">personal trainer · bangalore</div>
-              </div>
-            </div>
+          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-3xl mb-5">💸</div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">know who owes what — always</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">running balances and payment history across every client. no surprises.</p>
           </div>
 
-          <!-- Testimonial 2 -->
-          <div class="border border-[#ebebe6]/10 rounded-2xl p-8 flex flex-col gap-6">
-            <p class="text-[#ebebe6]/80 leading-relaxed tracking-wide text-sm">
-              "the offline mode is a game changer. i train clients in a basement gym with no signal — finally an app that doesn't need it."
-            </p>
-            <div class="flex items-center gap-4 mt-auto">
-              <div class="w-10 h-10 rounded-full bg-[#f8623a]/20 border border-[#f8623a]/30 flex items-center justify-center text-[#f8623a] font-bold text-sm">P</div>
-              <div>
-                <div class="text-[#ebebe6] font-bold tracking-widest text-sm">priya m.</div>
-                <div class="text-[#ebebe6]/40 text-xs tracking-widest">personal trainer · mumbai</div>
-              </div>
-            </div>
+          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-3xl mb-5">📋</div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">every session, in one place</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">client roster, upcoming sessions, punch card status — one tap away.</p>
+          </div>
+
+          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-3xl mb-5">📴</div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">works even when the wifi doesn't</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">built for real gyms. go fully offline; gymbo syncs when you're back.</p>
           </div>
 
         </div>
-        <!-- coach: replace placeholder quotes + initials with real testimonials when available -->
 
       </div>
     </section>
@@ -353,7 +348,7 @@ import '../styles/global.css';
         <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
           join the waitlist
         </h2>
-        <p class="text-[#ebebe6]/50 tracking-widest mb-12">be first to know when the mobile app launches</p>
+        <p class="text-[#ebebe6]/50 tracking-widest mb-12">get early access to the app — and help shape what we build next.</p>
 
         <!-- Form — submits via Supabase JS client (no page reload) -->
         <form
