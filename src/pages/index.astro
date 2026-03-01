@@ -29,6 +29,10 @@ import '../styles/global.css';
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
     <meta name="theme-color" content="#f8623a" />
     <meta name="author" content="Gymbo" />
+    <!-- Font preconnect + load (avoids 3-hop @import chain) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
     <link rel="canonical" href="https://getgymbo.com" />
     <script type="application/ld+json" set:html={JSON.stringify([
       {
@@ -97,19 +101,19 @@ import '../styles/global.css';
     <section class="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 pb-20">
       <div class="max-w-3xl mx-auto">
         <!-- Brand mark -->
-        <div class="w-16 h-16 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-2xl mx-auto mb-8">G</div>
+        <div class="hero-reveal w-16 h-16 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-2xl mx-auto mb-8">G</div>
 
-        <h1 class="text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight">
+        <h1 class="hero-reveal text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight" style="animation-delay:0.1s">
           your gym.<br />
           <span class="text-[#f8623a]">your rules.</span>
         </h1>
 
-        <p class="text-lg md:text-xl text-[#ebebe6]/80 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed" style="animation-delay:0.2s">
           stop juggling spreadsheets, whatsapp threads, and cash logs.<br class="hidden md:block" />
           gymbo gives independent personal trainers one place to run their whole business.
         </p>
 
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center" style="animation-delay:0.3s">
           <a
             href="https://app.getgymbo.com"
             target="_blank"
@@ -129,41 +133,25 @@ import '../styles/global.css';
         </div>
 
         <!-- App mockup placeholder -->
-        <div class="mt-16 relative">
+        <div class="hero-reveal phone-float mt-16 relative" style="animation-delay:0.4s">
           <div class="mx-auto w-64 md:w-72 bg-[#1a1a1a] rounded-[2.5rem] border border-[#ebebe6]/10 p-2 shadow-2xl">
-            <div class="rounded-[2rem] bg-[#232323] overflow-hidden aspect-[9/19]">
-              <!-- Simulated app screen -->
-              <div class="p-4 flex flex-col h-full">
-                <div class="flex items-center justify-between mb-4">
-                  <div class="w-6 h-6 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-xs">G</div>
-                  <div class="text-[10px] text-[#ebebe6]/50">today</div>
-                </div>
-                <div class="text-[10px] text-[#ebebe6]/40 mb-2">upcoming sessions</div>
-                {[
-                  { name: "arjun k.", time: "07:00", type: "strength" },
-                  { name: "priya m.", time: "09:30", type: "hiit" },
-                  { name: "ravi s.", time: "11:00", type: "cardio" },
-                ].map(s => (
-                  <div class="flex items-center gap-2 mb-2 bg-[#2d2d2d] rounded-lg p-2">
-                    <div class="w-6 h-6 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[8px] font-bold text-[#f8623a]">{s.name[0]}</div>
-                    <div>
-                      <div class="text-[9px] text-[#ebebe6] font-bold">{s.name}</div>
-                      <div class="text-[8px] text-[#ebebe6]/50">{s.time} · {s.type}</div>
-                    </div>
-                  </div>
-                ))}
-                <div class="mt-auto pt-3 border-t border-[#ebebe6]/10">
-                  <div class="text-[9px] text-[#ebebe6]/40 mb-1">this month</div>
-                  <div class="flex gap-2">
-                    <div class="flex-1 bg-[#2d2d2d] rounded p-1.5 text-center">
-                      <div class="text-[#4ADE80] font-bold text-xs">₹42k</div>
-                      <div class="text-[7px] text-[#ebebe6]/40">earned</div>
-                    </div>
-                    <div class="flex-1 bg-[#2d2d2d] rounded p-1.5 text-center">
-                      <div class="text-[#f8623a] font-bold text-xs">18</div>
-                      <div class="text-[7px] text-[#ebebe6]/40">sessions</div>
-                    </div>
-                  </div>
+            <div class="rounded-[2rem] bg-[#1a1a1a] overflow-hidden aspect-[9/19] relative">
+              <!-- Remotion video — dropped into public/ by video agent -->
+              <video
+                id="hero-video"
+                src="/hero-demo.mp4"
+                autoplay
+                loop
+                muted
+                playsinline
+                poster="/hero-demo-poster.png"
+                class="w-full h-full object-cover"
+              ></video>
+              <!-- Branded fallback — shown if video fails to load -->
+              <div id="hero-video-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
+                <div class="text-center">
+                  <div class="w-8 h-8 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-sm mx-auto mb-3">G</div>
+                  <div class="text-[10px] text-[#ebebe6]/40 tracking-widest">demo coming</div>
                 </div>
               </div>
             </div>
@@ -177,50 +165,96 @@ import '../styles/global.css';
     <!-- ── FEATURES ── -->
     <section id="features" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-6xl mx-auto">
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           everything you need
         </h2>
-        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">built for trainers who mean business</p>
+        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">built for trainers who mean business</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[
-            {
-              icon: "⚡",
-              title: "punch cards",
-              desc: "sell session bundles upfront. clients buy packs of 10, 20, or custom sessions. track every punch automatically.",
-            },
-            {
-              icon: "₹",
-              title: "balances & billing",
-              desc: "know exactly what every client owes. running balances, payment history, and dues — crystal clear.",
-            },
-            {
-              icon: "💳",
-              title: "payments",
-              desc: "upi, cash, or card. log any payment instantly. your books stay reconciled without the spreadsheet headache.",
-            },
-            {
-              icon: "📄",
-              title: "pdf invoices",
-              desc: "professional invoices generated on demand. share with clients in one tap — no accountant needed.",
-            },
-            {
-              icon: "📡",
-              title: "works offline",
-              desc: "no signal at the gym? no problem. gymbo works fully offline. data syncs when you're back online.",
-            },
-            {
-              icon: "📱",
-              title: "phone login",
-              desc: "no passwords to forget. sign in with your phone number and an otp — fast, secure, trainer-first.",
-            },
-          ].map(f => (
-            <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
-              <div class="text-3xl mb-4">{f.icon}</div>
-              <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">{f.title}</h3>
-              <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">{f.desc}</p>
+
+          <!-- punch cards -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <path d="M2 10h20"/>
+                <path d="M7 15h.01M12 15h.01M17 15h.01"/>
+              </svg>
             </div>
-          ))}
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">punch cards</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">sell session bundles upfront. clients buy packs of 10, 20, or custom sessions. track every punch automatically.</p>
+          </div>
+
+          <!-- balances & billing -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3v18"/>
+                <path d="M5 7l7-4 7 4"/>
+                <path d="M6 10.5a3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>
+                <path d="M3 21h18"/>
+              </svg>
+            </div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">balances & billing</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">know exactly what every client owes. running balances, payment history, and dues — crystal clear.</p>
+          </div>
+
+          <!-- payments -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M9 9h3.5a1.5 1.5 0 0 1 0 3H9v3"/>
+                <path d="M9 7.5V9"/>
+                <path d="M9 15v1.5"/>
+              </svg>
+            </div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">payments</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">upi, cash, or card. log any payment instantly. your books stay reconciled without the spreadsheet headache.</p>
+          </div>
+
+          <!-- pdf invoices -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 2v6h6"/>
+                <path d="M8 13h8M8 17h5"/>
+              </svg>
+            </div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">pdf invoices</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">professional invoices generated on demand. share with clients in one tap — no accountant needed.</p>
+          </div>
+
+          <!-- works offline -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="2" y1="2" x2="22" y2="22"/>
+                <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
+                <path d="M5 12.9A10 10 0 0 1 12 10c1.66 0 3.22.41 4.6 1.13"/>
+                <path d="M1 8.5A15 15 0 0 1 12 5c2.83 0 5.48.77 7.74 2.1"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">works offline</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">no signal at the gym? no problem. gymbo works fully offline. data syncs when you're back online.</p>
+          </div>
+
+          <!-- phone login -->
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-4">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2"/>
+                <path d="M12 8v4"/>
+                <circle cx="12" cy="15" r="1" fill="currentColor"/>
+                <path d="M9 2.5h6"/>
+              </svg>
+            </div>
+            <h3 class="font-bold tracking-widest text-[#ebebe6] mb-2 group-hover:text-[#f8623a] transition-colors">phone login</h3>
+            <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">no passwords to forget. sign in with your phone number and an otp — fast, secure, trainer-first.</p>
+          </div>
+
         </div>
       </div>
     </section>
@@ -228,10 +262,10 @@ import '../styles/global.css';
     <!-- ── HOW IT WORKS ── -->
     <section id="how" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-4xl mx-auto">
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           how it works
         </h2>
-        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">up and running in minutes</p>
+        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">up and running in minutes</p>
 
         <div class="flex flex-col md:flex-row gap-8 items-start">
           {[
@@ -251,7 +285,7 @@ import '../styles/global.css';
               desc: "record payments, generate invoices, track what's owed. your business, fully organised.",
             },
           ].map((s, i) => (
-            <div class="flex-1 relative">
+            <div class={`reveal flex-1 relative`} style={`animation-delay:${i * 0.12}s`}>
               {i < 2 && (
                 <div class="hidden md:block absolute top-6 left-full w-8 text-center text-[#f8623a]/30 text-xl z-10">→</div>
               )}
@@ -270,29 +304,49 @@ import '../styles/global.css';
     <section id="social-proof" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-5xl mx-auto">
 
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           built by trainers, for trainers
         </h2>
-        <p class="text-center text-[#ebebe6]/50 tracking-widest mb-16">
+        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">
           no spreadsheets. no whatsapp chaos. no awkward payment chases.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
-            <div class="text-3xl mb-5">💸</div>
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <path d="M2 10h20"/>
+                <path d="M6 15h4M14 15h4"/>
+              </svg>
+            </div>
             <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">know who owes what — always</h3>
             <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">running balances and payment history across every client. no surprises.</p>
           </div>
 
-          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
-            <div class="text-3xl mb-5">📋</div>
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <path d="M16 2v4M8 2v4M3 10h18"/>
+                <path d="M9 16l2 2 4-4"/>
+              </svg>
+            </div>
             <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">every session, in one place</h3>
             <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">client roster, upcoming sessions, punch card status — one tap away.</p>
           </div>
 
-          <div class="bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
-            <div class="text-3xl mb-5">📴</div>
+          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+            <div class="text-[#f8623a] mb-5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="2" y1="2" x2="22" y2="22"/>
+                <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
+                <path d="M5 12.9A10 10 0 0 1 12 10c1.66 0 3.22.41 4.6 1.13"/>
+                <path d="M1 8.5A15 15 0 0 1 12 5c2.83 0 5.48.77 7.74 2.1"/>
+                <circle cx="12" cy="20" r="1" fill="currentColor"/>
+              </svg>
+            </div>
             <h3 class="font-bold tracking-widest text-[#ebebe6] mb-3 group-hover:text-[#f8623a] transition-colors">works even when the wifi doesn't</h3>
             <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">built for real gyms. go fully offline; gymbo syncs when you're back.</p>
           </div>
@@ -345,17 +399,18 @@ import '../styles/global.css';
     <!-- ── WAITLIST FORM ── -->
     <section id="waitlist" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-lg mx-auto text-center">
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
+        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest mb-4">
           join the waitlist
         </h2>
-        <p class="text-[#ebebe6]/50 tracking-widest mb-12">get early access to the app — and help shape what we build next.</p>
+        <p class="reveal text-[#ebebe6]/50 tracking-widest mb-12" style="animation-delay:0.1s">get early access to the app — and help shape what we build next.</p>
 
         <!-- Form — submits via Supabase JS client (no page reload) -->
         <form
           id="waitlist-form"
           action="#"
           method="POST"
-          class="flex flex-col gap-4 text-left"
+          class="reveal flex flex-col gap-4 text-left"
+          style="animation-delay:0.2s"
         >
           <div>
             <label for="name" class="block text-xs tracking-widest text-[#ebebe6]/60 mb-2">name</label>
@@ -436,6 +491,34 @@ import '../styles/global.css';
         </div>
       </div>
     </footer>
+
+    <!-- Scroll reveal + hero stagger + video fallback -->
+    <script>
+      // Hero above-fold stagger (fires on load, no scroll needed)
+      document.querySelectorAll<HTMLElement>('.hero-reveal').forEach((el, i) => {
+        setTimeout(() => el.classList.add('visible'), i * 120);
+      });
+
+      // Scroll-triggered reveals for below-fold elements
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            (entry.target as HTMLElement).classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      document.querySelectorAll('.reveal, .reveal-fade').forEach(el => observer.observe(el));
+
+      // Video error fallback — show branded placeholder if /hero-demo.mp4 missing
+      const heroVideo = document.getElementById('hero-video') as HTMLVideoElement | null;
+      const heroFallback = document.getElementById('hero-video-fallback');
+      heroVideo?.addEventListener('error', () => {
+        if (heroVideo) heroVideo.style.display = 'none';
+        heroFallback?.classList.remove('hidden');
+      });
+    </script>
 
     <!-- Waitlist form JS — direct PostgREST insert, return=minimal, no page reload -->
     <script>
