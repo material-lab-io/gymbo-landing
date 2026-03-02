@@ -9,7 +9,7 @@
 # ║    • Test phone: +919999999999 (fictional, config.toml test OTP)         ║
 # ║    • Test OTP:   123456 (static local OTP — no SMS ever sent)            ║
 # ║    • Client data: fictional names + balances only                         ║
-# ║    • Keys below: local demo values — valid only for the CI instance       ║
+# ║    • Keys below: local demo values — valid only for this CI instance      ║
 # ║    • Only real secret: GYMBO_V1_PAT (private repo checkout)               ║
 # ║                                                                           ║
 # ║  Inputs                                                                   ║
@@ -37,15 +37,18 @@ jobs:
       # ── 1. Checkout both repos ──────────────────────────────────────────────
       - name: Checkout gymbo-landing
         uses: actions/checkout@v4
-        # Checked out to $GITHUB_WORKSPACE — landing site root
-        # public/hero-demo.mp4 + public/hero-demo-poster.png live here
+        # $GITHUB_WORKSPACE = gymbo-landing root
+        # video/  — Remotion source + capture/seed scripts (this repo)
+        # public/ — rendered output lands here
 
-      - name: Checkout Gymbo-v1 (app + video scripts)
+      - name: Checkout Gymbo-v1 (trainer app + Supabase)
         uses: actions/checkout@v4
         with:
           repository: material-lab-io/Gymbo-v1
           token: ${{ secrets.GYMBO_V1_PAT }}
           path: gymbo-v1
+        # gymbo-v1/          — Next.js trainer app root
+        # gymbo-v1/supabase/ — local Supabase config (test OTP configured here)
 
       # ── 2. Node.js ─────────────────────────────────────────────────────────
       - uses: actions/setup-node@v4
@@ -53,8 +56,8 @@ jobs:
           node-version: 20
 
       # ── 3. Local Supabase — ephemeral Docker instance ──────────────────────
+      # Privacy: throwaway containers, no cloud connection.
       # config.toml pre-configures test phone +919999999999 → OTP 123456.
-      # No cloud connection. Containers are destroyed when the runner exits.
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -65,34 +68,34 @@ jobs:
 
       # ── 4. Seed fictional demo data ────────────────────────────────────────
       # Privacy: fictional names + balances only. No real phone numbers.
-      # Idempotent — safe to re-run. Cascade-deletes old clients first.
+      # Idempotent — safe to re-run. Cascade-deletes stale clients first.
       - name: Install video deps
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: npm ci
 
       - name: Seed demo data
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: npm run seed
         env:
           SUPABASE_URL: http://127.0.0.1:54321
-          # Local demo service-role key — only valid for this ephemeral instance
+          # Local demo service-role key — valid only for this ephemeral instance
           SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
 
       # ── 5. Start Next.js dev server ────────────────────────────────────────
       - name: Install trainer deps
-        working-directory: gymbo-v1/crew/trainer
+        working-directory: gymbo-v1
         run: npm ci
 
       - name: Start Next.js (background)
-        working-directory: gymbo-v1/crew/trainer
+        working-directory: gymbo-v1
         run: npm run dev > /tmp/nextjs.log 2>&1 &
         env:
           # Local demo keys — valid only for this ephemeral Supabase instance
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
           SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
-          # AI + analytics features are non-functional in CI — that's OK since
-          # we only screenshot /schedule and /clients (not the AI tab).
+          # AI + analytics are non-functional in CI — that's OK since we only
+          # screenshot /schedule and /clients, not the AI tab.
 
       - name: Wait for app on :3000
         run: |
@@ -112,11 +115,11 @@ jobs:
       # ── 6. Playwright screenshots ──────────────────────────────────────────
       # Privacy: fictional phone + static OTP. No real SMS sent.
       - name: Install Playwright Chromium
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: npx playwright install chromium --with-deps
 
       - name: Capture screenshots
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: npm run capture
         env:
           GYMBO_URL: http://localhost:3000
@@ -125,20 +128,20 @@ jobs:
 
       # ── 7. Render with Remotion ────────────────────────────────────────────
       - name: Render hero-demo.mp4
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: |
           npx remotion render HeroDemo \
             --output "$GITHUB_WORKSPACE/public/hero-demo.mp4" \
             --codec h264
 
       - name: Render poster frame
-        working-directory: gymbo-v1/crew/video
+        working-directory: video
         run: |
           npx remotion still HeroDemo \
             --frame 0 \
             --output "$GITHUB_WORKSPACE/public/hero-demo-poster.png"
 
-      # ── 8. Upload artifact (always — for review before deploying) ──────────
+      # ── 8. Upload artifact (always — review before deploying) ──────────────
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
         with:
@@ -150,7 +153,8 @@ jobs:
 
       # ── 9. Commit + push (only when deploy == true) ────────────────────────
       # Pushes to main → triggers deploy.yml → Cloudflare Pages redeploy.
-      # Use deploy: false first to review the artifact, then re-run with true.
+      # Recommended: run with deploy=false first, review the artifact, then
+      # re-run with deploy=true to publish.
       - name: Commit and push rendered files
         if: inputs.deploy == true
         run: |
