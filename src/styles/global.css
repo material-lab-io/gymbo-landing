@@ -57,7 +57,9 @@ nav.glassnav {
 }
 
 /* ── Gradient text (hero accent "your rules.") ── */
-.gradient-text {
+/* Applied to the span directly AND to word-clip children (SplitText wraps text in child spans) */
+.gradient-text,
+.gradient-text .word-clip {
   background: linear-gradient(90deg, #f8623a 0%, #ffb347 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
