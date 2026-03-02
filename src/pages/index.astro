@@ -32,7 +32,7 @@ import '../styles/global.css';
     <!-- Font preconnect + load (avoids 3-hop @import chain) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap" />
     <link rel="canonical" href="https://getgymbo.com" />
     <script type="application/ld+json" set:html={JSON.stringify([
       {
@@ -71,15 +71,15 @@ import '../styles/global.css';
     <!-- Umami analytics — self-hosted on GT2 via Cloudflare Tunnel -->
     <script defer src="https://analytics.getgymbo.com/script.js" data-website-id="36b8e820-a50a-44b3-a57b-5ee37f719916"></script>
   </head>
-  <body class="bg-[#2d2d2d] text-[#ebebe6] font-mono">
+  <body class="bg-[#2d2d2d] text-[#ebebe6]">
 
     <!-- NAV -->
     <nav class="fixed top-0 w-full z-50 bg-[#2d2d2d]/90 backdrop-blur border-b border-[#ebebe6]/10">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <!-- Brand logo -->
         <a href="/" class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-sm">G</div>
-          <span class="text-[#ebebe6] font-bold tracking-widest">gymbo</span>
+          <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8" />
+          <span class="font-display text-[#ebebe6] font-bold tracking-widest">gymbo</span>
         </a>
         <div class="hidden md:flex gap-6 items-center">
           <a href="#features" class="text-sm tracking-widest text-[#ebebe6]/60 hover:text-[#ebebe6] transition-colors">features</a>
@@ -101,19 +101,21 @@ import '../styles/global.css';
     <section class="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 pb-20">
       <div class="max-w-3xl mx-auto">
         <!-- Brand mark -->
-        <div class="hero-reveal w-16 h-16 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-2xl mx-auto mb-8">G</div>
+        <div class="hero-reveal mx-auto mb-8 flex justify-center">
+          <img src="/logo-mark.svg" alt="gymbo" class="w-16 h-16" />
+        </div>
 
-        <h1 class="hero-reveal text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight" style="animation-delay:0.1s">
+        <h1 class="hero-reveal text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight">
           your gym.<br />
           <span class="text-[#f8623a]">your rules.</span>
         </h1>
 
-        <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 tracking-widest mb-10 max-w-2xl mx-auto leading-relaxed" style="animation-delay:0.2s">
+        <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 mb-10 max-w-2xl mx-auto leading-relaxed">
           stop juggling spreadsheets, whatsapp threads, and cash logs.<br class="hidden md:block" />
           gymbo gives independent personal trainers one place to run their whole business.
         </p>
 
-        <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center" style="animation-delay:0.3s">
+        <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
             href="https://app.getgymbo.com"
             target="_blank"
@@ -133,7 +135,7 @@ import '../styles/global.css';
         </div>
 
         <!-- App mockup placeholder -->
-        <div class="hero-reveal phone-float mt-16 relative" style="animation-delay:0.4s">
+        <div class="hero-reveal phone-float mt-16 relative">
           <div class="mx-auto w-64 md:w-72 bg-[#1a1a1a] rounded-[2.5rem] border border-[#ebebe6]/10 p-2 shadow-2xl">
             <div class="rounded-[2rem] bg-[#1a1a1a] overflow-hidden aspect-[9/19] relative">
               <!-- Remotion video — dropped into public/ by video agent -->
@@ -150,7 +152,7 @@ import '../styles/global.css';
               <!-- Branded fallback — shown if video fails to load -->
               <div id="hero-video-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
                 <div class="text-center">
-                  <div class="w-8 h-8 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-sm mx-auto mb-3">G</div>
+                  <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8 mx-auto mb-3" />
                   <div class="text-[10px] text-[#ebebe6]/40 tracking-widest">demo coming</div>
                 </div>
               </div>
@@ -168,7 +170,7 @@ import '../styles/global.css';
         <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           everything you need
         </h2>
-        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">built for trainers who mean business</p>
+        <p class="reveal text-center text-[#ebebe6]/50 mb-16">built for trainers who mean business</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -265,7 +267,7 @@ import '../styles/global.css';
         <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           how it works
         </h2>
-        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">up and running in minutes</p>
+        <p class="reveal text-center text-[#ebebe6]/50 mb-16">up and running in minutes</p>
 
         <div class="flex flex-col md:flex-row gap-8 items-start">
           {[
@@ -285,7 +287,7 @@ import '../styles/global.css';
               desc: "record payments, generate invoices, track what's owed. your business, fully organised.",
             },
           ].map((s, i) => (
-            <div class={`reveal flex-1 relative`} style={`animation-delay:${i * 0.12}s`}>
+            <div class="reveal flex-1 relative">
               {i < 2 && (
                 <div class="hidden md:block absolute top-6 left-full w-8 text-center text-[#f8623a]/30 text-xl z-10">→</div>
               )}
@@ -307,7 +309,7 @@ import '../styles/global.css';
         <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
           built by trainers, for trainers
         </h2>
-        <p class="reveal text-center text-[#ebebe6]/50 tracking-widest mb-16" style="animation-delay:0.1s">
+        <p class="reveal text-center text-[#ebebe6]/50 mb-16">
           no spreadsheets. no whatsapp chaos. no awkward payment chases.
         </p>
 
@@ -362,7 +364,7 @@ import '../styles/global.css';
         <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
           mobile apps
         </h2>
-        <p class="text-[#ebebe6]/50 tracking-widest mb-12">coming soon — join the waitlist to get early access</p>
+        <p class="text-[#ebebe6]/50 mb-12">coming soon — join the waitlist to get early access</p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <!-- Android badge (greyed out) -->
@@ -392,7 +394,7 @@ import '../styles/global.css';
           </div>
         </div>
 
-        <p class="mt-8 text-xs text-[#ebebe6]/30 tracking-widest">currently available as a web app at app.getgymbo.com</p>
+        <p class="mt-8 text-xs text-[#ebebe6]/30">currently available as a web app at app.getgymbo.com</p>
       </div>
     </section>
 
@@ -402,7 +404,7 @@ import '../styles/global.css';
         <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest mb-4">
           join the waitlist
         </h2>
-        <p class="reveal text-[#ebebe6]/50 tracking-widest mb-12" style="animation-delay:0.1s">get early access to the app — and help shape what we build next.</p>
+        <p class="reveal text-[#ebebe6]/50 mb-12">get early access to the app — and help shape what we build next.</p>
 
         <!-- Form — submits via Supabase JS client (no page reload) -->
         <form
@@ -410,7 +412,6 @@ import '../styles/global.css';
           action="#"
           method="POST"
           class="reveal flex flex-col gap-4 text-left"
-          style="animation-delay:0.2s"
         >
           <div>
             <label for="name" class="block text-xs tracking-widest text-[#ebebe6]/60 mb-2">name</label>
@@ -464,7 +465,7 @@ import '../styles/global.css';
         <div id="waitlist-success" class="hidden text-center py-8">
           <div class="text-4xl mb-4">🎉</div>
           <p class="text-[#4ADE80] font-bold tracking-widest mb-2">you're on the list!</p>
-          <p class="text-[#ebebe6]/50 text-sm tracking-widest">we'll reach out as soon as the mobile app is ready.</p>
+          <p class="text-[#ebebe6]/50 text-sm">we'll reach out as soon as the mobile app is ready.</p>
         </div>
       </div>
     </section>
@@ -473,7 +474,7 @@ import '../styles/global.css';
     <footer class="border-t border-[#ebebe6]/10 py-10 px-6">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <div class="w-6 h-6 rounded-full bg-[#f8623a] flex items-center justify-center text-[#2d2d2d] font-bold text-xs">G</div>
+          <img src="/logo-mark.svg" alt="gymbo" class="w-6 h-6" />
           <span class="text-[#ebebe6]/60 text-sm tracking-widest">© 2026 gymbo</span>
         </div>
 
@@ -492,26 +493,57 @@ import '../styles/global.css';
       </div>
     </footer>
 
-    <!-- Scroll reveal + hero stagger + video fallback -->
+    <!-- GSAP animations: hero stagger, h1 SplitText, scroll reveals -->
     <script>
-      // Hero above-fold stagger (fires on load, no scroll needed)
-      document.querySelectorAll<HTMLElement>('.hero-reveal').forEach((el, i) => {
-        setTimeout(() => el.classList.add('visible'), i * 120);
+      import gsap from 'gsap';
+      import { SplitText } from 'gsap/SplitText';
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+      gsap.registerPlugin(SplitText, ScrollTrigger);
+
+      // ── Hero h1: line-by-line stagger (type:'lines' preserves inner span color) ──
+      const h1El = document.querySelector('h1');
+      if (h1El) {
+        const split = new SplitText(h1El, { type: 'lines' });
+        gsap.from(split.lines, {
+          opacity: 0,
+          y: 30,
+          duration: 0.6,
+          stagger: 0.12,
+          ease: 'power3.out',
+          delay: 0.2,
+        });
+      }
+
+      // ── Hero above-fold stagger (elements below h1) ──
+      const heroEls = document.querySelectorAll<HTMLElement>('.hero-reveal');
+      // index 0 = brand mark, index 1 = h1 (handled by SplitText); animate from index 2
+      gsap.from([...heroEls].slice(2), {
+        opacity: 0,
+        y: 24,
+        duration: 0.6,
+        stagger: 0.12,
+        ease: 'power2.out',
+        delay: 0.5,
+      });
+      // brand mark: scale pop in
+      if (heroEls[0]) {
+        gsap.from(heroEls[0], { opacity: 0, scale: 0.85, duration: 0.5, ease: 'back.out(1.7)' });
+      }
+
+      // ── Scroll reveals (below fold) — batch fires per-element as each enters viewport ──
+      ScrollTrigger.batch('.reveal', {
+        onEnter: (batch) => gsap.from(batch, {
+          opacity: 0,
+          y: 32,
+          duration: 0.7,
+          stagger: 0.08,
+          ease: 'power2.out',
+        }),
+        start: 'top 85%',
+        once: true,
       });
 
-      // Scroll-triggered reveals for below-fold elements
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            (entry.target as HTMLElement).classList.add('visible');
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15 });
-
-      document.querySelectorAll('.reveal, .reveal-fade').forEach(el => observer.observe(el));
-
-      // Video error fallback — show branded placeholder if /hero-demo.mp4 missing
+      // ── Video error fallback ──
       const heroVideo = document.getElementById('hero-video') as HTMLVideoElement | null;
       const heroFallback = document.getElementById('hero-video-fallback');
       heroVideo?.addEventListener('error', () => {
