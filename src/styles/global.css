@@ -47,3 +47,44 @@ a {
 
 /* ── GSAP controls .reveal and .hero-reveal initial states ── */
 /* No CSS opacity/transform needed — gsap.from() sets them */
+
+/* ── Glassmorphism nav ── */
+nav.glassnav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(45, 45, 45, 0.75);
+  border-bottom: 1px solid rgba(248, 98, 58, 0.15);
+}
+
+/* ── Gradient text (hero accent "your rules.") ── */
+.gradient-text {
+  background: linear-gradient(90deg, #f8623a 0%, #ffb347 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Layered glow on feature cards ── */
+.feature-card {
+  box-shadow:
+    0 4px 24px rgba(248, 98, 58, 0.06),
+    0 1px 0 rgba(235, 235, 230, 0.06) inset;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+}
+.feature-card:hover {
+  box-shadow:
+    0 8px 40px rgba(248, 98, 58, 0.18),
+    0 1px 0 rgba(235, 235, 230, 0.08) inset;
+  transform: translateY(-2px);
+}
+
+/* ── Fluid typography ── */
+.fluid-h1 { font-size: clamp(2rem, 6vw + 0.5rem, 4rem); }
+.fluid-h2 { font-size: clamp(1.4rem, 3vw + 0.5rem, 2rem); }
+
+/* ── SplitText word clip (prevents layout flash on y:100% initial state) ── */
+.word-clip {
+  overflow: hidden;
+  display: inline-block;
+  vertical-align: bottom;
+}

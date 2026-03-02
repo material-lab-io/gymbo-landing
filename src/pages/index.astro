@@ -74,7 +74,7 @@ import '../styles/global.css';
   <body class="bg-[#2d2d2d] text-[#ebebe6]">
 
     <!-- NAV -->
-    <nav class="fixed top-0 w-full z-50 bg-[#2d2d2d]/90 backdrop-blur border-b border-[#ebebe6]/10">
+    <nav class="fixed top-0 w-full z-50 glassnav">
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <!-- Brand logo -->
         <a href="/" class="flex items-center gap-3">
@@ -105,9 +105,9 @@ import '../styles/global.css';
           <img src="/logo-mark.svg" alt="gymbo" class="w-16 h-16" />
         </div>
 
-        <h1 class="hero-reveal text-4xl md:text-6xl font-bold tracking-widest mb-6 leading-tight">
+        <h1 class="hero-reveal fluid-h1 font-bold tracking-widest mb-6 leading-tight">
           your gym.<br />
-          <span class="text-[#f8623a]">your rules.</span>
+          <span class="gradient-text">your rules.</span>
         </h1>
 
         <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 mb-10 max-w-2xl mx-auto leading-relaxed">
@@ -167,7 +167,7 @@ import '../styles/global.css';
     <!-- ── FEATURES ── -->
     <section id="features" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-6xl mx-auto">
-        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           everything you need
         </h2>
         <p class="reveal text-center text-[#ebebe6]/50 mb-16">built for trainers who mean business</p>
@@ -175,7 +175,7 @@ import '../styles/global.css';
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
           <!-- punch cards -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -188,7 +188,7 @@ import '../styles/global.css';
           </div>
 
           <!-- balances & billing -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3v18"/>
@@ -202,7 +202,7 @@ import '../styles/global.css';
           </div>
 
           <!-- payments -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="9"/>
@@ -216,7 +216,7 @@ import '../styles/global.css';
           </div>
 
           <!-- pdf invoices -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -229,7 +229,7 @@ import '../styles/global.css';
           </div>
 
           <!-- works offline -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="2" y1="2" x2="22" y2="22"/>
@@ -244,7 +244,7 @@ import '../styles/global.css';
           </div>
 
           <!-- phone login -->
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -264,7 +264,7 @@ import '../styles/global.css';
     <!-- ── HOW IT WORKS ── -->
     <section id="how" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-4xl mx-auto">
-        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           how it works
         </h2>
         <p class="reveal text-center text-[#ebebe6]/50 mb-16">up and running in minutes</p>
@@ -306,7 +306,7 @@ import '../styles/global.css';
     <section id="social-proof" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-5xl mx-auto">
 
-        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest text-center mb-4">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           built by trainers, for trainers
         </h2>
         <p class="reveal text-center text-[#ebebe6]/50 mb-16">
@@ -315,7 +315,7 @@ import '../styles/global.css';
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
@@ -327,7 +327,7 @@ import '../styles/global.css';
             <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">running balances and payment history across every client. no surprises.</p>
           </div>
 
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
@@ -339,7 +339,7 @@ import '../styles/global.css';
             <p class="text-[#ebebe6]/60 text-sm leading-relaxed tracking-wide">client roster, upcoming sessions, punch card status — one tap away.</p>
           </div>
 
-          <div class="reveal bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 transition-colors group">
+          <div class="reveal feature-card bg-[#232323] border border-[#ebebe6]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
             <div class="text-[#f8623a] mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="2" y1="2" x2="22" y2="22"/>
@@ -361,7 +361,7 @@ import '../styles/global.css';
     <!-- ── MOBILE APPS COMING SOON ── -->
     <section id="mobile" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-2xl mx-auto text-center">
-        <h2 class="text-2xl md:text-3xl font-bold tracking-widest mb-4">
+        <h2 class="fluid-h2 font-bold tracking-widest mb-4">
           mobile apps
         </h2>
         <p class="text-[#ebebe6]/50 mb-12">coming soon — join the waitlist to get early access</p>
@@ -401,7 +401,7 @@ import '../styles/global.css';
     <!-- ── WAITLIST FORM ── -->
     <section id="waitlist" class="py-24 px-6 border-t border-[#ebebe6]/10">
       <div class="max-w-lg mx-auto text-center">
-        <h2 class="reveal text-2xl md:text-3xl font-bold tracking-widest mb-4">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
           join the waitlist
         </h2>
         <p class="reveal text-[#ebebe6]/50 mb-12">get early access to the app — and help shape what we build next.</p>
@@ -421,7 +421,7 @@ import '../styles/global.css';
               name="name"
               required
               placeholder="your name"
-              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none text-sm tracking-widest"
             />
           </div>
 
@@ -433,7 +433,7 @@ import '../styles/global.css';
               name="email"
               required
               placeholder="you@example.com"
-              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+              class="w-full bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none text-sm tracking-widest"
             />
           </div>
 
@@ -448,7 +448,7 @@ import '../styles/global.css';
                 type="tel"
                 name="phone"
                 placeholder="98765 43210"
-                class="flex-1 bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none focus:border-[#f8623a] transition-colors text-sm tracking-widest"
+                class="flex-1 bg-[#232323] border border-[#ebebe6]/20 rounded-xl px-4 py-3 text-[#ebebe6] placeholder-[#ebebe6]/30 focus:outline-none text-sm tracking-widest"
               />
             </div>
           </div>
@@ -493,24 +493,24 @@ import '../styles/global.css';
       </div>
     </footer>
 
-    <!-- GSAP animations: hero stagger, h1 SplitText, scroll reveals -->
+    <!-- GSAP animations: hero stagger, h1 SplitText words, scroll reveals, parallax, card hover, form focus -->
     <script>
       import gsap from 'gsap';
       import { SplitText } from 'gsap/SplitText';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
       gsap.registerPlugin(SplitText, ScrollTrigger);
 
-      // ── Hero h1: line-by-line stagger (type:'lines' preserves inner span color) ──
+      // ── Hero h1: word-by-word reveal ──
       const h1El = document.querySelector('h1');
       if (h1El) {
-        const split = new SplitText(h1El, { type: 'lines' });
-        gsap.from(split.lines, {
+        const split = new SplitText(h1El, { type: 'words', wordsClass: 'word-clip' });
+        gsap.from(split.words, {
           opacity: 0,
-          y: 30,
-          duration: 0.6,
-          stagger: 0.12,
+          y: '100%',
+          duration: 0.55,
+          stagger: 0.09,
           ease: 'power3.out',
-          delay: 0.2,
+          delay: 0.15,
         });
       }
 
@@ -541,6 +541,43 @@ import '../styles/global.css';
         }),
         start: 'top 85%',
         once: true,
+      });
+
+      // ── Hero phone parallax — drifts up at 0.8× scroll speed ──
+      const heroSection = document.querySelector('section');
+      if (heroSection) {
+        gsap.to('.phone-float', {
+          y: -60,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: heroSection,
+            start: 'top top',
+            end: 'bottom top',
+            scrub: 0.8,
+          },
+        });
+      }
+
+      // ── Feature card hover — icon GSAP pop ──
+      document.querySelectorAll('.feature-card').forEach(card => {
+        const icon = card.querySelector('svg');
+        if (!icon) return;
+        card.addEventListener('mouseenter', () => {
+          gsap.to(icon, { scale: 1.15, duration: 0.25, ease: 'back.out(2)' });
+        });
+        card.addEventListener('mouseleave', () => {
+          gsap.to(icon, { scale: 1, duration: 0.2, ease: 'power2.out' });
+        });
+      });
+
+      // ── Form input focus animation — GSAP owns border color ──
+      document.querySelectorAll('#waitlist-form input').forEach(input => {
+        input.addEventListener('focus', () => {
+          gsap.to(input, { borderColor: '#f8623a', duration: 0.2, ease: 'power2.out' });
+        });
+        input.addEventListener('blur', () => {
+          gsap.to(input, { borderColor: 'rgba(235,235,230,0.2)', duration: 0.3 });
+        });
       });
 
       // ── Video error fallback ──
