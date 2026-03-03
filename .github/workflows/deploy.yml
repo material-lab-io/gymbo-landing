@@ -18,6 +18,9 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+        env:
+          PUBLIC_SUPABASE_URL: https://spldnbrqbuhmlgvwhahj.supabase.co
+          PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwbGRuYnJxYnVobWxndndoYWhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDM1NTEsImV4cCI6MjA4NzAxOTU1MX0.oE_0ia8vGIJD198y7kmZRPC5pghIEiPt-is3bUpBF_E
 
       - name: Deploy to Cloudflare Pages
         run: npx wrangler pages deploy dist --project-name gymbo-landing --branch main
