@@ -1,0 +1,15 @@
+name: Deploy (CF Pages API)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger CF Pages deployment
+        run: |
+          curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/${{ secrets.CLOUDFLARE_ACCOUNT_ID }}/pages/projects/gymbo-landing/deployments" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" | jq '{success,errors,result:.result.id}'
