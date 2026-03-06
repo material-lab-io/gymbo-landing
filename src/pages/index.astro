@@ -9,10 +9,10 @@ import '../styles/global.css';
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <title>gymbo — train smarter</title>
+    <title>gymbo — gym management app for personal trainers</title>
     <meta name="description" content="gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app." />
     <!-- Open Graph -->
-    <meta property="og:title" content="gymbo — train smarter" />
+    <meta property="og:title" content="gymbo — gym management app for personal trainers" />
     <meta property="og:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getgymbo.com" />
@@ -24,7 +24,7 @@ import '../styles/global.css';
     <meta property="og:locale" content="en_IN" />
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="gymbo — train smarter" />
+    <meta name="twitter:title" content="gymbo — gym management app for personal trainers" />
     <meta name="twitter:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
     <meta name="theme-color" content="#f8623a" />
@@ -84,7 +84,6 @@ import '../styles/global.css';
         <div class="hidden md:flex gap-6 items-center">
           <a href="#features" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">features</a>
           <a href="#how" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">how it works</a>
-          <a href="#waitlist" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">waitlist</a>
         </div>
         <a
           href="https://app.getgymbo.com"
@@ -124,13 +123,6 @@ import '../styles/global.css';
             data-umami-event="cta_try_web_app"
           >
             try the web app →
-          </a>
-          <a
-            href="#waitlist"
-            class="rounded-full border border-[#f0f0eb]/40 text-[#f0f0eb] font-bold tracking-widest px-8 py-3 hover:border-[#f8623a] hover:text-[#f8623a] transition-colors w-full sm:w-auto text-center"
-            data-umami-event="cta_join_waitlist_hero"
-          >
-            join the waitlist
           </a>
         </div>
 
@@ -364,7 +356,7 @@ import '../styles/global.css';
         <h2 class="fluid-h2 font-bold tracking-widest mb-4">
           mobile apps
         </h2>
-        <p class="text-[#f0f0eb]/50 mb-12">coming soon — join the waitlist to get early access</p>
+        <p class="text-[#f0f0eb]/50 mb-12">coming soon — android and ios apps in the works</p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <!-- Android badge (greyed out) -->
@@ -398,75 +390,22 @@ import '../styles/global.css';
       </div>
     </section>
 
-    <!-- ── WAITLIST FORM ── -->
-    <section id="waitlist" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <!-- ── CTA ── -->
+    <section id="try" class="py-24 px-6 border-t border-[#f0f0eb]/10">
       <div class="max-w-lg mx-auto text-center">
         <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
-          join the waitlist
+          ready to try gymbo?
         </h2>
-        <p class="reveal text-[#f0f0eb]/50 mb-12">get early access to the app — and help shape what we build next.</p>
-
-        <!-- Form — submits via Supabase JS client (no page reload) -->
-        <form
-          id="waitlist-form"
-          action="#"
-          method="POST"
-          class="reveal flex flex-col gap-4 text-left"
+        <p class="reveal text-[#f0f0eb]/50 mb-10">the web app is live. free to use. no credit card.</p>
+        <a
+          href="https://app.getgymbo.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="reveal inline-block rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-10 py-4 hover:opacity-90 transition-opacity text-lg"
+          data-umami-event="cta_try_web_app_bottom"
         >
-          <div>
-            <label for="name" class="block text-xs tracking-widest text-[#f0f0eb]/60 mb-2">name</label>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              required
-              placeholder="your name"
-              class="w-full bg-[#242424] border border-[#f0f0eb]/20 rounded-xl px-4 py-3 text-[#f0f0eb] placeholder-[#f0f0eb]/30 focus:outline-none text-sm tracking-widest"
-            />
-          </div>
-
-          <div>
-            <label for="email" class="block text-xs tracking-widest text-[#f0f0eb]/60 mb-2">email</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              required
-              placeholder="you@example.com"
-              class="w-full bg-[#242424] border border-[#f0f0eb]/20 rounded-xl px-4 py-3 text-[#f0f0eb] placeholder-[#f0f0eb]/30 focus:outline-none text-sm tracking-widest"
-            />
-          </div>
-
-          <div>
-            <label for="phone" class="block text-xs tracking-widest text-[#f0f0eb]/60 mb-2">
-              phone <span class="text-[#f0f0eb]/30">(optional — india +91)</span>
-            </label>
-            <div class="flex gap-2">
-              <div class="bg-[#242424] border border-[#f0f0eb]/20 rounded-xl px-4 py-3 text-[#f0f0eb]/60 text-sm tracking-widest whitespace-nowrap">+91</div>
-              <input
-                id="phone"
-                type="tel"
-                name="phone"
-                placeholder="98765 43210"
-                class="flex-1 bg-[#242424] border border-[#f0f0eb]/20 rounded-xl px-4 py-3 text-[#f0f0eb] placeholder-[#f0f0eb]/30 focus:outline-none text-sm tracking-widest"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            class="rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity mt-2"
-          >
-            count me in →
-          </button>
-        </form>
-
-        <!-- Success message (hidden by default) -->
-        <div id="waitlist-success" class="hidden text-center py-8">
-          <div class="text-4xl mb-4">🎉</div>
-          <p class="text-[#4ADE80] font-bold tracking-widest mb-2">you're on the list!</p>
-          <p class="text-[#f0f0eb]/50 text-sm">we'll reach out as soon as the mobile app is ready.</p>
-        </div>
+          try gymbo free →
+        </a>
       </div>
     </section>
 
@@ -570,16 +509,6 @@ import '../styles/global.css';
         });
       });
 
-      // ── Form input focus animation — GSAP owns border color ──
-      document.querySelectorAll('#waitlist-form input').forEach(input => {
-        input.addEventListener('focus', () => {
-          gsap.to(input, { borderColor: '#f8623a', duration: 0.2, ease: 'power2.out' });
-        });
-        input.addEventListener('blur', () => {
-          gsap.to(input, { borderColor: 'rgba(235,235,230,0.2)', duration: 0.3 });
-        });
-      });
-
       // ── Video error fallback ──
       const heroVideo = document.getElementById('hero-video') as HTMLVideoElement | null;
       const heroFallback = document.getElementById('hero-video-fallback');
@@ -589,75 +518,6 @@ import '../styles/global.css';
       });
     </script>
 
-    <!-- Waitlist form JS — direct PostgREST insert, return=minimal, no page reload -->
-    <script>
-      const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
-      const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-      const LISTMONK_URL = import.meta.env.PUBLIC_LISTMONK_URL;
-      const LISTMONK_API_TOKEN = import.meta.env.PUBLIC_LISTMONK_API_TOKEN;
-
-      const form = document.getElementById('waitlist-form') as HTMLFormElement | null;
-      const success = document.getElementById('waitlist-success');
-      const btn = form?.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-
-      form?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        if (!form || !success) return;
-
-        if (btn) btn.disabled = true;
-
-        const data = new FormData(form);
-        const phone = (data.get('phone') as string)?.trim() || null;
-
-        try {
-          const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
-            method: 'POST',
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-              'Content-Type': 'application/json',
-              'Prefer': 'return=minimal',
-            },
-            body: JSON.stringify({
-              name: data.get('name'),
-              email: data.get('email'),
-              phone,
-            }),
-          });
-
-          if (res.ok) {
-            // fire-and-forget: add subscriber to Listmonk + send welcome email
-            // signup already succeeded — silent fail is fine here
-            if (LISTMONK_URL && LISTMONK_API_TOKEN) {
-              fetch(`${LISTMONK_URL}/api/tx`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': 'Basic ' + btoa('api:' + LISTMONK_API_TOKEN),
-                },
-                body: JSON.stringify({
-                  subscriber_email: data.get('email'),
-                  template_id: 1,
-                  data: { name: data.get('name') },
-                  content_type: 'html',
-                }),
-              }).catch(() => {});
-            }
-
-            form.classList.add('hidden');
-            success.classList.remove('hidden');
-            // @ts-ignore
-            window.umami?.track('waitlist_signup');
-          } else {
-            alert('something went wrong — please try again.');
-            if (btn) btn.disabled = false;
-          }
-        } catch {
-          alert('network error — please check your connection.');
-          if (btn) btn.disabled = false;
-        }
-      });
-    </script>
 
   </body>
 </html>
