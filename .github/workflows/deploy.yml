@@ -1,11 +1,13 @@
-name: Deploy to Cloudflare Pages
+name: Build check
 
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,9 +23,3 @@ jobs:
         env:
           PUBLIC_SUPABASE_URL: https://spldnbrqbuhmlgvwhahj.supabase.co
           PUBLIC_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwbGRuYnJxYnVobWxndndoYWhqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NDM1NTEsImV4cCI6MjA4NzAxOTU1MX0.oE_0ia8vGIJD198y7kmZRPC5pghIEiPt-is3bUpBF_E
-
-      - name: Deploy to Cloudflare Pages
-        run: npx wrangler pages deploy dist --project-name gymbo-landing --branch main
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
