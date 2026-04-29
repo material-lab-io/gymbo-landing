@@ -1,10 +1,9 @@
 # Gymbo
 
-> Fitness management app for independent personal trainers — clients, sessions, payments, and punch cards in one offline-capable web app. India-first. Mobile apps coming soon.
+> Fitness management iOS app for independent personal trainers — clients, sessions, payments, and punch cards in one place. India-first. Currently in beta on iOS via TestFlight.
 
 ## Product
 - [Landing page](https://getgymbo.com) - Overview of features, how it works, and waitlist
-- [Web app](https://app.getgymbo.com) - Live trainer dashboard (login required)
 
 ## Features
 - Client management — roster, session history, balance tracking
@@ -17,7 +16,7 @@
 Independent personal trainers in India who manage their own clients without a gym affiliate.
 
 ## Status
-Web app is live at app.getgymbo.com. Android and iOS mobile apps are in development. Waitlist open at getgymbo.com/#waitlist.
+iOS app is in beta via TestFlight. Android coming soon. Waitlist open at getgymbo.com/#waitlist.
 
 ## Contact
 hello@getgymbo.com

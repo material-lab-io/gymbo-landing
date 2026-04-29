@@ -18,9 +18,10 @@ test.describe('landing page', () => {
     await expect(featuresLink).toHaveText(/features/i);
     await expect(howLink).toHaveText(/how it works/i);
 
-    // CTA button links to web app
-    const ctaLink = nav.locator('a[href="https://app.getgymbo.com"]');
+    // CTA button links to waitlist (not web app)
+    const ctaLink = nav.locator('a[href="#waitlist"]');
     await expect(ctaLink).toBeVisible();
+    await expect(ctaLink).toHaveText(/join the beta/i);
   });
 
   test('hero section has headline and CTA', async ({ page }) => {
@@ -29,9 +30,10 @@ test.describe('landing page', () => {
     await expect(h1).toContainText('your gym');
     await expect(h1).toContainText('your rules');
 
-    // Hero CTA points to app
-    const heroCTA = page.locator('section').first().locator('a[href="https://app.getgymbo.com"]');
+    // Hero CTA points to waitlist
+    const heroCTA = page.locator('section').first().locator('a[href="#waitlist"]');
     await expect(heroCTA).toBeVisible();
+    await expect(heroCTA).toHaveText(/join the beta/i);
   });
 
   test('features section has 6 cards', async ({ page }) => {
@@ -72,20 +74,24 @@ test.describe('landing page', () => {
     await expect(howSection.locator('h3', { hasText: 'get paid' })).toBeVisible();
   });
 
-  test('mobile apps section shows greyed-out badges', async ({ page }) => {
+  test('mobile apps section: iOS active, Android greyed', async ({ page }) => {
     await page.goto('/');
     const mobileSection = page.locator('#mobile');
     await expect(mobileSection).toBeVisible();
 
-    // Badges should have opacity-40 (greyed out)
-    const badges = mobileSection.locator('.opacity-40');
-    await expect(badges).toHaveCount(2);
+    // Only Android badge should be greyed out (opacity-40)
+    const greyedBadges = mobileSection.locator('.opacity-40');
+    await expect(greyedBadges).toHaveCount(1);
+
+    // iOS badge is an active link to #waitlist
+    const iosBadge = mobileSection.locator('a[href="#waitlist"]');
+    await expect(iosBadge).toBeVisible();
 
     await expect(mobileSection.locator('text=google play')).toBeVisible();
     await expect(mobileSection.locator('text=app store')).toBeVisible();
   });
 
-  test('footer has copyright, privacy, terms, and app link', async ({ page }) => {
+  test('footer has copyright, privacy, terms, and beta link', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer');
     await expect(footer).toBeVisible();
@@ -93,7 +99,10 @@ test.describe('landing page', () => {
     await expect(footer.locator('text=© 2026 gymbo')).toBeVisible();
     await expect(footer.locator('a[href="/privacy"]')).toBeVisible();
     await expect(footer.locator('a[href="/terms"]')).toBeVisible();
-    await expect(footer.locator('a[href="https://app.getgymbo.com"]')).toBeVisible();
+    await expect(footer.locator('a[href="#waitlist"]')).toBeVisible();
+
+    // No web app link
+    await expect(footer.locator('a[href="https://app.getgymbo.com"]')).toHaveCount(0);
   });
 
   test('social proof section has testimonial', async ({ page }) => {
@@ -106,10 +115,41 @@ test.describe('landing page', () => {
     await expect(socialProof.locator('text=tiger')).toBeVisible();
   });
 
-  test('bottom CTA section exists', async ({ page }) => {
+  test('waitlist form exists with required fields', async ({ page }) => {
     await page.goto('/');
-    const ctaSection = page.locator('#try');
-    await expect(ctaSection).toBeVisible();
-    await expect(ctaSection.locator('a[href="https://app.getgymbo.com"]')).toBeVisible();
+    const waitlistSection = page.locator('#waitlist');
+    await expect(waitlistSection).toBeVisible();
+
+    const form = waitlistSection.locator('form#waitlist-form');
+    await expect(form).toBeVisible();
+
+    // Required fields
+    await expect(form.locator('input[name="name"]')).toBeVisible();
+    await expect(form.locator('input[name="email"]')).toBeVisible();
+    await expect(form.locator('input[name="phone"]')).toBeVisible();
+    await expect(form.locator('button[type="submit"]')).toBeVisible();
+  });
+
+  test('waitlist form submit shows confirmation', async ({ page }) => {
+    await page.goto('/');
+    const form = page.locator('form#waitlist-form');
+
+    // Fill in form
+    await form.locator('input[name="name"]').fill('test trainer');
+    await form.locator('input[name="email"]').fill('test@example.com');
+
+    // Submit — no Supabase key so graceful degradation shows success
+    await form.locator('button[type="submit"]').click();
+
+    // Form should hide, success message should show
+    await expect(form).toBeHidden();
+    await expect(page.locator('#waitlist-success')).toBeVisible();
+  });
+
+  test('no web app references remain', async ({ page }) => {
+    await page.goto('/');
+    // Ensure no links to app.getgymbo.com exist
+    const appLinks = page.locator('a[href="https://app.getgymbo.com"]');
+    await expect(appLinks).toHaveCount(0);
   });
 });

@@ -13,7 +13,7 @@ import '../styles/global.css';
     <meta name="description" content="gymbo helps independent personal trainers manage clients, track workouts, handle payments, and grow their business — all in one app." />
     <!-- Open Graph -->
     <meta property="og:title" content="gymbo — gym management app for personal trainers" />
-    <meta property="og:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
+    <meta property="og:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle payments, and grow their business — now on ios." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://getgymbo.com" />
     <meta property="og:image" content="https://getgymbo.com/og-image.png" />
@@ -25,7 +25,7 @@ import '../styles/global.css';
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="gymbo — gym management app for personal trainers" />
-    <meta name="twitter:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
+    <meta name="twitter:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle payments, and grow their business — now on ios." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
     <meta name="theme-color" content="#f8623a" />
     <meta name="author" content="Gymbo" />
@@ -54,7 +54,7 @@ import '../styles/global.css';
         "name": "Gymbo",
         "applicationCategory": "HealthApplication",
         "applicationSubCategory": "Fitness Business Management",
-        "operatingSystem": "Android, iOS, Web",
+        "operatingSystem": "iOS",
         "url": "https://getgymbo.com",
         "description": "Gymbo helps independent personal trainers manage clients, track sessions, handle payments, and grow their business — all in one offline-capable app.",
         "offers": {
@@ -86,12 +86,10 @@ import '../styles/global.css';
           <a href="#how" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">how it works</a>
         </div>
         <a
-          href="https://app.getgymbo.com"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="#waitlist"
           class="text-sm text-[#f8623a] border border-[#f8623a] rounded-full px-4 py-1.5 hover:bg-[#f8623a] hover:text-[#1a1a1a] transition-colors"
         >
-          try the web app →
+          join the beta →
         </a>
       </div>
     </nav>
@@ -110,42 +108,35 @@ import '../styles/global.css';
         </h1>
 
         <p class="hero-reveal text-lg md:text-xl text-[#f0f0eb]/80 mb-10 max-w-2xl mx-auto leading-relaxed">
-          stop juggling spreadsheets, whatsapp threads, and cash logs.<br class="hidden md:block" />
-          gymbo gives independent personal trainers one place to run their whole business.
+          the ios app for independent personal trainers.<br class="hidden md:block" />
+          manage clients, track sessions, log payments — all in one place.
         </p>
 
         <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
-            href="https://app.getgymbo.com"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#waitlist"
             class="rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
-            data-umami-event="cta_try_web_app"
+            data-umami-event="cta_join_beta"
           >
-            try the web app →
+            join the beta →
           </a>
         </div>
 
-        <!-- App mockup placeholder -->
+        <!-- App mockup — iOS screenshot (swap in ios-screen-clients.png when available) -->
         <div class="hero-reveal phone-float mt-16 relative">
           <div class="mx-auto w-64 md:w-72 bg-[#242424] rounded-[2.5rem] border border-[#f0f0eb]/10 p-2 shadow-2xl">
             <div class="rounded-[2rem] bg-[#242424] overflow-hidden aspect-[9/19] relative">
-              <!-- Remotion video — dropped into public/ by video agent -->
-              <video
-                id="hero-video"
-                src="/hero-demo.mp4"
-                autoplay
-                loop
-                muted
-                playsinline
-                poster="/hero-demo-poster.png"
+              <img
+                id="hero-screenshot"
+                src="/ios-screen-clients.png"
+                alt="gymbo ios app — client list"
                 class="w-full h-full object-cover"
-              ></video>
-              <!-- Branded fallback — shown if video fails to load -->
-              <div id="hero-video-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#242424]">
+              />
+              <!-- Branded fallback — shown if screenshot not yet available -->
+              <div id="hero-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#242424]">
                 <div class="text-center">
                   <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8 mx-auto mb-3" />
-                  <div class="text-[10px] text-[#f0f0eb]/40 tracking-widest">demo coming</div>
+                  <div class="text-[10px] text-[#f0f0eb]/40 tracking-widest">ios app</div>
                 </div>
               </div>
             </div>
@@ -361,13 +352,13 @@ import '../styles/global.css';
       </div>
     </section>
 
-    <!-- ── MOBILE APPS COMING SOON ── -->
+    <!-- ── MOBILE APPS ── -->
     <section id="mobile" class="py-24 px-6 border-t border-[#f0f0eb]/10">
       <div class="max-w-2xl mx-auto text-center">
         <h2 class="fluid-h2 font-bold tracking-widest mb-4">
           mobile apps
         </h2>
-        <p class="text-[#f0f0eb]/50 mb-12">coming soon — android and ios apps in the works</p>
+        <p class="text-[#f0f0eb]/50 mb-12">gymbo is live on ios. android coming soon.</p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <!-- Android badge (greyed out) -->
@@ -383,9 +374,9 @@ import '../styles/global.css';
             </div>
           </div>
 
-          <!-- iOS badge (greyed out) -->
-          <div class="opacity-40 cursor-not-allowed select-none">
-            <div class="flex items-center gap-3 border border-[#f0f0eb]/30 rounded-xl px-5 py-3 bg-[#242424]">
+          <!-- iOS badge (active — links to waitlist) -->
+          <a href="#waitlist" class="group" data-umami-event="cta_ios_badge">
+            <div class="flex items-center gap-3 border border-[#f8623a]/60 rounded-xl px-5 py-3 bg-[#242424] group-hover:border-[#f8623a] transition-colors">
               <svg class="w-7 h-7 text-[#f0f0eb]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
@@ -394,29 +385,66 @@ import '../styles/global.css';
                 <div class="text-sm font-bold text-[#f0f0eb] tracking-widest">app store</div>
               </div>
             </div>
-          </div>
+          </a>
         </div>
 
-        <p class="mt-8 text-xs text-[#f0f0eb]/30">currently available as a web app at app.getgymbo.com</p>
+        <p class="mt-8 text-xs text-[#f0f0eb]/30">currently in beta via testflight</p>
       </div>
     </section>
 
-    <!-- ── CTA ── -->
-    <section id="try" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <!-- ── WAITLIST ── -->
+    <section id="waitlist" class="py-24 px-6 border-t border-[#f0f0eb]/10">
       <div class="max-w-lg mx-auto text-center">
         <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
-          ready to try gymbo?
+          join the beta
         </h2>
-        <p class="reveal text-[#f0f0eb]/50 mb-10">the web app is live. free to use. no credit card.</p>
-        <a
-          href="https://app.getgymbo.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="reveal inline-block rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-10 py-4 hover:opacity-90 transition-opacity text-lg"
-          data-umami-event="cta_try_web_app_bottom"
-        >
-          try gymbo free →
-        </a>
+        <p class="reveal text-[#f0f0eb]/50 mb-10">get early access to gymbo on ios. free to join.</p>
+
+        <!-- Waitlist form -->
+        <form id="waitlist-form" class="reveal flex flex-col gap-4 max-w-sm mx-auto">
+          <input
+            type="text"
+            name="name"
+            placeholder="your name"
+            required
+            autocomplete="name"
+            class="bg-[#242424] border border-[#f0f0eb]/20 rounded-full px-5 py-3 text-sm text-[#f0f0eb] tracking-widest placeholder:text-[#f0f0eb]/30 focus:border-[#f8623a] focus:outline-none transition-colors"
+          />
+          <input
+            type="email"
+            name="email"
+            placeholder="email"
+            required
+            autocomplete="email"
+            class="bg-[#242424] border border-[#f0f0eb]/20 rounded-full px-5 py-3 text-sm text-[#f0f0eb] tracking-widest placeholder:text-[#f0f0eb]/30 focus:border-[#f8623a] focus:outline-none transition-colors"
+          />
+          <input
+            type="tel"
+            name="phone"
+            placeholder="phone (optional)"
+            autocomplete="tel"
+            class="bg-[#242424] border border-[#f0f0eb]/20 rounded-full px-5 py-3 text-sm text-[#f0f0eb] tracking-widest placeholder:text-[#f0f0eb]/30 focus:border-[#f8623a] focus:outline-none transition-colors"
+          />
+          <button
+            type="submit"
+            class="rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity text-sm"
+            data-umami-event="waitlist_submit"
+          >
+            join waitlist →
+          </button>
+        </form>
+
+        <!-- Success state -->
+        <div id="waitlist-success" class="hidden reveal max-w-sm mx-auto">
+          <div class="bg-[#242424] border border-[#4ADE80]/40 rounded-2xl p-8 text-center">
+            <div class="text-[#4ADE80] text-2xl mb-3">&#10003;</div>
+            <p class="text-[#f0f0eb] font-bold tracking-widest mb-2">you're on the list</p>
+            <p class="text-[#f0f0eb]/50 text-sm tracking-wide">we'll notify you when gymbo is ready for you.</p>
+          </div>
+        </div>
+
+        <!-- Error state -->
+        <p id="waitlist-error" class="hidden text-[#d4183d] text-sm tracking-widest mt-4"></p>
       </div>
     </section>
 
@@ -431,14 +459,7 @@ import '../styles/global.css';
         <div class="flex items-center gap-6 text-sm tracking-widest text-[#f0f0eb]/40">
           <a href="/privacy" class="hover:text-[#f8623a] transition-colors">privacy</a>
           <a href="/terms" class="hover:text-[#f8623a] transition-colors">terms</a>
-          <a
-            href="https://app.getgymbo.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-[#f8623a] transition-colors"
-          >
-            app.getgymbo.com ↗
-          </a>
+          <a href="#waitlist" class="hover:text-[#f8623a] transition-colors">join beta</a>
         </div>
       </div>
     </footer>
@@ -520,12 +541,63 @@ import '../styles/global.css';
         });
       });
 
-      // ── Video error fallback ──
-      const heroVideo = document.getElementById('hero-video') as HTMLVideoElement | null;
-      const heroFallback = document.getElementById('hero-video-fallback');
-      heroVideo?.addEventListener('error', () => {
-        if (heroVideo) heroVideo.style.display = 'none';
+      // ── Screenshot error fallback ──
+      const heroImg = document.getElementById('hero-screenshot') as HTMLImageElement | null;
+      const heroFallback = document.getElementById('hero-fallback');
+      heroImg?.addEventListener('error', () => {
+        if (heroImg) heroImg.style.display = 'none';
         heroFallback?.classList.remove('hidden');
+      });
+
+      // ── Waitlist form ──
+      const SUPABASE_URL = 'https://spldnbrqbuhmlgvwhahj.supabase.co';
+      const SUPABASE_ANON_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
+
+      const form = document.getElementById('waitlist-form') as HTMLFormElement | null;
+      const successEl = document.getElementById('waitlist-success');
+      const errorEl = document.getElementById('waitlist-error');
+
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const payload = {
+          name: data.get('name'),
+          email: data.get('email'),
+          phone: data.get('phone') || null,
+        };
+
+        // Hide previous error
+        if (errorEl) { errorEl.classList.add('hidden'); errorEl.textContent = ''; }
+
+        // If no Supabase key configured, show success anyway (graceful degradation)
+        if (!SUPABASE_ANON_KEY) {
+          form.classList.add('hidden');
+          successEl?.classList.remove('hidden');
+          return;
+        }
+
+        try {
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify(payload),
+          });
+
+          if (!res.ok) throw new Error('submission failed');
+
+          form.classList.add('hidden');
+          successEl?.classList.remove('hidden');
+        } catch {
+          if (errorEl) {
+            errorEl.textContent = 'something went wrong. please try again.';
+            errorEl.classList.remove('hidden');
+          }
+        }
       });
     </script>
 
