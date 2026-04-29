@@ -28,3 +28,7 @@ pnpm-debug.log*
 
 # listmonk secrets (use config.toml.example as template)
 ops/listmonk/config.toml
+
+# playwright
+playwright-report/
+test-results/
