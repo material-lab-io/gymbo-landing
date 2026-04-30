@@ -46,8 +46,7 @@ a {
   animation: float 4s ease-in-out infinite;
 }
 
-/* ── GSAP controls .reveal and .hero-reveal initial states ── */
-/* No CSS opacity/transform needed — gsap.from() sets them */
+/* ── All content visible by default — GSAP enhances, never hides ── */
 
 /* ── Nav — transparent by default, solid on scroll ── */
 nav.glassnav {

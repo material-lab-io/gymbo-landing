@@ -106,10 +106,10 @@ import '../styles/global.css';
     </nav>
 
     <!-- ── HERO ── -->
-    <section class="hero min-h-screen flex items-center px-6 pt-24 pb-20">
-      <div class="max-w-6xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-        <!-- Text block -->
-        <div class="flex-1 text-center lg:text-left">
+    <section class="hero px-6 pt-32 pb-20 md:pt-40 md:pb-24">
+      <div class="max-w-6xl mx-auto w-full">
+        <!-- Text block — centered -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
           <div class="hero-reveal eyebrow text-[#f8623a] mb-4">for independent trainers</div>
 
           <h1 class="hero-reveal fluid-h1 font-bold tracking-widest mb-6 leading-tight">
@@ -117,11 +117,11 @@ import '../styles/global.css';
             <span class="gradient-text">from one app.</span>
           </h1>
 
-          <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 mb-10 max-w-2xl leading-relaxed">
+          <p class="hero-reveal text-lg md:text-xl text-[#ebebe6]/80 mb-10 max-w-2xl mx-auto leading-relaxed">
             gymbo replaces whatsapp threads, paper diaries, and payment arguments with a single app. schedule sessions, track payments, manage every client. built for trainers who work on the go.
           </p>
 
-          <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
+          <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href="#waitlist"
               class="rounded-full bg-[#f8623a] text-[#2d2d2d] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
@@ -139,20 +139,68 @@ import '../styles/global.css';
           </a>
         </div>
 
-        <!-- Phone mockup -->
-        <div class="hero-reveal phone-float flex-1 flex justify-center relative">
+        <!-- Phone mockup — centered below text -->
+        <div class="hero-reveal phone-float flex justify-center relative">
           <div class="w-64 md:w-72 bg-[#242424] rounded-[2.5rem] border border-[#ebebe6]/10 p-2 shadow-2xl">
-            <div class="rounded-[2rem] bg-[#242424] overflow-hidden aspect-[9/19] relative">
+            <div class="rounded-[2rem] bg-[#1a1a1a] overflow-hidden aspect-[9/19] relative">
               <img
                 id="hero-screenshot"
                 src="/ios-screen-clients.png"
                 alt="gymbo ios app — client list"
                 class="w-full h-full object-cover"
               />
-              <div id="hero-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#242424]">
-                <div class="text-center">
-                  <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8 mx-auto mb-3" />
-                  <div class="text-[10px] text-[#ebebe6]/40 tracking-widest">ios app</div>
+              <!-- Branded fallback — visible by default, hidden if real screenshot loads -->
+              <div id="hero-fallback" class="absolute inset-0 flex flex-col items-center justify-center bg-[#1a1a1a] px-6">
+                <!-- Fake app UI -->
+                <div class="w-full">
+                  <div class="flex items-center justify-between mb-6">
+                    <img src="/logo-mark.svg" alt="gymbo" class="w-6 h-6" />
+                    <div class="text-[9px] text-[#ebebe6]/30 tracking-widest">gymbo</div>
+                    <div class="w-6 h-6 rounded-full bg-[#ebebe6]/10"></div>
+                  </div>
+                  <div class="text-[10px] text-[#ebebe6]/40 tracking-widest mb-3">your clients</div>
+                  <!-- Fake client rows -->
+                  <div class="space-y-2">
+                    <div class="flex items-center gap-3 bg-[#242424] rounded-xl p-3">
+                      <div class="w-8 h-8 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[10px] text-[#f8623a] font-bold">s</div>
+                      <div class="flex-1">
+                        <div class="text-[10px] text-[#ebebe6]/80 font-bold tracking-wide">sarfaraz</div>
+                        <div class="text-[8px] text-[#ebebe6]/30 tracking-wide">4 sessions left</div>
+                      </div>
+                      <div class="text-[9px] text-[#4ADE80] font-bold">₹0</div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-[#242424] rounded-xl p-3">
+                      <div class="w-8 h-8 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[10px] text-[#f8623a] font-bold">p</div>
+                      <div class="flex-1">
+                        <div class="text-[10px] text-[#ebebe6]/80 font-bold tracking-wide">priya</div>
+                        <div class="text-[8px] text-[#ebebe6]/30 tracking-wide">7 sessions left</div>
+                      </div>
+                      <div class="text-[9px] text-[#f8623a] font-bold">₹1,200</div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-[#242424] rounded-xl p-3">
+                      <div class="w-8 h-8 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[10px] text-[#f8623a] font-bold">a</div>
+                      <div class="flex-1">
+                        <div class="text-[10px] text-[#ebebe6]/80 font-bold tracking-wide">aditya</div>
+                        <div class="text-[8px] text-[#ebebe6]/30 tracking-wide">12 sessions left</div>
+                      </div>
+                      <div class="text-[9px] text-[#4ADE80] font-bold">₹0</div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-[#242424] rounded-xl p-3">
+                      <div class="w-8 h-8 rounded-full bg-[#f8623a]/20 flex items-center justify-center text-[10px] text-[#f8623a] font-bold">r</div>
+                      <div class="flex-1">
+                        <div class="text-[10px] text-[#ebebe6]/80 font-bold tracking-wide">rakesh</div>
+                        <div class="text-[8px] text-[#ebebe6]/30 tracking-wide">1 session left</div>
+                      </div>
+                      <div class="text-[9px] text-[#d4183d] font-bold">₹2,400</div>
+                    </div>
+                  </div>
+                  <!-- Bottom nav hint -->
+                  <div class="flex justify-around mt-6 pt-3 border-t border-[#ebebe6]/10">
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#f8623a]"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#ebebe6]/20"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#ebebe6]/20"></div>
+                    <div class="w-1.5 h-1.5 rounded-full bg-[#ebebe6]/20"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -177,7 +225,7 @@ import '../styles/global.css';
         <!-- Stat callouts -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-16">
           <div class="reveal text-center p-6 bg-[#242424] border border-[#ebebe6]/10 rounded-2xl">
-            <div class="text-4xl font-bold text-[#f8623a] mb-2 counter" data-target="15" data-prefix="~">~0</div>
+            <div class="text-4xl font-bold text-[#f8623a] mb-2 counter" data-target="15" data-prefix="~">~15</div>
             <div class="text-sm text-[#ebebe6]/50 tracking-wide">clients — where the system breaks</div>
           </div>
           <div class="reveal text-center p-6 bg-[#242424] border border-[#ebebe6]/10 rounded-2xl">
@@ -185,7 +233,7 @@ import '../styles/global.css';
             <div class="text-sm text-[#ebebe6]/50 tracking-wide">hrs/week on scheduling, billing, tracking</div>
           </div>
           <div class="reveal text-center p-6 bg-[#242424] border border-[#ebebe6]/10 rounded-2xl">
-            <div class="text-4xl font-bold text-[#f8623a] mb-2 counter" data-target="1500" data-prefix="₹">₹0</div>
+            <div class="text-4xl font-bold text-[#f8623a] mb-2 counter" data-target="1500" data-prefix="₹">₹1,500</div>
             <div class="text-sm text-[#ebebe6]/50 tracking-wide">per missed or double-booked session</div>
           </div>
         </div>
@@ -353,7 +401,7 @@ import '../styles/global.css';
           <!-- monthly -->
           <div class="reveal feature-card bg-[#242424] border border-[#ebebe6]/10 rounded-2xl p-8 text-center">
             <div class="text-sm text-[#ebebe6]/50 tracking-widest mb-4">flexible</div>
-            <div class="text-4xl font-bold text-[#ebebe6] mb-1 counter-price" data-target="400" data-prefix="₹">₹0</div>
+            <div class="text-4xl font-bold text-[#ebebe6] mb-1 counter-price" data-target="400" data-prefix="₹">₹400</div>
             <div class="text-sm text-[#ebebe6]/50 tracking-wide mb-6">/month</div>
             <div class="text-xs text-[#ebebe6]/40 tracking-wide mb-6">pay month to month</div>
             <a href="#waitlist" class="block rounded-full border border-[#f8623a] text-[#f8623a] font-bold tracking-widest px-6 py-2.5 text-sm hover:bg-[#f8623a] hover:text-[#2d2d2d] transition-colors" data-umami-event="cta_pricing_monthly">
@@ -364,7 +412,7 @@ import '../styles/global.css';
           <!-- quarterly -->
           <div class="reveal feature-card bg-[#242424] border border-[#ebebe6]/10 rounded-2xl p-8 text-center">
             <div class="text-sm text-[#ebebe6]/50 tracking-widest mb-4">save 25%</div>
-            <div class="text-4xl font-bold text-[#ebebe6] mb-1 counter-price" data-target="300" data-prefix="₹">₹0</div>
+            <div class="text-4xl font-bold text-[#ebebe6] mb-1 counter-price" data-target="300" data-prefix="₹">₹300</div>
             <div class="text-sm text-[#ebebe6]/50 tracking-wide mb-6">/month</div>
             <div class="text-xs text-[#ebebe6]/40 tracking-wide mb-6">₹900 billed quarterly</div>
             <a href="#waitlist" class="block rounded-full border border-[#f8623a] text-[#f8623a] font-bold tracking-widest px-6 py-2.5 text-sm hover:bg-[#f8623a] hover:text-[#2d2d2d] transition-colors" data-umami-event="cta_pricing_quarterly">
@@ -378,7 +426,7 @@ import '../styles/global.css';
               <span class="eyebrow bg-[#f8623a] text-[#2d2d2d] text-[10px] font-bold tracking-widest px-3 py-1 rounded-full">best value</span>
             </div>
             <div class="text-sm text-[#ebebe6]/50 tracking-widest mb-4">save 50%</div>
-            <div class="text-4xl font-bold text-[#f8623a] mb-1 counter-price" data-target="200" data-prefix="₹">₹0</div>
+            <div class="text-4xl font-bold text-[#f8623a] mb-1 counter-price" data-target="200" data-prefix="₹">₹200</div>
             <div class="text-sm text-[#ebebe6]/50 tracking-wide mb-6">/month</div>
             <div class="text-xs text-[#ebebe6]/40 tracking-wide mb-6">₹2,400 billed annually</div>
             <a href="#waitlist" class="block rounded-full bg-[#f8623a] text-[#2d2d2d] font-bold tracking-widest px-6 py-2.5 text-sm hover:opacity-90 transition-opacity" data-umami-event="cta_pricing_annual">
@@ -664,12 +712,11 @@ import '../styles/global.css';
         link.addEventListener('click', () => mobileMenu?.classList.add('hidden'));
       });
 
-      // ── Hero h1: word-by-word reveal ──
+      // ── Hero h1: word-by-word slide up (no opacity — always readable) ──
       const h1El = document.querySelector('h1');
       if (h1El) {
         const split = new SplitText(h1El, { type: 'words', wordsClass: 'word-clip' });
         gsap.from(split.words, {
-          opacity: 0,
           y: '100%',
           duration: 0.55,
           stagger: 0.09,
@@ -678,26 +725,19 @@ import '../styles/global.css';
         });
       }
 
-      // ── Hero above-fold stagger ──
+      // ── Hero above-fold stagger (transform only — no opacity) ──
       const heroEls = document.querySelectorAll<HTMLElement>('.hero-reveal');
-      // Skip first (eyebrow) and second (h1 — handled by SplitText); animate from index 2
       gsap.from([...heroEls].slice(2), {
-        opacity: 0,
-        y: 24,
+        y: 20,
         duration: 0.6,
         stagger: 0.12,
         ease: 'power2.out',
         delay: 0.5,
       });
-      // Eyebrow fade-in
-      if (heroEls[0]) {
-        gsap.from(heroEls[0], { opacity: 0, y: 12, duration: 0.4, ease: 'power2.out' });
-      }
 
-      // ── Scroll reveals (below fold) ──
+      // ── Scroll reveals — transform only, no opacity (content always readable) ──
       ScrollTrigger.batch('.reveal', {
         onEnter: (batch) => gsap.from(batch, {
-          opacity: 0,
           y: 32,
           duration: 0.7,
           stagger: 0.08,
@@ -722,41 +762,24 @@ import '../styles/global.css';
         });
       }
 
-      // ── Animated counters (problem section) ──
-      document.querySelectorAll('.counter').forEach(el => {
+      // ── Animated counters (problem section + pricing) ──
+      // HTML already shows final values as fallback; animate only when scrolled into view
+      document.querySelectorAll('.counter, .counter-price').forEach(el => {
         const target = parseInt((el as HTMLElement).dataset.target || '0', 10);
         const prefix = (el as HTMLElement).dataset.prefix || '';
+        const duration = el.classList.contains('counter-price') ? 1.2 : 1.5;
+        let animated = false;
         ScrollTrigger.create({
           trigger: el,
           start: 'top 85%',
           once: true,
           onEnter: () => {
+            if (animated) return;
+            animated = true;
             const obj = { val: 0 };
             gsap.to(obj, {
               val: target,
-              duration: 1.5,
-              ease: 'power2.out',
-              onUpdate() {
-                (el as HTMLElement).textContent = prefix + Math.round(obj.val).toLocaleString('en-IN');
-              },
-            });
-          },
-        });
-      });
-
-      // ── Pricing price counters ──
-      document.querySelectorAll('.counter-price').forEach(el => {
-        const target = parseInt((el as HTMLElement).dataset.target || '0', 10);
-        const prefix = (el as HTMLElement).dataset.prefix || '';
-        ScrollTrigger.create({
-          trigger: el,
-          start: 'top 85%',
-          once: true,
-          onEnter: () => {
-            const obj = { val: 0 };
-            gsap.to(obj, {
-              val: target,
-              duration: 1.2,
+              duration,
               ease: 'power2.out',
               onUpdate() {
                 (el as HTMLElement).textContent = prefix + Math.round(obj.val).toLocaleString('en-IN');
@@ -805,13 +828,21 @@ import '../styles/global.css';
         });
       });
 
-      // ── Screenshot error fallback ──
+      // ── Screenshot: hide fallback if real image loads, otherwise hide broken img ──
       const heroImg = document.getElementById('hero-screenshot') as HTMLImageElement | null;
       const heroFallback = document.getElementById('hero-fallback');
-      heroImg?.addEventListener('error', () => {
-        if (heroImg) heroImg.style.display = 'none';
-        heroFallback?.classList.remove('hidden');
-      });
+      if (heroImg) {
+        heroImg.addEventListener('load', () => {
+          heroFallback?.classList.add('hidden');
+        });
+        heroImg.addEventListener('error', () => {
+          heroImg.style.display = 'none';
+        });
+        // If already loaded (cached)
+        if (heroImg.complete && heroImg.naturalWidth > 0) {
+          heroFallback?.classList.add('hidden');
+        }
+      }
 
       // ── Waitlist form ──
       const SUPABASE_URL = 'https://spldnbrqbuhmlgvwhahj.supabase.co';
