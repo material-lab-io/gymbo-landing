@@ -7,8 +7,9 @@
   --color-positive: #4ADE80;
   --color-warning: #f8623a;
   --color-negative: #d4183d;
-  --font-sans: 'DM Sans', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
+  --font-sans: 'Space Mono', monospace;
+  --font-display: 'Space Mono', monospace;
+  --font-mono: 'Space Mono', monospace;
 }
 
 * {
@@ -22,12 +23,12 @@ html {
 body {
   background-color: #2d2d2d;
   color: #ebebe6;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Space Mono', monospace;
   text-transform: lowercase;
 }
 
 h1, h2, h3, .font-display {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Space Mono', monospace;
 }
 
 a {
@@ -48,16 +49,20 @@ a {
 /* ── GSAP controls .reveal and .hero-reveal initial states ── */
 /* No CSS opacity/transform needed — gsap.from() sets them */
 
-/* ── Glassmorphism nav ── */
+/* ── Nav — transparent by default, solid on scroll ── */
 nav.glassnav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(45, 45, 45, 0.75);
+  background: rgba(45, 45, 45, 0);
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+nav.glassnav.nav-solid {
+  background: rgba(45, 45, 45, 0.95);
   border-bottom: 1px solid rgba(248, 98, 58, 0.15);
 }
 
-/* ── Gradient text (hero accent "your rules.") ── */
-/* Applied to the span directly AND to word-clip children (SplitText wraps text in child spans) */
+/* ── Gradient text (hero accent) ── */
 .gradient-text,
 .gradient-text .word-clip {
   background: linear-gradient(90deg, #f8623a 0%, #ffb347 100%);
@@ -84,9 +89,33 @@ nav.glassnav {
 .fluid-h1 { font-size: clamp(2rem, 6vw + 0.5rem, 4rem); }
 .fluid-h2 { font-size: clamp(1.4rem, 3vw + 0.5rem, 2rem); }
 
-/* ── SplitText word clip (prevents layout flash on y:100% initial state) ── */
+/* ── SplitText word clip ── */
 .word-clip {
   overflow: hidden;
   display: inline-block;
   vertical-align: bottom;
+}
+
+/* ── Eyebrow (uppercase override for brand lowercase) ── */
+.eyebrow {
+  text-transform: uppercase !important;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+}
+
+/* ── Pricing card highlight (best value) ── */
+.pricing-highlight {
+  border-color: #f8623a !important;
+  box-shadow: 0 0 40px rgba(248, 98, 58, 0.15);
+}
+
+/* ── FAQ accordion ── */
+.faq-answer {
+  overflow: hidden;
+}
+
+/* ── Outcome tag ── */
+.outcome-tag {
+  text-transform: uppercase !important;
+  letter-spacing: 0.15em;
 }
