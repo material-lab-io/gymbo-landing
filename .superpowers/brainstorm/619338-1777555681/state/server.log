@@ -1,0 +1,3 @@
+{"type":"server-started","port":60766,"host":"0.0.0.0","url_host":"100.127.139.109","url":"http://100.127.139.109:60766","screen_dir":"/home/kanaba/gt/gymbo-landing/.superpowers/brainstorm/619338-1777555681/content","state_dir":"/home/kanaba/gt/gymbo-landing/.superpowers/brainstorm/619338-1777555681/state"}
+{"type":"screen-added","file":"/home/kanaba/gt/gymbo-landing/.superpowers/brainstorm/619338-1777555681/content/design-overview.html"}
+{"type":"server-stopped","reason":"idle timeout"}

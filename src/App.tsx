@@ -567,7 +567,7 @@ export default function App() {
               style={{ opacity: 0, willChange: "transform" }}
             >
               <ScreenWithGlow
-                src="/screens/screen-hero.png"
+                src="/screens/screen-hero.png?v=3"
                 alt="Gymbo client dashboard"
                 glowColor={ACCENT_HEX}
                 className="w-[clamp(180px,28vw,300px)]"
@@ -694,7 +694,7 @@ export default function App() {
                   The Solution
                 </span>
                 <ScreenWithGlow
-                  src="/screens/screen-checkin.png"
+                  src="/screens/screen-checkin.png?v=3"
                   alt="Gymbo app — the solution"
                   glowColor={ACCENT_HEX}
                   className="w-[clamp(160px,22vw,220px)]"
