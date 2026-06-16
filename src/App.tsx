@@ -10,6 +10,7 @@ import {
 } from "./components/PhoneMockup";
 import { SectionLabel } from "./components/ui/SectionLabel";
 import { SectionTitle } from "./components/ui/SectionTitle";
+import { WaitlistForm } from "./components/WaitlistForm";
 import { CTAButton } from "./components/ui/CTAButton";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 
@@ -101,6 +102,20 @@ const PRICING_PLANS = [
     highlight: false,
   },
   {
+    name: "Quarterly",
+    tagline: "Save 25%",
+    priceINR: "300",
+    period: "/month",
+    priceFull: "Billed quarterly at ₹900.",
+    desc: "Everything in Flexible, billed every 3 months.",
+    features: [
+      "Everything in Flexible",
+      "25% savings",
+    ],
+    cta: "Get gymbo",
+    highlight: false,
+  },
+  {
     name: "Annual",
     tagline: "Best value",
     priceINR: "200",
@@ -119,10 +134,10 @@ const PRICING_PLANS = [
 
 // Nav ticker: factual offer highlights (pricing, status, audience)
 const NAV_TICKER_PHRASES = [
-  "NOW IN PRIVATE ALPHA",
-  "FREE FOR 1 MONTH",
-  "BUILT FOR INDEPENDENT TRAINERS",
-  "FROM \u20B9200/MONTH \u2014 ALL FEATURES",
+  "Now in private alpha",
+  "Free for 1 month",
+  "Built for independent trainers",
+  "From \u20B9200/month \u2014 all features",
 ];
 
 /* ==============================
@@ -458,7 +473,7 @@ export default function App() {
                   {NAV_TICKER_PHRASES.map((phrase, i) => (
                     <span
                       key={`${set}-${i}`}
-                      className="inline-flex items-center gap-5 mx-5 text-[13px] md:text-[15px] tracking-[0.08em] uppercase"
+                      className="inline-flex items-center gap-5 mx-5 text-[13px] md:text-[15px] tracking-[0.08em]"
                       style={{ color: "#000", fontWeight: 500, fontFamily: "var(--font-sans)" }}
                     >
                       {phrase}
@@ -861,7 +876,7 @@ export default function App() {
             {["iOS Native", "UPI via Razorpay", "GST Compliant", "Built for India"].map((badge) => (
               <span
                 key={badge}
-                className="text-[11px] tracking-[0.08em] uppercase px-4 py-2 rounded-full"
+                className="text-[11px] tracking-[0.08em] px-4 py-2 rounded-full"
                 style={{
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.06)",
@@ -875,7 +890,7 @@ export default function App() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[800px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1100px] mx-auto">
             {PRICING_PLANS.map((plan) => {
               const isHighlight = plan.highlight;
               const cardBg = isHighlight ? ACCENT : "rgba(255,255,255,0.04)";
@@ -1067,21 +1082,9 @@ export default function App() {
           <SectionLabel>Join the Private Alpha</SectionLabel>
           <SectionTitle>Ready to run your business from one app?</SectionTitle>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-            {/* Primary CTA: Get gymbo */}
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); scrollTo("cta"); }}
-              className="inline-flex items-center justify-center gap-2.5 px-8 h-12 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
-              style={{
-                background: ACCENT,
-                color: "#000",
-                fontWeight: 600,
-                fontFamily: "var(--font-sans)",
-              }}
-            >
-              Get gymbo
-            </a>
+          <div className="flex flex-col items-center gap-4 mt-6 w-full">
+            {/* Primary: waitlist form */}
+            <WaitlistForm />
 
             {/* Secondary CTA: WhatsApp */}
             <a

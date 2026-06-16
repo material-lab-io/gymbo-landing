@@ -1,3 +1,10 @@
 name = "gymbo-landing"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-02-27"
+
+# Waitlist backend (GYM-597). Uncomment after creating the D1 DB (needs a token
+# with D1:Edit perms — the current Pages-deploy token lacks it). See SETUP-BACKEND.md.
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "gymbo-waitlist"
+# database_id = "<from `wrangler d1 create gymbo-waitlist`>"
