@@ -20,7 +20,7 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
    ============================== */
 
 const ACCENT = "var(--accent)";
-const ACCENT_HEX = "#F5B130"; // For contexts that need a literal hex (e.g., GSAP color tweens)
+const ACCENT_HEX = (typeof document !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue("--g-primary-cta-fill").trim()) || "#FBBF24"; // Forge brand (auto-syncs)
 
 const SECTION_BG = {
   hero: "#060608",
@@ -354,7 +354,7 @@ export default function App() {
       className="min-h-screen w-full"
       style={{
         background: SECTION_BG.hero,
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: "var(--font-sans)",
         fontWeight: 300,
         color: "#f0f0eb",
       }}
@@ -406,7 +406,7 @@ export default function App() {
             {mobileMenuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
             <span
               className="text-[16px] md:text-[18px] tracking-[-0.01em] hidden sm:inline"
-              style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 400 }}
+              style={{ fontFamily: "var(--font-sans)", fontWeight: 400 }}
             >
               Menu
             </span>
@@ -420,7 +420,7 @@ export default function App() {
           >
             <span
               className="text-[26px] md:text-[32px] text-white tracking-[-0.03em]"
-              style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 700 }}
+              style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }}
             >
               GYMBO
             </span>
@@ -435,7 +435,7 @@ export default function App() {
               background: ACCENT,
               color: "#000",
               fontWeight: 600,
-              fontFamily: "Inter, system-ui, sans-serif",
+              fontFamily: "var(--font-sans)",
             }}
           >
             Join Early Access
@@ -459,7 +459,7 @@ export default function App() {
                     <span
                       key={`${set}-${i}`}
                       className="inline-flex items-center gap-5 mx-5 text-[13px] md:text-[15px] tracking-[0.08em] uppercase"
-                      style={{ color: "#000", fontWeight: 500, fontFamily: "Inter, system-ui, sans-serif" }}
+                      style={{ color: "#000", fontWeight: 500, fontFamily: "var(--font-sans)" }}
                     >
                       {phrase}
                       <span style={{ color: "rgba(0,0,0,0.35)" }}>*</span>
@@ -531,7 +531,7 @@ export default function App() {
         <div
           aria-hidden="true"
           className="absolute inset-x-0 bottom-0 h-[45%] pointer-events-none"
-          style={{ background: "linear-gradient(to top, rgba(var(--accent-rgb), 0.06) 0%, transparent 100%)" }}
+          style={{ background: "linear-gradient(to top, color-mix(in srgb, var(--accent) 6%, transparent) 0%, transparent 100%)" }}
         />
 
         {/* Middle: Headline LEFT + Phone RIGHT */}
@@ -541,7 +541,7 @@ export default function App() {
             <h1
               ref={heroH1Ref}
               className="relative select-none shrink-0 text-center md:text-left"
-              style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 700, lineHeight: 0.95, letterSpacing: "-0.03em" }}
+              style={{ fontFamily: "var(--font-serif)", fontWeight: 700, lineHeight: 0.95, letterSpacing: "-0.03em" }}
             >
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)] text-white">
                 {renderHeroWords("RUN YOUR")}
@@ -642,7 +642,7 @@ export default function App() {
               >
                 <span
                   className="text-[10px] tracking-[0.2em] uppercase mb-6"
-                  style={{ color: "rgba(255,255,255,0.45)", fontWeight: 500, fontFamily: "Inter, system-ui, sans-serif" }}
+                  style={{ color: "rgba(255,255,255,0.45)", fontWeight: 500, fontFamily: "var(--font-sans)" }}
                 >
                   The Friction
                 </span>
@@ -689,7 +689,7 @@ export default function App() {
               >
                 <span
                   className="text-[10px] tracking-[0.2em] uppercase mb-6"
-                  style={{ color: ACCENT, fontWeight: 500, fontFamily: "Inter, system-ui, sans-serif" }}
+                  style={{ color: ACCENT, fontWeight: 500, fontFamily: "var(--font-sans)" }}
                 >
                   The Solution
                 </span>
@@ -747,11 +747,11 @@ export default function App() {
                   </span>
                 )}
                 <span className="text-[10px] tracking-[0.2em] uppercase mb-3"
-                      style={{ color: "rgba(255,255,255,0.60)", fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500 }}>
+                      style={{ color: "rgba(255,255,255,0.60)", fontFamily: "var(--font-sans)", fontWeight: 500 }}>
                   {feat.subtitle}
                 </span>
                 <h3 className="text-[28px] md:text-[36px] text-white tracking-[-0.025em] mb-3 max-w-[480px]"
-                    style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 400, lineHeight: 1.08 }}>
+                    style={{ fontFamily: "var(--font-serif)", fontWeight: 400, lineHeight: 1.08 }}>
                   {feat.title}
                 </h3>
                 <p className="text-[14px] md:text-[15px] text-white/65 max-w-[420px]"
@@ -830,13 +830,13 @@ export default function App() {
             >
               <h4
                 className="text-[14px] md:text-[15px] text-white/80 text-center mb-4"
-                style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 500, lineHeight: 1.5 }}
+                style={{ fontFamily: "var(--font-sans)", fontWeight: 500, lineHeight: 1.5 }}
               >
                 How Coach Vikram reclaimed 10 hours a week and scaled to 30 active clients.
               </h4>
               <p
                 className="text-[17px] md:text-[20px] text-white/65 text-center max-w-[560px]"
-                style={{ lineHeight: 1.6, fontFamily: "Merriweather, Georgia, serif", fontWeight: 400, fontStyle: "italic" }}
+                style={{ lineHeight: 1.6, fontFamily: "var(--font-serif)", fontWeight: 400, fontStyle: "italic" }}
               >
                 &ldquo;I hit a wall at fifteen clients. The mental gymnastics of remembering who owed what and managing cancellations across three locations was exhausting. Gymbo gave me my weekends back. It handles the math and the schedule instantly, letting me focus entirely on being a better coach.&rdquo;
               </p>
@@ -844,7 +844,7 @@ export default function App() {
               <div className="flex items-center gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
                 <div
                   className="w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px]"
-                  style={{ background: `${ACCENT}15`, color: ACCENT, fontWeight: 600, fontFamily: "Inter, system-ui, sans-serif" }}
+                  style={{ background: `${ACCENT}15`, color: ACCENT, fontWeight: 600, fontFamily: "var(--font-sans)" }}
                 >
                   V
                 </div>
@@ -867,7 +867,7 @@ export default function App() {
                   border: "1px solid rgba(255,255,255,0.06)",
                   color: "rgba(255,255,255,0.60)",
                   fontWeight: 500,
-                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                 }}
               >
                 {badge}
@@ -900,7 +900,7 @@ export default function App() {
                   style={{
                     background: cardBg,
                     border: cardBorder,
-                    boxShadow: isHighlight ? "0 24px 80px rgba(var(--accent-rgb), 0.15)" : "none",
+                    boxShadow: isHighlight ? "0 24px 80px color-mix(in srgb, var(--accent) 15%, transparent)" : "none",
                   }}
                 >
                   <div className="flex flex-col p-6 md:p-8 flex-1">
@@ -912,7 +912,7 @@ export default function App() {
                           background: badgeBg,
                           border: `1px solid ${badgeBorder}`,
                           color: badgeText,
-                          fontFamily: "Inter, system-ui, sans-serif",
+                          fontFamily: "var(--font-sans)",
                           fontWeight: 600,
                         }}
                       >
@@ -922,7 +922,7 @@ export default function App() {
                         <span
                           className="text-[13px] text-right"
                           style={{
-                            fontFamily: "Merriweather, Georgia, serif",
+                            fontFamily: "var(--font-serif)",
                             fontStyle: "italic",
                             fontWeight: 400,
                             color: "rgba(0,0,0,0.45)",
@@ -938,7 +938,7 @@ export default function App() {
                     <h3
                       className="mb-4"
                       style={{
-                        fontFamily: "Merriweather, Georgia, serif",
+                        fontFamily: "var(--font-serif)",
                         fontWeight: 400,
                         fontSize: "clamp(32px, 4vw, 48px)",
                         lineHeight: 1,
@@ -954,7 +954,7 @@ export default function App() {
                       <span
                         className="tracking-[-0.03em]"
                         style={{
-                          fontFamily: "Inter, system-ui, sans-serif",
+                          fontFamily: "var(--font-sans)",
                           fontWeight: 500,
                           fontSize: "clamp(22px, 2.5vw, 28px)",
                           color: textPrimary,
@@ -964,7 +964,7 @@ export default function App() {
                       </span>
                       <span
                         className="text-[12px] tracking-[0.1em] uppercase"
-                        style={{ fontFamily: "Inter, system-ui, sans-serif", fontWeight: 400, color: textTertiary }}
+                        style={{ fontFamily: "var(--font-sans)", fontWeight: 400, color: textTertiary }}
                       >
                         {plan.period}
                       </span>
@@ -995,7 +995,7 @@ export default function App() {
                       style={{
                         background: ctaBg,
                         color: ctaColor,
-                        fontFamily: "Inter, system-ui, sans-serif",
+                        fontFamily: "var(--font-sans)",
                         fontWeight: 600,
                       }}
                     >
@@ -1006,7 +1006,7 @@ export default function App() {
                     <div className="mt-5">
                       <span
                         className="text-[13px] tracking-[-0.01em] mb-4 block"
-                        style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 400, color: textPrimary }}
+                        style={{ fontFamily: "var(--font-serif)", fontWeight: 400, color: textPrimary }}
                       >
                         Includes:
                       </span>
@@ -1019,7 +1019,7 @@ export default function App() {
                                 background: featureBadgeBg,
                                 border: `1px solid ${featureBadgeBorder}`,
                                 color: featureBadgeText,
-                                fontFamily: "Inter, system-ui, sans-serif",
+                                fontFamily: "var(--font-sans)",
                                 fontWeight: 600,
                               }}
                             >
@@ -1077,7 +1077,7 @@ export default function App() {
                 background: ACCENT,
                 color: "#000",
                 fontWeight: 600,
-                fontFamily: "Inter, system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               Begin Free Trial
@@ -1094,7 +1094,7 @@ export default function App() {
                 color: "rgba(255,255,255,0.75)",
                 border: "1px solid rgba(255,255,255,0.08)",
                 fontWeight: 400,
-                fontFamily: "Inter, system-ui, sans-serif",
+                fontFamily: "var(--font-sans)",
               }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -1122,7 +1122,7 @@ export default function App() {
             <span className="text-[13px] text-white/60" style={{ fontWeight: 300 }}>
               <span
                 className="text-white tracking-[-0.02em]"
-                style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 700 }}
+                style={{ fontFamily: "var(--font-serif)", fontWeight: 700 }}
               >
                 Gymbo.
               </span>

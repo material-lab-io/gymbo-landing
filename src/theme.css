@@ -1,18 +1,28 @@
+/* Forge design-system SSOT (GENERATED — Gymbo-v1 design-tokens/). Dark-first via
+   <html data-theme="dark">. The site's semantic vars below INHERIT from Forge —
+   change the Forge palette → re-sync src/forge/*.css → everything here updates.
+   Nothing brand-colored is hardcoded. */
+@import "./forge/forge.css";
+@import "./forge/forge.dark.css";
+@import "./forge/forge.hc.css";
+
 :root {
-  --background: #0A0A0A;
-  --foreground: #f0f0eb;
-  --card: #141414;
-  --card-foreground: #f0f0eb;
-  --primary: #F5B130;
-  --primary-foreground: #141414;
-  --muted: #1E1E1E;
-  --muted-foreground: #aaaaaa;
-  --accent: #F5B130;
-  --accent-rgb: 245, 177, 48;
-  --accent-foreground: #141414;
+  --background: var(--g-background);
+  --foreground: var(--g-text-primary);
+  --card: var(--g-card);
+  --card-foreground: var(--g-text-primary);
+  --primary: var(--g-primary-cta-fill);
+  --primary-foreground: var(--g-text-on-primary-cta);
+  --muted: var(--g-surface-muted);
+  --muted-foreground: var(--g-text-muted);
+  --accent: var(--g-primary-cta-fill);
+  --accent-foreground: var(--g-text-on-primary-cta);
   --border: rgba(255, 255, 255, 0.08);
-  --ring: #F5B130;
+  --ring: var(--g-focus-ring);
   --radius: 0.625rem;
+  /* fonts: Forge — Merriweather (display) + Open Sans (body) */
+  --font-sans: var(--g-font-family-sans);
+  --font-serif: var(--g-font-family-serif);
 }
 
 @layer base {

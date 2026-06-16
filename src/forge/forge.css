@@ -1,0 +1,108 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+:root {
+  --g-color-brand-amber-500: #f59e0b; /** LIGHT-mode brand fill — FINAL (GYM-592). amber-500. Light CTA treatment (FORGE §7, kaushik 2026-06-16): flat fill + soft NEUTRAL shadow + dark ink, NO colored border — shadow carries the 1.4.11 boundary. */
+  --g-color-brand-marigold-500: #fbbf24; /** DARK-mode brand fill — FINAL (GYM-592). amber-400. (Doubles as brand-as-text on dark, 11.86:1.) */
+  --g-color-brand-amber-text-light: #92400e; /** light brand-as-text NORMAL — RATIFIED (GYM-592). amber-800. 6.78:1 on #fafaf7 / 5.87:1 on card — AA ✓. */
+  --g-color-brand-amber-text-light-hc: #78350f; /** light brand-as-text HIGH-CONTRAST — GYM-592. amber-900. 8.68:1 on #fafaf7 / 7.52:1 on card — AAA ✓. */
+  --g-color-brand-marigold-text-dark-hc: #fcd34d; /** dark brand-as-text HIGH-CONTRAST — GYM-592. amber-300. 13.73:1 on #0A0A0A / 12.78:1 on card — AAA ✓. (NORMAL = marigold-500 #FBBF24.) */
+  --g-color-neutral-dark-0: #0a0a0a; /** page bg / near-black */
+  --g-color-neutral-dark-1: #141414; /** card */
+  --g-color-neutral-dark-2: #1c1c1e; /** floating card */
+  --g-color-neutral-dark-3: #2c2c2e; /** muted / sheet */
+  --g-color-neutral-dark-fg: #f0f0eb; /** primary text on dark */
+  --g-color-neutral-light-0: #fafaf7;
+  --g-color-neutral-light-1: #eaeae5; /** card — one notch darker for page separation */
+  --g-color-neutral-light-2: #e8e8e3;
+  --g-color-neutral-light-3: #dcdcd9;
+  --g-color-neutral-light-fg: #1a1a1a;
+  --g-color-grey-muted-fg-dark: #b8b8b8;
+  --g-color-grey-muted-fg-light: #555555;
+  --g-color-grey-label-dark: #a0a0a0;
+  --g-color-grey-label-light: #595959;
+  --g-color-grey-placeholder-dark: #808080;
+  --g-color-grey-placeholder-dark-elevated: #9a9a9a;
+  --g-color-grey-placeholder-light: #666666;
+  --g-color-status-green-fill-dark: #4ade80;
+  --g-color-status-green-fill-light: #22c55e;
+  --g-color-status-green-text: #15803d; /** status-green AS TEXT (AA on light) */
+  --g-color-status-destructive-dark: #ff6961;
+  --g-color-status-destructive-light: #b80f34;
+  --g-color-status-warning-dark: #ea580c; /** warning fill (kaushik) — VALIDATED GYM-592. 5.56:1 vs #0A0A0A bg (1.4.11 ✓); dark label #0A0A0A on fill 5.56:1 (AA ✓). Hue 21° vs destructive 347° — always icon+label (1.4.1). */
+  --g-color-status-warning-light: #ea580c; /** warning fill (kaushik) — VALIDATED GYM-592, kept as-is (NOT darkened: darkening drops dark-text-on-fill below AA — #C2410C gives only 3.36:1). Dark label #1a1a1a on fill 4.89:1 (AA ✓). Fill-vs-card 2.95:1 → soft neutral shadow/boundary for 1.4.11 (per FORGE §7 light treatment, kaushik 2026-06-16), NOT a colored border. Always icon+label (1.4.1). */
+  --g-color-system-blue: #007aff; /** cursor / tint only */
+  --g-color-system-blue-text-dark: #409cff; /** system-blue AS TEXT (AA on dark) */
+  --g-color-button-inactive-bg-dark: #333333;
+  --g-color-button-inactive-bg-light: #e5e5e5;
+  --g-color-button-inactive-text-dark: #a8a8a8;
+  --g-color-button-inactive-text-light: #5c5c5c;
+  --g-color-button-active-text: #0a0a0a; /** label on brand CTA — 7.06:1 ✓ */
+  --g-color-absolute-white: #ffffff;
+  --g-color-absolute-black: #0a0a0a;
+  --g-radius-sm: 8px;
+  --g-radius-md: 12px;
+  --g-radius-lg: 16px;
+  --g-radius-xl: 20px; /** cards */
+  --g-radius-xxl: 28px; /** sheets / bars */
+  --g-radius-full: 9999px; /** pills / chips / CTAs / nav */
+  --g-space-1: 4px;
+  --g-space-2: 8px;
+  --g-space-3: 12px;
+  --g-space-4: 16px;
+  --g-space-5: 20px;
+  --g-space-6: 24px;
+  --g-space-8: 32px;
+  --g-icon-xs: 12px;
+  --g-icon-sm: 14px;
+  --g-icon-md: 16px;
+  --g-icon-lg: 18px;
+  --g-icon-xl: 28px;
+  --g-icon-xxl: 36px;
+  --g-icon-nav: 22px; /** documented bottom-nav exception */
+  --g-size-button-height: 48px;
+  --g-size-cta-height: 56px;
+  --g-font-family-serif: Merriweather, Georgia, serif; /** page headers + client names ONLY */
+  --g-font-family-sans: 'Open Sans', system-ui, sans-serif; /** everything else */
+  --g-font-weight-regular: 400;
+  --g-font-weight-medium: 500;
+  --g-font-weight-bold: 700;
+  --g-font-size-micro: 10px;
+  --g-font-size-section-label: 11px;
+  --g-font-size-label: 12px;
+  --g-font-size-body: 14px;
+  --g-font-size-headline: 16px;
+  --g-font-size-title: 20px;
+  --g-font-size-keypad: 24px;
+  --g-font-size-card-name: 26px;
+  --g-font-size-amount: 32px;
+  --g-font-size-page-header: 36px;
+  --g-font-size-hero: 48px;
+  --g-shadow-cta: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** soft NEUTRAL shadow for primary CTA + light status-fill boundary (1.4.11) — flat fill, NO colored border. FORGE §7 (kaushik 2026-06-16). */
+  --g-background: var(--g-color-neutral-light-0);
+  --g-card: var(--g-color-neutral-light-1);
+  --g-card-floating: var(--g-color-neutral-light-2);
+  --g-surface-muted: var(--g-color-neutral-light-3);
+  --g-border: var(--g-color-neutral-light-fg);
+  --g-text-primary: var(--g-color-neutral-light-fg);
+  --g-text-muted: var(--g-color-grey-muted-fg-light);
+  --g-text-label: var(--g-color-grey-label-light);
+  --g-text-placeholder: var(--g-color-grey-placeholder-light);
+  --g-text-placeholder-elevated: var(--g-color-grey-placeholder-light);
+  --g-text-brand: var(--g-color-brand-amber-text-light); /** light brand-as-text (designer proposal, GYM-592) */
+  --g-text-healthy: var(--g-color-status-green-text);
+  --g-text-destructive: var(--g-color-status-destructive-light);
+  --g-text-system-blue: var(--g-color-system-blue);
+  --g-text-on-primary-cta: var(--g-color-button-active-text);
+  --g-button-inactive-text: var(--g-color-button-inactive-text-light);
+  --g-primary-cta-fill: var(--g-color-brand-amber-500);
+  --g-destructive-fill: var(--g-color-status-destructive-light);
+  --g-healthy-fill: var(--g-color-status-green-fill-light);
+  --g-warning-fill: var(--g-color-status-warning-light); /** split from brand (GYM-592 anti-collision) */
+  --g-button-inactive-bg: var(--g-color-button-inactive-bg-light);
+  --g-focus-ring: var(--g-color-brand-amber-text-light);
+  --g-cursor: var(--g-color-system-blue);
+  --g-text-link: var(--g-color-neutral-light-fg); /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
+  --g-cta-shadow: var(--g-shadow-cta); /** primary CTA = flat fill + this soft neutral shadow, no colored border (§7) */
+}

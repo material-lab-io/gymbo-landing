@@ -1,0 +1,31 @@
+/**
+ * Do not edit directly, this file was auto-generated.
+ */
+
+[data-theme="dark"] {
+  --g-background: #0a0a0a;
+  --g-card: #141414;
+  --g-card-floating: #1c1c1e;
+  --g-surface-muted: #2c2c2e;
+  --g-border: #f0f0eb;
+  --g-text-primary: #f0f0eb;
+  --g-text-muted: #b8b8b8;
+  --g-text-label: #a0a0a0;
+  --g-text-placeholder: #808080;
+  --g-text-placeholder-elevated: #9a9a9a;
+  --g-text-brand: #fbbf24; /** DARK-mode brand = marigold */
+  --g-text-healthy: #4ade80;
+  --g-text-destructive: #ff6961;
+  --g-text-system-blue: #409cff;
+  --g-text-on-primary-cta: #0a0a0a;
+  --g-button-inactive-text: #a8a8a8;
+  --g-primary-cta-fill: #fbbf24;
+  --g-destructive-fill: #ff6961;
+  --g-healthy-fill: #4ade80;
+  --g-warning-fill: #ea580c; /** split from brand (GYM-592 anti-collision) */
+  --g-button-inactive-bg: #333333;
+  --g-focus-ring: #fbbf24;
+  --g-cursor: #007aff;
+  --g-text-link: #f0f0eb; /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
+  --g-cta-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** primary CTA = flat fill + this soft neutral shadow, no colored border (§7) */
+}

@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import gsap from "gsap";
 
-const ACCENT = "#F5B130";
+const ACCENT = (typeof document !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue("--g-primary-cta-fill").trim()) || "#FBBF24"; // Forge brand (auto-syncs on palette change)
 
 // Mid-page marquee: emotional hooks and brand voice
 const MARQUEE_PHRASES = [
@@ -42,7 +42,7 @@ export function DirectionalMarquee() {
         key={i}
         className="whitespace-nowrap mx-6 md:mx-10"
         style={{
-          fontFamily: "Merriweather, Georgia, serif",
+          fontFamily: "var(--font-serif)",
           fontWeight: 400,
           color: isAccent ? ACCENT : "rgba(255,255,255,0.12)",
         }}
