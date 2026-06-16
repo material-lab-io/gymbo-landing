@@ -1,90 +1,98 @@
 @import "tailwindcss";
 
+/* Forge design-system tokens (GENERATED — Forge SSOT, GYM-597). Dark-first:
+   <html data-theme="dark"> activates forge.dark.css overrides. */
+@import "./forge/forge.css";
+@import "./forge/forge.dark.css";
+@import "./forge/forge.hc.css";
+
+/* Map the site's utility names onto Forge semantic tokens — values now inherit
+   from Forge (change a token → re-sync forge/*.css → site updates). */
 @theme {
-  --color-brand: #f8623a;
-  --color-bg: #2d2d2d;
-  --color-text: #ebebe6;
-  --color-positive: #4ADE80;
-  --color-warning: #f8623a;
-  --color-negative: #d4183d;
-  --font-sans: 'DM Sans', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
+  --color-brand: var(--g-primary-cta-fill);   /* marigold (dark) / amber (light) */
+  --color-brand-text: var(--g-text-brand);
+  --color-bg: var(--g-background);
+  --color-surface: var(--g-card);
+  --color-text: var(--g-text-primary);
+  --color-muted: var(--g-text-muted);
+  --color-positive: var(--g-healthy-fill);
+  --color-warning: var(--g-warning-fill);
+  --color-negative: var(--g-destructive-fill);
+  --font-sans: 'Open Sans', system-ui, sans-serif;
+  --font-display: 'Merriweather', Georgia, serif;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background-color: #2d2d2d;
-  color: #ebebe6;
-  font-family: 'DM Sans', sans-serif;
+  background-color: var(--g-background);
+  color: var(--g-text-primary);
+  font-family: 'Open Sans', system-ui, sans-serif;
   text-transform: lowercase;
 }
 
+/* Forge: Merriweather for headers/serif display only */
 h1, h2, h3, .font-display {
-  font-family: 'Space Grotesk', sans-serif;
+  font-family: 'Merriweather', Georgia, serif;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+a { color: inherit; text-decoration: none; }
 
 /* ── Float animation (phone frame) ── */
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-8px); }
 }
-
-.phone-float {
-  animation: float 4s ease-in-out infinite;
-}
+.phone-float { animation: float 4s ease-in-out infinite; }
 
 /* ── GSAP controls .reveal and .hero-reveal initial states ── */
-/* No CSS opacity/transform needed — gsap.from() sets them */
 
-/* ── Glassmorphism nav ── */
+/* ── Glassmorphism nav (Forge dark card + subtle brand edge) ── */
 nav.glassnav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background: rgba(45, 45, 45, 0.75);
-  border-bottom: 1px solid rgba(248, 98, 58, 0.15);
+  background: color-mix(in srgb, var(--g-card) 75%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--g-primary-cta-fill) 15%, transparent);
 }
 
-/* ── Gradient text (hero accent "your rules.") ── */
-/* Applied to the span directly AND to word-clip children (SplitText wraps text in child spans) */
+/* ── Gradient text (hero accent) — Forge brand ── */
 .gradient-text,
 .gradient-text .word-clip {
-  background: linear-gradient(90deg, #f8623a 0%, #ffb347 100%);
+  background: linear-gradient(90deg, var(--g-primary-cta-fill) 0%, #FCD34D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* ── Layered glow on feature cards ── */
+/* ── Feature cards — Forge brand glow ── */
 .feature-card {
   box-shadow:
-    0 4px 24px rgba(248, 98, 58, 0.06),
-    0 1px 0 rgba(235, 235, 230, 0.06) inset;
+    0 4px 24px color-mix(in srgb, var(--g-primary-cta-fill) 6%, transparent),
+    0 1px 0 rgba(240, 240, 235, 0.06) inset;
   transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
 }
 .feature-card:hover {
   box-shadow:
-    0 8px 40px rgba(248, 98, 58, 0.18),
-    0 1px 0 rgba(235, 235, 230, 0.08) inset;
+    0 8px 40px color-mix(in srgb, var(--g-primary-cta-fill) 18%, transparent),
+    0 1px 0 rgba(240, 240, 235, 0.08) inset;
   transform: translateY(-2px);
+}
+
+/* ── Primary CTA — Forge §7: flat fill + soft neutral shadow, no colored border ── */
+.cta-primary {
+  background: var(--g-primary-cta-fill);
+  color: var(--g-text-on-primary-cta);
+  box-shadow: var(--g-cta-shadow);
+  border: 0;
 }
 
 /* ── Fluid typography ── */
 .fluid-h1 { font-size: clamp(2rem, 6vw + 0.5rem, 4rem); }
 .fluid-h2 { font-size: clamp(1.4rem, 3vw + 0.5rem, 2rem); }
 
-/* ── SplitText word clip (prevents layout flash on y:100% initial state) ── */
+/* ── SplitText word clip ── */
 .word-clip {
   overflow: hidden;
   display: inline-block;

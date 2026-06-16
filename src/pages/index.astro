@@ -3,7 +3,7 @@ import '../styles/global.css';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -27,12 +27,12 @@ import '../styles/global.css';
     <meta name="twitter:title" content="gymbo — gym management app for personal trainers" />
     <meta name="twitter:description" content="gymbo helps independent personal trainers manage clients, track sessions, handle UPI/cash payments, and grow their business — all in one offline-capable app." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
-    <meta name="theme-color" content="#f8623a" />
+    <meta name="theme-color" content="#0A0A0A" />
     <meta name="author" content="Gymbo" />
     <!-- Font preconnect + load (avoids 3-hop @import chain) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" />
     <link rel="canonical" href="https://getgymbo.com" />
     <script type="application/ld+json" set:html={JSON.stringify([
       {
@@ -71,7 +71,7 @@ import '../styles/global.css';
     <!-- Umami analytics — self-hosted on GT2 via Cloudflare Tunnel -->
     <script defer src="https://analytics.getgymbo.com/script.js" data-website-id="36b8e820-a50a-44b3-a57b-5ee37f719916"></script>
   </head>
-  <body class="bg-[#1a1a1a] text-[#f0f0eb]">
+  <body class="bg-bg text-text">
 
     <!-- NAV -->
     <nav class="fixed top-0 w-full z-50 glassnav">
@@ -79,19 +79,18 @@ import '../styles/global.css';
         <!-- Brand logo -->
         <a href="/" class="flex items-center gap-3">
           <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8" />
-          <span class="font-display text-[#f0f0eb] font-bold tracking-widest">gymbo</span>
+          <span class="font-display text-text font-bold tracking-widest">gymbo</span>
         </a>
         <div class="hidden md:flex gap-6 items-center">
-          <a href="#features" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">features</a>
-          <a href="#how" class="text-sm tracking-widest text-[#f0f0eb]/60 hover:text-[#f0f0eb] transition-colors">how it works</a>
+          <a href="#features" class="text-sm tracking-widest text-text/60 hover:text-text transition-colors">features</a>
+          <a href="#how" class="text-sm tracking-widest text-text/60 hover:text-text transition-colors">how it works</a>
         </div>
         <a
-          href="https://app.getgymbo.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-sm text-[#f8623a] border border-[#f8623a] rounded-full px-4 py-1.5 hover:bg-[#f8623a] hover:text-[#1a1a1a] transition-colors"
+          href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
+          class="text-sm cta-primary rounded-full px-4 py-1.5 hover:opacity-90 transition-opacity"
+          data-umami-event="cta_waitlist_nav"
         >
-          try the web app →
+          get gymbo →
         </a>
       </div>
     </nav>
@@ -109,27 +108,35 @@ import '../styles/global.css';
           <span class="gradient-text">your rules.</span>
         </h1>
 
-        <p class="hero-reveal text-lg md:text-xl text-[#f0f0eb]/80 mb-10 max-w-2xl mx-auto leading-relaxed">
+        <p class="hero-reveal text-lg md:text-xl text-text/80 mb-10 max-w-2xl mx-auto leading-relaxed">
           stop juggling spreadsheets, whatsapp threads, and cash logs.<br class="hidden md:block" />
           gymbo gives independent personal trainers one place to run their whole business.
         </p>
 
         <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
-            href="https://app.getgymbo.com"
+            href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
+            class="cta-primary rounded-full font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
+            data-umami-event="cta_waitlist_hero"
+          >
+            get gymbo →
+          </a>
+          <a
+            href="https://wa.me/918050131733"
             target="_blank"
             rel="noopener noreferrer"
-            class="rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
-            data-umami-event="cta_try_web_app"
+            class="rounded-full border border-text/30 text-text font-bold tracking-widest px-8 py-3 hover:border-text/60 transition-colors w-full sm:w-auto text-center"
+            data-umami-event="cta_whatsapp_hero"
           >
-            try the web app →
+            chat with us
           </a>
         </div>
+        <p class="hero-reveal mt-5 text-xs text-text/40 tracking-widest">on iphone now · android coming soon · free during the private alpha</p>
 
         <!-- App mockup placeholder -->
         <div class="hero-reveal phone-float mt-16 relative">
-          <div class="mx-auto w-64 md:w-72 bg-[#242424] rounded-[2.5rem] border border-[#f0f0eb]/10 p-2 shadow-2xl">
-            <div class="rounded-[2rem] bg-[#242424] overflow-hidden aspect-[9/19] relative">
+          <div class="mx-auto w-64 md:w-72 bg-surface rounded-[2.5rem] border border-text/10 p-2 shadow-2xl">
+            <div class="rounded-[2rem] bg-surface overflow-hidden aspect-[9/19] relative">
               <!-- Remotion video — dropped into public/ by video agent -->
               <video
                 id="hero-video"
@@ -142,46 +149,46 @@ import '../styles/global.css';
                 class="w-full h-full object-cover"
               ></video>
               <!-- Branded fallback — shown if video fails to load -->
-              <div id="hero-video-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-[#242424]">
+              <div id="hero-video-fallback" class="hidden absolute inset-0 flex items-center justify-center bg-surface">
                 <div class="text-center">
                   <img src="/logo-mark.svg" alt="gymbo" class="w-8 h-8 mx-auto mb-3" />
-                  <div class="text-[10px] text-[#f0f0eb]/40 tracking-widest">demo coming</div>
+                  <div class="text-[10px] text-text/40 tracking-widest">demo coming</div>
                 </div>
               </div>
             </div>
           </div>
           <!-- Glow effect -->
-          <div class="absolute inset-0 -z-10 blur-3xl opacity-20 bg-[#f8623a] rounded-full scale-75"></div>
+          <div class="absolute inset-0 -z-10 blur-3xl opacity-20 bg-brand rounded-full scale-75"></div>
         </div>
       </div>
     </section>
 
     <!-- ── FEATURES ── -->
-    <section id="features" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <section id="features" class="py-24 px-6 border-t border-text/10">
       <div class="max-w-6xl mx-auto">
         <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           everything you need
         </h2>
-        <p class="reveal text-center text-[#f0f0eb]/50 mb-16">built for trainers who mean business</p>
+        <p class="reveal text-center text-text/50 mb-16">built for trainers who mean business</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
           <!-- punch cards -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <path d="M2 10h20"/>
                 <path d="M7 15h.01M12 15h.01M17 15h.01"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">punch cards</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">sell session bundles upfront. clients buy packs of 10, 20, or custom sessions. track every punch automatically.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">punch cards</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">sell session bundles upfront. clients buy packs of 10, 20, or custom sessions. track every punch automatically.</p>
           </div>
 
           <!-- balances & billing -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 3v18"/>
                 <path d="M5 7l7-4 7 4"/>
@@ -189,13 +196,13 @@ import '../styles/global.css';
                 <path d="M3 21h18"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">balances & billing</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">know exactly what every client owes. running balances, payment history, and dues — crystal clear.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">balances & billing</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">know exactly what every client owes. running balances, payment history, and dues — crystal clear.</p>
           </div>
 
           <!-- payments -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="9"/>
                 <path d="M9 9h3.5a1.5 1.5 0 0 1 0 3H9v3"/>
@@ -203,26 +210,26 @@ import '../styles/global.css';
                 <path d="M9 15v1.5"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">payments</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">upi, cash, or card. log any payment instantly. your books stay reconciled without the spreadsheet headache.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">payments</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">upi, cash, or card. log any payment instantly. your books stay reconciled without the spreadsheet headache.</p>
           </div>
 
           <!-- pdf invoices -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <path d="M14 2v6h6"/>
                 <path d="M8 13h8M8 17h5"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">pdf invoices</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">professional invoices generated on demand. share with clients in one tap — no accountant needed.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">pdf invoices</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">professional invoices generated on demand. share with clients in one tap — no accountant needed.</p>
           </div>
 
           <!-- works offline -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="2" y1="2" x2="22" y2="22"/>
                 <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
@@ -231,13 +238,13 @@ import '../styles/global.css';
                 <circle cx="12" cy="20" r="1" fill="currentColor"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">works offline</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">no signal at the gym? no problem. gymbo works fully offline. data syncs when you're back online.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">works offline</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">no signal at the gym? no problem. gymbo works fully offline. data syncs when you're back online.</p>
           </div>
 
           <!-- phone login -->
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-6 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-4">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-6 hover:border-brand/40 group">
+            <div class="text-brand mb-4">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="5" y="2" width="14" height="20" rx="2"/>
                 <path d="M12 8v4"/>
@@ -245,8 +252,8 @@ import '../styles/global.css';
                 <path d="M9 2.5h6"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2 group-hover:text-[#f8623a] transition-colors">phone login</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">no passwords to forget. sign in with your phone number and an otp — fast, secure, trainer-first.</p>
+            <h3 class="font-bold tracking-widest text-text mb-2 group-hover:text-brand transition-colors">phone login</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">no passwords to forget. sign in with your phone number and an otp — fast, secure, trainer-first.</p>
           </div>
 
         </div>
@@ -254,12 +261,12 @@ import '../styles/global.css';
     </section>
 
     <!-- ── HOW IT WORKS ── -->
-    <section id="how" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <section id="how" class="py-24 px-6 border-t border-text/10">
       <div class="max-w-4xl mx-auto">
         <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           how it works
         </h2>
-        <p class="reveal text-center text-[#f0f0eb]/50 mb-16">up and running in minutes</p>
+        <p class="reveal text-center text-text/50 mb-16">up and running in minutes</p>
 
         <div class="flex flex-col md:flex-row gap-8 items-start">
           {[
@@ -281,12 +288,12 @@ import '../styles/global.css';
           ].map((s, i) => (
             <div class="reveal flex-1 relative">
               {i < 2 && (
-                <div class="hidden md:block absolute top-6 left-full w-8 text-center text-[#f8623a]/30 text-xl z-10">→</div>
+                <div class="hidden md:block absolute top-6 left-full w-8 text-center text-brand/30 text-xl z-10">→</div>
               )}
               <div class="flex flex-col items-center md:items-start text-center md:text-left">
-                <div class="w-12 h-12 rounded-full border-2 border-[#f8623a] flex items-center justify-center font-bold text-[#f8623a] tracking-widest mb-4 text-sm">{s.step}</div>
-                <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-2">{s.title}</h3>
-                <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">{s.desc}</p>
+                <div class="w-12 h-12 rounded-full border-2 border-brand flex items-center justify-center font-bold text-brand tracking-widest mb-4 text-sm">{s.step}</div>
+                <h3 class="font-bold tracking-widest text-text mb-2">{s.title}</h3>
+                <p class="text-text/60 text-sm leading-relaxed tracking-wide">{s.desc}</p>
               </div>
             </div>
           ))}
@@ -295,44 +302,44 @@ import '../styles/global.css';
     </section>
 
     <!-- ── WHY TRAINERS LOVE IT ── -->
-    <section id="social-proof" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <section id="social-proof" class="py-24 px-6 border-t border-text/10">
       <div class="max-w-5xl mx-auto">
 
         <h2 class="reveal fluid-h2 font-bold tracking-widest text-center mb-4">
           built by trainers, for trainers
         </h2>
-        <p class="reveal text-center text-[#f0f0eb]/50 mb-16">
+        <p class="reveal text-center text-text/50 mb-16">
           no spreadsheets. no whatsapp chaos. no awkward payment chases.
         </p>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-5">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-8 hover:border-brand/40 group">
+            <div class="text-brand mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="5" width="20" height="14" rx="2"/>
                 <path d="M2 10h20"/>
                 <path d="M6 15h4M14 15h4"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-3 group-hover:text-[#f8623a] transition-colors">know who owes what — always</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">running balances and payment history across every client. no surprises.</p>
+            <h3 class="font-bold tracking-widest text-text mb-3 group-hover:text-brand transition-colors">know who owes what — always</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">running balances and payment history across every client. no surprises.</p>
           </div>
 
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-5">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-8 hover:border-brand/40 group">
+            <div class="text-brand mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2"/>
                 <path d="M16 2v4M8 2v4M3 10h18"/>
                 <path d="M9 16l2 2 4-4"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-3 group-hover:text-[#f8623a] transition-colors">every session, in one place</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">client roster, upcoming sessions, punch card status — one tap away.</p>
+            <h3 class="font-bold tracking-widest text-text mb-3 group-hover:text-brand transition-colors">every session, in one place</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">client roster, upcoming sessions, punch card status — one tap away.</p>
           </div>
 
-          <div class="reveal feature-card bg-[#242424] border border-[#f0f0eb]/10 rounded-2xl p-8 hover:border-[#f8623a]/40 group">
-            <div class="text-[#f8623a] mb-5">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-8 hover:border-brand/40 group">
+            <div class="text-brand mb-5">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="2" y1="2" x2="22" y2="22"/>
                 <path d="M8.5 16.5a5 5 0 0 1 7 0"/>
@@ -341,19 +348,19 @@ import '../styles/global.css';
                 <circle cx="12" cy="20" r="1" fill="currentColor"/>
               </svg>
             </div>
-            <h3 class="font-bold tracking-widest text-[#f0f0eb] mb-3 group-hover:text-[#f8623a] transition-colors">works even when the wifi doesn't</h3>
-            <p class="text-[#f0f0eb]/60 text-sm leading-relaxed tracking-wide">built for real gyms. go fully offline; gymbo syncs when you're back.</p>
+            <h3 class="font-bold tracking-widest text-text mb-3 group-hover:text-brand transition-colors">works even when the wifi doesn't</h3>
+            <p class="text-text/60 text-sm leading-relaxed tracking-wide">built for real gyms. go fully offline; gymbo syncs when you're back.</p>
           </div>
 
         </div>
 
         <!-- Tiger testimonial -->
         <div class="reveal mt-16 max-w-2xl mx-auto">
-          <blockquote class="border-l-2 border-[#f8623a] pl-8 py-2">
-            <p class="text-[#f0f0eb]/80 text-lg leading-relaxed tracking-wide mb-5">
+          <blockquote class="border-l-2 border-brand pl-8 py-2">
+            <p class="text-text/80 text-lg leading-relaxed tracking-wide mb-5">
               "i used to run everything through whatsapp and a notebook. lost track of payments, forgot who owed what. gymbo replaced all of it — i open the app, log the session, move on."
             </p>
-            <cite class="text-[#f0f0eb]/40 text-sm tracking-widest not-italic">
+            <cite class="text-text/40 text-sm tracking-widest not-italic">
               — tiger · independent personal trainer, mumbai
             </cite>
           </blockquote>
@@ -363,80 +370,89 @@ import '../styles/global.css';
     </section>
 
     <!-- ── MOBILE APPS COMING SOON ── -->
-    <section id="mobile" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <section id="mobile" class="py-24 px-6 border-t border-text/10">
       <div class="max-w-2xl mx-auto text-center">
         <h2 class="fluid-h2 font-bold tracking-widest mb-4">
           mobile apps
         </h2>
-        <p class="text-[#f0f0eb]/50 mb-12">coming soon — android and ios apps in the works</p>
+        <p class="text-text/50 mb-12">coming soon — android and ios apps in the works</p>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <!-- Android badge (greyed out) -->
           <div class="opacity-40 cursor-not-allowed select-none">
-            <div class="flex items-center gap-3 border border-[#f0f0eb]/30 rounded-xl px-5 py-3 bg-[#242424]">
-              <svg class="w-7 h-7 text-[#f0f0eb]" viewBox="0 0 24 24" fill="currentColor">
+            <div class="flex items-center gap-3 border border-text/30 rounded-xl px-5 py-3 bg-surface">
+              <svg class="w-7 h-7 text-text" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.523 15.341l1.21-2.096a.276.276 0 00-.101-.377.277.277 0 00-.379.1l-1.226 2.122a7.64 7.64 0 01-3.027.613 7.635 7.635 0 01-3.027-.613L9.748 12.97a.277.277 0 00-.379-.1.276.276 0 00-.101.377l1.21 2.096A7.296 7.296 0 013.5 9.5h17a7.296 7.296 0 01-2.977 5.841zM8.5 11a1 1 0 110-2 1 1 0 010 2zm7 0a1 1 0 110-2 1 1 0 010 2zM7.313 5.347l1.304-2.26a.3.3 0 00-.11-.41.3.3 0 00-.41.11L6.742 5.11A8.64 8.64 0 003.5 8.5h17a8.64 8.64 0 00-3.242-3.39l-1.355-2.35a.3.3 0 00-.41-.11.3.3 0 00-.11.41l1.304 2.26A8.612 8.612 0 0012 4.5a8.612 8.612 0 00-4.687 1.347z"/>
               </svg>
               <div class="text-left">
-                <div class="text-[10px] text-[#f0f0eb]/60 tracking-widest">get it on</div>
-                <div class="text-sm font-bold text-[#f0f0eb] tracking-widest">google play</div>
+                <div class="text-[10px] text-text/60 tracking-widest">get it on</div>
+                <div class="text-sm font-bold text-text tracking-widest">google play</div>
               </div>
             </div>
           </div>
 
           <!-- iOS badge (greyed out) -->
           <div class="opacity-40 cursor-not-allowed select-none">
-            <div class="flex items-center gap-3 border border-[#f0f0eb]/30 rounded-xl px-5 py-3 bg-[#242424]">
-              <svg class="w-7 h-7 text-[#f0f0eb]" viewBox="0 0 24 24" fill="currentColor">
+            <div class="flex items-center gap-3 border border-text/30 rounded-xl px-5 py-3 bg-surface">
+              <svg class="w-7 h-7 text-text" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
               </svg>
               <div class="text-left">
-                <div class="text-[10px] text-[#f0f0eb]/60 tracking-widest">download on the</div>
-                <div class="text-sm font-bold text-[#f0f0eb] tracking-widest">app store</div>
+                <div class="text-[10px] text-text/60 tracking-widest">download on the</div>
+                <div class="text-sm font-bold text-text tracking-widest">app store</div>
               </div>
             </div>
           </div>
         </div>
 
-        <p class="mt-8 text-xs text-[#f0f0eb]/30">currently available as a web app at app.getgymbo.com</p>
+        <p class="mt-8 text-xs text-text/30">on iphone now · android coming soon</p>
       </div>
     </section>
 
     <!-- ── CTA ── -->
-    <section id="try" class="py-24 px-6 border-t border-[#f0f0eb]/10">
+    <section id="try" class="py-24 px-6 border-t border-text/10">
       <div class="max-w-lg mx-auto text-center">
         <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
           ready to try gymbo?
         </h2>
-        <p class="reveal text-[#f0f0eb]/50 mb-10">the web app is live. free to use. no credit card.</p>
-        <a
-          href="https://app.getgymbo.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="reveal inline-block rounded-full bg-[#f8623a] text-[#1a1a1a] font-bold tracking-widest px-10 py-4 hover:opacity-90 transition-opacity text-lg"
-          data-umami-event="cta_try_web_app_bottom"
-        >
-          try gymbo free →
-        </a>
+        <p class="reveal text-text/50 mb-10">on iphone now · free during the private alpha · no credit card.</p>
+        <div class="reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <a
+            href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
+            class="cta-primary inline-block rounded-full font-bold tracking-widest px-10 py-4 hover:opacity-90 transition-opacity text-lg"
+            data-umami-event="cta_waitlist_bottom"
+          >
+            get gymbo →
+          </a>
+          <a
+            href="https://wa.me/918050131733"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-block rounded-full border border-text/30 text-text font-bold tracking-widest px-10 py-4 hover:border-text/60 transition-colors text-lg"
+            data-umami-event="cta_whatsapp_bottom"
+          >
+            chat with us
+          </a>
+        </div>
       </div>
     </section>
 
     <!-- ── FOOTER ── -->
-    <footer class="border-t border-[#f0f0eb]/10 py-10 px-6">
+    <footer class="border-t border-text/10 py-10 px-6">
       <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="flex items-center gap-3">
           <img src="/logo-mark.svg" alt="gymbo" class="w-6 h-6" />
-          <span class="text-[#f0f0eb]/60 text-sm tracking-widest">© 2026 gymbo</span>
+          <span class="text-text/60 text-sm tracking-widest">© 2026 gymbo</span>
         </div>
 
-        <div class="flex items-center gap-6 text-sm tracking-widest text-[#f0f0eb]/40">
-          <a href="/privacy" class="hover:text-[#f8623a] transition-colors">privacy</a>
-          <a href="/terms" class="hover:text-[#f8623a] transition-colors">terms</a>
+        <div class="flex items-center gap-6 text-sm tracking-widest text-text/40">
+          <a href="/privacy" class="hover:text-brand transition-colors">privacy</a>
+          <a href="/terms" class="hover:text-brand transition-colors">terms</a>
           <a
             href="https://app.getgymbo.com"
             target="_blank"
             rel="noopener noreferrer"
-            class="hover:text-[#f8623a] transition-colors"
+            class="hover:text-brand transition-colors"
           >
             app.getgymbo.com ↗
           </a>

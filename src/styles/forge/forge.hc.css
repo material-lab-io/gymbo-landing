@@ -1,0 +1,8 @@
+@media (prefers-contrast: more) {
+  :root {
+    --g-text-brand: #78350f; /** light brand-as-text HC = #78350F (AAA) */
+  }
+  [data-theme="dark"] {
+    --g-text-brand: #fcd34d; /** dark brand-as-text HC = #FCD34D (AAA) */
+  }
+}
