@@ -847,13 +847,13 @@ export default function App() {
                 className="text-[14px] md:text-[15px] text-white/80 text-center mb-4"
                 style={{ fontFamily: "var(--font-sans)", fontWeight: 500, lineHeight: 1.5 }}
               >
-                How Coach Vikram reclaimed 10 hours a week and scaled to 30 active clients.
+                From a notebook and WhatsApp threads to one app.
               </h4>
               <p
                 className="text-[17px] md:text-[20px] text-white/65 text-center max-w-[560px]"
                 style={{ lineHeight: 1.6, fontFamily: "var(--font-serif)", fontWeight: 400, fontStyle: "italic" }}
               >
-                &ldquo;I hit a wall at fifteen clients. The mental gymnastics of remembering who owed what and managing cancellations across three locations was exhausting. Gymbo gave me my weekends back. It handles the math and the schedule instantly, letting me focus entirely on being a better coach.&rdquo;
+                &ldquo;I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.&rdquo;
               </p>
 
               <div className="flex items-center gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
@@ -861,11 +861,11 @@ export default function App() {
                   className="w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px]"
                   style={{ background: `${ACCENT}15`, color: ACCENT, fontWeight: 600, fontFamily: "var(--font-sans)" }}
                 >
-                  V
+                  S
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[14px] text-white/75" style={{ fontWeight: 500 }}>Vikram S.</span>
-                  <span className="text-[12px] text-white/55">Independent Fitness Professional</span>
+                  <span className="text-[14px] text-white/75" style={{ fontWeight: 500 }}>Sarfaraz</span>
+                  <span className="text-[12px] text-white/55">Fitness Trainer, Bangalore</span>
                 </div>
               </div>
             </div>
