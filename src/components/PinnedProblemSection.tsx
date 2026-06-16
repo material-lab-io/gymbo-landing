@@ -5,7 +5,7 @@ import { SectionLabel } from "./ui/SectionLabel";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ACCENT = "#F5B130";
+const ACCENT = (typeof document !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue("--g-primary-cta-fill").trim()) || "#FBBF24"; // Forge brand (auto-syncs on palette change)
 
 interface PainPoint {
   num: string;
@@ -76,7 +76,7 @@ export function PinnedProblemSection({ items }: { items: PainPoint[] }) {
             aria-hidden="true"
             className="absolute select-none pointer-events-none"
             style={{
-              fontFamily: "Merriweather, Georgia, serif",
+              fontFamily: "var(--font-serif)",
               fontWeight: 400,
               fontSize: "clamp(200px, 35vw, 450px)",
               lineHeight: 1,
@@ -102,7 +102,7 @@ export function PinnedProblemSection({ items }: { items: PainPoint[] }) {
                 className="text-[13px] md:text-[14px] tracking-[0.1em] uppercase shrink-0"
                 style={{
                   color: ACCENT,
-                  fontFamily: "Inter, system-ui, sans-serif",
+                  fontFamily: "var(--font-sans)",
                   fontWeight: 500,
                   opacity: 0.7,
                 }}
@@ -114,7 +114,7 @@ export function PinnedProblemSection({ items }: { items: PainPoint[] }) {
 
             <h3
               className="text-[28px] md:text-[42px] text-white tracking-[-0.025em] mb-5"
-              style={{ fontFamily: "Merriweather, Georgia, serif", fontWeight: 400, lineHeight: 1.1 }}
+              style={{ fontFamily: "var(--font-serif)", fontWeight: 400, lineHeight: 1.1 }}
             >
               {pain.title}
             </h3>

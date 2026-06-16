@@ -23,17 +23,17 @@ export function CTAButton({
     variant === "primary"
       ? {
           background: "var(--accent)",
-          color: "#000",
+          color: "var(--accent-foreground)",
           border: "none",
           fontWeight: 600,
-          fontFamily: "Inter, system-ui, sans-serif",
+          fontFamily: "var(--font-sans)",
         }
       : {
           background: "rgba(255,255,255,0.04)",
           color: "rgba(255,255,255,0.75)",
           border: "1px solid rgba(255,255,255,0.08)",
           fontWeight: 400,
-          fontFamily: "Inter, system-ui, sans-serif",
+          fontFamily: "var(--font-sans)",
         };
 
   return (

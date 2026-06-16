@@ -33,7 +33,7 @@ export function renderScreen(screen: string) {
 export function ScreenWithGlow({
   src,
   alt,
-  glowColor = "#F5B130",
+  glowColor = (typeof document !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue("--g-primary-cta-fill").trim()) || "#FBBF24",
   className = "",
 }: {
   src: string;
