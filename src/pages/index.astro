@@ -86,7 +86,7 @@ import '../styles/global.css';
           <a href="#how" class="text-sm tracking-widest text-text/60 hover:text-text transition-colors">how it works</a>
         </div>
         <a
-          href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
+          href="#try"
           class="text-sm cta-primary rounded-full px-4 py-1.5 hover:opacity-90 transition-opacity"
           data-umami-event="cta_waitlist_nav"
         >
@@ -115,7 +115,7 @@ import '../styles/global.css';
 
         <div class="hero-reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
           <a
-            href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
+            href="#try"
             class="cta-primary rounded-full font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity w-full sm:w-auto text-center"
             data-umami-event="cta_waitlist_hero"
           >
@@ -409,33 +409,101 @@ import '../styles/global.css';
       </div>
     </section>
 
-    <!-- ── CTA ── -->
-    <section id="try" class="py-24 px-6 border-t border-text/10">
-      <div class="max-w-lg mx-auto text-center">
-        <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
-          ready to try gymbo?
-        </h2>
-        <p class="reveal text-text/50 mb-10">on iphone now · free during the private alpha · no credit card.</p>
-        <div class="reveal flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <a
-            href="mailto:hello@getgymbo.com?subject=join%20the%20gymbo%20waitlist"
-            class="cta-primary inline-block rounded-full font-bold tracking-widest px-10 py-4 hover:opacity-90 transition-opacity text-lg"
-            data-umami-event="cta_waitlist_bottom"
-          >
-            get gymbo →
-          </a>
-          <a
-            href="https://wa.me/918050131733"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-block rounded-full border border-text/30 text-text font-bold tracking-widest px-10 py-4 hover:border-text/60 transition-colors text-lg"
-            data-umami-event="cta_whatsapp_bottom"
-          >
-            chat with us
-          </a>
+    <!-- ── PRICING ── -->
+    <section id="pricing" class="py-24 px-6 border-t border-text/10">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest mb-3 text-center">simple pricing</h2>
+        <p class="reveal text-text/50 mb-12 text-center">less than one missed session a month. free during the private alpha.</p>
+        <div class="grid sm:grid-cols-3 gap-6">
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-8 text-center">
+            <div class="text-sm text-text/60 tracking-widest mb-3">monthly</div>
+            <div class="font-display text-4xl font-bold mb-1">₹400<span class="text-base text-text/50">/mo</span></div>
+            <div class="text-xs text-text/40 tracking-widest">billed monthly</div>
+          </div>
+          <div class="reveal feature-card bg-surface border border-text/10 rounded-2xl p-8 text-center">
+            <div class="text-sm text-text/60 tracking-widest mb-3">quarterly</div>
+            <div class="font-display text-4xl font-bold mb-1">₹300<span class="text-base text-text/50">/mo</span></div>
+            <div class="text-xs text-text/40 tracking-widest">billed every 3 months</div>
+          </div>
+          <div class="reveal feature-card bg-surface border border-brand/40 rounded-2xl p-8 text-center relative">
+            <div class="absolute top-4 right-4 text-[10px] tracking-widest cta-primary rounded-full px-2 py-0.5">best value</div>
+            <div class="text-sm text-text/60 tracking-widest mb-3">annual</div>
+            <div class="font-display text-4xl font-bold mb-1">₹200<span class="text-base text-text/50">/mo</span></div>
+            <div class="text-xs text-text/40 tracking-widest">billed yearly</div>
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- ── WAITLIST CTA ── -->
+    <section id="try" class="py-24 px-6 border-t border-text/10">
+      <div class="max-w-lg mx-auto text-center">
+        <h2 class="reveal fluid-h2 font-bold tracking-widest mb-4">
+          get on the list
+        </h2>
+        <p class="reveal text-text/50 mb-10">on iphone now · free during the private alpha · no credit card. we'll email you when it's your turn.</p>
+
+        <form id="waitlist-form" class="reveal flex flex-col gap-3 max-w-md mx-auto text-left">
+          <input
+            name="name" type="text" autocomplete="name" placeholder="your name"
+            class="w-full rounded-xl bg-surface border border-text/15 px-5 py-3 text-text placeholder:text-text/40 focus:outline-none focus:border-brand transition-colors"
+          />
+          <input
+            name="email" type="email" required autocomplete="email" placeholder="your email"
+            class="w-full rounded-xl bg-surface border border-text/15 px-5 py-3 text-text placeholder:text-text/40 focus:outline-none focus:border-brand transition-colors"
+          />
+          <div class="flex flex-col sm:flex-row gap-3 mt-1">
+            <button type="submit" class="cta-primary flex-1 rounded-full font-bold tracking-widest px-8 py-3 hover:opacity-90 transition-opacity">
+              get gymbo →
+            </button>
+            <a
+              href="https://wa.me/918050131733" target="_blank" rel="noopener noreferrer"
+              class="flex-1 rounded-full border border-text/30 text-text font-bold tracking-widest px-8 py-3 hover:border-text/60 transition-colors text-center self-stretch flex items-center justify-center"
+              data-umami-event="cta_whatsapp_bottom"
+            >
+              chat with us
+            </a>
+          </div>
+        </form>
+        <p id="waitlist-success" class="reveal hidden text-brand-text font-bold tracking-widest py-4">you're on the list — we'll email you when gymbo lands on your phone.</p>
+      </div>
+    </section>
+
+    <script>
+      const form = document.getElementById('waitlist-form');
+      const success = document.getElementById('waitlist-success');
+      const SB_URL = import.meta.env.PUBLIC_SUPABASE_URL;
+      const SB_KEY = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const name = (fd.get('name') || '').toString().trim();
+        const email = (fd.get('email') || '').toString().trim();
+        const done = () => {
+          form.classList.add('hidden');
+          success?.classList.remove('hidden');
+          if (window.umami) window.umami.track('waitlist_submit');
+        };
+        try {
+          if (SB_URL && SB_KEY) {
+            const res = await fetch(`${SB_URL}/rest/v1/waitlist`, {
+              method: 'POST',
+              headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+              body: JSON.stringify({ name, email }),
+            });
+            if (!res.ok) throw new Error('supabase');
+            done();
+          } else {
+            // backend not provisioned yet — capture via email so no lead is lost
+            window.location.href = `mailto:hello@getgymbo.com?subject=${encodeURIComponent('join the gymbo waitlist')}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`;
+            done();
+          }
+        } catch (err) {
+          window.location.href = `mailto:hello@getgymbo.com?subject=${encodeURIComponent('join the gymbo waitlist')}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`;
+          done();
+        }
+      });
+    </script>
 
     <!-- ── FOOTER ── -->
     <footer class="border-t border-text/10 py-10 px-6">
