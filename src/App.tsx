@@ -47,7 +47,7 @@ const FEATURES = [
   },
   {
     subtitle: "Accounting",
-    title: "Command your cash flow.",
+    title: "Stay on top of payments.",
     desc: "Offload the manual math. View real-time balances, spot overdue accounts, and collect payments without the awkward text messages.",
     screen: "light-payments",
     badge: null,
@@ -61,14 +61,14 @@ const FEATURES = [
   },
   {
     subtitle: "Branding",
-    title: "Command premium rates.",
+    title: "Look the part.",
     desc: "Secure high-value clients with professional brand collateral. Generate branded digital profiles, customized PDF receipts, and beautifully formatted training plans ready to share straight to WhatsApp.",
     screen: "light-brand",
     badge: null,
   },
   {
     subtitle: "Invoicing",
-    title: "Bill like an enterprise.",
+    title: "Send clean invoices.",
     desc: "Turn a completed session into a compliant invoice. Automatically generate, format, and share professional statements in seconds.",
     screen: "light-invoicing",
     badge: null,
@@ -97,7 +97,7 @@ const PRICING_PLANS = [
       "AI assistant",
       "Branded invoicing",
     ],
-    cta: "Begin Free Trial",
+    cta: "Get gymbo",
     highlight: false,
   },
   {
@@ -112,7 +112,7 @@ const PRICING_PLANS = [
       "50% savings",
       "Lowest price guaranteed",
     ],
-    cta: "Begin Free Trial",
+    cta: "Get gymbo",
     highlight: true,
   },
 ];
@@ -426,7 +426,7 @@ export default function App() {
             </span>
           </button>
 
-          {/* Right: Join Early Access button */}
+          {/* Right: Get gymbo button */}
           <a
             href="#"
             onClick={(e) => { e.preventDefault(); scrollTo("cta"); }}
@@ -438,7 +438,7 @@ export default function App() {
               fontFamily: "var(--font-sans)",
             }}
           >
-            Join Early Access
+            Get gymbo
           </a>
         </div>
 
@@ -501,7 +501,7 @@ export default function App() {
                 ))}
                 <div className="pt-3">
                   <CTAButton variant="primary" size="md" onClick={() => scrollTo("cta")} className="w-full">
-                    Join Early Access
+                    Get gymbo
                   </CTAButton>
                 </div>
               </div>
@@ -544,19 +544,19 @@ export default function App() {
               style={{ fontFamily: "var(--font-serif)", fontWeight: 700, lineHeight: 0.95, letterSpacing: "-0.03em" }}
             >
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)] text-white">
-                {renderHeroWords("RUN YOUR")}
+                {renderHeroWords("Run your")}
               </span>
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)] text-white">
-                {renderHeroWords("ENTIRE FITNESS")}
+                {renderHeroWords("entire fitness")}
               </span>
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)] text-white">
-                {renderHeroWords("BUSINESS")}
+                {renderHeroWords("business")}
               </span>
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)]" style={{ color: ACCENT }}>
-                {renderHeroWords("FROM YOUR")}
+                {renderHeroWords("from your")}
               </span>
               <span className="relative z-20 block text-[clamp(40px,8.5vw,110px)]" style={{ color: ACCENT }}>
-                {renderHeroWords("PHONE.")}
+                {renderHeroWords("phone.")}
               </span>
             </h1>
 
@@ -583,13 +583,13 @@ export default function App() {
             className="text-[13px] md:text-[14px] text-white/60 max-w-[340px]"
             style={{ lineHeight: 1.55, fontWeight: 300, opacity: 0 }}
           >
-            Tired of juggling WhatsApp threads and paper diaries? Schedule sessions, track revenue, and deliver a premium client experience in seconds. Keep your focus on the gym floor, Coach.
+            Tired of juggling WhatsApp threads and paper diaries? Schedule sessions, track payments, and manage every client in seconds — so you can focus on training, not admin.
           </p>
 
           <div ref={heroCTARef} className="flex items-center gap-6" style={{ opacity: 0 }}>
             <div className="flex flex-col">
               <CTAButton variant="primary" size="md" onClick={() => scrollTo("cta")}>
-                Join Early Access <ArrowRight size={16} aria-hidden="true" />
+                Get gymbo <ArrowRight size={16} aria-hidden="true" />
               </CTAButton>
               <span className="text-[12px] text-white/50 mt-2" style={{ fontWeight: 400 }}>Setup takes under two minutes.</span>
             </div>
@@ -788,11 +788,11 @@ export default function App() {
             className="text-[14px] md:text-[15px] text-white/60 mt-6"
             style={{ lineHeight: 1.7, fontWeight: 300 }}
           >
-            You move between apartment gyms, private studios, and parks. Every minute spent doing admin is a minute stolen from coaching and recovery. Gymbo does the heavy lifting for your back office, Coach. Put your schedule, accounting, and client management right in your pocket. Scale your roster to 30+ clients and drop the mental load forever.
+            You move between apartment gyms, private studios, and parks. Every minute on admin is a minute stolen from coaching. Gymbo handles the back office — your schedule, accounting, and clients, all in your pocket. Handle 30+ clients without the mental load.
           </p>
           <div className="mt-8">
             <CTAButton variant="primary" size="md" onClick={() => scrollTo("cta")}>
-              Upgrade Your Operations
+              Get gymbo
             </CTAButton>
           </div>
         </div>
@@ -815,7 +815,7 @@ export default function App() {
           <SectionTitle>Less than the cost of a missed session.</SectionTitle>
 
           <p className="text-[15px] text-white/60 mt-4 mb-8 gsap-fade" style={{ fontWeight: 300, lineHeight: 1.6 }}>
-            Professional infrastructure priced for the independent trainer. Lock in your rate today, Coach.
+            Priced for the independent trainer. Lock in your rate today.
           </p>
 
           {/* Testimonial card (merged from social proof) */}
@@ -1068,7 +1068,7 @@ export default function App() {
           <SectionTitle>Ready to run your business from one app?</SectionTitle>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-6">
-            {/* Primary CTA: Begin Free Trial */}
+            {/* Primary CTA: Get gymbo */}
             <a
               href="#"
               onClick={(e) => { e.preventDefault(); scrollTo("cta"); }}
@@ -1080,7 +1080,7 @@ export default function App() {
                 fontFamily: "var(--font-sans)",
               }}
             >
-              Begin Free Trial
+              Get gymbo
             </a>
 
             {/* Secondary CTA: WhatsApp */}
