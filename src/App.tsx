@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ArrowRight, Plus, Zap, Wallet } from "lucide-react";
+import { Check, ArrowRight, Plus, Calendar, Sparkles } from "lucide-react";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 
@@ -45,23 +45,8 @@ const SERIF = "var(--font-serif)"; // Merriweather
 const SANS = "var(--font-sans)"; // Open Sans
 const FRAME = "/iphone-15-frame.png";
 
-// Real seeded light-mode screenshots from the shipping build (gy-mqk1n, ios_dev)
-const R = "/screens/real/";
-const SCREENS = {
-  heroWhoOwes: `${R}hero-02-who-owes-balance.png`,
-  logPayment: `${R}hero-03-log-payment.png`,
-  dashboard: `${R}hero-01-dashboard-clean.png`,
-  ledger: `${R}revenue-01-ledger-history.png`,
-  exportStatement: `${R}revenue-02-export-statement.png`,
-  schedule: `${R}organized-01-schedule-day.png`,
-  clientsList: `${R}organized-02-clients-list.png`,
-  workoutTemplate: `${R}workouts-01-template-fullbody.png`,
-  businessProfile: `${R}brand-01-business-profile.png`,
-  qrCard: `${R}brand-02-qr-profile-card.png`,
-  vitals: `${R}extra-vitals.png`,
-  addClient: `${R}extra-add-client.png`,
-  paymentReminders: `${R}extra-payment-reminders.png`,
-};
+// Visual slots show a styled "here we'll show" BRIEF inside the iPhone-15 frame
+// (founder direction) — these swap out for real-app video loops later (phased).
 
 const WHATSAPP = "https://wa.me/918050131733?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo";
 
@@ -83,7 +68,7 @@ const PILLARS = [
       "Get paid for every class you teach",
       "Cash or UPI logged — nothing slips",
     ],
-    screen: SCREENS.ledger,
+    brief: "Log a payment: ₹6,400, UPI or cash — balance clears.",
     chip: { kind: "money", text: "₹8,000 received" },
     comingSoon: "",
     dark: false,
@@ -99,7 +84,7 @@ const PILLARS = [
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
     ],
-    screen: SCREENS.schedule,
+    brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
     chip: { kind: "dark", k: "Today", v: "Class logged" },
     comingSoon: "Coming soon: travel-aware scheduling — slots that respect your commute.",
     dark: true,
@@ -115,7 +100,7 @@ const PILLARS = [
       "A shareable QR profile card in three styles",
       "Send any client their statement with a single tap",
     ],
-    screen: SCREENS.businessProfile,
+    brief: "Your brand on a clean statement PDF — share in a tap (India).",
     chip: { kind: "money", text: "Looks pro" },
     comingSoon: "",
     dark: false,
@@ -131,7 +116,7 @@ const PILLARS = [
       "A muscle and body map for every plan",
       "Track client progress: logged sessions, adherence, per-exercise gains",
     ],
-    screen: SCREENS.workoutTemplate,
+    brief: "Build a plan (squat, bench, row) and assign it to a client.",
     chip: { kind: "dark", k: "Adherence", v: "92%" },
     comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
@@ -139,27 +124,26 @@ const PILLARS = [
 ];
 
 /* ── brand touchpoints ── */
-const TOUCHPOINTS: { name: string; desc: string; screen: string; soon?: boolean }[] = [
+const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
   // Live now (real — no tag)
-  { name: "Branded PDF statements", desc: "Your name, tagline, and details on every statement your client keeps", screen: SCREENS.exportStatement },
-  { name: "QR profile card", desc: "Three styles — share it on WhatsApp or anywhere", screen: SCREENS.qrCard },
-  { name: "Per-client share links", desc: "Send any client their statement with one tap", screen: SCREENS.businessProfile },
-  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)", screen: SCREENS.exportStatement },
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect." },
+  { name: "Per-client share links", desc: "Send any client their statement with one tap." },
+  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)." },
   // Coming soon (clearly tagged)
-  { name: "In-app brand theming", desc: "Your colours across the app", screen: SCREENS.businessProfile, soon: true },
-  { name: "Personalized URL", desc: "Your own Gymbo link", screen: SCREENS.qrCard, soon: true },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at", screen: SCREENS.businessProfile, soon: true },
-  { name: "Shareable booking link", desc: "Let clients reach out to book", screen: SCREENS.qrCard, soon: true },
-  { name: "Fitness reports", desc: "Shareable client progress summaries", screen: SCREENS.vitals, soon: true },
-  { name: "Welcome + logo splash", desc: "Your logo on first open", screen: SCREENS.businessProfile, soon: true },
-  { name: "Custom-branded client app", desc: "Your brand, your app", screen: SCREENS.dashboard, soon: true },
+  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true },
+  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true },
+  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true },
+  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true },
+  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true },
+  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true },
+  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
 ];
 
 /* ── journey ── */
 const JOURNEY = [
-  { step: "01", title: "Add a client", caption: "Name and rate — that's it.", screen: SCREENS.addClient, icon: Plus },
-  { step: "02", title: "Punch a class", caption: "One tap when they show up.", screen: SCREENS.schedule, icon: Zap },
-  { step: "03", title: "See every balance", caption: "Balances update automatically.", screen: SCREENS.paymentReminders, icon: Wallet },
+  { step: "01", title: "Set up in minutes", brief: "Set up in minutes — sign in, import clients, set your rate.", icon: Plus },
+  { step: "02", title: "Schedule a class", brief: "Book a class in seconds — pick client, day, time.", icon: Calendar },
+  { step: "03", title: "Ask Gymbo", brief: "Ask: what's this month's revenue? — Gymbo answers from your data.", icon: Sparkles },
 ];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
@@ -238,19 +222,24 @@ function RiskReversal({ dark }: { dark?: boolean }) {
   );
 }
 
-/* Real iPhone-15 frame PNG with the screenshot composited behind its transparent screen window */
-function DeviceFrame({ src, alt, className = "", style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
+/* iPhone-15 frame PNG with a styled "here we'll show" BRIEF inside the screen
+   window. The brief describes what each real-app video loop will show (phased). */
+function BriefFrame({ brief, label = "Here we'll show", className = "", style }: { brief: string; label?: string; className?: string; style?: React.CSSProperties }) {
   return (
     <div
       className={className}
       style={{ position: "relative", aspectRatio: "868 / 1772", filter: "drop-shadow(0 22px 38px rgba(0,0,0,0.32))", ...style }}
     >
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        style={{ position: "absolute", top: "1.47%", left: "3.0%", width: "94.0%", height: "97.06%", objectFit: "cover", objectPosition: "top center", borderRadius: "14% / 6.8%", background: "#000", display: "block" }}
-      />
+      <div
+        style={{ position: "absolute", top: "1.47%", left: "3.0%", width: "94.0%", height: "97.06%", borderRadius: "14% / 6.8%", background: F.beige, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16% 11%", textAlign: "center" }}
+      >
+        {label && (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: F.amberText, fontFamily: SANS, fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", marginBottom: "8%" }}>
+            <span aria-hidden="true">▶</span> {label}
+          </span>
+        )}
+        <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "clamp(12px,1.05vw,15px)", lineHeight: 1.5 }}>{brief}</p>
+      </div>
       <img src={FRAME} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }} />
     </div>
   );
@@ -419,17 +408,15 @@ export default function App() {
 
             {/* angled multi-device stage */}
             <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]" style={{ perspective: "1700px" }}>
-              <DeviceFrame
-                src={SCREENS.logPayment}
-                alt="Gymbo — record a payment"
+              <BriefFrame
+                brief="Pick the class type, one tap — balance updates 7/10 → 8/10."
                 className={`absolute w-[clamp(190px,22vw,240px)] hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "rotateY(18deg) rotateZ(-5deg) translateX(34%) scale(.9)", zIndex: 1 }}
+                style={{ transform: "rotateZ(-5deg) translateX(34%) scale(.9)", zIndex: 1 }}
               />
-              <DeviceFrame
-                src={SCREENS.dashboard}
-                alt="Gymbo — your client dashboard"
+              <BriefFrame
+                brief="Your whole book at a glance, with balances — Ravi 8 left, Sara 11 left, Aadesh 7/10."
                 className={`relative w-[clamp(228px,27vw,272px)] ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "rotateY(-13deg) rotateZ(3deg) translateX(-6%)", zIndex: 2 }}
+                style={{ transform: "rotateZ(3deg) translateX(-6%)", zIndex: 2 }}
               />
               <Watch
                 className={`absolute z-[3] w-[clamp(74px,13vw,104px)] ${prefersReduced ? "" : "hero-fade d7"}`}
@@ -454,7 +441,7 @@ export default function App() {
 
           {PILLARS.map((p, i) => {
             const dark = p.dark;
-            const angle = i % 2 === 1 ? "rotateY(12deg) rotateZ(2deg)" : "rotateY(-12deg) rotateZ(-2deg)";
+            const angle = i % 2 === 1 ? "rotateZ(2deg)" : "rotateZ(-2deg)";
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
                 <div className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
@@ -494,8 +481,8 @@ export default function App() {
                   </Reveal>
 
                   <Reveal className="relative flex items-center justify-center" >
-                    <div className="relative" style={{ perspective: "1500px" }}>
-                      <DeviceFrame src={p.screen} alt={`Gymbo — ${p.title}`} className="w-[clamp(220px,26vw,268px)]" style={{ transform: angle }} />
+                    <div className="relative">
+                      <BriefFrame brief={p.brief} className="w-[clamp(220px,26vw,268px)]" style={{ transform: angle }} />
                       <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
                     </div>
                   </Reveal>
@@ -508,28 +495,27 @@ export default function App() {
         </section>
 
         {/* ───────── journey ───────── */}
-        <section aria-label="Set up in under a minute" style={{ background: F.charcoal }}>
+        <section aria-label="Up and running in minutes" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
-              <Eyebrow dark>Three taps to set up</Eyebrow>
+              <Eyebrow dark>From day one</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
-                Set up in under a minute.
+                Up and running in minutes.
               </h2>
             </Reveal>
 
-            <div className="carousel mt-12 flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0" style={{ perspective: "1600px" }}>
+            <div className="carousel mt-12 flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0">
               {JOURNEY.map((j, idx) => {
                 const Icon = j.icon;
                 return (
                   <Reveal key={j.step} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex flex-col items-center text-center">
                     <div className="relative">
-                      <DeviceFrame src={j.screen} alt={`Gymbo — ${j.title}`} className="w-[clamp(200px,24vw,236px)]" style={{ transform: idx === 1 ? "rotateY(0deg)" : idx === 0 ? "rotateY(-9deg) rotateZ(-2deg)" : "rotateY(9deg) rotateZ(2deg)" }} />
+                      <BriefFrame brief={j.brief} className="w-[clamp(200px,24vw,236px)]" style={{ transform: idx === 0 ? "rotateZ(-2deg)" : idx === 2 ? "rotateZ(2deg)" : undefined }} />
                       <span className="absolute -top-3 -left-1 grid place-items-center w-9 h-9 rounded-full text-[13px] font-bold z-10" style={{ background: F.marigold, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.chip }}>
                         <Icon size={16} strokeWidth={2.4} />
                       </span>
                     </div>
                     <h3 className="mt-6 text-[20px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{j.title}</h3>
-                    <p className="mt-1.5 text-[14px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{j.caption}</p>
                   </Reveal>
                 );
               })}
@@ -768,17 +754,16 @@ function BrandTouchpoints() {
             Your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>
-        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" style={{ perspective: "1600px" }}>
+        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2">
           {TOUCHPOINTS.map((t) => (
             <div key={t.name} className="relative snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)" }}>
               {t.soon && (
                 <span className="absolute top-3 right-3 z-10 rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
               )}
-              <div style={t.soon ? { opacity: 0.5, filter: "grayscale(0.5)" } : undefined}>
-                <DeviceFrame src={t.screen} alt={`Gymbo — ${t.name}${t.soon ? " (coming soon)" : ""}`} className="w-[clamp(150px,40vw,180px)]" style={{ transform: "rotateY(-8deg) rotateZ(-1deg)" }} />
+              <div style={t.soon ? { opacity: 0.6 } : undefined}>
+                <BriefFrame brief={t.desc} label="" className="w-[clamp(150px,40vw,180px)]" style={{ transform: "rotateZ(-1deg)" }} />
               </div>
               <h4 className="mt-5 text-[16px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</h4>
-              <p className="mt-1.5 text-[13px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5 }}>{t.desc}</p>
             </div>
           ))}
         </div>
