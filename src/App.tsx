@@ -77,11 +77,11 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance automatically — so your numbers are always up to date.",
+    intro: "The Gymbo ledger tracks every class, payment, and balance automatically — so you always know where every client stands.",
     bullets: [
-      "Automatic balances: credit and classes left, always current",
-      "Log a payment in two taps",
-      "Share a clean statement in a tap",
+      "Every balance, clear — credit and classes left, always current",
+      "Get paid for every class you teach",
+      "Cash or UPI logged — nothing slips",
     ],
     screen: SCREENS.ledger,
     chip: { kind: "money", text: "₹8,000 received" },
@@ -92,7 +92,7 @@ const PILLARS = [
     n: "02",
     eyebrow: "Your whole roster",
     title: "Get organized",
-    intro: "Every client, schedule, and class in one place — not in your head.",
+    intro: "Less busywork, more training. Every client, schedule, and class in one place — not in your head.",
     bullets: [
       "One-tap punch to log a class",
       "Recurring time slots, sorted by day",
@@ -107,7 +107,7 @@ const PILLARS = [
     n: "03",
     eyebrow: "Look professional",
     title: "Your brand, your business",
-    intro: "Your name and details on every statement your client sees — plus a QR profile card you can share anywhere.",
+    intro: "Look like the professional you already are. Your name and details on every statement your client sees — plus a QR profile card you can share anywhere.",
     bullets: [
       "Branded PDF statements — your name, tagline, and details on each one",
       "A shareable QR profile card in three styles",
