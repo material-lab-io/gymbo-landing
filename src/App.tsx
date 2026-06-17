@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, ArrowRight, Plus, Calendar, Sparkles } from "lucide-react";
+import { IPhoneMockup } from "react-device-mockup";
+import "devices.css/dist/devices.min.css";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 
@@ -43,7 +45,6 @@ const SHADOW = {
 
 const SERIF = "var(--font-serif)"; // Merriweather
 const SANS = "var(--font-sans)"; // Open Sans
-const FRAME = "/iphone-15-frame.png";
 
 // Visual slots show a styled "here we'll show" BRIEF inside the iPhone-15 frame
 // (founder direction) — these swap out for real-app video loops later (phased).
@@ -222,41 +223,43 @@ function RiskReversal({ dark }: { dark?: boolean }) {
   );
 }
 
-/* iPhone-15 frame PNG with a styled "here we'll show" BRIEF inside the screen
-   window. The brief describes what each real-app video loop will show (phased). */
-function BriefFrame({ brief, label = "Here we'll show", className = "", style }: { brief: string; label?: string; className?: string; style?: React.CSSProperties }) {
+/* react-device-mockup iPhone 15 Pro (MIT, dynamic island) with a styled
+   "here we'll show" BRIEF as the screen content. Inner content swaps
+   brief → screenshot → muted-loop video later; the frame stays put. */
+function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, className = "", style }: { brief: string; label?: string; screenWidth?: number; className?: string; style?: React.CSSProperties }) {
   return (
-    <div
-      className={className}
-      style={{ position: "relative", aspectRatio: "868 / 1772", filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))", ...style }}
-    >
-      <div
-        style={{ position: "absolute", top: "1.47%", left: "3.0%", width: "94.0%", height: "97.06%", borderRadius: "14% / 6.8%", background: F.beige, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16% 11%", textAlign: "center" }}
-      >
-        {label && (
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: F.amberText, fontFamily: SANS, fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", marginBottom: "8%" }}>
-            <span aria-hidden="true">▶</span> {label}
-          </span>
-        )}
-        <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "clamp(12px,1.05vw,15px)", lineHeight: 1.5 }}>{brief}</p>
-      </div>
-      <img src={FRAME} alt="" aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }} />
+    <div className={className} style={{ filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))", lineHeight: 0, ...style }}>
+      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
+        <div style={{ width: "100%", height: "100%", background: F.beige, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "14% 11%", textAlign: "center", lineHeight: 1.5 }}>
+          {label && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: F.amberText, fontFamily: SANS, fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", marginBottom: "8%" }}>
+              <span aria-hidden="true">▶</span> {label}
+            </span>
+          )}
+          <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "13px", lineHeight: 1.5 }}>{brief}</p>
+        </div>
+      </IPhoneMockup>
     </div>
   );
 }
 
+/* devices.css Apple Watch Ultra (MIT), scaled, with a "coming soon" badge */
 function Watch({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <div className={className} style={style}>
-      <div className="gwatch">
-        <div className="gwatch-face">
-          <span className="grid place-items-center rounded-[8px] font-bold" style={{ width: "34%", aspectRatio: "1", background: F.marigold, color: F.onCta, fontFamily: SANS, fontSize: "clamp(11px,5vw,16px)" }}>g</span>
-          <span className="font-bold" style={{ color: F.bone, fontFamily: SANS, fontSize: "clamp(9px,3.4vw,12px)", letterSpacing: "0.04em" }}>9:41</span>
+      <div style={{ position: "relative", width: 100, height: 106 }}>
+        <div className="device device-apple-watch-ultra" style={{ transform: "scale(0.278)", transformOrigin: "top left" }}>
+          <div className="device-frame">
+            <div className="device-screen" style={{ display: "grid", placeItems: "center", alignContent: "center", gap: 18, background: "#0a0a0a" }}>
+              <span style={{ display: "grid", placeItems: "center", width: 96, height: 96, borderRadius: 24, background: F.marigold, color: F.onCta, fontFamily: SANS, fontWeight: 700, fontSize: 56 }}>g</span>
+              <span style={{ color: F.bone, fontFamily: SANS, fontWeight: 700, fontSize: 34, letterSpacing: 2 }}>9:41</span>
+            </div>
+          </div>
+          <div className="device-stripe"></div>
+          <div className="device-header"></div>
+          <div className="device-btns"></div>
         </div>
-        <span
-          className="absolute left-1/2 -translate-x-1/2 -bottom-2.5 whitespace-nowrap rounded-full font-bold"
-          style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}
-        >
+        <span style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, whiteSpace: "nowrap", borderRadius: 999, background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}>
           Coming soon
         </span>
       </div>
@@ -337,9 +340,6 @@ export default function App() {
         details.faq>summary{list-style:none;cursor:pointer}
         details.faq>summary::-webkit-details-marker{display:none}
         details.faq[open] .faq-plus{transform:rotate(45deg)}
-        /* coming-soon apple watch — flat surfaces, no gradients */
-        .gwatch{position:relative;aspect-ratio:1/1.2;background:#18181a;border-radius:30%;padding:6%;box-shadow:0 1px 2px rgba(0,0,0,.10),0 8px 24px -6px rgba(0,0,0,.22)}
-        .gwatch-face{width:100%;height:100%;border-radius:24%;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6%}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
@@ -410,17 +410,19 @@ export default function App() {
             <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]" style={{ perspective: "1700px" }}>
               <BriefFrame
                 brief="Pick the class type — one tap, and the balance ticks up."
-                className={`absolute w-[clamp(180px,21vw,232px)] hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "translateX(40%)", zIndex: 1 }}
+                screenWidth={172}
+                className={`absolute hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
+                style={{ transform: "translateX(58%)", zIndex: 1 }}
               />
               <BriefFrame
                 brief="Your whole book at a glance, with balances — list and swipeable cards."
-                className={`relative w-[clamp(228px,27vw,272px)] ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "translateX(-8%)", zIndex: 2 }}
+                screenWidth={224}
+                className={`relative ${prefersReduced ? "" : "hero-fade d6"}`}
+                style={{ transform: "translateX(-12%)", zIndex: 2 }}
               />
               <Watch
-                className={`absolute z-[3] w-[clamp(74px,13vw,104px)] ${prefersReduced ? "" : "hero-fade d7"}`}
-                style={{ bottom: "6%", left: "3%" }}
+                className={`absolute z-[3] ${prefersReduced ? "" : "hero-fade d7"}`}
+                style={{ bottom: "10%", left: "5%" }}
               />
               <Chip chip={{ kind: "money", text: "₹xxx received" }} className={`inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "11%", right: "1%" }} />
               <Chip chip={{ kind: "dark", k: "Balance", v: "xx classes" }} className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "44%", left: "-5%" }} />
@@ -481,7 +483,7 @@ export default function App() {
 
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
-                      <BriefFrame brief={p.brief} className="w-[clamp(220px,26vw,268px)]" />
+                      <BriefFrame brief={p.brief} screenWidth={224} />
                       <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
                     </div>
                   </Reveal>
@@ -509,7 +511,7 @@ export default function App() {
                 return (
                   <Reveal key={j.step} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex flex-col items-center text-center">
                     <div className="relative">
-                      <BriefFrame brief={j.brief} className="w-[clamp(200px,24vw,236px)]" />
+                      <BriefFrame brief={j.brief} screenWidth={196} />
                       <span className="absolute -top-3 -left-1 grid place-items-center w-9 h-9 rounded-full text-[13px] font-bold z-10" style={{ background: F.marigold, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.chip }}>
                         <Icon size={16} strokeWidth={2.4} />
                       </span>
@@ -760,7 +762,7 @@ function BrandTouchpoints() {
                 <span className="absolute top-3 right-3 z-10 rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
               )}
               <div style={t.soon ? { opacity: 0.6 } : undefined}>
-                <BriefFrame brief={t.desc} label="" className="w-[clamp(150px,40vw,180px)]" />
+                <BriefFrame brief={t.desc} label="" screenWidth={150} />
               </div>
               <h4 className="mt-5 text-[16px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</h4>
             </div>
