@@ -91,8 +91,8 @@ const PILLARS = [
     title: "get organized",
     intro: "every client, schedule, and class in one place — not in your head.",
     bullets: [
-      "one tap to log a class",
-      "recurring slots and reminders",
+      "one-tap punch to log a class",
+      "recurring time slots, sorted by day",
       "no more paper register or notes app",
     ],
     screen: SCREENS.schedule,
@@ -105,11 +105,11 @@ const PILLARS = [
     eyebrow: "look professional",
     title: "your brand, your business",
     intro:
-      "show up like the professional you are — a branded profile, invoices, and reminders that carry your name.",
+      "your name and details on every statement your client sees — plus a qr profile card you can share anywhere.",
     bullets: [
-      "branded pdf invoices and statements",
-      "a public profile + qr clients can book from",
-      "reminders that look like you sent them",
+      "branded pdf statements — your name, details, and accent on each one",
+      "a shareable qr profile card in three styles",
+      "send any client their statement with a single tap",
     ],
     screen: SCREENS.brand,
     chip: { kind: "money", text: "looks pro" },
@@ -121,10 +121,10 @@ const PILLARS = [
     eyebrow: "level up",
     title: "train smarter",
     intro:
-      "an assistant that knows your coaching style — draft plans, answer client questions, see what needs attention.",
+      "a chat assistant that knows your business — ask about clients and balances, and track vitals as they progress.",
     bullets: [
-      "draft workout plans in your style",
       "ask anything about your clients and numbers",
+      "track client vitals and measurements",
       "spend evenings training, not on admin",
     ],
     screen: SCREENS.ai,
@@ -134,14 +134,25 @@ const PILLARS = [
 ];
 
 /* ── brand-touchpoints carousel ── */
-const TOUCHPOINTS = [
-  { name: "public profile page", desc: "a shareable page that is unmistakably you", screen: SCREENS.profile },
-  { name: "qr booking card", desc: "clients scan and book a trial in seconds", screen: SCREENS.brand },
-  { name: "branded pdf invoices", desc: "professional invoices with your name and logo", screen: SCREENS.payments },
-  { name: "branded statements", desc: "clean exports clients can keep", screen: SCREENS.payments },
-  { name: "book-a-trial link", desc: "one link to fill your open slots", screen: SCREENS.profile },
-  { name: "payment reminders", desc: "polite nudges that look like you sent them", screen: SCREENS.brand },
-  { name: "brand & logo settings", desc: "set it once, it shows up everywhere", screen: SCREENS.brand },
+const TOUCHPOINTS: {
+  name: string;
+  desc: string;
+  screen: string;
+  soon?: boolean;
+}[] = [
+  // LIVE NOW (real — no tag)
+  { name: "branded pdf statements", desc: "your name, details, and accent on every statement your client keeps", screen: SCREENS.payments },
+  { name: "qr profile card", desc: "three styles — share it on whatsapp or anywhere", screen: SCREENS.brand },
+  { name: "per-client share links", desc: "send any client their statement with one tap", screen: SCREENS.profile },
+  { name: "invoices, exported as pdf", desc: "clean, professional pdfs with your details", screen: SCREENS.payments },
+  // COMING SOON (clearly tagged — not live yet)
+  { name: "in-app brand theming", desc: "your colours across the app", screen: SCREENS.brand, soon: true },
+  { name: "personalized url", desc: "your own gymbo link", screen: SCREENS.profile, soon: true },
+  { name: "mini-site / public profile", desc: "a page clients can find you at", screen: SCREENS.profile, soon: true },
+  { name: "progress & client reports", desc: "shareable progress summaries", screen: SCREENS.ai, soon: true },
+  { name: "welcome + logo splash", desc: "your logo on first open", screen: SCREENS.brand, soon: true },
+  { name: "custom-branded client app", desc: "your brand, your app", screen: SCREENS.clients, soon: true },
+  { name: "own app-store listing", desc: "your studio in the stores", screen: SCREENS.clients, soon: true },
 ];
 
 /* ── 3-step journey ── */
@@ -276,18 +287,50 @@ function Phone({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  // outer div carries width/position/transform; inner is the iPhone-15 chassis
   return (
-    <img
-      src={src}
-      alt={alt}
-      loading="lazy"
-      className={`h-auto ${className}`}
-      style={{
-        borderRadius: "clamp(20px,9%,40px)",
-        boxShadow: SHADOW.phone,
-        ...style,
-      }}
-    />
+    <div className={className} style={style}>
+      <div className="gphone">
+        <div className="gphone-screen">
+          <img src={src} alt={alt} loading="lazy" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Watch({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
+  return (
+    <div className={className} style={style}>
+      <div className="gwatch">
+        <div className="gwatch-face">
+          <span
+            className="grid place-items-center rounded-[8px] font-bold"
+            style={{ width: "34%", aspectRatio: "1", background: F.marigold, color: F.onCta, fontFamily: SANS, fontSize: "clamp(11px,5vw,16px)" }}
+          >
+            g
+          </span>
+          <span className="font-bold" style={{ color: F.bone, fontFamily: SANS, fontSize: "clamp(9px,3.4vw,12px)", letterSpacing: "0.04em" }}>
+            9:41
+          </span>
+        </div>
+        {/* honest: no watch app yet — placeholder face + coming-soon badge */}
+        <span
+          className="absolute left-1/2 -translate-x-1/2 -bottom-2.5 whitespace-nowrap rounded-full font-bold uppercase"
+          style={{
+            background: F.amber,
+            color: F.onCta,
+            fontFamily: SANS,
+            fontSize: "10px",
+            letterSpacing: "0.08em",
+            padding: "4px 10px",
+            boxShadow: SHADOW.chip,
+          }}
+        >
+          coming soon
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -303,7 +346,7 @@ function Chip({
   if (chip.kind === "money") {
     return (
       <div
-        className={`absolute z-10 inline-flex items-center gap-2 px-4 py-2.5 rounded-full ${className}`}
+        className={`absolute z-10 items-center gap-2 px-4 py-2.5 rounded-full ${className}`}
         style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}
       >
         <span
@@ -396,6 +439,14 @@ export default function App() {
         details.faq>summary{list-style:none;cursor:pointer}
         details.faq>summary::-webkit-details-marker{display:none}
         details.faq[open] .faq-plus{transform:rotate(45deg)}
+        /* iPhone-15 device frame — wraps every bare app screenshot */
+        .gphone{position:relative;background:linear-gradient(150deg,#3a3a3c 0%,#1a1a1c 40%,#0a0a0a 100%);border-radius:13%;padding:3.2%;box-shadow:0 2px 8px rgba(0,0,0,.10),0 24px 60px -12px rgba(0,0,0,.28)}
+        .gphone::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);pointer-events:none}
+        .gphone-screen{position:relative;overflow:hidden;border-radius:10%;background:#000;display:block}
+        .gphone-screen>img{display:block;width:100%;height:auto}
+        /* honest "coming soon" apple watch placeholder (hero only) */
+        .gwatch{position:relative;aspect-ratio:1/1.2;background:linear-gradient(150deg,#3a3a3c,#0a0a0a);border-radius:30%;padding:6%;box-shadow:0 1px 2px rgba(0,0,0,.10),0 8px 24px -6px rgba(0,0,0,.22)}
+        .gwatch-face{width:100%;height:100%;border-radius:24%;background:radial-gradient(120% 120% at 50% 0%,#161616,#0a0a0a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6%}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-pop{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
@@ -523,8 +574,7 @@ export default function App() {
                 className={`mt-6 text-[13px] lowercase ${prefersReduced ? "" : "hero-rise d5"}`}
                 style={{ color: F.inkLabel, fontFamily: SANS }}
               >
-                no app-store wait ·{" "}
-                <b style={{ color: F.amberText }}>stop chasing payments on whatsapp</b>
+                no app-store wait · first month free · no credit card
               </p>
             </div>
 
@@ -544,16 +594,21 @@ export default function App() {
                 className={`relative z-[2] w-[clamp(230px,28vw,280px)] ${prefersReduced ? "" : "hero-pop d6"}`}
                 style={{ transform: "rotate(-2deg)" }}
               />
+              {/* coming-soon apple watch (Hevy multi-device layout — tucked by the phones) */}
+              <Watch
+                className={`absolute z-[3] w-[clamp(74px,13vw,104px)] ${prefersReduced ? "" : "hero-pop d7"}`}
+                style={{ bottom: "9%", right: "2%" }}
+              />
               {/* chips */}
               <Chip
                 chip={{ kind: "money", text: "₹8,000 received" }}
-                className={prefersReduced ? "" : "hero-pop d7"}
+                className={`inline-flex ${prefersReduced ? "" : "hero-pop d7"}`}
                 style={{ top: "12%", right: "2%" }}
               />
               <Chip
                 chip={{ kind: "dark", k: "balance", v: "12 classes" }}
                 className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-pop d7"}`}
-                style={{ bottom: "13%", left: "0%" }}
+                style={{ top: "42%", left: "-6%" }}
               />
             </div>
           </div>
@@ -644,6 +699,7 @@ export default function App() {
                     />
                     <Chip
                       chip={p.chip}
+                      className="inline-flex"
                       style={i % 2 === 1 ? { bottom: "12%", left: "2%" } : { top: "12%", right: "2%" }}
                     />
                   </Reveal>
@@ -1052,17 +1108,38 @@ function BrandTouchpoints() {
             className="text-[clamp(22px,3vw,32px)] font-black lowercase mx-auto"
             style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "22ch" }}
           >
-            your brand shows up everywhere your client sees you.
+            your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>
         <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2">
           {TOUCHPOINTS.map((t) => (
             <div
               key={t.name}
-              className="snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]"
-              style={{ background: F.charcoalCard, border: "1px solid rgba(240,240,235,0.08)" }}
+              className="relative snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]"
+              style={{
+                background: F.charcoalCard,
+                border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)",
+              }}
             >
-              <Phone src={t.screen} alt={`Gymbo — ${t.name} (placeholder)`} className="w-[clamp(150px,40vw,180px)]" />
+              {t.soon && (
+                <span
+                  className="absolute top-3 right-3 z-10 rounded-full font-bold uppercase"
+                  style={{
+                    background: F.amber,
+                    color: F.onCta,
+                    fontFamily: SANS,
+                    fontSize: "9px",
+                    letterSpacing: "0.08em",
+                    padding: "3px 8px",
+                    boxShadow: SHADOW.chip,
+                  }}
+                >
+                  coming soon
+                </span>
+              )}
+              <div style={t.soon ? { opacity: 0.45, filter: "grayscale(0.5)" } : undefined}>
+                <Phone src={t.screen} alt={`Gymbo — ${t.name}${t.soon ? " (coming soon)" : ""} (placeholder)`} className="w-[clamp(150px,40vw,180px)]" />
+              </div>
               <h4 className="mt-5 text-[16px] font-bold lowercase" style={{ fontFamily: SERIF, color: F.bone }}>
                 {t.name}
               </h4>
