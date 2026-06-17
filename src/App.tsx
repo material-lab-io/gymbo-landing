@@ -85,6 +85,7 @@ const PILLARS = [
     ],
     screen: SCREENS.ledger,
     chip: { kind: "money", text: "₹8,000 received" },
+    comingSoon: "",
     dark: false,
   },
   {
@@ -100,6 +101,7 @@ const PILLARS = [
     ],
     screen: SCREENS.schedule,
     chip: { kind: "dark", k: "Today", v: "Class logged" },
+    comingSoon: "Coming soon: travel-aware scheduling — slots that respect your commute.",
     dark: true,
   },
   {
@@ -115,6 +117,7 @@ const PILLARS = [
     ],
     screen: SCREENS.businessProfile,
     chip: { kind: "money", text: "Looks pro" },
+    comingSoon: "",
     dark: false,
   },
   {
@@ -130,6 +133,7 @@ const PILLARS = [
     ],
     screen: SCREENS.workoutTemplate,
     chip: { kind: "dark", k: "Adherence", v: "92%" },
+    comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
   },
 ];
@@ -146,7 +150,7 @@ const TOUCHPOINTS: { name: string; desc: string; screen: string; soon?: boolean 
   { name: "Personalized URL", desc: "Your own Gymbo link", screen: SCREENS.qrCard, soon: true },
   { name: "Mini-site / public profile", desc: "A page clients can find you at", screen: SCREENS.businessProfile, soon: true },
   { name: "Shareable booking link", desc: "Let clients reach out to book", screen: SCREENS.qrCard, soon: true },
-  { name: "Progress & client reports", desc: "Shareable progress summaries", screen: SCREENS.vitals, soon: true },
+  { name: "Fitness reports", desc: "Shareable client progress summaries", screen: SCREENS.vitals, soon: true },
   { name: "Welcome + logo splash", desc: "Your logo on first open", screen: SCREENS.businessProfile, soon: true },
   { name: "Custom-branded client app", desc: "Your brand, your app", screen: SCREENS.dashboard, soon: true },
 ];
@@ -474,6 +478,19 @@ export default function App() {
                         </li>
                       ))}
                     </ul>
+                    {p.comingSoon && (
+                      <div className="mt-6 flex items-start gap-2.5">
+                        <span
+                          className="shrink-0 rounded-full font-bold mt-0.5"
+                          style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
+                        >
+                          Soon
+                        </span>
+                        <span className="text-[13px] md:text-[14px]" style={{ color: dark ? F.boneMuted : F.inkMuted, fontFamily: SANS, lineHeight: 1.5 }}>
+                          {p.comingSoon.replace(/^Coming soon:\s*/, "")}
+                        </span>
+                      </div>
+                    )}
                   </Reveal>
 
                   <Reveal className="relative flex items-center justify-center" >
