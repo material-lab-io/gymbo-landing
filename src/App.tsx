@@ -77,11 +77,11 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance automatically — so you always know who owes you.",
+    intro: "The Gymbo ledger tracks every class, payment, and balance automatically — so your numbers are always up to date.",
     bullets: [
-      "Automatic balances: credit, classes left, who's overdue",
+      "Automatic balances: credit and classes left, always current",
       "Log a payment in two taps",
-      "Stop chasing money on WhatsApp",
+      "Share a clean statement in a tap",
     ],
     screen: SCREENS.ledger,
     chip: { kind: "money", text: "₹8,000 received" },
@@ -155,7 +155,7 @@ const TOUCHPOINTS: { name: string; desc: string; screen: string; soon?: boolean 
 const JOURNEY = [
   { step: "01", title: "Add a client", caption: "Name and rate — that's it.", screen: SCREENS.addClient, icon: Plus },
   { step: "02", title: "Punch a class", caption: "One tap when they show up.", screen: SCREENS.schedule, icon: Zap },
-  { step: "03", title: "See who owes you", caption: "Balance updates automatically.", screen: SCREENS.paymentReminders, icon: Wallet },
+  { step: "03", title: "See every balance", caption: "Balances update automatically.", screen: SCREENS.paymentReminders, icon: Wallet },
 ];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
@@ -423,7 +423,7 @@ export default function App() {
               />
               <DeviceFrame
                 src={SCREENS.heroWhoOwes}
-                alt="Gymbo — client balance and who owes you"
+                alt="Gymbo — client balances at a glance"
                 className={`relative w-[clamp(228px,27vw,272px)] ${prefersReduced ? "" : "hero-fade d6"}`}
                 style={{ transform: "rotateY(-13deg) rotateZ(3deg) translateX(-6%)", zIndex: 2 }}
               />
