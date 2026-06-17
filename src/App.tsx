@@ -422,8 +422,8 @@ export default function App() {
                 style={{ transform: "rotateY(18deg) rotateZ(-5deg) translateX(34%) scale(.9)", zIndex: 1 }}
               />
               <DeviceFrame
-                src={SCREENS.heroWhoOwes}
-                alt="Gymbo — client balances at a glance"
+                src={SCREENS.dashboard}
+                alt="Gymbo — your client dashboard"
                 className={`relative w-[clamp(228px,27vw,272px)] ${prefersReduced ? "" : "hero-fade d6"}`}
                 style={{ transform: "rotateY(-13deg) rotateZ(3deg) translateX(-6%)", zIndex: 2 }}
               />
