@@ -68,8 +68,8 @@ const PILLARS = [
       "Get paid for every class you teach",
       "Cash or UPI logged — nothing slips",
     ],
-    brief: "Log a payment: ₹6,400, UPI or cash — balance clears.",
-    chip: { kind: "money", text: "₹8,000 received" },
+    brief: "Log a payment — UPI or cash, and the balance clears.",
+    chip: { kind: "money", text: "₹xxx received" },
     comingSoon: "",
     dark: false,
   },
@@ -117,7 +117,7 @@ const PILLARS = [
       "Track client progress: logged sessions, adherence, per-exercise gains",
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "92%" },
+    chip: { kind: "dark", k: "Adherence", v: "xx%" },
     comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
   },
@@ -148,9 +148,9 @@ const JOURNEY = [
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
 const METRICS = [
-  { value: "200+", label: "Trainers" },
-  { value: "50,000+", label: "Classes logged" },
-  { value: "₹2 Cr+", label: "Tracked" },
+  { value: "xxx", label: "Trainers" },
+  { value: "xxx", label: "Classes logged" },
+  { value: "₹xxx", label: "Tracked" },
 ];
 
 /* ── pricing ── */
@@ -409,21 +409,21 @@ export default function App() {
             {/* angled multi-device stage */}
             <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]" style={{ perspective: "1700px" }}>
               <BriefFrame
-                brief="Pick the class type, one tap — balance updates 7/10 → 8/10."
-                className={`absolute w-[clamp(190px,22vw,240px)] hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "rotateZ(-5deg) translateX(34%) scale(.9)", zIndex: 1 }}
+                brief="Pick the class type — one tap, and the balance ticks up."
+                className={`absolute w-[clamp(180px,21vw,232px)] hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
+                style={{ transform: "translateX(40%)", zIndex: 1 }}
               />
               <BriefFrame
-                brief="Your whole book at a glance, with balances — Ravi 8 left, Sara 11 left, Aadesh 7/10."
+                brief="Your whole book at a glance, with balances — list and swipeable cards."
                 className={`relative w-[clamp(228px,27vw,272px)] ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "rotateZ(3deg) translateX(-6%)", zIndex: 2 }}
+                style={{ transform: "translateX(-8%)", zIndex: 2 }}
               />
               <Watch
                 className={`absolute z-[3] w-[clamp(74px,13vw,104px)] ${prefersReduced ? "" : "hero-fade d7"}`}
-                style={{ bottom: "8%", right: "1%", transform: "rotate(-8deg)" }}
+                style={{ bottom: "8%", right: "1%" }}
               />
-              <Chip chip={{ kind: "money", text: "₹8,000 received" }} className={`inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "11%", right: "1%" }} />
-              <Chip chip={{ kind: "dark", k: "Balance", v: "12 classes" }} className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "44%", left: "-5%" }} />
+              <Chip chip={{ kind: "money", text: "₹xxx received" }} className={`inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "11%", right: "1%" }} />
+              <Chip chip={{ kind: "dark", k: "Balance", v: "xx classes" }} className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "44%", left: "-5%" }} />
             </div>
           </div>
         </header>
@@ -441,7 +441,6 @@ export default function App() {
 
           {PILLARS.map((p, i) => {
             const dark = p.dark;
-            const angle = i % 2 === 1 ? "rotateZ(2deg)" : "rotateZ(-2deg)";
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
                 <div className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
@@ -482,7 +481,7 @@ export default function App() {
 
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
-                      <BriefFrame brief={p.brief} className="w-[clamp(220px,26vw,268px)]" style={{ transform: angle }} />
+                      <BriefFrame brief={p.brief} className="w-[clamp(220px,26vw,268px)]" />
                       <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
                     </div>
                   </Reveal>
@@ -505,12 +504,12 @@ export default function App() {
             </Reveal>
 
             <div className="carousel mt-12 flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0">
-              {JOURNEY.map((j, idx) => {
+              {JOURNEY.map((j) => {
                 const Icon = j.icon;
                 return (
                   <Reveal key={j.step} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex flex-col items-center text-center">
                     <div className="relative">
-                      <BriefFrame brief={j.brief} className="w-[clamp(200px,24vw,236px)]" style={{ transform: idx === 0 ? "rotateZ(-2deg)" : idx === 2 ? "rotateZ(2deg)" : undefined }} />
+                      <BriefFrame brief={j.brief} className="w-[clamp(200px,24vw,236px)]" />
                       <span className="absolute -top-3 -left-1 grid place-items-center w-9 h-9 rounded-full text-[13px] font-bold z-10" style={{ background: F.marigold, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.chip }}>
                         <Icon size={16} strokeWidth={2.4} />
                       </span>
@@ -553,7 +552,7 @@ export default function App() {
               ))}
             </div>
             <Reveal className="text-center mt-3">
-              <p className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Indicative figures — live counts at launch.</p>
+              <p className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Placeholder — real figures at launch.</p>
             </Reveal>
 
             {/* testimonials */}
@@ -761,7 +760,7 @@ function BrandTouchpoints() {
                 <span className="absolute top-3 right-3 z-10 rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
               )}
               <div style={t.soon ? { opacity: 0.6 } : undefined}>
-                <BriefFrame brief={t.desc} label="" className="w-[clamp(150px,40vw,180px)]" style={{ transform: "rotateZ(-1deg)" }} />
+                <BriefFrame brief={t.desc} label="" className="w-[clamp(150px,40vw,180px)]" />
               </div>
               <h4 className="mt-5 text-[16px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</h4>
             </div>
