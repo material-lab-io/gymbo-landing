@@ -40,7 +40,7 @@ test('nav and hero render with the headline', async ({ page }) => {
 
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
   await expect(nav).toBeVisible();
-  await expect(nav.getByText('get gymbo', { exact: true })).toBeVisible();
+  await expect(nav.getByText('Get Gymbo', { exact: true })).toBeVisible();
 
   const h1 = page.locator('h1');
   await expect(h1).toContainText(/fitness business/i);
@@ -52,9 +52,9 @@ test('pricing shows the three plans and numbers', async ({ page }) => {
   const pricing = page.locator('#pricing');
   await pricing.scrollIntoViewIfNeeded();
 
-  await expect(pricing.getByText('flexible', { exact: true })).toBeVisible();
-  await expect(pricing.getByText('quarterly', { exact: true })).toBeVisible();
-  await expect(pricing.getByText('annual', { exact: true })).toBeVisible();
+  await expect(pricing.getByText('Flexible', { exact: true })).toBeVisible();
+  await expect(pricing.getByText('Quarterly', { exact: true })).toBeVisible();
+  await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
 
   for (const amount of ['₹400', '₹300', '₹200']) {
     await expect(pricing.getByText(amount, { exact: true })).toBeVisible();

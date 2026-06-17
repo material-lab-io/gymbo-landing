@@ -57,7 +57,7 @@ export function WaitlistForm() {
         type="text"
         name="name"
         autoComplete="name"
-        placeholder="your name"
+        placeholder="Your name"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className={field}
@@ -68,7 +68,7 @@ export function WaitlistForm() {
         name="email"
         autoComplete="email"
         required
-        placeholder="your email"
+        placeholder="Your email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className={field}
@@ -85,12 +85,12 @@ export function WaitlistForm() {
           fontFamily: "var(--font-sans)",
         }}
       >
-        {status === "loading" ? "joining…" : "Get gymbo"}
+        {status === "loading" ? "Joining…" : "Join the waitlist"}
         {status !== "loading" && <ArrowRight size={16} aria-hidden="true" />}
       </button>
       {status === "error" && (
         <span className="text-[13px] text-white/60">
-          something went wrong — please message us on WhatsApp below.
+          Something went wrong — please message us on WhatsApp below.
         </span>
       )}
     </form>
