@@ -228,7 +228,7 @@ function BriefFrame({ brief, label = "Here we'll show", className = "", style }:
   return (
     <div
       className={className}
-      style={{ position: "relative", aspectRatio: "868 / 1772", filter: "drop-shadow(0 22px 38px rgba(0,0,0,0.32))", ...style }}
+      style={{ position: "relative", aspectRatio: "868 / 1772", filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))", ...style }}
     >
       <div
         style={{ position: "absolute", top: "1.47%", left: "3.0%", width: "94.0%", height: "97.06%", borderRadius: "14% / 6.8%", background: F.beige, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16% 11%", textAlign: "center" }}
@@ -420,7 +420,7 @@ export default function App() {
               />
               <Watch
                 className={`absolute z-[3] w-[clamp(74px,13vw,104px)] ${prefersReduced ? "" : "hero-fade d7"}`}
-                style={{ bottom: "8%", right: "1%" }}
+                style={{ bottom: "6%", left: "3%" }}
               />
               <Chip chip={{ kind: "money", text: "₹xxx received" }} className={`inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "11%", right: "1%" }} />
               <Chip chip={{ kind: "dark", k: "Balance", v: "xx classes" }} className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "44%", left: "-5%" }} />
