@@ -17,7 +17,8 @@ const STANDIN_CLIP = "/hero-demo.mp4";
 const STANDIN_POSTER = "/hero-demo-poster.png";
 const demoClip = (id: string): ClipMap =>
   DEMOS_READY ? { light: `/demos/${id}-light.mp4`, dark: `/demos/${id}-dark.mp4` } : { light: STANDIN_CLIP, dark: STANDIN_CLIP };
-const demoPoster = (id: string): string => (DEMOS_READY ? `/demos/${id}-light.png` : STANDIN_POSTER);
+const demoPoster = (id: string): ClipMap =>
+  DEMOS_READY ? { light: `/demos/${id}-light.png`, dark: `/demos/${id}-dark.png` } : { light: STANDIN_POSTER, dark: STANDIN_POSTER };
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
@@ -264,8 +265,8 @@ function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, class
 /* devices.css Apple Watch Ultra (MIT), scaled, with a "coming soon" badge */
 function Watch({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={className} style={style}>
-      <div style={{ position: "relative", width: 100, height: 106 }}>
+    <div className={`flex flex-col items-center ${className}`} style={style}>
+      <div style={{ width: 100, height: 106 }}>
         <div className="device device-apple-watch-ultra" style={{ transform: "scale(0.278)", transformOrigin: "top left" }}>
           <div className="device-frame">
             <div className="device-screen" style={{ display: "grid", placeItems: "center", alignContent: "center", gap: 18, background: "#0a0a0a" }}>
@@ -277,10 +278,11 @@ function Watch({ className = "", style }: { className?: string; style?: React.CS
           <div className="device-header"></div>
           <div className="device-btns"></div>
         </div>
-        <span style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: -8, whiteSpace: "nowrap", borderRadius: 999, background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}>
-          Coming soon
-        </span>
       </div>
+      {/* badge sits clearly BELOW the watch (was occluded by the device frame) */}
+      <span style={{ marginTop: 12, whiteSpace: "nowrap", borderRadius: 999, background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}>
+        Apple Watch — coming soon
+      </span>
     </div>
   );
 }

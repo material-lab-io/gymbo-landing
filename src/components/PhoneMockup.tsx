@@ -30,7 +30,7 @@ export function DemoFrame({
   style,
 }: {
   clip: ClipMap;
-  poster: string;
+  poster: ClipMap;
   theme: ThemeName;
   /** max rendered width in px (clips are 9:16 portrait) */
   maxWidth?: number;
@@ -68,6 +68,7 @@ export function DemoFrame({
   }, []);
 
   const src = theme === "dark" ? clip.dark : clip.light;
+  const posterSrc = theme === "dark" ? poster.dark : poster.light;
 
   useEffect(() => {
     const v = videoRef.current;
@@ -90,7 +91,7 @@ export function DemoFrame({
             playsInline
             autoPlay
             preload="metadata"
-            poster={poster}
+            poster={posterSrc}
             aria-label={label}
             data-theme-variant={theme}
             style={{ width: "100%", height: "auto", display: "block" }}
@@ -98,7 +99,7 @@ export function DemoFrame({
             <source src={src} type="video/mp4" />
           </video>
         ) : (
-          <img src={poster} alt={label || ""} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
+          <img src={posterSrc} alt={label || ""} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
         )}
 
         {comingSoon && (
