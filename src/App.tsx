@@ -1,9 +1,23 @@
 import { useEffect, useState } from "react";
-import { Check, ArrowRight, Plus, Calendar, Sparkles } from "lucide-react";
+import { Check, ArrowRight, Plus, Calendar, Sparkles, Sun, Moon } from "lucide-react";
 import { IPhoneMockup } from "react-device-mockup";
 import "devices.css/dist/devices.min.css";
+import { DemoFrame, type ThemeName, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
+
+// Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
+// public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
+// montages. ids: hero, client-list, punch-class, log-payment, branded-statement,
+// schedule, build-workout, ask-gymbo, profile-qr. 1080x1920 9:16 H.264, light+dark.
+// Until those real renders land, every slot uses the stand-in hero-demo.mp4 —
+// flip DEMOS_READY to true (one line) when public/demos/* ships.
+const DEMOS_READY = false;
+const STANDIN_CLIP = "/hero-demo.mp4";
+const STANDIN_POSTER = "/hero-demo-poster.png";
+const demoClip = (id: string): ClipMap =>
+  DEMOS_READY ? { light: `/demos/${id}-light.mp4`, dark: `/demos/${id}-dark.mp4` } : { light: STANDIN_CLIP, dark: STANDIN_CLIP };
+const demoPoster = (id: string): string => (DEMOS_READY ? `/demos/${id}-light.png` : STANDIN_POSTER);
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
@@ -15,17 +29,20 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
    real seeded shots from gy-mqk1n (ios_dev).
    ============================================================================ */
 
+// Theme-reactive tokens resolve to CSS custom properties (see the <style> block:
+// :root[data-theme=light|dark]). Charcoal/bone/marigold are always-dark-surface
+// tokens (the contrast bands stay dark in both themes), so they're literal.
 const F = {
-  beige: "#fafaf7",
-  beigeCard: "#eaeae5",
-  beigeCard2: "#e8e8e3",
-  beigeMuted: "#dcdcd9",
-  ink: "#1a1a1a",
-  inkMuted: "#555555",
-  inkLabel: "#595959",
-  amber: "#f59e0b",
+  beige: "var(--c-bg)",
+  beigeCard: "var(--c-card)",
+  beigeCard2: "var(--c-card2)",
+  beigeMuted: "var(--c-muted)",
+  ink: "var(--c-ink)",
+  inkMuted: "var(--c-ink-muted)",
+  inkLabel: "var(--c-ink-label)",
+  amber: "var(--c-brand)",
   marigold: "#fbbf24",
-  amberText: "#92400e",
+  amberText: "var(--c-brand-text)",
   onCta: "#1a1a1a",
   charcoal: "#0a0a0a",
   charcoalCard: "#141414",
@@ -60,6 +77,7 @@ function scrollToId(id: string) {
 const PILLARS = [
   {
     id: "revenue",
+    demoId: "log-payment",
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
@@ -76,6 +94,7 @@ const PILLARS = [
   },
   {
     id: "organized",
+    demoId: "schedule",
     n: "02",
     eyebrow: "Your whole roster",
     title: "Get organized",
@@ -92,6 +111,7 @@ const PILLARS = [
   },
   {
     id: "brand",
+    demoId: "branded-statement",
     n: "03",
     eyebrow: "Look professional",
     title: "Your brand, your business",
@@ -108,6 +128,7 @@ const PILLARS = [
   },
   {
     id: "workouts",
+    demoId: "build-workout",
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
@@ -142,9 +163,9 @@ const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
 
 /* ── journey ── */
 const JOURNEY = [
-  { step: "01", title: "Set up in minutes", brief: "Set up in minutes — sign in, import clients, set your rate.", icon: Plus },
-  { step: "02", title: "Schedule a class", brief: "Book a class in seconds — pick client, day, time.", icon: Calendar },
-  { step: "03", title: "Ask Gymbo", brief: "Ask: what's this month's revenue? — Gymbo answers from your data.", icon: Sparkles },
+  { step: "01", title: "Set up in minutes", demoId: "client-list", icon: Plus },
+  { step: "02", title: "Schedule a class", demoId: "schedule", icon: Calendar },
+  { step: "03", title: "Ask Gymbo", demoId: "ask-gymbo", icon: Sparkles },
 ];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
@@ -208,7 +229,7 @@ function SecondaryButton({ dark, children }: { dark?: boolean; children: React.R
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2"
-      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "rgba(26,26,26,0.2)"}`, fontFamily: SANS, fontWeight: 500 }}
+      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`, fontFamily: SANS, fontWeight: 500 }}
     >
       {children}
     </a>
@@ -295,6 +316,22 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const [theme, setTheme] = useState<ThemeName>(() => {
+    if (typeof document !== "undefined") {
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t === "dark") return "dark";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("gymbo-theme", theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -327,6 +364,8 @@ export default function App() {
   return (
     <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
       <style>{`
+        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
+        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
@@ -354,7 +393,7 @@ export default function App() {
       <nav
         aria-label="Main navigation"
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
-        style={{ background: "rgba(250,250,247,0.85)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid rgba(26,26,26,0.06)" }}
+        style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2.5 focus-visible:outline-none" aria-label="Gymbo — back to top">
           <span className="grid place-items-center w-[30px] h-[30px] rounded-[9px] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
@@ -373,9 +412,21 @@ export default function App() {
           ))}
         </div>
 
-        <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-          Get Gymbo
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
+            aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
+            aria-pressed={theme === "dark"}
+            data-theme-toggle
+            className="grid place-items-center w-11 h-11 rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2"
+            style={{ background: F.beigeCard, color: F.ink, border: "1px solid var(--c-line)" }}
+          >
+            {theme === "light" ? <Moon size={17} strokeWidth={1.8} aria-hidden="true" /> : <Sun size={17} strokeWidth={1.8} aria-hidden="true" />}
+          </button>
+          <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+            Get Gymbo
+          </button>
+        </div>
       </nav>
 
       <main id="main">
@@ -408,14 +459,20 @@ export default function App() {
 
             {/* angled multi-device stage */}
             <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]" style={{ perspective: "1700px" }}>
-              <BriefFrame
-                brief="Pick the class type — one tap, and the balance ticks up."
+              <DemoFrame
+                clip={demoClip("punch-class")}
+                poster={demoPoster("punch-class")}
+                theme={theme}
+                label="Punch a class — demo"
                 screenWidth={172}
                 className={`absolute hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
                 style={{ transform: "translateX(58%)", zIndex: 1 }}
               />
-              <BriefFrame
-                brief="Your whole book at a glance, with balances — list and swipeable cards."
+              <DemoFrame
+                clip={demoClip("hero")}
+                poster={demoPoster("hero")}
+                theme={theme}
+                label="Your book at a glance — demo"
                 screenWidth={224}
                 className={`relative ${prefersReduced ? "" : "hero-fade d6"}`}
                 style={{ transform: "translateX(-12%)", zIndex: 2 }}
@@ -483,7 +540,14 @@ export default function App() {
 
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
-                      <BriefFrame brief={p.brief} screenWidth={224} />
+                      <DemoFrame
+                        clip={demoClip(p.demoId)}
+                        poster={demoPoster(p.demoId)}
+                        theme={theme}
+                        label={`${p.title} — demo`}
+                        screenWidth={224}
+                        comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
+                      />
                       <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
                     </div>
                   </Reveal>
@@ -511,7 +575,7 @@ export default function App() {
                 return (
                   <Reveal key={j.step} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex flex-col items-center text-center">
                     <div className="relative">
-                      <BriefFrame brief={j.brief} screenWidth={196} />
+                      <DemoFrame clip={demoClip(j.demoId)} poster={demoPoster(j.demoId)} theme={theme} label={`${j.title} — demo`} screenWidth={196} />
                       <span className="absolute -top-3 -left-1 grid place-items-center w-9 h-9 rounded-full text-[13px] font-bold z-10" style={{ background: F.marigold, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.chip }}>
                         <Icon size={16} strokeWidth={2.4} />
                       </span>
@@ -564,7 +628,7 @@ export default function App() {
                   <blockquote className="text-[17px] md:text-[19px] italic" style={{ fontFamily: SERIF, lineHeight: 1.55, color: F.ink }}>
                     “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
                   </blockquote>
-                  <figcaption className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid rgba(26,26,26,0.08)" }}>
+                  <figcaption className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
                     <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: F.amberText, fontFamily: SANS }}>S</span>
                     <span className="flex flex-col">
                       <span className="text-[14px] font-bold" style={{ color: F.ink, fontFamily: SANS }}>Sarfaraz</span>
@@ -574,7 +638,7 @@ export default function App() {
                 </figure>
               </Reveal>
               <Reveal>
-                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[20px]" style={{ background: "transparent", border: "1px dashed rgba(26,26,26,0.18)" }}>
+                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[20px]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
                   <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold mb-4" style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
                   <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More alpha trainers are coming on board across India.</p>
                 </div>
@@ -660,7 +724,7 @@ export default function App() {
             <div className="flex flex-col">
               {FAQ.map((item) => (
                 <Reveal key={item.q}>
-                  <details className="faq py-1" style={{ borderBottom: "1px solid rgba(26,26,26,0.1)" }}>
+                  <details className="faq py-1" style={{ borderBottom: "1px solid var(--c-line)" }}>
                     <summary className="flex items-center justify-between gap-4 py-5">
                       <span className="text-[16px] md:text-[18px] font-bold" style={{ fontFamily: SERIF, color: F.ink }}>{item.q}</span>
                       <span className="faq-plus shrink-0 grid place-items-center w-7 h-7 rounded-full transition-transform duration-200" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText }}>
@@ -736,7 +800,7 @@ export default function App() {
       {/* ───────── mobile sticky CTA ───────── */}
       <div
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)", background: "rgba(250,250,247,0.92)", backdropFilter: "saturate(140%) blur(12px)", WebkitBackdropFilter: "saturate(140%) blur(12px)", borderTop: "1px solid rgba(26,26,26,0.08)", transform: showStickyCTA ? "translateY(0)" : "translateY(120%)" }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)", background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(12px)", WebkitBackdropFilter: "saturate(140%) blur(12px)", borderTop: "1px solid var(--c-line)", transform: showStickyCTA ? "translateY(0)" : "translateY(120%)" }}
       >
         <PrimaryCTA size="lg" className="w-full" />
       </div>

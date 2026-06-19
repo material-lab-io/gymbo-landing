@@ -1,19 +1,20 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Smoke gate for the Forge redesign (gy-9bmwm.7/.8/.9).
- * Intentionally lean: page renders, no JS errors, key CTAs/links resolve,
- * pricing numbers present. The full structural Playwright rewrite is a
- * fast-follow after this ships live.
+ * Smoke + Wave 3 acceptance [F] for getgymbo.com.
+ * Runs on both the `desktop` and `mobile` (Pixel 5) projects (see playwright.config.ts).
+ * Covers: page renders / no JS errors, nav + hero, pricing, waitlist CTA, footer,
+ * AND Wave 3: demo videos present, theme toggle swaps theme + clip variant,
+ * coming-soon overlays render, no layout break.
  */
 
-// External resources that can fail in local/preview and are not our concern.
 const IGNORE = [
   'analytics.getgymbo.com',
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'favicon',
   'og-image',
+  'hero-demo.mp4', // stand-in clip may 416/range-fail under preview; not a code error
   'Failed to load resource',
   'net::ERR',
 ];
@@ -31,13 +32,11 @@ test('page renders with no JS errors', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/gymbo/i);
   await page.waitForTimeout(800);
-
   expect(errors, errors.join('\n')).toEqual([]);
 });
 
 test('nav and hero render with the headline', async ({ page }) => {
   await page.goto('/');
-
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
   await expect(nav).toBeVisible();
   await expect(nav.getByText('Get Gymbo', { exact: true })).toBeVisible();
@@ -47,15 +46,42 @@ test('nav and hero render with the headline', async ({ page }) => {
   await expect(h1).toContainText(/from your phone/i);
 });
 
+test('demo videos play inside device frames', async ({ page }) => {
+  await page.goto('/');
+  // hero demo is above the fold → its video mounts (lazy IntersectionObserver)
+  await expect(page.locator('video').first()).toBeVisible();
+  const v = page.locator('video').first();
+  await expect(v).toHaveJSProperty('muted', true);
+  await expect(v).toHaveJSProperty('loop', true);
+});
+
+test('theme toggle swaps theme and demo variant', async ({ page }) => {
+  await page.goto('/');
+  const html = page.locator('html');
+  await expect(html).toHaveAttribute('data-theme', 'light');
+
+  await expect(page.locator('video[data-theme-variant="light"]').first()).toBeVisible();
+
+  await page.locator('[data-theme-toggle]').click();
+  await expect(html).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
+});
+
+test('coming-soon overlays render', async ({ page }) => {
+  await page.goto('/');
+  // pillar demo-frame overlays (travel-aware / AI navigate) + carousel tiles
+  await page.locator('#why').scrollIntoViewIfNeeded();
+  await expect(page.locator('[data-coming-soon]').first()).toBeVisible();
+  await expect(page.getByText(/travel-aware/i).first()).toBeVisible();
+});
+
 test('pricing shows the three plans and numbers', async ({ page }) => {
   await page.goto('/');
   const pricing = page.locator('#pricing');
   await pricing.scrollIntoViewIfNeeded();
-
   await expect(pricing.getByText('Flexible', { exact: true })).toBeVisible();
   await expect(pricing.getByText('Quarterly', { exact: true })).toBeVisible();
   await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
-
   for (const amount of ['₹400', '₹300', '₹200']) {
     await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
   }
@@ -66,8 +92,6 @@ test('waitlist CTA section and form resolve', async ({ page }) => {
   const cta = page.locator('#cta');
   await cta.scrollIntoViewIfNeeded();
   await expect(cta).toBeVisible();
-
-  // waitlist email field + submit present
   await expect(cta.locator('input[type="email"]')).toBeVisible();
   await expect(cta.getByText(/talk to the founder/i)).toBeVisible();
 });
@@ -77,6 +101,5 @@ test('footer present, and no web-app references remain', async ({ page }) => {
   const footer = page.locator('footer');
   await footer.scrollIntoViewIfNeeded();
   await expect(footer.getByText(/2026 Material Lab/i)).toBeVisible();
-
   await expect(page.locator('a[href="https://app.getgymbo.com"]')).toHaveCount(0);
 });
