@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { IPhoneMockup } from "react-device-mockup";
 
 /* ============================================================================
-   DemoFrame — a muted-loop app-demo video playing INSIDE the MIT react-device-
-   mockup iPhone-15 frame (Wave 3 / gy-sulhp.4). Theme-aware: takes a {light,dark}
-   clip map and swaps the clip when the page theme toggles. The clip is the
-   stand-in public/hero-demo.mp4 now; per-journey + per-theme clips swap in from
-   Wave 2 (the frame/markup stays put — that's the seam).
+   DemoFrame — a real, pre-composed Swift app-demo clip (Wave 2). Each clip is a
+   FULLY-COMPOSED 9:16 scene: the iPhone frame, caption, and a theme-matched
+   background are all baked in (light/dark variants), so it renders BARE — a plain
+   muted-loop <video> that blends into the page (NO device wrapper, NO CSS shadow,
+   which would halo the blended rectangle). The clip IS the treatment.
+   Theme-aware: swaps the -light/-dark variant on toggle.
    Perf: lazy-load below fold (IntersectionObserver), muted/loop/playsinline,
-   prefers-reduced-motion → static poster only (no autoplay).
+   prefers-reduced-motion → static poster (no autoplay).
    ============================================================================ */
 
 const SANS = "var(--font-sans)";
@@ -23,7 +23,7 @@ export function DemoFrame({
   clip,
   poster,
   theme,
-  screenWidth = 224,
+  maxWidth = 300,
   label,
   comingSoon,
   className = "",
@@ -32,8 +32,8 @@ export function DemoFrame({
   clip: ClipMap;
   poster: string;
   theme: ThemeName;
-  screenWidth?: number;
-  /** accessible label / caption for the demo */
+  /** max rendered width in px (clips are 9:16 portrait) */
+  maxWidth?: number;
   label?: string;
   /** optional "coming soon" overlay tag */
   comingSoon?: string;
@@ -49,7 +49,6 @@ export function DemoFrame({
     setReduced(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   }, []);
 
-  // lazy: only mount/play the video when the frame nears the viewport
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -70,7 +69,6 @@ export function DemoFrame({
 
   const src = theme === "dark" ? clip.dark : clip.light;
 
-  // swap the clip variant when the theme (and thus src) changes
   useEffect(() => {
     const v = videoRef.current;
     if (v && inView && !reduced) {
@@ -82,63 +80,52 @@ export function DemoFrame({
   const showVideo = inView && !reduced;
 
   return (
-    <div
-      ref={rootRef}
-      className={className}
-      style={{
-        position: "relative",
-        lineHeight: 0,
-        filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))",
-        ...style,
-      }}
-    >
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
-        <div style={{ width: "100%", height: "100%", background: "#000", position: "relative" }}>
-          {showVideo ? (
-            <video
-              ref={videoRef}
-              muted
-              loop
-              playsInline
-              autoPlay
-              preload="metadata"
-              poster={poster}
-              aria-label={label}
-              data-theme-variant={theme}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-            >
-              <source src={src} type="video/mp4" />
-            </video>
-          ) : (
-            <img src={poster} alt={label || ""} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-          )}
-        </div>
-      </IPhoneMockup>
+    <div ref={rootRef} className={className} style={{ position: "relative", lineHeight: 0, ...style }}>
+      <div style={{ position: "relative", maxWidth, margin: "0 auto" }}>
+        {showVideo ? (
+          <video
+            ref={videoRef}
+            muted
+            loop
+            playsInline
+            autoPlay
+            preload="metadata"
+            poster={poster}
+            aria-label={label}
+            data-theme-variant={theme}
+            style={{ width: "100%", height: "auto", display: "block" }}
+          >
+            <source src={src} type="video/mp4" />
+          </video>
+        ) : (
+          <img src={poster} alt={label || ""} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
+        )}
 
-      {comingSoon && (
-        <span
-          data-coming-soon
-          style={{
-            position: "absolute",
-            top: 10,
-            left: "50%",
-            transform: "translateX(-50%)",
-            zIndex: 5,
-            whiteSpace: "nowrap",
-            borderRadius: 999,
-            background: "#f59e0b",
-            color: "#1a1a1a",
-            fontFamily: SANS,
-            fontSize: "10px",
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-            padding: "4px 10px",
-            boxShadow: "0 1px 2px rgba(0,0,0,.1), 0 8px 24px -6px rgba(0,0,0,.18)",
-          }}
-        >
-          {comingSoon}
-        </span>
-      )}
+        {comingSoon && (
+          <span
+            data-coming-soon
+            style={{
+              position: "absolute",
+              top: "6%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              zIndex: 5,
+              whiteSpace: "nowrap",
+              borderRadius: 999,
+              background: "#f59e0b",
+              color: "#1a1a1a",
+              fontFamily: SANS,
+              fontSize: "10px",
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+              padding: "4px 10px",
+              boxShadow: "0 1px 2px rgba(0,0,0,.1), 0 8px 24px -6px rgba(0,0,0,.18)",
+            }}
+          >
+            {comingSoon}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

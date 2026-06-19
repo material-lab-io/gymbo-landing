@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Check, ArrowRight, Plus, Calendar, Sparkles, Sun, Moon } from "lucide-react";
+import { Check, ArrowRight, Plus, Sun, Moon } from "lucide-react";
 import { IPhoneMockup } from "react-device-mockup";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, type ThemeName, type ClipMap } from "./components/PhoneMockup";
@@ -12,7 +12,7 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
 // schedule, build-workout, ask-gymbo, profile-qr. 1080x1920 9:16 H.264, light+dark.
 // Until those real renders land, every slot uses the stand-in hero-demo.mp4 —
 // flip DEMOS_READY to true (one line) when public/demos/* ships.
-const DEMOS_READY = false;
+const DEMOS_READY = true;
 const STANDIN_CLIP = "/hero-demo.mp4";
 const STANDIN_POSTER = "/hero-demo-poster.png";
 const demoClip = (id: string): ClipMap =>
@@ -161,12 +161,9 @@ const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
   { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
 ];
 
-/* ── journey ── */
-const JOURNEY = [
-  { step: "01", title: "Set up in minutes", demoId: "client-list", icon: Plus },
-  { step: "02", title: "Schedule a class", demoId: "schedule", icon: Calendar },
-  { step: "03", title: "Ask Gymbo", demoId: "ask-gymbo", icon: Sparkles },
-];
+/* ── journey strip: the remaining real clips (all 8 ids get represented across
+   hero composite + pillars + here). Clips are self-captioned, so no titles. ── */
+const JOURNEY = ["client-list", "profile-qr", "ask-gymbo"];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
 const METRICS = [
@@ -457,32 +454,16 @@ export default function App() {
               </div>
             </div>
 
-            {/* angled multi-device stage */}
-            <div className="relative flex items-center justify-center min-h-[440px] md:min-h-[540px]" style={{ perspective: "1700px" }}>
-              <DemoFrame
-                clip={demoClip("punch-class")}
-                poster={demoPoster("punch-class")}
-                theme={theme}
-                label="Punch a class — demo"
-                screenWidth={172}
-                className={`absolute hidden md:block ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "translateX(58%)", zIndex: 1 }}
-              />
+            {/* hero = the single 2-phone composite demo clip (bare; baked frame + caption) */}
+            <div className="flex items-center justify-center">
               <DemoFrame
                 clip={demoClip("hero")}
                 poster={demoPoster("hero")}
                 theme={theme}
-                label="Your book at a glance — demo"
-                screenWidth={224}
-                className={`relative ${prefersReduced ? "" : "hero-fade d6"}`}
-                style={{ transform: "translateX(-12%)", zIndex: 2 }}
+                label="Gymbo on iPhone — your clients and payments"
+                maxWidth={400}
+                className={`w-full ${prefersReduced ? "" : "hero-fade d6"}`}
               />
-              <Watch
-                className={`absolute z-[3] ${prefersReduced ? "" : "hero-fade d7"}`}
-                style={{ bottom: "10%", left: "5%" }}
-              />
-              <Chip chip={{ kind: "money", text: "₹xxx received" }} className={`inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "11%", right: "1%" }} />
-              <Chip chip={{ kind: "dark", k: "Balance", v: "xx classes" }} className={`hidden md:inline-flex ${prefersReduced ? "" : "hero-fade d7"}`} style={{ top: "44%", left: "-5%" }} />
             </div>
           </div>
         </header>
@@ -545,7 +526,7 @@ export default function App() {
                         poster={demoPoster(p.demoId)}
                         theme={theme}
                         label={`${p.title} — demo`}
-                        screenWidth={224}
+                        maxWidth={300}
                         comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
                       />
                       <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
@@ -559,31 +540,22 @@ export default function App() {
           })}
         </section>
 
-        {/* ───────── journey ───────── */}
-        <section aria-label="Up and running in minutes" style={{ background: F.charcoal }}>
+        {/* ───────── in-action strip (bare demo clips, self-captioned) ───────── */}
+        <section aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
-              <Eyebrow dark>From day one</Eyebrow>
+              <Eyebrow dark>A closer look</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
-                Up and running in minutes.
+                See Gymbo in action.
               </h2>
             </Reveal>
 
             <div className="carousel mt-12 flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0">
-              {JOURNEY.map((j) => {
-                const Icon = j.icon;
-                return (
-                  <Reveal key={j.step} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex flex-col items-center text-center">
-                    <div className="relative">
-                      <DemoFrame clip={demoClip(j.demoId)} poster={demoPoster(j.demoId)} theme={theme} label={`${j.title} — demo`} screenWidth={196} />
-                      <span className="absolute -top-3 -left-1 grid place-items-center w-9 h-9 rounded-full text-[13px] font-bold z-10" style={{ background: F.marigold, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.chip }}>
-                        <Icon size={16} strokeWidth={2.4} />
-                      </span>
-                    </div>
-                    <h3 className="mt-6 text-[20px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{j.title}</h3>
-                  </Reveal>
-                );
-              })}
+              {JOURNEY.map((id) => (
+                <Reveal key={id} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex justify-center">
+                  <DemoFrame clip={demoClip(id)} poster={demoPoster(id)} theme={theme} label={`Gymbo — ${id.replace(/-/g, " ")}`} maxWidth={260} />
+                </Reveal>
+              ))}
             </div>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
@@ -763,10 +735,14 @@ export default function App() {
               <RiskReversal dark />
             </Reveal>
 
-            <Reveal className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              {["iPhone — coming soon", "Android — coming soon"].map((b) => (
-                <span key={b} className="text-[12px] px-4 py-2 rounded-full" style={{ background: "rgba(240,240,235,0.05)", border: "1px solid rgba(240,240,235,0.1)", color: F.boneLabel, fontFamily: SANS }}>{b}</span>
-              ))}
+            {/* Apple Watch coming-soon teaser (relocated out of the hero) */}
+            <Reveal className="mt-12 flex flex-col items-center gap-4">
+              <Watch />
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
+                {["iPhone — coming soon", "Android — coming soon"].map((b) => (
+                  <span key={b} className="text-[12px] px-4 py-2 rounded-full" style={{ background: "rgba(240,240,235,0.05)", border: "1px solid rgba(240,240,235,0.1)", color: F.boneLabel, fontFamily: SANS }}>{b}</span>
+                ))}
+              </div>
             </Reveal>
           </div>
         </section>
