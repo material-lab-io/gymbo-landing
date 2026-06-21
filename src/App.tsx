@@ -89,7 +89,7 @@ const PILLARS = [
       "Cash or UPI logged — nothing slips",
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
-    chip: { kind: "money", text: "₹xxx received" },
+    chip: { kind: "money", text: "₹2,400 received" },
     comingSoon: "",
     dark: false,
   },
@@ -140,7 +140,7 @@ const PILLARS = [
       "Track client progress: logged sessions, adherence, per-exercise gains",
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "xx%" },
+    chip: { kind: "dark", k: "Adherence", v: "92%" },
     comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
   },
@@ -167,11 +167,12 @@ const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
 const JOURNEY = ["client-list", "profile-qr", "ask-gymbo"];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
-const METRICS = [
-  { value: "xxx", label: "Trainers" },
-  { value: "xxx", label: "Classes logged" },
-  { value: "₹xxx", label: "Tracked" },
-];
+// METRICS hidden until real launch figures exist (marketer QA gy-dhcj1) — re-add real numbers here, then uncomment the render block in the trust section.
+// const METRICS = [
+//   { value: "xxx", label: "Trainers" },
+//   { value: "xxx", label: "Classes logged" },
+//   { value: "₹xxx", label: "Tracked" },
+// ];
 
 /* ── pricing ── */
 const PRICING = [
@@ -573,14 +574,14 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.1 }}>
-                The #1 app for professional fitness trainers in India.
+                Made for independent fitness trainers in India.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
                 Log classes, track revenue, look professional.
               </p>
             </Reveal>
 
-            {/* metric tiles — placeholder values */}
+            {/* metric tiles HIDDEN until real launch figures exist — were literal "xxx" on prod (marketer QA gy-dhcj1; spec: build empty slots, fill post-launch). Re-enable by populating METRICS and uncommenting.
             <div className="mt-10 grid grid-cols-3 gap-3 md:gap-6">
               {METRICS.map((m) => (
                 <Reveal key={m.label}>
@@ -594,6 +595,7 @@ export default function App() {
             <Reveal className="text-center mt-3">
               <p className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Placeholder — real figures at launch.</p>
             </Reveal>
+            */}
 
             {/* testimonials */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">
@@ -759,8 +761,7 @@ export default function App() {
             </span>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
-              <a href="#" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
-              <a href="#" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
+              {/* Terms/Privacy links removed until real pages exist — were dead href="#" (marketer QA gy-dhcj1). Re-add when /terms + /privacy ship. */}
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
             </nav>
           </div>
