@@ -30,4 +30,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://getgymbo.com/sitemap-index.xml
+Sitemap: https://getgymbo.com/sitemap.xml
