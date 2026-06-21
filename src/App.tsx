@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, ArrowRight, Plus, Sun, Moon } from "lucide-react";
 import { IPhoneMockup } from "react-device-mockup";
 import "devices.css/dist/devices.min.css";
-import { DemoFrame, type ThemeName, type ClipMap } from "./components/PhoneMockup";
+import { DemoFrame, ScreenshotFrame, type ThemeName, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 
@@ -23,11 +23,11 @@ const demoPoster = (id: string): ClipMap =>
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
    Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
-   beige/charcoal + solid amber accent), REAL iPhone-15 frame PNG (public/
-   iphone-15-frame.png) with screenshots composited inside, angled/perspective
-   device presentation. Brand = Forge amber #F59E0B / marigold #FBBF24, accent
-   only. Phone screens are PLACEHOLDERS (public/screens/*.png) — slots swap to
-   real seeded shots from gy-mqk1n (ios_dev).
+   beige/charcoal + solid amber accent). Brand = Forge amber #F59E0B / marigold
+   #FBBF24, accent only. Hero + 4 pillars use composed demo clips (DemoFrame);
+   the "see it in action" gallery uses current real-app screenshots in a device
+   frame (ScreenshotFrame) — founder-approved curated set, optimized to WebP via
+   scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
 // Theme-reactive tokens resolve to CSS custom properties (see the <style> block:
@@ -162,9 +162,18 @@ const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
   { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
 ];
 
-/* ── journey strip: the remaining real clips (all 8 ids get represented across
-   hero composite + pillars + here). Clips are self-captioned, so no titles. ── */
-const JOURNEY = ["client-list", "profile-qr", "ask-gymbo"];
+/* ── "see it in action" gallery: current real-app screenshots (founder-approved
+   curated set, public/screens/gallery/) shown in a unified iPhone device frame.
+   Static stills (the motion lives in the hero + pillar demo clips). Source files:
+   public/screens/real/* → optimized via scripts/optimize-gallery.mjs (gy-9bmwm.4). ── */
+const SCREENS: { slug: string; caption: string; alt: string }[] = [
+  { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card — Aadesh, 3 of 10 classes used" },
+  { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
+  { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments logged for June" },
+  { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
+  { slug: "ai", caption: "Ask Gymbo anything", alt: "Gymbo's built-in AI assistant, ready to answer questions about your training business" },
+  { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
+];
 
 /* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
 // METRICS hidden until real launch figures exist (marketer QA gy-dhcj1) — re-add real numbers here, then uncomment the render block in the trust section.
@@ -543,7 +552,7 @@ export default function App() {
           })}
         </section>
 
-        {/* ───────── in-action strip (bare demo clips, self-captioned) ───────── */}
+        {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
         <section aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
@@ -553,10 +562,13 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="carousel mt-12 flex md:grid md:grid-cols-3 gap-5 md:gap-10 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0">
-              {JOURNEY.map((id) => (
-                <Reveal key={id} className="snap-center shrink-0 w-[78vw] sm:w-[60vw] md:w-auto flex justify-center">
-                  <DemoFrame clip={demoClip(id)} poster={demoPoster(id)} theme={theme} label={`Gymbo — ${id.replace(/-/g, " ")}`} maxWidth={260} />
+            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-14 gap-x-6 md:gap-x-10 justify-items-center">
+              {SCREENS.map((s) => (
+                <Reveal key={s.slug} className="flex flex-col items-center">
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} />
+                  <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
+                    {s.caption}
+                  </p>
                 </Reveal>
               ))}
             </div>

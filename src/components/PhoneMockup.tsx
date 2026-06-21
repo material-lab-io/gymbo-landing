@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { IPhoneMockup } from "react-device-mockup";
 
 /* ============================================================================
    DemoFrame — a real, pre-composed Swift app-demo clip (Wave 2). Each clip is a
@@ -17,6 +18,55 @@ export type ThemeName = "light" | "dark";
 export interface ClipMap {
   light: string;
   dark: string;
+}
+
+/* ============================================================================
+   ScreenshotFrame — a current real-app screenshot (founder-approved curated set,
+   public/screens/gallery/) composited inside a consistent iPhone-15 device frame
+   (react-device-mockup, dynamic island). Used by the "See Gymbo in action" static
+   gallery. Perf: WebP srcset + PNG fallback via <picture>, native lazy-load +
+   async decode. The screenshots are light-mode captures, so the light screen pops
+   against the charcoal section while the dark bezel reads as a subtle device edge.
+   ============================================================================ */
+export function ScreenshotFrame({
+  slug,
+  alt,
+  screenWidth = 232,
+  className = "",
+  style,
+}: {
+  /** basename in public/screens/gallery (e.g. "dashboard") */
+  slug: string;
+  alt: string;
+  /** screen width in px (device frame adds bezel) */
+  screenWidth?: number;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const base = `/screens/gallery/${slug}`;
+  return (
+    <div
+      className={className}
+      style={{ filter: "drop-shadow(0 24px 48px rgba(0,0,0,.45)) drop-shadow(0 6px 14px rgba(0,0,0,.3))", lineHeight: 0, ...style }}
+    >
+      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
+        <picture>
+          <source
+            type="image/webp"
+            srcSet={`${base}-360.webp 360w, ${base}-540.webp 540w, ${base}-720.webp 720w`}
+            sizes={`${screenWidth}px`}
+          />
+          <img
+            src={`${base}.png`}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        </picture>
+      </IPhoneMockup>
+    </div>
+  );
 }
 
 export function DemoFrame({
