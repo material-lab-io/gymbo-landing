@@ -1,0 +1,93 @@
+name: CF allow AI crawlers (pre-staged)
+
+# Pre-staged one-shot to allow AI crawlers on the getgymbo.com zone, per founder.
+# Uses a NEW zone-scoped secret CLOUDFLARE_ZONE_TOKEN (NOT the Pages-scoped
+# CLOUDFLARE_API_TOKEN, which 403s on bot_management — verified gy-muhou pre-step).
+#
+# Flips, on PUT /zones/{id}/bot_management (both are fields on the same endpoint):
+#   - ai_bots_protection: "disabled"   (turns off the "Block AI bots" rule)
+#   - is_robots_txt_managed: false      (turns off Cloudflare's managed robots.txt,
+#                                        so our own allow-all public/robots.txt wins)
+# Then verifies https://getgymbo.com/robots.txt has no blanket "Disallow: /".
+#
+# Manual trigger only; defaults to a READ-ONLY dry run. The token is only ever
+# sent in the Authorization header — never printed (GitHub also masks secrets).
+#
+# DO NOT RUN until the founder has added the CLOUDFLARE_ZONE_TOKEN secret with:
+#   • Zone › Zone › Read           (resolve the zone by name)
+#   • Zone › Bot Management › Edit (write ai_bots_protection + is_robots_txt_managed)
+#   • Zone Resources: Include › Specific zone › getgymbo.com
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply the change? false = read-only dry run (reads current setting only)"
+        type: boolean
+        default: false
+
+jobs:
+  flip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Allow AI crawlers on getgymbo.com (bot_management)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_ZONE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CF_TOKEN:-}" ]; then
+            echo "::error::CLOUDFLARE_ZONE_TOKEN is not set — founder must add the zone-scoped secret first."
+            exit 1
+          fi
+          B=/tmp/cf.json
+          get() { curl -sS -o "$B" -w "%{http_code}" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$1" || true; }
+
+          echo "::group::Resolve zone getgymbo.com"
+          code=$(get "https://api.cloudflare.com/client/v4/zones?name=getgymbo.com")
+          echo "HTTP $code"
+          jq -c '{success, count:((.result//[])|length), errors:((.errors//[])|map(.message))}' "$B" || cat "$B"
+          ZID=$(jq -r '.result[0].id // empty' "$B" 2>/dev/null || true)
+          if [ -z "$ZID" ]; then
+            echo "::error::Could not resolve zone id — token needs Zone:Read and must be scoped to getgymbo.com."
+            exit 1
+          fi
+          echo "Zone id resolved (value not printed)."
+          echo "::endgroup::"
+
+          echo "::group::Current bot_management setting"
+          code=$(get "https://api.cloudflare.com/client/v4/zones/$ZID/bot_management")
+          echo "HTTP $code"
+          jq -c '{success, ai_bots_protection:.result.ai_bots_protection, is_robots_txt_managed:.result.is_robots_txt_managed, crawler_protection:.result.crawler_protection, errors:((.errors//[])|map(.message))}' "$B" || cat "$B"
+          if [ "$code" = "403" ]; then
+            echo "::error::403 on bot_management read — token lacks Zone:Bot Management permission."
+            exit 1
+          fi
+          echo "::endgroup::"
+
+          if [ "${{ inputs.apply }}" != "true" ]; then
+            echo "DRY RUN (apply=false): read-only. Re-run with apply=true to flip ai_bots_protection=disabled + is_robots_txt_managed=false."
+            exit 0
+          fi
+
+          echo "::group::Apply — ai_bots_protection=disabled, is_robots_txt_managed=false"
+          code=$(curl -sS -o "$B" -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data '{"ai_bots_protection":"disabled","is_robots_txt_managed":false}' \
+            "https://api.cloudflare.com/client/v4/zones/$ZID/bot_management" || true)
+          echo "HTTP $code"
+          jq -c '{success, ai_bots_protection:.result.ai_bots_protection, is_robots_txt_managed:.result.is_robots_txt_managed, errors:((.errors//[])|map(.message))}' "$B" || cat "$B"
+          if [ "$code" != "200" ]; then
+            echo "::error::PUT failed (HTTP $code) — confirm token has Zone:Bot Management:Edit."
+            exit 1
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Verify robots.txt (no blanket Disallow for AI crawlers)"
+          sleep 5
+          R=$(curl -sS https://getgymbo.com/robots.txt || true)
+          echo "$R"
+          if printf '%s\n' "$R" | grep -qiE '^[[:space:]]*Disallow:[[:space:]]*/[[:space:]]*$'; then
+            echo "::error::robots.txt still contains a blanket 'Disallow: /' — AI crawlers may still be blocked."
+            exit 1
+          fi
+          echo "OK: served robots.txt has no blanket 'Disallow: /' — ClaudeBot / GPTBot / Google-Extended are not blocked at the robots.txt level."
+          echo "::endgroup::"
