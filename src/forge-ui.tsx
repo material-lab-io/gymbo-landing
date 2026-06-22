@@ -1,0 +1,151 @@
+import { useEffect, useState } from "react";
+import { ArrowRight } from "lucide-react";
+
+/* ============================================================================
+   forge-ui — shared design tokens, theme system, and presentational primitives
+   for getgymbo.com. Single source of truth so the homepage (App.tsx) and the
+   comparison pages stay visually identical. Forge palette: amber #F59E0B /
+   marigold #FBBF24 accent on flat beige/charcoal, sentence case, no gradients.
+   ============================================================================ */
+
+export type ThemeName = "light" | "dark";
+
+// Theme-reactive tokens resolve to CSS custom properties (see ForgeStyle:
+// :root[data-theme=light|dark]). Charcoal/bone/marigold are always-dark-surface
+// tokens (the contrast bands stay dark in both themes), so they're literal.
+export const F = {
+  beige: "var(--c-bg)",
+  beigeCard: "var(--c-card)",
+  beigeCard2: "var(--c-card2)",
+  beigeMuted: "var(--c-muted)",
+  ink: "var(--c-ink)",
+  inkMuted: "var(--c-ink-muted)",
+  inkLabel: "var(--c-ink-label)",
+  amber: "var(--c-brand)",
+  marigold: "#fbbf24",
+  amberText: "var(--c-brand-text)",
+  onCta: "#1a1a1a",
+  charcoal: "#0a0a0a",
+  charcoalCard: "#141414",
+  charcoalCard2: "#1c1c1e",
+  bone: "#f0f0eb",
+  boneMuted: "#b8b8b8",
+  boneLabel: "#a0a0a0",
+  green: "#15803d",
+  red: "#b80f34",
+};
+
+export const SHADOW = {
+  cta: "0 1px 2px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06)",
+  chip: "0 1px 2px rgba(0,0,0,.10), 0 8px 24px -6px rgba(0,0,0,.18)",
+  card: "0 1px 2px rgba(0,0,0,.06), 0 12px 32px -12px rgba(0,0,0,.12)",
+};
+
+export const SERIF = "var(--font-serif)"; // Merriweather
+export const SANS = "var(--font-sans)"; // Open Sans
+
+export const WHATSAPP = "https://wa.me/918050131733?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo";
+
+/** Smooth-scroll to an in-page anchor by id (used by CTAs + nav). */
+export function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/** data-theme + localStorage theme state, shared by every page. */
+export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.SetStateAction<ThemeName>> } {
+  const [theme, setTheme] = useState<ThemeName>(() => {
+    if (typeof document !== "undefined") {
+      const t = document.documentElement.getAttribute("data-theme");
+      if (t === "dark") return "dark";
+    }
+    return "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("gymbo-theme", theme);
+    } catch {
+      /* ignore */
+    }
+  }, [theme]);
+
+  return { theme, setTheme };
+}
+
+/** The Forge token + animation CSS, rendered once per page. */
+export function ForgeStyle() {
+  return (
+    <style>{`
+        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
+        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
+        .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
+        .reveal-on-scroll.is-visible{opacity:1;transform:none}
+        @keyframes g-rise{to{opacity:1;transform:none}}
+        @keyframes g-fade{to{opacity:1}}
+        .hero-rise{opacity:0;transform:translateY(16px);animation:g-rise .7s cubic-bezier(.22,.9,.3,1) forwards}
+        .hero-fade{opacity:0;animation:g-fade .8s ease forwards}
+        .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.30s}.d4{animation-delay:.44s}.d5{animation-delay:.58s}
+        .d6{animation-delay:.55s}.d7{animation-delay:.95s}
+        .carousel{scrollbar-width:none}
+        .carousel::-webkit-scrollbar{display:none}
+        details.faq>summary{list-style:none;cursor:pointer}
+        details.faq>summary::-webkit-details-marker{display:none}
+        details.faq[open] .faq-plus{transform:rotate(45deg)}
+        @media (prefers-reduced-motion:reduce){
+          .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
+          .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
+        }
+      `}</style>
+  );
+}
+
+/* ── presentational primitives ── */
+
+export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
+  return (
+    <span
+      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5"
+      style={{ letterSpacing: "0.08em", color: dark ? F.marigold : F.amberText, fontFamily: SANS }}
+    >
+      <span className="inline-block w-[7px] h-[7px] rounded-full" style={{ background: dark ? F.marigold : F.amber }} />
+      {children}
+    </span>
+  );
+}
+
+export function PrimaryCTA({ dark, size = "md", className = "", children = "Join the waitlist" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
+  return (
+    <button
+      onClick={() => scrollToId("cta")}
+      className={`inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]"} ${className}`}
+      style={{ background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}
+    >
+      {children}
+      <ArrowRight size={16} aria-hidden="true" />
+    </button>
+  );
+}
+
+export function SecondaryButton({ dark, children }: { dark?: boolean; children: React.ReactNode }) {
+  return (
+    <a
+      href={WHATSAPP}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2"
+      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`, fontFamily: SANS, fontWeight: 500 }}
+    >
+      {children}
+    </a>
+  );
+}
+
+export function RiskReversal({ dark }: { dark?: boolean }) {
+  return (
+    <p className="text-[13px]" style={{ color: dark ? F.boneLabel : F.inkLabel, fontFamily: SANS }}>
+      Free · no credit card
+    </p>
+  );
+}

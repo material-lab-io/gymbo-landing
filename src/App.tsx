@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Check, ArrowRight, Plus, Sun, Moon } from "lucide-react";
+import { Check, Plus, Sun, Moon } from "lucide-react";
 import { IPhoneMockup } from "react-device-mockup";
 import "devices.css/dist/devices.min.css";
-import { DemoFrame, ScreenshotFrame, type ThemeName, type ClipMap } from "./components/PhoneMockup";
+import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, RiskReversal } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -30,49 +31,9 @@ const demoPoster = (id: string): ClipMap =>
    scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
-// Theme-reactive tokens resolve to CSS custom properties (see the <style> block:
-// :root[data-theme=light|dark]). Charcoal/bone/marigold are always-dark-surface
-// tokens (the contrast bands stay dark in both themes), so they're literal.
-const F = {
-  beige: "var(--c-bg)",
-  beigeCard: "var(--c-card)",
-  beigeCard2: "var(--c-card2)",
-  beigeMuted: "var(--c-muted)",
-  ink: "var(--c-ink)",
-  inkMuted: "var(--c-ink-muted)",
-  inkLabel: "var(--c-ink-label)",
-  amber: "var(--c-brand)",
-  marigold: "#fbbf24",
-  amberText: "var(--c-brand-text)",
-  onCta: "#1a1a1a",
-  charcoal: "#0a0a0a",
-  charcoalCard: "#141414",
-  charcoalCard2: "#1c1c1e",
-  bone: "#f0f0eb",
-  boneMuted: "#b8b8b8",
-  boneLabel: "#a0a0a0",
-  green: "#15803d",
-  red: "#b80f34",
-};
-
-const SHADOW = {
-  cta: "0 1px 2px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06)",
-  chip: "0 1px 2px rgba(0,0,0,.10), 0 8px 24px -6px rgba(0,0,0,.18)",
-  card: "0 1px 2px rgba(0,0,0,.06), 0 12px 32px -12px rgba(0,0,0,.12)",
-};
-
-const SERIF = "var(--font-serif)"; // Merriweather
-const SANS = "var(--font-sans)"; // Open Sans
-
-// Visual slots show a styled "here we'll show" BRIEF inside the iPhone-15 frame
-// (founder direction) — these swap out for real-app video loops later (phased).
-
-const WHATSAPP = "https://wa.me/918050131733?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo";
-
-function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-}
+/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, the theme hook,
+   and the shared presentational primitives now live in ./forge-ui (SSOT shared
+   with the comparison pages). */
 
 /* ── 4 pillars ── */
 const PILLARS = [
@@ -205,53 +166,6 @@ const FAQ = [
    building blocks
    ============================================================================ */
 
-function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
-  return (
-    <span
-      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5"
-      style={{ letterSpacing: "0.08em", color: dark ? F.marigold : F.amberText, fontFamily: SANS }}
-    >
-      <span className="inline-block w-[7px] h-[7px] rounded-full" style={{ background: dark ? F.marigold : F.amber }} />
-      {children}
-    </span>
-  );
-}
-
-function PrimaryCTA({ dark, size = "md", className = "", children = "Join the waitlist" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
-  return (
-    <button
-      onClick={() => scrollToId("cta")}
-      className={`inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]"} ${className}`}
-      style={{ background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}
-    >
-      {children}
-      <ArrowRight size={16} aria-hidden="true" />
-    </button>
-  );
-}
-
-function SecondaryButton({ dark, children }: { dark?: boolean; children: React.ReactNode }) {
-  return (
-    <a
-      href={WHATSAPP}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2"
-      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`, fontFamily: SANS, fontWeight: 500 }}
-    >
-      {children}
-    </a>
-  );
-}
-
-function RiskReversal({ dark }: { dark?: boolean }) {
-  return (
-    <p className="text-[13px]" style={{ color: dark ? F.boneLabel : F.inkLabel, fontFamily: SANS }}>
-      Free · no credit card
-    </p>
-  );
-}
-
 /* react-device-mockup iPhone 15 Pro (MIT, dynamic island) with a styled
    "here we'll show" BRIEF as the screen content. Inner content swaps
    brief → screenshot → muted-loop video later; the frame stays put. */
@@ -325,22 +239,7 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const [theme, setTheme] = useState<ThemeName>(() => {
-    if (typeof document !== "undefined") {
-      const t = document.documentElement.getAttribute("data-theme");
-      if (t === "dark") return "dark";
-    }
-    return "light";
-  });
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("gymbo-theme", theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme]);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -372,27 +271,7 @@ export default function App() {
 
   return (
     <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
-      <style>{`
-        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
-        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
-        .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
-        .reveal-on-scroll.is-visible{opacity:1;transform:none}
-        @keyframes g-rise{to{opacity:1;transform:none}}
-        @keyframes g-fade{to{opacity:1}}
-        .hero-rise{opacity:0;transform:translateY(16px);animation:g-rise .7s cubic-bezier(.22,.9,.3,1) forwards}
-        .hero-fade{opacity:0;animation:g-fade .8s ease forwards}
-        .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.30s}.d4{animation-delay:.44s}.d5{animation-delay:.58s}
-        .d6{animation-delay:.55s}.d7{animation-delay:.95s}
-        .carousel{scrollbar-width:none}
-        .carousel::-webkit-scrollbar{display:none}
-        details.faq>summary{list-style:none;cursor:pointer}
-        details.faq>summary::-webkit-details-marker{display:none}
-        details.faq[open] .faq-plus{transform:rotate(45deg)}
-        @media (prefers-reduced-motion:reduce){
-          .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
-          .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
-        }
-      `}</style>
+      <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>
         Skip to content
@@ -724,6 +603,11 @@ export default function App() {
                 </Reveal>
               ))}
             </div>
+            <Reveal className="mt-10 text-center">
+              <a href="/compare/gymbo-vs-wellnessz" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
+                Comparing trainer apps? See how Gymbo compares to WellnessZ →
+              </a>
+            </Reveal>
           </div>
         </section>
 
@@ -773,6 +657,7 @@ export default function App() {
             </span>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
+              <a href="/compare/gymbo-vs-wellnessz" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
               {/* Terms/Privacy links removed until real pages exist — were dead href="#" (marketer QA gy-dhcj1). Re-add when /terms + /privacy ship. */}
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
             </nav>
