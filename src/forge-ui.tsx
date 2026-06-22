@@ -52,32 +52,41 @@ export function scrollToId(id: string) {
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/** data-theme + localStorage theme state, shared by every page. */
+/** data-theme + localStorage theme state, shared by every page.
+   SSR/hydration-safe: the FIRST render is deterministically "light" on both
+   server and client (so prerendered markup hydrates without mismatch). The
+   real theme — already applied to <html data-theme> pre-paint by the no-flash
+   script in each HTML <head>, so page colours are correct immediately via CSS
+   vars — is read into JS state only AFTER hydration. The write-back effect is
+   gated on `ready` so it never clobbers the no-flash value on first commit. */
 export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.SetStateAction<ThemeName>> } {
-  const [theme, setTheme] = useState<ThemeName>(() => {
-    if (typeof document !== "undefined") {
-      const t = document.documentElement.getAttribute("data-theme");
-      if (t === "dark") return "dark";
-    }
-    return "light";
-  });
+  const [theme, setTheme] = useState<ThemeName>("light");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const t = document.documentElement.getAttribute("data-theme");
+    setTheme(t === "dark" ? "dark" : "light");
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
     document.documentElement.setAttribute("data-theme", theme);
     try {
       localStorage.setItem("gymbo-theme", theme);
     } catch {
       /* ignore */
     }
-  }, [theme]);
+  }, [theme, ready]);
 
   return { theme, setTheme };
 }
 
-/** The Forge token + animation CSS, rendered once per page. */
-export function ForgeStyle() {
-  return (
-    <style>{`
+// Forge token + animation CSS. Injected via dangerouslySetInnerHTML (NOT JSX
+// children): <style> is a raw-text element, and renderToString HTML-escapes
+// element children — which would emit data-theme=&quot;light&quot; into the
+// served CSS (invalid selector + a hydration mismatch). __html keeps it raw.
+const FORGE_CSS = `
         :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
         :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
@@ -97,8 +106,11 @@ export function ForgeStyle() {
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
         }
-      `}</style>
-  );
+      `;
+
+/** The Forge token + animation CSS, rendered once per page. */
+export function ForgeStyle() {
+  return <style dangerouslySetInnerHTML={{ __html: FORGE_CSS }} />;
 }
 
 /* ── presentational primitives ── */
