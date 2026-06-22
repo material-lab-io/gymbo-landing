@@ -1,0 +1,56 @@
+name: CF AI-bots access test (one-off)
+
+# One-off probe (gy-muhou pre-step): does the existing CLOUDFLARE_API_TOKEN
+# (Pages-scoped, used by cf-deploy.yml) have scope to read + flip the zone's
+# "Block AI bots" setting for getgymbo.com? Reports HTTP status per step.
+# The token is only ever sent in the Authorization header — never printed
+# (GitHub also masks secrets in logs). Manual trigger only.
+on:
+  workflow_dispatch:
+
+jobs:
+  cf-ai-bots:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe Cloudflare AI-bot setting for getgymbo.com
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          B=/tmp/cf_body.json
+          get() { curl -sS -o "$B" -w "%{http_code}" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$1"; }
+
+          echo "::group::1. Token verify"
+          code=$(get "https://api.cloudflare.com/client/v4/user/tokens/verify" || true)
+          echo "HTTP $code"
+          jq -c '{success, status:.result.status, errors:((.errors//[])|map(.message))}' "$B" 2>/dev/null || cat "$B"
+          echo "::endgroup::"
+
+          echo "::group::2. Resolve zone getgymbo.com"
+          code=$(get "https://api.cloudflare.com/client/v4/zones?name=getgymbo.com" || true)
+          echo "HTTP $code"
+          jq -c '{success, count:((.result//[])|length), errors:((.errors//[])|map(.message))}' "$B" 2>/dev/null || cat "$B"
+          ZID=$(jq -r '.result[0].id // empty' "$B" 2>/dev/null || true)
+          if [ -z "$ZID" ]; then
+            echo "RESULT: could not resolve zone id — token likely lacks Zone:Read (Pages-scoped). Stopping."
+            echo "VERDICT=NO_ZONE_SCOPE" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+            exit 0
+          fi
+          echo "zone id resolved (value not printed)"
+          echo "::endgroup::"
+
+          echo "::group::3. GET bot_management (read current AI-bot setting)"
+          code=$(get "https://api.cloudflare.com/client/v4/zones/$ZID/bot_management" || true)
+          echo "HTTP $code"
+          jq -c '{success, ai_bots_protection:.result.ai_bots_protection, crawler_protection:.result.crawler_protection, errors:((.errors//[])|map(.message))}' "$B" 2>/dev/null || cat "$B"
+          echo "::endgroup::"
+
+          echo "::group::4. PUT bot_management ai_bots_protection=disabled (the flip)"
+          code=$(curl -sS -o "$B" -w "%{http_code}" -X PUT \
+            -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" \
+            --data '{"ai_bots_protection":"disabled"}' \
+            "https://api.cloudflare.com/client/v4/zones/$ZID/bot_management" || true)
+          echo "HTTP $code"
+          jq -c '{success, ai_bots_protection:.result.ai_bots_protection, errors:((.errors//[])|map(.message))}' "$B" 2>/dev/null || cat "$B"
+          echo "PUT_STATUS=$code" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          echo "::endgroup::"
