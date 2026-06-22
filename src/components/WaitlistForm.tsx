@@ -18,16 +18,15 @@ export function WaitlistForm() {
         body: JSON.stringify({ name, email }),
       });
       if (!res.ok) throw new Error("bad status");
+      // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).
       if (typeof window !== "undefined" && (window as any).umami) {
-        (window as any).umami.track("waitlist_submit");
+        (window as any).umami.track("waitlist_signup");
       }
       setStatus("done");
     } catch {
-      // Backend (D1) not provisioned yet — capture via email so no lead is lost.
-      const subject = encodeURIComponent("join the gymbo waitlist");
-      const body = encodeURIComponent(`name: ${name}\nemail: ${email}`);
-      window.location.href = `mailto:hello@getgymbo.com?subject=${subject}&body=${body}`;
-      setStatus("done");
+      // Real error UX (no silent auto-redirect): show an inline error with an
+      // explicit, pre-filled mailto fallback so a lead can still reach us.
+      setStatus("error");
     }
   }
 
@@ -89,8 +88,16 @@ export function WaitlistForm() {
         {status !== "loading" && <ArrowRight size={16} aria-hidden="true" />}
       </button>
       {status === "error" && (
-        <span className="text-[13px] text-white/60">
-          Something went wrong — please message us on WhatsApp below.
+        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.72)", fontFamily: "var(--font-sans)" }}>
+          Couldn't add you just now — please try again, or{" "}
+          <a
+            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`}
+            className="underline"
+            style={{ color: "#fff" }}
+          >
+            email us to join
+          </a>
+          .
         </span>
       )}
     </form>

@@ -8,8 +8,10 @@ export async function onRequestPost(context) {
     if (!email || !email.includes("@")) {
       return Response.json({ error: "valid email required" }, { status: 400 });
     }
+    // OR IGNORE: a returning visitor re-submitting their email is a success,
+    // not a 500 (email has a UNIQUE index — see schema.sql).
     await context.env.DB.prepare(
-      "INSERT INTO waitlist (name, email) VALUES (?, ?)"
+      "INSERT OR IGNORE INTO waitlist (name, email) VALUES (?, ?)"
     ).bind(name, email).run();
     return Response.json({ ok: true });
   } catch (e) {
