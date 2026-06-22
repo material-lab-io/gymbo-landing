@@ -1,22 +1,32 @@
 # Gymbo
 
-> Fitness management iOS app for independent personal trainers — clients, sessions, payments, and punch cards in one place. India-first. Currently in beta on iOS via TestFlight.
+> Gymbo is an iOS business app for independent personal trainers in India. It turns the day-to-day of running a training practice — logging sessions, tracking payments and balances, scheduling, and looking professional — into a few taps. One flat subscription, unlimited clients, first month free.
 
-## Product
-- [Landing page](https://getgymbo.com) - Overview of features, how it works, and waitlist
+Gymbo is built for the independent personal trainer — not a gym chain, and not a dietitian. A trainer's day is sessions, schedules, and payments, so Gymbo is built around that: a one-tap punch to log a class, a client card that does the balance math automatically, and payment reminders that send themselves. AI-generated workouts and a shareable QR profile card are built in. Clients don't download anything — Gymbo is for the trainer.
 
-## Features
-- Client management — roster, session history, balance tracking
-- Punch cards — session bundles (10, 20, or custom sessions) with automatic deduction
-- Payments — UPI, cash, and card logging; running balances; invoice generation
-- Offline-first — full functionality without internet; auto-syncs on reconnect
-- Phone login — OTP-based, no passwords
+## Key features
 
-## Audience
-Independent personal trainers in India who manage their own clients without a gym affiliate.
+- One-tap session logging (punch a class) with automatic balance math
+- Payment and balance tracking — cash or UPI, GST invoices, colour-coded reminders
+- Scheduling and your full client roster in one place
+- AI-assisted workout building and assignment
+- A shareable QR profile card and branded PDF statements
+- Passwordless sign-in (Apple + Face ID); works offline and syncs when back online
 
-## Status
-iOS app is in beta via TestFlight. Android coming soon. Waitlist open at getgymbo.com/#waitlist.
+## Pricing
 
-## Contact
-hello@getgymbo.com
+- Flexible: ₹400/month (billed monthly)
+- Quarterly: ₹900 every 3 months (₹300/month effective, save 25%)
+- Annual: ₹2,400 per year (₹200/month effective, save 50%)
+- Unlimited clients on every plan; first month free, no card required
+
+## Links
+
+- [Home](https://getgymbo.com/): product overview, features, and the waitlist
+- [Pricing](https://getgymbo.com/pricing.md): plans, free trial, and what's included
+- [Gymbo vs WellnessZ](https://getgymbo.com/compare/gymbo-vs-wellnessz/): how Gymbo compares to a nutrition-first alternative
+
+## Notes
+
+- Status: in private alpha on iOS (iPhone). Android is on the way.
+- Made by Material Lab (https://materiallab.io). Contact: damini@materiallab.io
