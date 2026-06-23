@@ -153,7 +153,7 @@ const PRICING = [
 
 /* ── FAQ ── */
 const FAQ = [
-  { q: "Is it free?", a: "Your first month is free, no card required. After that, plans start at ₹200/month." },
+  { q: "Is it free?", a: "Your first month is free, no card required. After that, plans start at ₹400/month (₹200/month effective on the annual plan)." },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
