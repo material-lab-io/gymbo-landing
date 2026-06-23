@@ -108,6 +108,19 @@ const FORGE_CSS = `
         .legal-prose a{color:var(--c-brand-text);text-decoration:underline;text-underline-offset:2px}
         .legal-prose ul{list-style:disc;padding-left:22px;display:flex;flex-direction:column;gap:7px;margin:0}
         .legal-prose strong{color:var(--c-ink);font-weight:600}
+        .article-prose>*+*{margin-top:18px}
+        .article-prose h2{font-family:var(--font-serif);font-weight:800;font-size:clamp(20px,2.6vw,26px);line-height:1.25;letter-spacing:-0.01em;color:var(--c-ink);margin-top:36px}
+        .article-prose h3{font-weight:700;font-size:17px;color:var(--c-ink);margin-top:24px}
+        .article-prose a{color:var(--c-brand-text);text-decoration:underline;text-underline-offset:2px}
+        .article-prose strong{color:var(--c-ink);font-weight:600}
+        .article-prose ul{list-style:disc;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+        .article-prose ol{list-style:decimal;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+        .article-prose blockquote{border-left:3px solid var(--c-brand);padding-left:16px;color:var(--c-ink-muted);font-style:italic}
+        .article-prose hr{border:0;border-top:1px solid var(--c-line);margin:28px 0}
+        .article-prose table{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+        .article-prose th,.article-prose td{border:1px solid var(--c-line);padding:10px 12px;text-align:left;vertical-align:top}
+        .article-prose thead th{background:rgba(245,158,11,0.08);font-family:var(--font-serif);color:var(--c-ink)}
+        .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}

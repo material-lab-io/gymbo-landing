@@ -15,9 +15,23 @@ export interface RouteDef {
   changefreq: string;
 }
 
-export const ROUTES: RouteDef[] = [
+import { POSTS } from "./content/blog/posts";
+
+const STATIC_ROUTES: RouteDef[] = [
   { key: "main", entry: "index.html", url: "/", priority: "1.0", changefreq: "weekly" },
   { key: "compareWellnessz", entry: "compare/gymbo-vs-wellnessz/index.html", url: "/compare/gymbo-vs-wellnessz/", priority: "0.8", changefreq: "monthly" },
   { key: "privacy", entry: "privacy/index.html", url: "/privacy/", priority: "0.3", changefreq: "yearly" },
   { key: "terms", entry: "terms/index.html", url: "/terms/", priority: "0.3", changefreq: "yearly" },
+  { key: "blog", entry: "blog/index.html", url: "/blog/", priority: "0.6", changefreq: "weekly" },
 ];
+
+// One route per blog post (each needs a matching blog/<slug>/index.html entry).
+const POST_ROUTES: RouteDef[] = POSTS.map((p) => ({
+  key: `blog-${p.slug}`,
+  entry: `blog/${p.slug}/index.html`,
+  url: `/blog/${p.slug}/`,
+  priority: "0.7",
+  changefreq: "monthly",
+}));
+
+export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES];
