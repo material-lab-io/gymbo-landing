@@ -102,6 +102,12 @@ const FORGE_CSS = `
         details.faq>summary{list-style:none;cursor:pointer}
         details.faq>summary::-webkit-details-marker{display:none}
         details.faq[open] .faq-plus{transform:rotate(45deg)}
+        .legal-prose h2{font-family:var(--font-serif);font-weight:800;font-size:21px;line-height:1.3;color:var(--c-ink);letter-spacing:-0.01em}
+        .legal-prose h3{font-weight:700;font-size:16px;color:var(--c-ink)}
+        .legal-prose p{margin:0}
+        .legal-prose a{color:var(--c-brand-text);text-decoration:underline;text-underline-offset:2px}
+        .legal-prose ul{list-style:disc;padding-left:22px;display:flex;flex-direction:column;gap:7px;margin:0}
+        .legal-prose strong{color:var(--c-ink);font-weight:600}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}

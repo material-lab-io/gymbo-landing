@@ -388,6 +388,8 @@ export function CompareWellnessZ() {
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <a href={HOME} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Home</a>
               <a href={`${HOME}#pricing`} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Pricing</a>
+              <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
+              <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
             </nav>
           </div>

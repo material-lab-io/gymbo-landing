@@ -18,4 +18,6 @@ export interface RouteDef {
 export const ROUTES: RouteDef[] = [
   { key: "main", entry: "index.html", url: "/", priority: "1.0", changefreq: "weekly" },
   { key: "compareWellnessz", entry: "compare/gymbo-vs-wellnessz/index.html", url: "/compare/gymbo-vs-wellnessz/", priority: "0.8", changefreq: "monthly" },
+  { key: "privacy", entry: "privacy/index.html", url: "/privacy/", priority: "0.3", changefreq: "yearly" },
+  { key: "terms", entry: "terms/index.html", url: "/terms/", priority: "0.3", changefreq: "yearly" },
 ];

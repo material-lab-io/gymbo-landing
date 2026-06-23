@@ -657,8 +657,9 @@ export default function App() {
             </span>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
-              <a href="/compare/gymbo-vs-wellnessz" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
-              {/* Terms/Privacy links removed until real pages exist — were dead href="#" (marketer QA gy-dhcj1). Re-add when /terms + /privacy ship. */}
+              <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
+              <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
+              <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
             </nav>
           </div>
