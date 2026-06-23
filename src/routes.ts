@@ -16,6 +16,7 @@ export interface RouteDef {
 }
 
 import { POSTS } from "./content/blog/posts";
+import { ALTERNATIVES } from "./content/alternatives/pages";
 
 const STATIC_ROUTES: RouteDef[] = [
   { key: "main", entry: "index.html", url: "/", priority: "1.0", changefreq: "weekly" },
@@ -34,4 +35,13 @@ const POST_ROUTES: RouteDef[] = POSTS.map((p) => ({
   changefreq: "monthly",
 }));
 
-export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES];
+// One route per /alternatives/<slug> comparison page.
+const ALT_ROUTES: RouteDef[] = ALTERNATIVES.map((p) => ({
+  key: `alt-${p.slug}`,
+  entry: `alternatives/${p.slug}/index.html`,
+  url: `/alternatives/${p.slug}/`,
+  priority: "0.7",
+  changefreq: "monthly",
+}));
+
+export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES, ...ALT_ROUTES];

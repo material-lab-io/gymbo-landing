@@ -15,16 +15,24 @@ function formatDate(iso: string) {
 /* Renders one content post: single H1 (post.title), dek, markdown body, a CTA,
    and a FAQ built from post.faq (same source as the FAQPage JSON-LD in <head>).
    Used for the cornerstone guide and the /alternatives comparison pages. */
-export function ArticlePage({ post }: { post: Post }) {
+export function ArticlePage({
+  post,
+  back = { href: "/blog/", label: "← all articles" },
+  showDate = true,
+}: {
+  post: Post;
+  back?: { href: string; label: string };
+  showDate?: boolean;
+}) {
   const html = marked.parse(post.bodyMd) as string;
   return (
     <PageShell>
       <article className="max-w-[760px] mx-auto px-5 md:px-12 pt-12 md:pt-16 pb-20">
-        <a href="/blog/" className="text-[13px] font-semibold" style={{ color: F.amberText, fontFamily: SANS }}>← all articles</a>
+        <a href={back.href} className="text-[13px] font-semibold" style={{ color: F.amberText, fontFamily: SANS }}>{back.label}</a>
         <h1 className="mt-4 text-[clamp(28px,4.6vw,44px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.12, color: F.ink }}>
           {post.title}
         </h1>
-        <p className="mt-3 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{formatDate(post.date)}</p>
+        {showDate && <p className="mt-3 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{formatDate(post.date)}</p>}
         {post.dek && <p className="mt-5 text-[17px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{post.dek}</p>}
 
         <div className="article-prose mt-8" style={{ color: F.inkMuted, fontFamily: SANS, fontSize: "15.5px", lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />

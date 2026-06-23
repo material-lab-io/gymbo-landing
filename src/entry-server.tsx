@@ -6,6 +6,7 @@ import { Terms } from "./pages/Terms";
 import { Blog } from "./pages/Blog";
 import { ArticlePage } from "./pages/ArticlePage";
 import { POSTS } from "./content/blog/posts";
+import { ALTERNATIVES } from "./content/alternatives/pages";
 import { ROUTES } from "./routes";
 
 // Map each route key to its page element. Adding a route = add it to ROUTES
@@ -20,6 +21,9 @@ const ELEMENTS: Record<string, React.ReactElement> = {
 };
 for (const p of POSTS) {
   ELEMENTS[`blog-${p.slug}`] = <ArticlePage post={p} />;
+}
+for (const p of ALTERNATIVES) {
+  ELEMENTS[`alt-${p.slug}`] = <ArticlePage post={p} back={{ href: "/", label: "← gymbo" }} showDate={false} />;
 }
 
 export { ROUTES };
