@@ -2,6 +2,8 @@
 dist/
 # throwaway SSR bundle (consumed + deleted by scripts/prerender.mjs)
 dist-ssr/
+# wrangler pages dev local state (smoke gate)
+.wrangler/
 # generated types
 tsconfig.tsbuildinfo
 

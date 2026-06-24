@@ -21,6 +21,29 @@ jobs:
 
       - run: npm run build
 
+      # Pre-deploy smoke gate (gy-kefk3): serve the freshly-built dist via the
+      # Cloudflare Pages emulator and assert the homepage rendered (SSG didn't
+      # break), key content + og tags are present, robots.txt has no AI-bot
+      # Disallow regression, and /privacy + /terms are live. Non-zero exit fails
+      # the job → the deploy step below is skipped. Blocks bad builds from going live.
+      - name: Pre-deploy smoke gate
+        run: |
+          npx wrangler pages dev dist --port 8788 --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
+          PD=$!
+          ready=0
+          for i in $(seq 1 40); do
+            if curl -sf -o /dev/null http://127.0.0.1:8788/; then ready=1; break; fi
+            sleep 1
+          done
+          if [ "$ready" != "1" ]; then
+            echo "::error::Pages emulator never became ready"; cat /tmp/pagesdev.log
+            kill $PD 2>/dev/null || true; exit 1
+          fi
+          bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788
+          RC=$?
+          kill $PD 2>/dev/null || true
+          exit $RC
+
       - name: Deploy to Cloudflare Pages
         if: github.ref == 'refs/heads/main'
         run: npx wrangler pages deploy dist --project-name gymbo-landing --branch main
