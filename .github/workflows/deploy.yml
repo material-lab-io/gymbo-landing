@@ -21,11 +21,15 @@ jobs:
 
       - run: npm run build
 
+      - name: Install Chromium (smoke-gate console check)
+        run: npx playwright install --with-deps chromium
+
       # Pre-deploy smoke gate (gy-kefk3): serve the freshly-built dist via the
-      # Cloudflare Pages emulator and assert the homepage rendered (SSG didn't
-      # break), key content + og tags are present, robots.txt has no AI-bot
-      # Disallow regression, and /privacy + /terms are live. Non-zero exit fails
-      # the job → the deploy step below is skipped. Blocks bad builds from going live.
+      # Cloudflare Pages emulator and (1) assert homepage rendered (SSG didn't
+      # break) + key content/og + robots AI-bot regression + /privacy + /terms
+      # live (curl smoke), and (2) load every route in a headless browser and
+      # fail on our JS/console errors (hydration etc.). Non-zero exit fails the
+      # job → the deploy step below is skipped. Blocks bad builds from going live.
       - name: Pre-deploy smoke gate
         run: |
           npx wrangler pages dev dist --port 8788 --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
@@ -39,8 +43,9 @@ jobs:
             echo "::error::Pages emulator never became ready"; cat /tmp/pagesdev.log
             kill $PD 2>/dev/null || true; exit 1
           fi
-          bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788
-          RC=$?
+          RC=0
+          bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788 || RC=1
+          node scripts/console-check.mjs http://127.0.0.1:8788 || RC=1
           kill $PD 2>/dev/null || true
           exit $RC
 
