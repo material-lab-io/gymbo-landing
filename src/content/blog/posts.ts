@@ -130,7 +130,7 @@ The business runs from your phone, not your memory.
 
 ## where gymbo fits
 
-We built **Gymbo** for exactly this: the independent mobile trainer in India who's hit the wall. One-tap session logging, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, and AI workouts — at ₹400/mo, priced for an Indian roster, not a Western one.
+We built **Gymbo** for exactly this: the independent mobile trainer in India who's hit the wall. One-tap session logging, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and an AI assistant — at ₹400/mo, priced for an Indian roster, not a Western one.
 
 We're not the right tool for a gym chain or a remote coach billing in dollars. We're the right tool for the one-person training business that's outgrown the notebook.`,
 };

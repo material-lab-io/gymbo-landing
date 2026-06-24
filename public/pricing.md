@@ -20,7 +20,7 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 - One-tap session logging (punch a class) with automatic balance math.
 - Payment tracking — cash or UPI — with running balances and reminders.
 - Scheduling and your full client roster in one place.
-- AI-assisted workouts you can build and assign.
+- A workout builder with templates (build and assign workouts), plus an AI assistant.
 - A shareable QR profile card and branded PDF statements.
 
 ## Free trial

@@ -147,7 +147,7 @@ const trainerize: Post = {
 | WhatsApp | ✅ Reminders & sharing | ❌ |
 | Sign-in | Phone + Face ID, no password, no email | Email/password |
 | Session logging | **One tap**, balance updates itself | Programming-led; heavier flow |
-| AI | AI workout generation + AI assistant | Mature AI Workout Builder |
+| AI | AI assistant + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
 | Branded client app | Not yet | ✅ (paid add-on) |
 | Free trial | 1 month, no card | 30 days, no card |
