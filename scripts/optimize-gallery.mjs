@@ -19,7 +19,7 @@ const SCREENS = {
   export: "revenue-02-export-statement.png",
 };
 
-const WIDTHS = [360, 540, 720]; // phone renders ~230px CSS → covers 1.5x–3x
+const WIDTHS = [360, 540, 720, 1080]; // gallery ~230–360px CSS + the large hero phone (~600px → 1080 = ~1.8x)
 const FALLBACK_W = 540;
 
 await rm(OUT, { recursive: true, force: true });
@@ -39,4 +39,22 @@ for (const [slug, file] of Object.entries(SCREENS)) {
   total += pInfo.size;
   console.log(`${pngOut}  ${(pInfo.size / 1024).toFixed(1)} kB  (fallback)`);
 }
+// Hero device (gy-k2543.10): crop dashboard-clean's top header band (status bar +
+// "Good Afternoon" + "TEST TRAINER") so the large hero phone focuses on the Aadesh
+// punch card — seeded-positive, no test artifact. Source is 1206x2282; drop top 400px.
+{
+  const heroSrc = path.join(SRC, "hero-01-dashboard-clean.png");
+  const meta = await sharp(heroSrc).metadata();
+  const top = 690; // drop the status bar + "Good Afternoon" + "TEST TRAINER" band; start at the cards/list toggle
+  const region = { left: 0, top, width: meta.width, height: meta.height - top };
+  for (const w of [540, 720, 1080]) {
+    const out = path.join(OUT, `hero-dashboard-${w}.webp`);
+    const info = await sharp(heroSrc).extract(region).resize(w).webp({ quality: 80, effort: 6 }).toFile(out);
+    total += info.size;
+    console.log(`${out}  ${(info.size / 1024).toFixed(1)} kB`);
+  }
+  const heroPng = path.join(OUT, "hero-dashboard.png");
+  await sharp(heroSrc).extract(region).resize(540).png({ compressionLevel: 9, palette: true }).toFile(heroPng);
+}
+
 console.log(`\nTotal on disk: ${(total / 1024).toFixed(1)} kB across ${Object.keys(SCREENS).length} screens`);

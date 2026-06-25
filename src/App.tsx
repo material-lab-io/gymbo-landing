@@ -236,6 +236,37 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
+/* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
+   in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
+function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties }) {
+  const bezel = theme === "dark" ? "#000" : "#1a1a1a";
+  const base = `/screens/gallery/${slug}`;
+  return (
+    <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: "0 70px 120px -28px rgba(10,10,8,.55)", lineHeight: 0, ...style }}>
+      <div style={{ borderRadius: 44, overflow: "hidden", background: "#fff", aspectRatio: "1206 / 2622" }}>
+        <picture>
+          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes="(min-width: 1024px) 42vw, 86vw" />
+          <img src={`${base}.png`} alt={alt} decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
+        </picture>
+      </div>
+    </div>
+  );
+}
+
+/* Floating Forge UI chip overlapping the hero device — seeded-positive only. */
+function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
+  const paid = variant === "paid";
+  return (
+    <div className={`absolute z-10 flex items-center gap-3 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 18, padding: "14px 18px", boxShadow: "0 24px 44px -16px rgba(10,10,8,.35)", ...style }}>
+      <span className="grid place-items-center shrink-0" style={{ width: 38, height: 38, borderRadius: 11, fontWeight: 800, fontSize: 18, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
+      <div>
+        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 15, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
+        <div style={{ fontFamily: SANS, fontSize: 12.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
@@ -319,9 +350,20 @@ export default function App() {
 
       <main id="main">
         {/* ───────── hero ───────── */}
-        <header style={{ background: F.beige }}>
-          <div className="relative max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24 grid md:grid-cols-[1.05fr_.95fr] items-center gap-8 md:gap-16">
-            <div className="max-w-[560px]">
+        {/* Competitor-scale device (gy-k2543.10): copy column verbatim; device stage
+            breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
+            stacks below the copy on mobile/tablet. */}
+        <header className="relative overflow-hidden" style={{ background: F.beige }}>
+          {/* desktop device stage — absolute to the section, bleeds past 1180 + off the top/right edges */}
+          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(50vw, 820px)" }}>
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(25vw, 360px)", top: 248, right: "min(30vw, 440px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(42vw, 600px)", top: -30, right: "-1.6vw" }} />
+            <HeroChip variant="logged" style={{ top: 150, right: "min(31vw, 452px)" }} />
+            <HeroChip variant="paid" style={{ top: 548, right: "min(24vw, 350px)" }} />
+          </div>
+
+          <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
+            <div className="max-w-[600px] lg:w-[52%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
                 <Eyebrow>Private alpha · limited spots</Eyebrow>
               </div>
@@ -343,18 +385,11 @@ export default function App() {
               <div className={`mt-4 ${prefersReduced ? "" : "hero-rise d5"}`}>
                 <RiskReversal />
               </div>
-            </div>
 
-            {/* hero = the single 2-phone composite demo clip (bare; baked frame + caption) */}
-            <div className="flex items-center justify-center">
-              <DemoFrame
-                clip={demoClip("hero")}
-                poster={demoPoster("hero")}
-                theme={theme}
-                label="Gymbo on iPhone — your clients and payments"
-                maxWidth={400}
-                className={`w-full ${prefersReduced ? "" : "hero-fade d6"}`}
-              />
+              {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
+              <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
+                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(86vw, 380px)" }} />
+              </div>
             </div>
           </div>
         </header>
@@ -441,10 +476,10 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-14 gap-x-6 md:gap-x-10 justify-items-center">
+            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-y-14 gap-x-6 md:gap-x-12 justify-items-center">
               {SCREENS.map((s) => (
                 <Reveal key={s.slug} className="flex flex-col items-center">
-                  <ScreenshotFrame slug={s.slug} alt={s.alt} />
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
