@@ -325,7 +325,7 @@ export default function App() {
               <div className={prefersReduced ? "" : "hero-rise d1"}>
                 <Eyebrow>Private alpha · limited spots</Eyebrow>
               </div>
-              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.05, letterSpacing: "-0.022em" }}>
+              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
                   fitness business
@@ -364,7 +364,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
             <Reveal>
               <Eyebrow>Why trainers use Gymbo</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.1, maxWidth: "18ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, maxWidth: "18ch" }}>
                 Everything the back office of your business needs.
               </h2>
             </Reveal>
@@ -379,7 +379,7 @@ export default function App() {
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
                     </span>
-                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.1, color: dark ? F.bone : F.ink }}>
+                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: dark ? F.bone : F.ink }}>
                       {p.title}
                     </h3>
                     <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 300, lineHeight: 1.6, maxWidth: "44ch" }}>
@@ -464,7 +464,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.1 }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.5 }}>
                 Made for independent fitness trainers in India.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
@@ -548,7 +548,7 @@ export default function App() {
                       <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
-                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1 }}>{plan.name}</h3>
+                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.5 }}>{plan.name}</h3>
                       <div className="flex items-baseline gap-1.5 mb-1">
                         <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
                         <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span>

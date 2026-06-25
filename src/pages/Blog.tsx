@@ -14,7 +14,7 @@ export function Blog() {
   return (
     <PageShell>
       <div className="max-w-[760px] mx-auto px-5 md:px-12 pt-12 md:pt-16 pb-20">
-        <h1 className="text-[clamp(30px,5vw,46px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.1, color: F.ink }}>
+        <h1 className="text-[clamp(30px,5vw,46px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: F.ink }}>
           The Gymbo blog
         </h1>
         <p className="mt-4 text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.7 }}>
@@ -25,7 +25,7 @@ export function Blog() {
           {posts.map((p) => (
             <a key={p.slug} href={`/blog/${p.slug}/`} className="group block py-6 transition-opacity hover:opacity-80" style={{ borderTop: "1px solid var(--c-line)" }}>
               <span className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{formatDate(p.date)}</span>
-              <h2 className="mt-1.5 text-[20px] md:text-[24px] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.ink }}>{p.title}</h2>
+              <h2 className="mt-1.5 text-[20px] md:text-[24px] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.01em", lineHeight: 1.5, color: F.ink }}>{p.title}</h2>
               <p className="mt-2 text-[14px] md:text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{p.dek}</p>
               <span className="mt-3 inline-block text-[13px] font-semibold" style={{ color: F.amberText, fontFamily: SANS }}>Read →</span>
             </a>

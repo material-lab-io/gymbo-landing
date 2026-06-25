@@ -123,7 +123,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[860px] mx-auto px-5 md:px-12 pt-12 md:pt-20 pb-10 md:pb-14">
             <Reveal>
               <Eyebrow>Comparison · personal trainer apps</Eyebrow>
-              <h1 className="text-[clamp(30px,5vw,52px)] font-black" style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
+              <h1 className="text-[clamp(30px,5vw,52px)] font-black" style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
                 Gymbo vs WellnessZ:{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
                   which fits you?
@@ -207,7 +207,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow dark>The real difference</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.12 }}>Sessions vs. meals</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.5 }}>Sessions vs. meals</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5" >
               <p className="text-[15px] md:text-[16px]" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
@@ -228,7 +228,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow>Pricing</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.12 }}>Flat vs. client-tiered</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Flat vs. client-tiered</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5">
               <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
@@ -262,7 +262,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[1000px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center mb-10">
               <Eyebrow dark>Honest fit</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch", lineHeight: 1.12 }}>Who each is best for</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch", lineHeight: 1.5 }}>Who each is best for</h2>
             </Reveal>
             <div className="grid md:grid-cols-2 gap-6">
               <Reveal>
@@ -305,7 +305,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow>Switching</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.12 }}>Moving from WellnessZ</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Moving from WellnessZ</h2>
             </Reveal>
             <Reveal>
               <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
@@ -329,7 +329,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[800px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
             <Reveal className="text-center mb-10">
               <Eyebrow>Questions</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "18ch", lineHeight: 1.12 }}>Gymbo vs WellnessZ, answered</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "18ch", lineHeight: 1.5 }}>Gymbo vs WellnessZ, answered</h2>
             </Reveal>
             <div className="flex flex-col">
               {FAQ.map((item) => (

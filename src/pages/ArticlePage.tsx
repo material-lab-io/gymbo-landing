@@ -29,7 +29,7 @@ export function ArticlePage({
     <PageShell>
       <article className="max-w-[760px] mx-auto px-5 md:px-12 pt-12 md:pt-16 pb-20">
         <a href={back.href} className="text-[13px] font-semibold" style={{ color: F.amberText, fontFamily: SANS }}>{back.label}</a>
-        <h1 className="mt-4 text-[clamp(28px,4.6vw,44px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.12, color: F.ink }}>
+        <h1 className="mt-4 text-[clamp(28px,4.6vw,44px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: F.ink }}>
           {post.title}
         </h1>
         {showDate && <p className="mt-3 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{formatDate(post.date)}</p>}
