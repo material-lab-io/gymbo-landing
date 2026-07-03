@@ -82,7 +82,7 @@ test('pricing shows the three plans and numbers', async ({ page }) => {
   await expect(pricing.getByText('Flexible', { exact: true })).toBeVisible();
   await expect(pricing.getByText('Quarterly', { exact: true })).toBeVisible();
   await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
-  for (const amount of ['₹400', '₹300', '₹200']) {
+  for (const amount of ['₹399', '₹333', '₹250']) {
     await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
   }
 });
