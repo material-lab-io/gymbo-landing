@@ -21,7 +21,7 @@ CODE="$(curl -sL --compressed --max-time 20 -o "$HOME_FILE" -w '%{http_code}' "$
 grep -qiE "<title>[^<]*gymbo" "$HOME_FILE" && log "OK   <title> has 'Gymbo'" || fail "<title> missing 'Gymbo' (page may not have rendered)"
 
 # key content strings (assert the real page body is there, not a blank shell)
-for s in "trainer" "₹400" "getgymbo|waitlist|join"; do
+for s in "trainer" "₹399" "getgymbo|waitlist|join"; do
   grep -qiE "$s" "$HOME_FILE" && log "OK   body has /$s/" || fail "body missing /$s/ (SSG/content regression?)"
 done
 
