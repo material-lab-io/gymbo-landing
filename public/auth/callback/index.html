@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Opening Gymbo…</title>
+  <style>
+    html,body{margin:0;height:100%;background:#ebebe6;font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1a1a;}
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .card{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:32px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.06);}
+    .brand{color:#f8623a;font-weight:700;font-size:20px;letter-spacing:.02em;margin-bottom:16px;}
+    h1{font-size:20px;margin:0 0 8px;}
+    p{color:#6a6a6a;font-size:14px;line-height:1.6;margin:0 0 8px;}
+    .btn{display:inline-block;margin-top:16px;background:#1a1a1a;color:#fff;text-decoration:none;padding:14px 32px;border-radius:999px;font-weight:700;font-size:14px;}
+    #fallback{display:none;margin-top:20px;}
+    a.link{color:#f8623a;}
+  </style>
+</head>
+<body>
+  <div class="wrap"><div class="card">
+    <div class="brand">Gymbo</div>
+    <h1>Opening the Gymbo app…</h1>
+    <p>Hang on — we're taking you into Gymbo to activate your access.</p>
+    <div id="fallback">
+      <p>Nothing happened? Make sure the Gymbo app is installed, then tap below.</p>
+      <a class="btn" id="openBtn" href="#">Open Gymbo</a>
+      <p style="margin-top:16px;">Don't have Gymbo yet? <a class="link" href="https://getgymbo.com/">Learn more</a>.</p>
+    </div>
+  </div></div>
+  <script>
+    // gy-boxu9: bounce into the app deep link, PRESERVING ?comp_code (query) + the auth
+    // tokens (#access_token/#refresh_token, implicit flow) that GoTrue put in the fragment.
+    // AASA/associated-domains was deferred, so this custom-scheme bounce is the reliable open.
+    (function () {
+      var deep = "gymbo://auth/callback" + window.location.search + window.location.hash;
+      var btn = document.getElementById("openBtn");
+      if (btn) btn.setAttribute("href", deep);
+      // Attempt the open immediately.
+      window.location.href = deep;
+      // If still here after a moment, the app didn't open — reveal the manual fallback.
+      setTimeout(function () {
+        var f = document.getElementById("fallback");
+        if (f) f.style.display = "block";
+      }, 1200);
+    })();
+  </script>
+</body>
+</html>
