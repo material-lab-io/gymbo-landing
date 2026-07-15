@@ -259,7 +259,7 @@ const workSmart: Post = {
   title: "how to work smart as an independent fitness trainer",
   dek: "",
   quickAnswer:
-    "Working smart as a solo fitness trainer means running your whole one-person business from your phone — client list, schedule, session counts, and payments in one place — so admin takes minutes a day, not hours. The trap isn't training too little; it's spending your untrained hours re-counting sessions, chasing payments, and rebuilding your week from memory. Cut that, and you can hold more clients without working more nights.",
+    "Working smart as a solo trainer means running your whole one-person business from your phone — clients, schedule, session counts, and payments in one place — so admin takes minutes a day, not hours. The time-sink isn't training; it's re-counting sessions and chasing payments from memory. Cut that and you hold more clients without more nights.",
   date: "2026-07-15",
   metaTitle: "How to Work Smart as an Independent Fitness Trainer | Gymbo",
   metaDescription:
@@ -319,7 +319,7 @@ const brandBusiness: Post = {
   title: "how to brand your personal training business in india",
   dek: "",
   quickAnswer:
-    "For a solo personal trainer, your brand isn't a logo — it's how reliable and professional you feel to deal with. Show up consistently, communicate clearly, and send clean statements and receipts, and clients trust you enough to stay and refer. A one-person trainer builds a brand less through design and more through the everyday details: on-time reminders, accurate balances, and a receipt that looks like a real business sent it.",
+    "For a solo trainer, your brand isn't a logo — it's how reliable and professional you are to deal with. Show up consistently, communicate clearly, and send clean, professional receipts, and clients trust you enough to stay and refer. A one-person trainer builds a brand in the everyday details, not the design.",
   date: "2026-07-15",
   metaTitle: "How to Brand Your Personal Training Business in India | Gymbo",
   metaDescription:
@@ -329,7 +329,7 @@ const brandBusiness: Post = {
     { q: "Do I need a logo to brand my training business?", a: "No. A logo is nice but it's not what earns renewals or referrals. What sets a solo trainer apart is being reliable, professional, and easy to deal with. Start with a clear one-line positioning and consistent, professional service; a logo can come later and changes little on its own." },
     { q: "How can a personal trainer look more professional?", a: "Be consistent and on time, communicate clearly around each session, keep every client's balance accurate so money is never in dispute, and send clean, GST-ready receipts instead of a figure typed into a chat. These small operational details do more for how professional you seem than any visual makeover." },
     { q: "What makes clients refer their personal trainer?", a: "Trust and clarity. Clients refer trainers who are reliable, whose numbers are always right, and who make them feel looked-after — and who are easy to describe in one line (\"she's brilliant, always organised, sends a proper receipt\"). Be easy to describe and easy to trust, and referrals follow." },
-    { q: "Does sending professional receipts really matter?", a: "Yes, more than trainers expect. A clean, GST-ready statement signals that you run a real business, which builds trust, speeds renewals, and makes clients comfortable referring you. It's one of the cheapest, highest-return brand upgrades a solo trainer can make." },
+    { q: "Does sending professional receipts really matter?", a: "Yes, more than trainers expect. A clean, GST-ready statement signals that you run a real business, which builds trust, speeds renewals, and makes clients comfortable referring you. It's one of the simplest, highest-return brand upgrades a solo trainer can make." },
   ],
   bodyMd: `${BYLINE}
 
@@ -361,7 +361,7 @@ Notice what's *not* on this list: fonts, colours, a fancy Instagram grid. Those 
 
 **4. Never let your numbers be in doubt.** "Wait, how many sessions do I have left?" is a trust leak. When balances are always accurate, money stays a non-issue — and money being a non-issue is a powerful brand signal.
 
-**5. Send receipts that look like a business sent them.** A clean, professional, GST-ready statement — not a figure typed into WhatsApp — quietly tells every client you're the real thing. It's the cheapest brand upgrade you can make.
+**5. Send receipts that look like a business sent them.** A clean, professional, GST-ready statement — not a figure typed into WhatsApp — quietly tells every client you're the real thing. It's the simplest, highest-return brand upgrade you can make.
 
 **6. Make your service easy to describe.** The best marketing is a client saying "she's great, super organised, always sends a proper receipt." Give them the words by *being* those things consistently.
 
@@ -379,7 +379,7 @@ const trainSmarter: Post = {
   title: "how to train clients smarter as a fitness trainer",
   dek: "",
   quickAnswer:
-    "Training smarter isn't about a fancier programme — it's about noticing the things that actually predict a client's results: whether they show up consistently, how their attendance trends over weeks, and where they quietly start slipping. The trainer with a clear session history catches a fading client early, adjusts before motivation dies, and keeps results (and renewals) on track. Your judgment writes the programme; good records tell you when to use it.",
+    "Training smarter isn't a fancier programme — it's noticing what actually predicts results: whether a client shows up consistently, how their attendance trends, and where they quietly start slipping. A trainer with a clear session history catches a fading client early and re-engages before motivation dies. Your judgment writes the programme; the record tells you when to act.",
   date: "2026-07-15",
   metaTitle: "How to Train Clients Smarter as a Fitness Trainer | Gymbo",
   metaDescription:
@@ -429,7 +429,7 @@ The through-line: results come from consistency, and consistency is a *pattern* 
 
 You don't need spreadsheets or a certification in analytics to train smarter — you need a session history you'll actually look at. The hard part isn't the maths; it's keeping an accurate record across a full roster without it becoming another chore.
 
-That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/) — built for the independent trainer in India and running on iPhone — keeps an accurate session and attendance history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone — that judgment stays yours. It makes the *record* effortless so your coaching decisions rest on what really happened, not on what you half-remember. There's also an in-app AI chat assistant you can ask about your own roster ("who hasn't trained in two weeks?"), but the programming call is always the trainer's.
+That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/) — built for the independent trainer in India and running on iPhone — keeps an accurate session and attendance history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone — that judgment stays yours. It makes the *record* effortless so your coaching decisions rest on what really happened, not on what you half-remember. There's also an in-app AI chat assistant you can ask about your own client history, but the programming call is always the trainer's.
 
 If you run a *gym* rather than train clients yourself, tracking member attendance across a facility is a different problem with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -439,7 +439,7 @@ const chargeFaq: Post = {
   title: "how much should a personal trainer charge in india",
   dek: "",
   quickAnswer:
-    "There's no single \"right\" rate — what you charge depends on your city, your experience, whether you train at home, at a gym, or online, and how you package sessions. Instead of copying a number, price off four things: your costs and target income, the local market you're in, the value and specialisation you offer, and the package structure (per-session vs monthly vs bulk). Set it deliberately, write it down, and charge it consistently.",
+    "There's no single \"right\" rate — it depends on your city, experience, format (home, gym, or online), and how you package sessions. Rather than copy a number, price off four things: your costs and target income, your local market, the value you offer, and your package structure. Set it deliberately and charge it consistently.",
   date: "2026-07-15",
   metaTitle: "How Much Should a Personal Trainer Charge in India? | Gymbo",
   metaDescription:
@@ -487,7 +487,7 @@ const upiFaq: Post = {
   title: "how to take payments via upi as a personal trainer",
   dek: "",
   quickAnswer:
-    "Collect through any UPI app — GPay, PhonePe, Paytm, or your bank's — using your UPI ID or a QR code; it's instant, free for your client, and near-universal in India. The part trainers get wrong isn't collecting the money, it's *recording* it: log every payment against the specific client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record keeps you from guessing at month-end.",
+    "Collect through any UPI app — GPay, PhonePe, Paytm, or your bank's — via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting, it's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
   date: "2026-07-15",
   metaTitle: "How to Take Payments via UPI as a Personal Trainer | Gymbo",
   metaDescription:
@@ -535,7 +535,7 @@ const noShowFaq: Post = {
   title: "how to set a client no-show and cancellation policy as a personal trainer",
   dek: "",
   quickAnswer:
-    "Have a clear, written policy before it's ever needed: a notice window (commonly 24 hours), what happens inside it (the session is usually charged or counts against the package), and how much notice earns a free reschedule. Tell every client at sign-up, apply it consistently, and keep an accurate record of who cancelled when. A fair policy applied evenly protects your income without making you the bad guy.",
+    "Set a clear, written policy before it's needed: a notice window (commonly 24 hours) and what happens inside it — the session is charged or counts against the package. Tell every client at sign-up, apply it evenly, and keep an accurate record of who cancelled when. A fair policy applied consistently protects your income without making you the bad guy.",
   date: "2026-07-15",
   metaTitle: "Client No-Show & Cancellation Policy for Personal Trainers | Gymbo",
   metaDescription:
@@ -544,7 +544,7 @@ const noShowFaq: Post = {
     { q: "Should personal trainers charge for no-shows?", a: "Most independent trainers do, because a booked slot they can't resell is lost income. The fair way is to set a clear policy in advance — a notice window and what happens inside it — tell every client at sign-up, and apply it evenly. Charging for a genuine no-show is reasonable when the rules were known upfront." },
     { q: "What is a reasonable cancellation notice period for personal training?", a: "24 hours is the most common default, though some trainers use 12 or 48 depending on how quickly they can fill a slot. The specific number matters less than setting one, communicating it at sign-up, and applying it consistently to everyone." },
     { q: "How do I enforce a no-show policy without upsetting clients?", a: "Introduce it at sign-up so it's never a surprise, send a friendly reminder before each session to prevent honest forgetfulness, apply it evenly to all clients, and keep an accurate record so a missed session is a shared fact rather than an argument. Fairness and consistency do the work, not toughness." },
-    { q: "Do reminders actually reduce no-shows?", a: "Yes — a large share of missed sessions are simple forgetfulness, so a short, personal reminder the day before prevents many of them. It's more effective than any penalty, because it stops the no-show happening rather than just charging for it afterwards." },
+    { q: "Do reminders actually reduce no-shows?", a: "Yes. Reminders help because many missed sessions come down to simple forgetfulness rather than a client dropping out — so a short, personal reminder the day before heads them off. In practice it prevents more no-shows than a penalty does, because it stops the missed session happening rather than just charging for it afterwards." },
   ],
   bodyMd: `${BYLINE}
 
@@ -568,7 +568,7 @@ The exact numbers are yours to set — some trainers use 12 hours, some 48 — b
 
 **2. Tell every client at sign-up.** The moment to introduce a policy is before there's a dispute, not during one. Include it in your welcome message so it's understood as normal, not personal.
 
-**3. Send a reminder before each session.** Most no-shows are forgetfulness, not disrespect — a short reminder the day before prevents far more missed sessions than any penalty. (Keep it personal: a message you actually send lands better than an automated blast.)
+**3. Send a reminder before each session.** In practice, a lot of no-shows are simple forgetfulness rather than a client losing interest — so a short reminder the day before tends to prevent more missed sessions than any penalty does. (Keep it personal: a message you actually send lands better than an automated blast.)
 
 **4. Apply it consistently.** A policy you enforce for one client and waive for another isn't a policy — it's a favour, and it breeds resentment. Even, predictable application is what makes it fair.
 
@@ -665,10 +665,23 @@ const GUIDE_RELATED: Record<string, string[]> = {
 };
 
 /** The current page's "Related guides" module — mapped over ALL_GUIDES. */
+// The 3 FAQ satellites' link-maps call for an /alternatives/akton link, but their
+// bodies have no gym-vs-trainer section to host one inline (unlike the pillars),
+// so it's surfaced in the related module instead (content can move it inline later).
+const FAQ_AKTON_SLUGS = new Set([
+  "how-much-to-charge-personal-trainer-india",
+  "take-payments-upi-personal-trainer",
+  "client-no-show-policy-personal-trainer",
+]);
+
 export function relatedFor(slug: string): RelatedLink[] {
   const slugs = GUIDE_RELATED[slug] ?? [];
-  return slugs
+  const links = slugs
     .map((s) => guideBySlug(s))
     .filter((p): p is Post => Boolean(p))
     .map((p) => ({ href: `/guide/${p.slug}/`, label: p.title }));
+  if (FAQ_AKTON_SLUGS.has(slug)) {
+    links.push({ href: "/alternatives/akton/", label: "Akton vs Gymbo — gym software vs a solo-trainer tool" });
+  }
+  return links;
 }
