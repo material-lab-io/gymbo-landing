@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 23 June 2026"
+        updated="Last updated 15 July 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -38,7 +38,18 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo (for example, our cloud database, hosting, and analytics providers), under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo (for example, our cloud database, hosting, analytics, and the AI providers described below), under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <h2>AI features and the providers behind them</h2>
+          <p>Some Gymbo features are powered by third-party AI providers. When you use one of these features, we send only the limited data needed to do the work — nothing more:</p>
+          <ul>
+            <li><strong>Anthropic (Claude)</strong> powers the in-app AI assistant you can chat with. When you ask it something, we send your question, a short summary of up to five of your clients (their names and class counts, so the assistant has useful context), and the results of any action it takes for you. We do not send your whole client list, and any client you have marked as opted out of AI is left out entirely. This is processed in the United States.</li>
+            <li><strong>Groq</strong> powers voice input — when you speak to Gymbo instead of typing, your microphone audio is sent to Groq to turn it into text. Because voice notes can sometimes mention health-related details, we treat this as sensitive information. This is processed in the United States.</li>
+          </ul>
+          <p><strong>Your control.</strong> You can turn off AI for any individual client. When you do, that client's information is never sent to these providers.</p>
+          <p><strong>Retention and training.</strong> We are finalising formal data-processing agreements with Anthropic and Groq. We will update this notice with their specific retention and no-training commitments once those agreements are in force. Until then, these providers process your data only to deliver the feature under their standard commercial terms.</p>
         </section>
 
         <section className="flex flex-col gap-3">
