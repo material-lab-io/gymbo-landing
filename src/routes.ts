@@ -17,6 +17,7 @@ export interface RouteDef {
 
 import { POSTS } from "./content/blog/posts";
 import { ALTERNATIVES } from "./content/alternatives/pages";
+import { PILLARS } from "./content/guide/pillars";
 
 const STATIC_ROUTES: RouteDef[] = [
   { key: "main", entry: "index.html", url: "/", priority: "1.0", changefreq: "weekly" },
@@ -24,6 +25,7 @@ const STATIC_ROUTES: RouteDef[] = [
   { key: "privacy", entry: "privacy/index.html", url: "/privacy/", priority: "0.3", changefreq: "yearly" },
   { key: "terms", entry: "terms/index.html", url: "/terms/", priority: "0.3", changefreq: "yearly" },
   { key: "blog", entry: "blog/index.html", url: "/blog/", priority: "0.6", changefreq: "weekly" },
+  { key: "guide", entry: "guide/index.html", url: "/guide/", priority: "0.7", changefreq: "weekly" },
 ];
 
 // One route per blog post (each needs a matching blog/<slug>/index.html entry).
@@ -44,4 +46,14 @@ const ALT_ROUTES: RouteDef[] = ALTERNATIVES.map((p) => ({
   changefreq: "monthly",
 }));
 
-export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES, ...ALT_ROUTES];
+// One route per /guide/<slug> AEO how-to pillar (each needs a matching
+// guide/<slug>/index.html carrying its FAQPage + HowTo JSON-LD).
+const GUIDE_ROUTES: RouteDef[] = PILLARS.map((p) => ({
+  key: `guide-${p.slug}`,
+  entry: `guide/${p.slug}/index.html`,
+  url: `/guide/${p.slug}/`,
+  priority: "0.8",
+  changefreq: "monthly",
+}));
+
+export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES, ...ALT_ROUTES, ...GUIDE_ROUTES];
