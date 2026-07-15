@@ -94,7 +94,7 @@ const PILLARS = [
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
-    intro: "Build workouts, assign them to clients, and track real progress — adherence and per-exercise gains — with an AI assistant in your corner.",
+    intro: "Build workouts, assign them to clients, and track real progress — adherence and per-exercise gains. And Ask Gymbo — an AI chat assistant grounded in your real client and payment data — answers 'who owes me?' or 'who's due this week?' in a tap.",
     bullets: [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
@@ -146,7 +146,7 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Flexible", tagline: "Monthly", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workouts + AI assistant", "Branded invoicing"], highlight: false },
+  { name: "Flexible", tagline: "Monthly", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
   { name: "Quarterly", tagline: "Save 17%", price: "333", period: "/month", note: "Billed every 3 months at ₹999 via the App Store.", features: ["Everything in Flexible", "17% savings"], highlight: false },
   { name: "Annual", tagline: "Best value", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Flexible", "37% savings", "Lowest price, locked in"], highlight: true },
 ];

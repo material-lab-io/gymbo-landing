@@ -83,7 +83,7 @@ const getClients: Post = {
   title: "how to get clients as a personal trainer in india",
   dek: "",
   quickAnswer:
-    "The most reliable client source for an independent trainer in India is referrals from happy, well-tracked clients — not ads. Build a findable presence on Instagram and Google, make your first sessions unmistakably professional, and set up a simple referral loop. Retention comes first: keeping a client is cheaper than winning a new one, and happy clients are what bring the next ones.",
+    "The most reliable client source for an independent trainer in India is referrals from happy, well-tracked clients — not ads. Build a findable presence on Instagram and Google, make your first sessions unmistakably professional, and set up a simple referral loop. Retention comes first: keeping a client is cheaper than winning one, and happy clients bring the next ones.",
   date: "2026-07-15",
   metaTitle: "How to Get Clients as a Personal Trainer in India (2026 Guide) | Gymbo",
   metaDescription:
@@ -137,7 +137,7 @@ const schedule: Post = {
   title: "how to schedule clients as a personal trainer",
   dek: "",
   quickAnswer:
-    "Batch sessions into blocks by area and time of day, set a clear cancellation policy up front, and tie every session to the client's package balance so you always know who's due. Send a reminder before each session — the single biggest lever on no-shows. A diary works up to about 15 clients; past that you need a system so nothing double-books or slips.",
+    "Batch sessions into blocks by area and time, set a clear cancellation policy up front, and tie every session to the client's package balance so you always know who's due. Send a reminder before each session — the biggest lever on no-shows. A diary works up to ~15 clients; past that you need a system so nothing double-books or slips.",
   date: "2026-07-15",
   metaTitle: "How to Schedule Clients as a Personal Trainer (2026 Guide) | Gymbo",
   metaDescription:
@@ -178,7 +178,7 @@ The goal is a week that's mostly the same every week. Recurring, batched slots m
 
 ## reminders: send them yourself, keep the relationship
 
-A reminder the evening before a session is the cheapest no-show insurance there is. In India that's a WhatsApp message — and the trainers who send one consistently see fewer empty slots, full stop. The nuance: a good reminder feels personal, so keep it in your voice. Send it yourself (a saved template you tap) rather than a robotic auto-blast. Clients can tell the difference, and the personal touch is part of what they're paying for.
+A reminder the evening before a session is the cheapest no-show insurance there is: a widely-cited study by Imperial College London researchers (Journal of Medical Internet Research) found text-message appointment reminders cut no-shows by up to 38%. In India your channel is WhatsApp — the country's default, with over 535 million monthly active users (DataReportal / Meta). The trainers who send one consistently see fewer empty slots, full stop. The nuance: a good reminder feels personal, so keep it in your voice. Send it yourself (a saved template you tap) rather than a robotic auto-blast. Clients can tell the difference, and the personal touch is part of what they're paying for.
 
 ## where Gymbo fits
 
