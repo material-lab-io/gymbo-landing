@@ -6,13 +6,13 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 
 | Plan | Price | Billing | Effective per month |
 |---|---|---|---|
-| Flexible | ₹400 / month | billed monthly | ₹400 |
-| Quarterly | ₹900 / 3 months | billed every 3 months | ₹300 |
-| Annual | ₹2,400 / year | billed yearly | ₹200 |
+| Flexible | ₹399 / month | billed monthly | ₹399 |
+| Quarterly | ₹999 / 3 months | billed every 3 months | ₹333 |
+| Annual | ₹2,999 / year | billed yearly | ₹250 |
 
-- **Flexible — ₹400/month**, billed monthly. Cancel anytime.
-- **Quarterly — ₹900 every 3 months** (₹300/month effective). Save 25%.
-- **Annual — ₹2,400 per year** (₹200/month effective). Save 50% — lowest price, locked in.
+- **Flexible — ₹399/month**, billed monthly. Cancel anytime.
+- **Quarterly — ₹999 every 3 months** (₹333/month effective). Save 17%.
+- **Annual — ₹2,999 per year** (₹250/month effective). Save 37% — lowest price, locked in.
 
 ## What's included on every plan
 
@@ -33,4 +33,4 @@ Your **first month is free**, no credit card required. After that, choose any pl
 - Gymbo vs WellnessZ: https://getgymbo.com/compare/gymbo-vs-wellnessz/
 - This page: https://getgymbo.com/pricing.md
 
-_Last updated 2026-06-22. Prices in Indian rupees (INR)._
+_Last updated 2026-07-15. Prices in Indian rupees (INR)._

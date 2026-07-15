@@ -16,9 +16,9 @@ Gymbo is built for the independent personal trainer — not a gym chain, and not
 
 ## Pricing
 
-- Flexible: ₹400/month (billed monthly)
-- Quarterly: ₹900 every 3 months (₹300/month effective, save 25%)
-- Annual: ₹2,400 per year (₹200/month effective, save 50%)
+- Flexible: ₹399/month (billed monthly)
+- Quarterly: ₹999 every 3 months (₹333/month effective, save 17%)
+- Annual: ₹2,999 per year (₹250/month effective, save 37%)
 - Unlimited clients on every plan; first month free, no card required
 
 ## Links

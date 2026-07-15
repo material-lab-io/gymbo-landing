@@ -1,7 +1,11 @@
 // AEO how-to pillars (gy-k2543.13). Same `Post` shape as the blog; rendered by
-// ArticlePage at /guide/<slug>/. Copy is OWNED BY CONTENT — final source is
-// rigs/gymbo/output/guides/pillar-{1..4}-*.md (+ _TEMPLATE-AND-FACTS.md). This
-// file transcribes that copy verbatim; do not "improve" the guardrailed claims:
+// ArticlePage at /guide/<slug>/. Copy is OWNED BY CONTENT. Sources:
+//   • Pillar-1 (run-business) = the "five systems" exemplar content designated
+//     canonical (crew/content/output/guide-pillar-1-run-business-india-2026-06-25.md).
+//     ⚠️ rigs/gymbo/output/guides/pillar-1-*.md is now a SUPERSEDED STUB — do NOT
+//     rebuild pillar-1 from it (content reversed a mid-flight four-jobs rewrite).
+//   • Pillars 2-4 = rigs/gymbo/output/guides/pillar-{2,3,4}-*.md (+ _TEMPLATE-AND-FACTS.md).
+// This file transcribes that copy verbatim; do not "improve" the guardrailed claims:
 //   • Gymbo = workout builder + AI chat assistant, NEVER "AI workouts".
 //   • Reminders = WhatsApp templates the trainer taps to send (not auto-send).
 //   • iPhone-only today. No "only India-native". For the trainer, not the gym.
@@ -13,70 +17,70 @@
 // FAQPage + HowTo JSON-LD lives verbatim in its guide/<slug>/index.html <head>.
 import type { Post } from "../blog/posts";
 
-const BYLINE = "*By Kaushik Naarayan, founder of Gymbo, building with independent trainers in India. Last updated: 15 Jul 2026.*";
+// Exemplar house-style byline (the tester-blessed live pillar-1 format), identical on all 4.
+const BYLINE = "*Last updated: 15 July 2026 · By Kaushik Naarayan, founder of Gymbo, building with independent trainers in India*";
 
 const runBusiness: Post = {
   slug: "run-personal-training-business-india",
-  title: "How to run a personal training business in India",
+  title: "how to run a personal training business in india",
   dek: "",
   quickAnswer:
-    "Running an independent personal training business in India comes down to four jobs done consistently: get clients (referrals + a visible presence), deliver good sessions, get paid reliably (UPI, tracked against a balance), and keep clean records for tax. Most trainers do this on WhatsApp and a diary until ~15 clients, then need a system so admin stops eating their evenings.",
+    "To run a personal training business in India as an independent trainer, you need five systems: a client list, a schedule, session tracking, payment tracking, and simple billing. Most trainers start with WhatsApp, a diary, and UPI — and move to a single app once they pass ~15 clients and the admin gets heavy.",
   date: "2026-07-15",
-  metaTitle: "How to Run a Personal Training Business in India (2026 Guide) | Gymbo",
+  metaTitle: "How to Run a Personal Training Business in India | Gymbo",
   metaDescription:
-    "A practical, India-specific guide to running an independent personal training business — pricing, payments, client tracking, GST, and the systems that keep it from eating your evenings.",
+    "The five systems an independent personal trainer in India needs — client list, schedule, session tracking, payments, and billing — the order to build them, and when to move off WhatsApp and a diary.",
   faq: [
-    { q: "What does it cost to start a personal training business in India?", a: "Very little upfront — your skill, a phone, and a way to take UPI payments. The real cost is time lost to admin as you grow; that's what a system solves." },
-    { q: "Do I need to register for GST as an independent trainer?", a: "GST registration is generally required once your annual turnover crosses the threshold (₹20 lakh for services in most states). Keep clean per-client records from day one so you're ready — check current thresholds with a CA for your situation." },
-    { q: "How many clients can one trainer handle?", a: "Most independent trainers manage comfortably up to ~15 on manual tools; beyond that you need a system for scheduling, balances, and payments or admin starts costing you sessions." },
-    { q: "Should I use international coaching apps?", a: "They're built for a Western market — dollar pricing, no UPI, no GST, features aimed at online-only coaching. They can work, but you'll fight the payment and tax model. Tools built for India fit better." },
-    { q: "What's the fastest way to look more professional?", a: "Consistent, tracked balances and clean statements. When a client can see exactly what they've paid and what's left, you look organized — because you are." },
-    { q: "Is Gymbo available on Android?", a: "Not yet — Gymbo is iPhone-only today." },
+    { q: "What does an independent personal trainer need to run their business?", a: "Five systems: a client list, a schedule, session tracking, payment tracking, and simple billing. Most Indian trainers run these on WhatsApp, a paper diary, and UPI at first, then move to a single app once admin gets heavy past around 15 clients." },
+    { q: "Can I run my training business on WhatsApp and a diary?", a: "Yes, and it's the right place to start — it's free and frictionless for a small roster. It tends to break down around 15 clients, when payments and session counts get hard to track from memory and month-end reconciliation becomes guesswork." },
+    { q: "How do personal trainers in India take payments?", a: "Most use UPI (GPay, PhonePe, or any UPI app) — it's near-universal, instant, and free for the payer. The key is to record each payment against the client and package so your balances stay accurate, rather than leaving it in a chat history." },
+    { q: "Do I need GST as a personal trainer in India?", a: "It depends on your turnover and registration status — check current thresholds with a tax professional. If you are registered, being able to issue a GST-ready statement to clients keeps you compliant and looks professional." },
+    { q: "When should I move from a notebook to an app?", a: "A practical signal: when you're no longer sure who's paid, who owes, and who's down to their last session — usually around 15 active clients. That's when the time you spend reconstructing the month outweighs the cost of a tool that does it for you." },
   ],
   bodyMd: `${BYLINE}
 
-## The business under the business
+India's fitness market is growing fast — from about **₹16,200 crore in 2024 toward ₹37,700 crore by 2030, roughly 15% a year**, and it's overwhelmingly made up of small, independent operators rather than big chains *(Deloitte × Health & Fitness Association, India Fitness Market Report 2025)*. If you train clients on your own, you're not on the edge of this market — you're the centre of it. This guide covers the systems that keep a one-person training business running, the order to build them in, and where each one tends to break.
 
-You became a trainer to coach. But the moment you go independent, you're also running the whole back office — sales, scheduling, billing, accounting, follow-up. Nobody hands you a system for that, so most trainers stitch one together from WhatsApp, a paper diary, a UPI app, and memory.
+(There's no reliable public count of how many independent personal trainers India has — the registers don't publish one — so we won't quote a number we can't stand behind. But every trainer we've worked with runs some version of the same five systems below.)
 
-That stack is free and it works — right up to a point. Somewhere around 15–20 regular clients the cracks show: you forget who's paid, sessions blur together, a client swears they had four left when they had two, and Sunday night disappears into reconciling the week.
+## the five systems every one-person training business needs
 
-Here are the four jobs, and how to run each one so the business scales past that wall.
+| System | What it covers | The free-stack version | What breaks past ~15 clients |
+|---|---|---|---|
+| **Client list** | Who your clients are, goals, package, rate | Memory + a notebook | You can't hold it all in your head |
+| **Schedule** | Who trains when; cancellations and no-shows | WhatsApp + diary | Double-bookings, forgotten sessions |
+| **Session tracking** | Sessions done, sessions left per client | Tally marks in a diary | The count drifts; disputes start |
+| **Payment tracking** | Who's paid, who owes, who's on credit | UPI app + memory | Month-end becomes guesswork |
+| **Billing** | Clean receipts/statements, GST if you need it | Manual / none | Looks unprofessional; hard to reconcile |
 
-## The four jobs — and the right tool for each
+The free stack — WhatsApp, a paper diary, and UPI — runs all five informally, and it works well for a small roster. The trouble starts when the systems need to talk to each other ("she paid for 12, used 9, so 3 left, renewal due"). That's when you become the integration layer, and that's the work that doesn't scale.
 
-| Job | The free way | Where it breaks | What "a system" looks like |
-|-----|-------------|-----------------|----------------------------|
-| **Get clients** | Referrals, Instagram, word of mouth | Inconsistent; no follow-up | A simple pipeline + a public presence people can find |
-| **Deliver sessions** | You already know this | — | Logged sessions so nothing is disputed |
-| **Get paid** | UPI + "I'll note it down" | Missed payments, fuzzy balances | Every payment recorded against a running balance |
-| **Stay compliant** | Nothing, or a shoebox of screenshots | GST season panic | Clean, exportable statements per client |
+## how to set it up, step by step
 
-The insight most guides miss: you don't need four apps, you need these four jobs to stop leaking into each other. The leak is almost always **money and memory** — sessions delivered but not logged, payments received but not tracked.
+**1. Put your whole client list in one place.** Name, phone, goal, package size, and per-session rate for every client. This is the foundation — everything else hangs off it.
 
-## Getting paid: build on how India actually pays
+**2. Decide your packages and rates clearly.** Per-session or monthly packages, written down once, so you're not re-quoting from memory.
 
-This is where India-specific reality matters. UPI crossed **500 million+ users and processed 23.2 billion transactions in May 2026 alone** ([NPCI / IBEF](https://www.ibef.org/news/upi-transactions-soar-to-record-us-312-21-billion-in-may)) — it now moves roughly 85% of the country's digital payments. Your clients already pay everything by UPI. So don't fight it with invoices-and-bank-transfers workflows built for a Western market.
+**3. Track every session the day it happens.** Log it immediately — sessions done and sessions remaining per client. A count you update later is a count you'll get wrong.
 
-What you *do* need is to record each UPI payment against a client balance, so at any moment you know: sessions delivered, sessions paid for, and what's owed. That single number — the honest balance — is the difference between a business and a hobby.
+**4. Record payments against the client, not in a chat.** Every payment tied to a client and a package, so the balance (paid minus used) is always current. Get paid over **UPI**, which now runs over **23 billion transactions a month in India** *(NPCI, May 2026)* — your clients already use it.
 
-## How to set up your training business: a 6-step checklist
+**5. Send clean receipts and statements.** A simple, professional statement (GST-ready if you're registered) closes the loop and makes you look like the business you are.
 
-1. **Decide your model and price** — per-session, monthly packages, or a hybrid. Price for your city and your value; don't race to the bottom.
-2. **Set a payment default** — UPI, collected up front per package. Agree it out loud with every client.
-3. **Track sessions and balances** — log every session the moment it happens, against a running balance per client.
-4. **Send reminders you control** — a WhatsApp nudge before a session and when a package is running low.
-5. **Keep GST-ready records** — a per-client statement you can export, so tax season is a download, not a reconstruction.
-6. **Review weekly** — 15 minutes to see who's low on sessions, who owes, who's gone quiet.
+**6. Review weekly.** Five minutes: who's due to renew, who owes, who's been quiet. This is how you stop revenue leaking before it happens.
 
-## Where Gymbo fits
+## doing this without drowning in admin
 
-[Gymbo](/) is the admin layer for exactly this trainer — the independent coach in India who's hit the ~15-client wall. It does one-tap session logging, keeps automatic running balances, records UPI payments, produces GST-ready statements, gives you WhatsApp reminder templates to send, and includes a workout builder (with voice and paste import) and an AI chat assistant to answer "who owes me?" without digging. It's ₹400/mo, priced for an Indian roster, and it's iPhone-only today. It doesn't replace your coaching — it takes the back office off your evenings.`,
+You can run all six steps on WhatsApp, a diary, and UPI — and for your first several clients, you should. It's free and you already know it.
+
+Past ~15 clients, the manual version starts costing you hours a week and the occasional missed payment. At that point a single app that keeps the client list, schedule, session counts, and payment balances in one place — and reconciles them for you — earns its keep. [Gymbo](/) is one such app, built specifically for the independent trainer in India: you log a session in one tap, balances update themselves, and payments and GST-ready statements live alongside each client. It's the admin/tracking/payment layer, so your time goes to training, not bookkeeping.
+
+If you run a *gym* rather than train clients yourself, you need facility software instead — members, staff, branches — which is a different tool. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
 
 const getClients: Post = {
   slug: "get-clients-personal-trainer-india",
-  title: "How to get clients as a personal trainer in India",
+  title: "how to get clients as a personal trainer in india",
   dek: "",
   quickAnswer:
     "The most reliable client source for an independent trainer in India is referrals from happy, well-tracked clients — not ads. Build a findable presence on Instagram and Google, make your first sessions unmistakably professional, and set up a simple referral loop. Retention comes first: keeping a client is cheaper than winning a new one, and happy clients are what bring the next ones.",
@@ -130,7 +134,7 @@ Getting clients starts with keeping the ones you have visibly happy — and that
 
 const schedule: Post = {
   slug: "schedule-clients-personal-trainer",
-  title: "How to schedule clients as a personal trainer",
+  title: "how to schedule clients as a personal trainer",
   dek: "",
   quickAnswer:
     "Batch sessions into blocks by area and time of day, set a clear cancellation policy up front, and tie every session to the client's package balance so you always know who's due. Send a reminder before each session — the single biggest lever on no-shows. A diary works up to about 15 clients; past that you need a system so nothing double-books or slips.",
@@ -183,7 +187,7 @@ A reminder the evening before a session is the cheapest no-show insurance there 
 
 const getOrganized: Post = {
   slug: "get-organized-personal-trainer",
-  title: "How to get organized as an independent personal trainer",
+  title: "how to get organized as an independent personal trainer",
   dek: "",
   quickAnswer:
     "Get organized by consolidating four things into one place: your client list, sessions delivered, package balances, and payments. Log each session the moment it happens, record every payment against a balance, and review the whole roster once a week. The goal isn't more apps — it's one source of truth, so nothing lives only in your head.",
