@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import './index.css'
 import { ArticlePage } from './pages/ArticlePage'
-import { pillarBySlug } from './content/guide/pillars'
+import { pillarBySlug, relatedForPillar } from './content/guide/pillars'
 
 // Shared entry for every /guide/<slug>/ pillar page.
 const slug = location.pathname.replace(/^\/guide\//, '').replace(/\/$/, '')
@@ -12,7 +12,7 @@ if (post) {
   hydrateRoot(
     root,
     <StrictMode>
-      <ArticlePage post={post} back={{ href: '/guide/', label: '← all guides' }} showDate={false} />
+      <ArticlePage post={post} back={{ href: '/guide/', label: '← all guides' }} showDate={false} related={relatedForPillar(slug)} />
     </StrictMode>,
   )
 }

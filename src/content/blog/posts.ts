@@ -9,7 +9,8 @@ export interface FAQ {
 export interface Post {
   slug: string; // path segment under /blog/
   title: string; // the ONE on-page H1
-  dek: string; // standfirst under the H1
+  dek: string; // standfirst under the H1 (blog/alternatives). Guides leave this ""
+  quickAnswer?: string; // /guide/ pillars: the 40-60w AEO answer, rendered as a callout under the H1
   date: string; // ISO yyyy-mm-dd
   metaTitle: string;
   metaDescription: string;

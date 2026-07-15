@@ -19,10 +19,12 @@ export function ArticlePage({
   post,
   back = { href: "/blog/", label: "← all articles" },
   showDate = true,
+  related,
 }: {
   post: Post;
   back?: { href: string; label: string };
   showDate?: boolean;
+  related?: { href: string; label: string }[];
 }) {
   const html = marked.parse(post.bodyMd) as string;
   return (
@@ -33,6 +35,12 @@ export function ArticlePage({
           {post.title}
         </h1>
         {showDate && <p className="mt-3 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{formatDate(post.date)}</p>}
+        {post.quickAnswer && (
+          <div className="mt-6 rounded-2xl p-5 md:p-6" style={{ background: F.beigeCard, fontFamily: SANS }}>
+            <span className="text-[12px] font-bold uppercase" style={{ letterSpacing: "0.09em", color: F.amberText }}>Quick answer</span>
+            <p className="mt-2 text-[16px] md:text-[17px]" style={{ color: F.ink, lineHeight: 1.65 }}>{post.quickAnswer}</p>
+          </div>
+        )}
         {post.dek && <p className="mt-5 text-[17px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{post.dek}</p>}
 
         <div className="article-prose mt-8" style={{ color: F.inkMuted, fontFamily: SANS, fontSize: "15.5px", lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />
@@ -61,6 +69,20 @@ export function ArticlePage({
               ))}
             </div>
           </section>
+        )}
+
+        {related && related.length > 0 && (
+          <nav aria-label="Related guides" className="mt-14 pt-8" style={{ borderTop: "1px solid var(--c-line)" }}>
+            <h2 className="text-[15px] font-bold uppercase" style={{ letterSpacing: "0.08em", color: F.inkLabel, fontFamily: SANS }}>Related guides</h2>
+            <div className="mt-4 flex flex-col">
+              {related.map((r) => (
+                <a key={r.href} href={r.href} className="group block py-3.5 transition-opacity hover:opacity-70" style={{ borderTop: "1px solid var(--c-line)" }}>
+                  <span className="text-[16px] md:text-[17px] font-bold" style={{ fontFamily: SERIF, color: F.ink }}>{r.label}</span>
+                  <span className="ml-2 text-[14px] font-semibold" style={{ color: F.amberText, fontFamily: SANS }}>→</span>
+                </a>
+              ))}
+            </div>
+          </nav>
         )}
       </article>
     </PageShell>

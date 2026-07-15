@@ -8,8 +8,11 @@ import { GuideIndex } from "./pages/GuideIndex";
 import { ArticlePage } from "./pages/ArticlePage";
 import { POSTS } from "./content/blog/posts";
 import { ALTERNATIVES } from "./content/alternatives/pages";
-import { PILLARS } from "./content/guide/pillars";
+import { PILLARS, relatedForPillar, pillarLinks } from "./content/guide/pillars";
 import { ROUTES } from "./routes";
+
+// The live cornerstone blog post links out to the /guide/ pillar cluster.
+const CORNERSTONE_SLUG = "how-india-independent-trainers-run-their-business";
 
 // Map each route key to its page element. Adding a route = add it to ROUTES
 // (src/routes.ts) and register its element here. Blog posts register
@@ -23,13 +26,13 @@ const ELEMENTS: Record<string, React.ReactElement> = {
   guide: <GuideIndex />,
 };
 for (const p of POSTS) {
-  ELEMENTS[`blog-${p.slug}`] = <ArticlePage post={p} />;
+  ELEMENTS[`blog-${p.slug}`] = <ArticlePage post={p} related={p.slug === CORNERSTONE_SLUG ? pillarLinks() : undefined} />;
 }
 for (const p of ALTERNATIVES) {
   ELEMENTS[`alt-${p.slug}`] = <ArticlePage post={p} back={{ href: "/", label: "← gymbo" }} showDate={false} />;
 }
 for (const p of PILLARS) {
-  ELEMENTS[`guide-${p.slug}`] = <ArticlePage post={p} back={{ href: "/guide/", label: "← all guides" }} showDate={false} />;
+  ELEMENTS[`guide-${p.slug}`] = <ArticlePage post={p} back={{ href: "/guide/", label: "← all guides" }} showDate={false} related={relatedForPillar(p.slug)} />;
 }
 
 export { ROUTES };
