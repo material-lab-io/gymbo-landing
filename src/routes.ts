@@ -17,6 +17,7 @@ export interface RouteDef {
 
 import { POSTS } from "./content/blog/posts";
 import { ALTERNATIVES } from "./content/alternatives/pages";
+import { REPORTS } from "./content/research/reports";
 import { ALL_GUIDES } from "./content/guide/pillars";
 
 const STATIC_ROUTES: RouteDef[] = [
@@ -56,4 +57,14 @@ const GUIDE_ROUTES: RouteDef[] = ALL_GUIDES.map((p) => ({
   changefreq: "monthly",
 }));
 
-export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES, ...ALT_ROUTES, ...GUIDE_ROUTES];
+// One route per /research/<slug> original data report (each needs a matching
+// research/<slug>/index.html carrying its Article + FAQPage JSON-LD).
+const RESEARCH_ROUTES: RouteDef[] = REPORTS.map((p) => ({
+  key: `research-${p.slug}`,
+  entry: `research/${p.slug}/index.html`,
+  url: `/research/${p.slug}/`,
+  priority: "0.8",
+  changefreq: "monthly",
+}));
+
+export const ROUTES: RouteDef[] = [...STATIC_ROUTES, ...POST_ROUTES, ...ALT_ROUTES, ...GUIDE_ROUTES, ...RESEARCH_ROUTES];

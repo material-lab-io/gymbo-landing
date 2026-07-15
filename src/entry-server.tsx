@@ -9,6 +9,7 @@ import { ArticlePage } from "./pages/ArticlePage";
 import { POSTS } from "./content/blog/posts";
 import { ALTERNATIVES } from "./content/alternatives/pages";
 import { ALL_GUIDES, relatedFor, pillarLinks } from "./content/guide/pillars";
+import { REPORTS, reportRelated } from "./content/research/reports";
 import { ROUTES } from "./routes";
 
 // The live cornerstone blog post links out to the /guide/ pillar cluster.
@@ -33,6 +34,9 @@ for (const p of ALTERNATIVES) {
 }
 for (const p of ALL_GUIDES) {
   ELEMENTS[`guide-${p.slug}`] = <ArticlePage post={p} back={{ href: "/guide/", label: "← all guides" }} showDate={false} related={relatedFor(p.slug)} />;
+}
+for (const p of REPORTS) {
+  ELEMENTS[`research-${p.slug}`] = <ArticlePage post={p} back={{ href: "/", label: "← gymbo" }} showDate={false} related={reportRelated(p.slug)} />;
 }
 
 export { ROUTES };

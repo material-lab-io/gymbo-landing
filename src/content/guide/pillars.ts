@@ -674,6 +674,22 @@ const FAQ_AKTON_SLUGS = new Set([
   "client-no-show-policy-personal-trainer",
 ]);
 
+// The /research/ data asset (gy-k2543.16) links back from the pillars it cites —
+// mutual internal linking that makes the data report a citation surface. Surfaced
+// in the related module (not inline) so content owns the pillar bodies. These are
+// the pillars whose subject the report directly covers (population, retention,
+// tech gap, income/rates).
+const RESEARCH_LINK: RelatedLink = {
+  href: "/research/state-of-indias-independent-trainers-2026/",
+  label: "The State of India's Independent Personal Trainers — 2026 (data report)",
+};
+const RESEARCH_LINK_SLUGS = new Set([
+  "run-personal-training-business-india",
+  "get-clients-personal-trainer-india",
+  "get-organized-personal-trainer",
+  "how-much-to-charge-personal-trainer-india",
+]);
+
 export function relatedFor(slug: string): RelatedLink[] {
   const slugs = GUIDE_RELATED[slug] ?? [];
   const links = slugs
@@ -682,6 +698,9 @@ export function relatedFor(slug: string): RelatedLink[] {
     .map((p) => ({ href: `/guide/${p.slug}/`, label: p.title }));
   if (FAQ_AKTON_SLUGS.has(slug)) {
     links.push({ href: "/alternatives/akton/", label: "Akton vs Gymbo — gym software vs a solo-trainer tool" });
+  }
+  if (RESEARCH_LINK_SLUGS.has(slug)) {
+    links.push(RESEARCH_LINK);
   }
   return links;
 }
