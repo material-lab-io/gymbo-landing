@@ -34,6 +34,7 @@
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
+      "@id": "https://getgymbo.com/#app",
       "name": "Gymbo",
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "iOS",
@@ -49,7 +50,52 @@
         "@type": "Organization",
         "name": "Material Lab",
         "url": "https://materiallab.io"
+      },
+      "publisher": { "@id": "https://getgymbo.com/#organization" }
+    }
+    </script>
+
+    <!-- Entity anchor: the Gymbo Organization + its founder, referenced by @id from
+         every page's Article/Dataset/publisher schema (gy-k2543.17 entity schema depth).
+         NAP (name/url/logo) must match byte-for-byte everywhere. No foundingDate — the
+         canonical founding year is unconfirmed, so it is omitted rather than invented.
+         No sameAs yet: Gymbo has no live external directory/social profile (all
+         listings are not_started; the app is pre-App-Store). The parent studio is
+         modelled as parentOrganization (its LinkedIn is Material Lab's, not Gymbo's).
+         When directory listings go live, add their URLs to a "sameAs" array here. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://getgymbo.com/#organization",
+      "name": "Gymbo",
+      "url": "https://getgymbo.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://getgymbo.com/logo.png"
+      },
+      "description": "Gymbo is an app built for India's independent personal trainers — to track client sessions, payments, and balances. Built for the trainer, not the gym.",
+      "areaServed": { "@type": "Country", "name": "India" },
+      "founder": { "@id": "https://getgymbo.com/#kaushik" },
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Material Lab",
+        "url": "https://materiallab.io",
+        "sameAs": ["https://www.linkedin.com/company/material-lab-io"]
       }
+    }
+    </script>
+
+    <!-- The founder as a Person entity (E-E-A-T author signal), referenced by @id as
+         the author on the /guide/ pillars and the /research/ data report. -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "https://getgymbo.com/#kaushik",
+      "name": "Kaushik Naarayan",
+      "jobTitle": "Founder",
+      "worksFor": { "@id": "https://getgymbo.com/#organization" }
     }
     </script>
 
