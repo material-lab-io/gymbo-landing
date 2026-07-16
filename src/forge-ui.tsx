@@ -111,7 +111,7 @@ const FORGE_CSS = `
         .article-prose>*+*{margin-top:18px}
         .article-prose h2{font-family:var(--font-serif);font-weight:800;font-size:clamp(20px,2.6vw,26px);line-height:1.25;letter-spacing:-0.01em;color:var(--c-ink);margin-top:36px}
         .article-prose h3{font-weight:700;font-size:17px;color:var(--c-ink);margin-top:24px}
-        .article-prose a{color:var(--c-brand-text);text-decoration:underline;text-underline-offset:2px}
+        .article-prose a{color:var(--c-brand-text);text-decoration:underline;text-underline-offset:2px;overflow-wrap:anywhere}
         .article-prose strong{color:var(--c-ink);font-weight:600}
         .article-prose ul{list-style:disc;padding-left:22px;display:flex;flex-direction:column;gap:8px}
         .article-prose ol{list-style:decimal;padding-left:22px;display:flex;flex-direction:column;gap:8px}
