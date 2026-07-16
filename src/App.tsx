@@ -731,7 +731,7 @@ function BrandTouchpoints() {
             Your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>
-        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2">
+        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" tabIndex={0} role="region" aria-label="Brand touchpoints">
           {TOUCHPOINTS.map((t) => (
             <div key={t.name} className="relative snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)" }}>
               {t.soon && (
