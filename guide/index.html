@@ -19,6 +19,37 @@
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
     <meta name="theme-color" content="#0A0A0A" />
     <link rel="canonical" href="https://getgymbo.com/guide/" />
+    <!-- CollectionPage + ItemList over ALL_GUIDES (PILLARS then FAQS). Keep
+         itemListElement in sync with src/content/guide/pillars.ts — same slugs,
+         same order, one ListItem per guide (gy-j70u9). -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": "https://getgymbo.com/guide/",
+      "url": "https://getgymbo.com/guide/",
+      "name": "Guides for independent trainers in India",
+      "description": "Practical, honest guides to running an independent personal-training business in India — the systems, the money, and the admin, without the jargon.",
+      "isPartOf": { "@id": "https://getgymbo.com/#organization" },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListOrder": "https://schema.org/ItemListUnordered",
+        "numberOfItems": 10,
+        "itemListElement": [
+          {"@type":"ListItem","position":1,"url":"https://getgymbo.com/guide/run-personal-training-business-india/","name":"How to Run a Personal Training Business in India"},
+          {"@type":"ListItem","position":2,"url":"https://getgymbo.com/guide/get-clients-personal-trainer-india/","name":"How to Get Clients as a Personal Trainer in India"},
+          {"@type":"ListItem","position":3,"url":"https://getgymbo.com/guide/schedule-clients-personal-trainer/","name":"How to Schedule Clients as a Personal Trainer"},
+          {"@type":"ListItem","position":4,"url":"https://getgymbo.com/guide/get-organized-personal-trainer/","name":"How to Get Organized as an Independent Personal Trainer"},
+          {"@type":"ListItem","position":5,"url":"https://getgymbo.com/guide/work-smart-fitness-trainer-gig/","name":"How to Work Smart as an Independent Fitness Trainer"},
+          {"@type":"ListItem","position":6,"url":"https://getgymbo.com/guide/brand-personal-training-business-india/","name":"How to Brand Your Personal Training Business in India"},
+          {"@type":"ListItem","position":7,"url":"https://getgymbo.com/guide/train-smarter-fitness-trainer/","name":"How to Train Clients Smarter as a Fitness Trainer"},
+          {"@type":"ListItem","position":8,"url":"https://getgymbo.com/guide/how-much-to-charge-personal-trainer-india/","name":"How Much Should a Personal Trainer Charge in India?"},
+          {"@type":"ListItem","position":9,"url":"https://getgymbo.com/guide/take-payments-upi-personal-trainer/","name":"How to Take Payments via UPI as a Personal Trainer"},
+          {"@type":"ListItem","position":10,"url":"https://getgymbo.com/guide/client-no-show-policy-personal-trainer/","name":"Client No-Show & Cancellation Policy for Personal Trainers"}
+        ]
+      }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />

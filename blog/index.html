@@ -20,6 +20,29 @@
     <meta name="theme-color" content="#0A0A0A" />
     <link rel="canonical" href="https://getgymbo.com/blog/" />
     <link rel="alternate" type="application/rss+xml" title="The Gymbo blog" href="https://getgymbo.com/rss.xml" />
+    <!-- CollectionPage + ItemList over POSTS (newest first, matching Blog.tsx).
+         Keep itemListElement in sync with src/content/blog/posts.ts — same slugs,
+         same order, one ListItem per post (gy-j70u9). -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": "https://getgymbo.com/blog/",
+      "url": "https://getgymbo.com/blog/",
+      "name": "The Gymbo blog",
+      "description": "Practical guides for independent personal trainers in India — running the business, getting paid, and growing past the notebook.",
+      "isPartOf": { "@id": "https://getgymbo.com/#organization" },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListOrder": "https://schema.org/ItemListUnordered",
+        "numberOfItems": 2,
+        "itemListElement": [
+          {"@type":"ListItem","position":1,"url":"https://getgymbo.com/blog/best-apps-for-independent-personal-trainers-in-india-2026/","name":"Best Apps for Independent Personal Trainers in India (2026)"},
+          {"@type":"ListItem","position":2,"url":"https://getgymbo.com/blog/how-india-independent-trainers-run-their-business/","name":"How India's Independent Personal Trainers Run Their Business"}
+        ]
+      }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
