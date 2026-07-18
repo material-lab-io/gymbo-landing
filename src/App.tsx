@@ -146,14 +146,13 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Flexible", tagline: "Monthly", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
-  { name: "Quarterly", tagline: "Save 17%", price: "333", period: "/month", note: "Billed every 3 months at ₹999 via the App Store.", features: ["Everything in Flexible", "17% savings"], highlight: false },
-  { name: "Annual", tagline: "Best value", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Flexible", "37% savings", "Lowest price, locked in"], highlight: true },
+  { name: "Monthly", tagline: "Flexible", price: "400", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
+  { name: "Annual", tagline: "Save 50%", price: "200", period: "/month", note: "Billed yearly at ₹2,400 via the App Store. Save 50%.", features: ["Everything in Monthly", "50% savings", "Lowest price, locked in"], highlight: true },
 ];
 
 /* ── FAQ ── */
 const FAQ = [
-  { q: "Is it free?", a: "Your first month is free on every plan. After that, Gymbo Pro is ₹399/month — or ₹250/month effective on the annual plan — billed through the App Store." },
+  { q: "Is it free?", a: "Your first 14 days are free on every plan. After that, Gymbo Pro is ₹400/month — or ₹200/month effective on the annual plan — billed through the App Store." },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
@@ -574,7 +573,7 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="mt-12 grid md:grid-cols-3 gap-6 items-stretch">
+            <div className="mt-12 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
               {PRICING.map((plan) => {
                 const hi = plan.highlight;
                 return (
@@ -609,7 +608,7 @@ export default function App() {
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, three ways to pay · first month free · billed via the App Store.</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · 14 days free · billed via the App Store.</p>
             </Reveal>
           </div>
         </section>

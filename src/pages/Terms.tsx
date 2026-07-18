@@ -35,7 +35,7 @@ export function Terms() {
 
         <section className="flex flex-col gap-3">
           <h2>Plans and payment</h2>
-          <p>Your first month is free, no card required. After that, plans are: Flexible at ₹400/month (billed monthly); Quarterly at ₹900 every three months (₹300/month effective); and Annual at ₹2,400 per year (₹200/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients — it does not process those payments or handle your money.</p>
+          <p>Your first 14 days are free, no card required. After that, plans are: Monthly at ₹400/month (billed monthly); and Annual at ₹2,400 per year (₹200/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients — it does not process those payments or handle your money.</p>
         </section>
 
         <section className="flex flex-col gap-3">

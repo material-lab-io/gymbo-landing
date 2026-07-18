@@ -1,18 +1,16 @@
 # Gymbo pricing
 
-Gymbo is a business app for independent personal trainers in India. One simple subscription, **unlimited clients** on every plan, and your **first month free** — no card required.
+Gymbo is a business app for independent personal trainers in India. One simple subscription, **unlimited clients** on every plan, and your **first 14 days free** — no card required.
 
 ## Plans
 
 | Plan | Price | Billing | Effective per month |
 |---|---|---|---|
-| Flexible | ₹399 / month | billed monthly | ₹399 |
-| Quarterly | ₹999 / 3 months | billed every 3 months | ₹333 |
-| Annual | ₹2,999 / year | billed yearly | ₹250 |
+| Monthly | ₹400 / month | billed monthly | ₹400 |
+| Annual | ₹2,400 / year | billed yearly | ₹200 |
 
-- **Flexible — ₹399/month**, billed monthly. Cancel anytime.
-- **Quarterly — ₹999 every 3 months** (₹333/month effective). Save 17%.
-- **Annual — ₹2,999 per year** (₹250/month effective). Save 37% — lowest price, locked in.
+- **Monthly — ₹400/month**, billed monthly. Cancel anytime.
+- **Annual — ₹2,400 per year** (₹200/month effective). Save 50% — lowest price, locked in. Most popular.
 
 ## What's included on every plan
 
@@ -25,7 +23,7 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 
 ## Free trial
 
-Your **first month is free**, no credit card required. After that, choose any plan above.
+Your **first 14 days are free**, no credit card required. After that, choose either plan above.
 
 ## Links
 
@@ -33,4 +31,4 @@ Your **first month is free**, no credit card required. After that, choose any pl
 - Gymbo vs WellnessZ: https://getgymbo.com/compare/gymbo-vs-wellnessz/
 - This page: https://getgymbo.com/pricing.md
 
-_Last updated 2026-07-15. Prices in Indian rupees (INR)._
+_Last updated 2026-07-18. Prices in Indian rupees (INR)._

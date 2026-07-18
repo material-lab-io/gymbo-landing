@@ -75,14 +75,15 @@ test('coming-soon overlays render', async ({ page }) => {
   await expect(page.getByText(/travel-aware/i).first()).toBeVisible();
 });
 
-test('pricing shows the three plans and numbers', async ({ page }) => {
+test('pricing shows the two plans and numbers', async ({ page }) => {
   await page.goto('/');
   const pricing = page.locator('#pricing');
   await pricing.scrollIntoViewIfNeeded();
-  await expect(pricing.getByText('Flexible', { exact: true })).toBeVisible();
-  await expect(pricing.getByText('Quarterly', { exact: true })).toBeVisible();
+  await expect(pricing.getByText('Monthly', { exact: true })).toBeVisible();
   await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
-  for (const amount of ['₹399', '₹333', '₹250']) {
+  // Quarterly was dropped in the 2026-07-18 founder pricing lock.
+  await expect(pricing.getByText('Quarterly', { exact: true })).toHaveCount(0);
+  for (const amount of ['₹400', '₹200']) {
     await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
   }
 });
