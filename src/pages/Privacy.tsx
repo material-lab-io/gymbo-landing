@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 15 July 2026"
+        updated="Last updated 18 July 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -43,13 +43,33 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>AI features and the providers behind them</h2>
-          <p>Some Gymbo features are powered by third-party AI providers. When you use one of these features, we send only the limited data needed to do the work — nothing more:</p>
+          <p>Some Gymbo features are powered by specialist AI providers. When you use these features, a limited amount of your data is sent to the provider so they can return a result. We only send what the feature needs — not your whole client list. Here is exactly who we use, for what, and what we send them.</p>
+
+          <h3>AI assistant (chat) — Anthropic (Claude)</h3>
           <ul>
-            <li><strong>Anthropic (Claude)</strong> powers the in-app AI assistant you can chat with. When you ask it something, we send your question, a short summary of up to five of your clients (their names and class counts, so the assistant has useful context), and the results of any action it takes for you. We do not send your whole client list, and any client you have marked as opted out of AI is left out entirely. This is processed in the United States.</li>
-            <li><strong>Groq</strong> powers voice input — when you speak to Gymbo instead of typing, your microphone audio is sent to Groq to turn it into text. Because voice notes can sometimes mention health-related details, we treat this as sensitive information. This is processed in the United States.</li>
+            <li><strong>What it does:</strong> answers your questions about your business inside the app.</li>
+            <li><strong>What we send:</strong> your typed question, plus a short summary of your top few clients (their name and class counts, ordered by outstanding balance) so the assistant can answer usefully. We do <strong>not</strong> send your full roster.</li>
+            <li><strong>Per-client control:</strong> any client you mark as opted out of AI is <strong>never</strong> included in what we send.</li>
+            <li><strong>Where it's processed:</strong> on Anthropic's infrastructure, located outside India, in the United States.</li>
+            <li><strong>Retention:</strong> your data is processed to answer your question and is handled under Anthropic's commercial terms. We are putting a formal data-processing agreement in place with Anthropic; once it is finalised we will update this notice with the specific retention terms.</li>
           </ul>
-          <p><strong>Your control.</strong> You can turn off AI for any individual client. When you do, that client's information is never sent to these providers.</p>
-          <p><strong>Retention and training.</strong> We are finalising formal data-processing agreements with Anthropic and Groq. We will update this notice with their specific retention and no-training commitments once those agreements are in force. Until then, these providers process your data only to deliver the feature under their standard commercial terms.</p>
+
+          <h3>Voice input — Groq</h3>
+          <ul>
+            <li><strong>What it does:</strong> turns what you speak into text (speech-to-text) so you can add notes and fill fields by voice instead of typing.</li>
+            <li><strong>What we send:</strong> the microphone audio you record for that action, which is converted to text.</li>
+            <li><strong>A note on sensitive data:</strong> voice notes can sometimes include health-related details about a client. Please avoid dictating information you would not want processed by a third-party provider.</li>
+            <li><strong>Where it's processed:</strong> on Groq's infrastructure, located outside India, in the United States.</li>
+            <li><strong>Retention:</strong> your audio is processed to produce the transcription and is handled under Groq's terms. We are putting a formal data-processing agreement in place with Groq; once it is finalised we will update this notice with the specific retention terms.</li>
+          </ul>
+
+          <h3>The rest of our infrastructure</h3>
+          <ul>
+            <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your account and app data are stored here.</li>
+            <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
+          </ul>
+
+          <p>You can ask us at any time what data we hold and request its deletion — see "Your choices" below.</p>
         </section>
 
         <section className="flex flex-col gap-3">
