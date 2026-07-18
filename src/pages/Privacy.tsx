@@ -38,7 +38,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo (for example, our cloud database, hosting, analytics, and the AI providers described below), under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo — our cloud database and hosting (Supabase), sign-in (Google), analytics, and the AI providers described below — under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
