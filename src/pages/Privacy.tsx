@@ -66,7 +66,7 @@ export function Privacy() {
 
           <h3>The rest of our infrastructure</h3>
           <ul>
-            <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your account and app data are stored here.</li>
+            <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
             <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
             <li><strong>PostHog (EU Cloud)</strong> — product analytics, only if you opt in. We use PostHog's European Union region, so this data is processed in the EU rather than the United States. A data-processing agreement with PostHog is in place.</li>
           </ul>
