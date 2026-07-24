@@ -83,7 +83,7 @@ test('pricing shows the two plans and numbers', async ({ page }) => {
   await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
   // Quarterly was dropped in the 2026-07-18 founder pricing lock.
   await expect(pricing.getByText('Quarterly', { exact: true })).toHaveCount(0);
-  for (const amount of ['₹400', '₹200']) {
+  for (const amount of ['₹399', '₹250']) {
     await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
   }
 });

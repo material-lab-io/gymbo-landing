@@ -9,7 +9,7 @@
 //   • Gymbo = workout builder + AI chat assistant, NEVER "AI workouts".
 //   • Reminders = WhatsApp templates the trainer taps to send (not auto-send).
 //   • iPhone-only today. No "only India-native". For the trainer, not the gym.
-//   • ₹400/mo may be stated as fact, never led with.
+//   • ₹399/mo may be stated as fact, never led with.
 // Byline is founder-confirmed and identical on all 4; last-updated stamp is the
 // locked "15 Jul 2026" (DD Mon YYYY) per the facts file, normalized here.
 // The 40-60w quick answer goes in `quickAnswer` (rendered as a callout under the

@@ -9,7 +9,7 @@ const MARQUEE_PHRASES = [
   "Built for trainers who do the work",
   "One app to run it all",
   "Your clients are waiting",
-  "\u20B9200/month",
+  "\u20B9250/month",
   "No more WhatsApp chaos",
 ];
 
