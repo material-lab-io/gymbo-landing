@@ -68,7 +68,7 @@ export function Privacy() {
           <ul>
             <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
             <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
-            <li><strong>PostHog</strong> — product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU rather than the United States. A data-processing agreement with PostHog is in place.</li>
+            <li><strong>PostHog</strong> — product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU rather than the United States. Analytics from the web version is currently processed in the United States; we are moving it to the European Union and will update this page when that ships. A data-processing agreement with PostHog is in place.</li>
           </ul>
 
           <p>You can ask us at any time what data we hold and request its deletion — see "Your choices" below.</p>
@@ -101,7 +101,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Where we operate</h2>
-          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics from the iOS app are processed in the <strong>European Union</strong> (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
+          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics are processed in the <strong>European Union</strong> from the iOS app and, for now, in the <strong>United States</strong> from the web version (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
         </section>
 
         <section className="flex flex-col gap-3">
