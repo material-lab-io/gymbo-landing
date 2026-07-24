@@ -146,13 +146,13 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Monthly", tagline: "Flexible", price: "400", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
-  { name: "Annual", tagline: "Save 50%", price: "200", period: "/month", note: "Billed yearly at ₹2,400 via the App Store. Save 50%.", features: ["Everything in Monthly", "50% savings", "Lowest price, locked in"], highlight: true },
+  { name: "Monthly", tagline: "Flexible", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
+  { name: "Annual", tagline: "Save 37%", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Monthly", "37% savings", "Lowest price, locked in"], highlight: true },
 ];
 
 /* ── FAQ ── */
 const FAQ = [
-  { q: "Is it free?", a: "Your first 14 days are free on every plan. After that, Gymbo Pro is ₹400/month — or ₹200/month effective on the annual plan — billed through the App Store." },
+  { q: "Is it free?", a: "Your first 14 days are free on every plan. After that, Gymbo Pro is ₹399/month — or ₹250/month effective on the annual plan — billed through the App Store." },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
