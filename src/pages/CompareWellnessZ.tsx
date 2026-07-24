@@ -17,7 +17,7 @@ const HOME = "/";
 const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | null }[] = [
   { label: "Built for", gymbo: "independent personal trainers (session-led)", wellnessz: "dietitians / nutritionists & health coaches (nutrition-led)", win: null },
   { label: "The core job", gymbo: "log a session in one tap; track payments & balances", wellnessz: "create & assign diet / meal plans", win: null },
-  { label: "Entry price", gymbo: "₹400/mo (₹200/mo effective on annual)", wellnessz: "₹499/mo", win: "g" },
+  { label: "Entry price", gymbo: "₹399/mo (₹250/mo effective on annual)", wellnessz: "₹499/mo", win: "g" },
   { label: "Client limits", gymbo: "unlimited — flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
   { label: "Free trial", gymbo: "14 days", wellnessz: "14 days", win: null },
   { label: "Session logging", gymbo: "one-tap punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
@@ -29,9 +29,9 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
 ];
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Is Gymbo a good WellnessZ alternative?", a: "For personal trainers, yes — Gymbo is built around session logging, payments, and scheduling at a flat ₹400/month. WellnessZ is better if your core service is nutrition and meal planning." },
+  { q: "Is Gymbo a good WellnessZ alternative?", a: "For personal trainers, yes — Gymbo is built around session logging, payments, and scheduling at a flat ₹399/month. WellnessZ is better if your core service is nutrition and meal planning." },
   { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class logging, automatic balance math, payment tracking) for independent personal trainers." },
-  { q: "Is Gymbo cheaper than WellnessZ?", a: "Gymbo is ₹400/month (₹200 effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120." },
+  { q: "Is Gymbo cheaper than WellnessZ?", a: "Gymbo is ₹399/month (₹250 effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120." },
   { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Yes — Gymbo supports bulk client import so you can bring your roster over." },
   { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training — one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
 ];
@@ -134,7 +134,7 @@ export function CompareWellnessZ() {
                 Gymbo and WellnessZ are both India-native coaching apps — but they're built for different people.
               </p>
               <p className="mt-4 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontWeight: 300, lineHeight: 1.7, maxWidth: "64ch", fontFamily: SANS }}>
-                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions — log a class in one tap, track every payment and balance, and look professional, at a flat ₹400/month with no per-client limits.
+                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions — log a class in one tap, track every payment and balance, and look professional, at a flat ₹399/month with no per-client limits.
               </p>
             </Reveal>
 
@@ -235,7 +235,7 @@ export function CompareWellnessZ() {
                 WellnessZ prices by how many clients you have — ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.ink, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹400/month, or ₹200/month effective on the annual plan</b> — with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
+                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹399/month, or ₹250/month effective on the annual plan</b> — with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
               </p>
             </Reveal>
             <Reveal className="mt-8">
@@ -246,7 +246,7 @@ export function CompareWellnessZ() {
                 </div>
                 <div className="flex items-center justify-between px-5 py-4" style={{ background: "rgba(245,158,11,0.07)", borderTop: "1px solid var(--c-line)" }}>
                   <span className="text-[15px] font-black" style={{ fontFamily: SERIF, color: F.ink }}>Gymbo</span>
-                  <span className="text-[15px] font-bold" style={{ color: F.amberText, fontFamily: SANS }}>₹400 <span style={{ color: F.inkMuted, fontWeight: 400 }}>(₹200 effective annual)</span></span>
+                  <span className="text-[15px] font-bold" style={{ color: F.amberText, fontFamily: SANS }}>₹399 <span style={{ color: F.inkMuted, fontWeight: 400 }}>(₹250 effective annual)</span></span>
                 </div>
                 <div className="flex items-center justify-between px-5 py-4" style={{ borderTop: "1px solid var(--c-line)" }}>
                   <span className="text-[15px] font-black" style={{ fontFamily: SERIF, color: F.inkMuted }}>WellnessZ</span>
