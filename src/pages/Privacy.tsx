@@ -22,7 +22,7 @@ export function Privacy() {
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you log, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com — aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
-            <li><strong>Product analytics in the app.</strong> If you turn on usage sharing in the app's privacy settings (it is your choice, and nothing is sent until you do), we record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier. It never includes your clients' names, contact details, notes, or any data you enter about them. You can turn it off at any time in the app.</li>
+            <li><strong>Product analytics in the app.</strong> We record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier. It never includes your clients' names, contact details, notes, or any data you enter about them. In the iOS app this is <strong>on by default</strong> and you can switch it off at any time under Settings → Privacy; when it is off, nothing is sent. On the web version there is currently no such switch and it is always on — we are adding the same control, and we will update this page when it ships.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
           </ul>
         </section>
@@ -68,7 +68,7 @@ export function Privacy() {
           <ul>
             <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
             <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
-            <li><strong>PostHog (EU Cloud)</strong> — product analytics, only if you opt in. We use PostHog's European Union region, so this data is processed in the EU rather than the United States. A data-processing agreement with PostHog is in place.</li>
+            <li><strong>PostHog</strong> — product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU rather than the United States. A data-processing agreement with PostHog is in place.</li>
           </ul>
 
           <p>You can ask us at any time what data we hold and request its deletion — see "Your choices" below.</p>
@@ -101,7 +101,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Where we operate</h2>
-          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics, if you opt in, are processed in the <strong>European Union</strong> (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
+          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics from the iOS app are processed in the <strong>European Union</strong> (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
         </section>
 
         <section className="flex flex-col gap-3">
