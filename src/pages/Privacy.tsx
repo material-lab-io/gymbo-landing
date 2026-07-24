@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 18 July 2026"
+        updated="Last updated 24 July 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -21,7 +21,8 @@ export function Privacy() {
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you log, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and email you submit.</li>
-            <li><strong>Usage analytics.</strong> Privacy-friendly, cookieless analytics (Umami) — aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
+            <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com — aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
+            <li><strong>Product analytics in the app.</strong> If you turn on usage sharing in the app's privacy settings (it is your choice, and nothing is sent until you do), we record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier. It never includes your clients' names, contact details, notes, or any data you enter about them. You can turn it off at any time in the app.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
           </ul>
         </section>
@@ -38,7 +39,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo — our cloud database and hosting (Supabase), sign-in (Google), analytics, and the AI providers described below — under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo — our cloud database and hosting (Supabase), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below — under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -67,6 +68,7 @@ export function Privacy() {
           <ul>
             <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your account and app data are stored here.</li>
             <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
+            <li><strong>PostHog (EU Cloud)</strong> — product analytics, only if you opt in. We use PostHog's European Union region, so this data is processed in the EU rather than the United States. A data-processing agreement with PostHog is in place.</li>
           </ul>
 
           <p>You can ask us at any time what data we hold and request its deletion — see "Your choices" below.</p>
@@ -99,7 +101,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Where we operate</h2>
-          <p>Gymbo is operated from India, and your data may be processed there and by our service providers.</p>
+          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics, if you opt in, are processed in the <strong>European Union</strong> (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
         </section>
 
         <section className="flex flex-col gap-3">
