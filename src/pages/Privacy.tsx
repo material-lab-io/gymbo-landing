@@ -22,7 +22,7 @@ export function Privacy() {
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you log, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com — aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
-            <li><strong>Product analytics in the app.</strong> We record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier, plus, when an action is about a client, that client's internal ID and the class or payment amount involved. Your clients' names, phone numbers, contact details, and notes are never sent. This is <strong>on by default</strong> and you can switch it off at any time under Settings → Privacy; when it is off, nothing is sent. (Gymbo's web app was retired in May 2026 and analytics collection for it ended then; Gymbo is an iOS app only now, so this does not apply to the getgymbo.com website, which is covered separately above.)</li>
+            <li><strong>Product analytics in the app.</strong> We record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier, plus, when an action is about a client, that client's internal ID and the class or payment amount involved. Your clients' names, phone numbers, contact details, and notes are never sent. You control this under Settings → Privacy; when it is off, nothing is sent.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
           </ul>
         </section>
@@ -61,14 +61,14 @@ export function Privacy() {
             <li><strong>What we send:</strong> the microphone audio you record for that action, which is converted to text.</li>
             <li><strong>A note on sensitive data:</strong> voice notes can sometimes include health-related details about a client. Please avoid dictating information you would not want processed by a third-party provider.</li>
             <li><strong>Where it's processed:</strong> on Groq's infrastructure, located outside India, in the United States.</li>
-            <li><strong>Retention:</strong> your audio is processed to produce the transcription and is handled under Groq's terms. We are putting a formal data-processing agreement in place with Groq; once it is finalised we will update this notice with the specific retention terms.</li>
+            <li><strong>Retention:</strong> Groq has signed a zero-data-retention agreement with us — your audio is processed to produce the transcription and is not retained or used to train models.</li>
           </ul>
 
           <h3>The rest of our infrastructure</h3>
           <ul>
             <li><strong>Supabase</strong> — hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
             <li><strong>Google</strong> — used only for Google Sign-In, if you choose it, to authenticate your account.</li>
-            <li><strong>PostHog</strong> — product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU. Gymbo's web app was retired in May 2026 and web analytics collection ended then; there is no ongoing web analytics to report here. A data-processing agreement with PostHog is in place.</li>
+            <li><strong>PostHog</strong> — product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU. A data-processing agreement with PostHog is in place.</li>
           </ul>
 
           <p>You can ask us at any time what data we hold and request its deletion — see "Your choices" below.</p>
@@ -101,7 +101,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Where we operate</h2>
-          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics are processed in the <strong>European Union</strong> from the iOS app (PostHog) — the web app was retired in May 2026, so there is no ongoing web analytics collection; and login SMS is sent from <strong>India</strong> (MSG91).</p>
+          <p>Gymbo is operated from India, and your data may be processed there and by our service providers outside India. Specifically: your account and app data are stored in <strong>Singapore</strong> (Supabase); the AI features described above are processed in the <strong>United States</strong> (Anthropic, Groq); app usage analytics are processed in the <strong>European Union</strong> from the iOS app (PostHog); and login SMS is sent from <strong>India</strong> (MSG91).</p>
         </section>
 
         <section className="flex flex-col gap-3">
