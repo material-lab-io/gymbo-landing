@@ -152,7 +152,7 @@ const PRICING = [
 
 /* ── FAQ ── */
 const FAQ = [
-  { q: "Is it free?", a: "Your first 14 days are free on every plan. After that, Gymbo Pro is ₹399/month — or ₹250/month effective on the annual plan — billed through the App Store." },
+  { q: "Is it free?", a: "Your first 7 days are free on every plan. After that, Gymbo Pro is ₹399/month — or ₹250/month effective on the annual plan — billed through the App Store." },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
@@ -608,7 +608,7 @@ export default function App() {
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · 14 days free · billed via the App Store.</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · 7 days free · billed via the App Store.</p>
             </Reveal>
           </div>
         </section>

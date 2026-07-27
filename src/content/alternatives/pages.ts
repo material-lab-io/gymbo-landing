@@ -56,7 +56,7 @@ const truecoach: Post = {
 | Session logging | **One tap**, balance updates itself | Programming-led; logs workouts, not payments |
 | Progress tracking | Vitals + photos (shipping this quarter) | ✅ Strong — metrics, photos, compliance |
 | Exercise video library | Growing | ✅ 3,000+ videos |
-| Free trial | 14 days, no card | 14 days, no card |
+| Free trial | 7 days, no card | 14 days, no card |
 
 *TrueCoach figures: annual-billed rates verified against truecoach.co/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check truecoach.co/pricing for current pricing.*
 
@@ -150,7 +150,7 @@ const trainerize: Post = {
 | AI | AI assistant + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
 | Branded client app | Not yet | ✅ (paid add-on) |
-| Free trial | 14 days, no card | 30 days, no card |
+| Free trial | 7 days, no card | 30 days, no card |
 
 *Trainerize figures verified against trainerize.com/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check trainerize.com/pricing for current numbers.*
 
@@ -239,7 +239,7 @@ Both are made in India, for India. The real question isn't features or price —
 | Setup | Productive in ~60 seconds, nothing to configure | Onboard a facility — branches, staff, members |
 | Platform | iPhone only | iPhone, Android, web |
 | Price | ₹399/mo (₹250/mo annual) | from ₹89/mo (gym suite, unlimited members) |
-| Free trial | 14 days, no card | Not clearly stated |
+| Free trial | 7 days, no card | Not clearly stated |
 
 *Both are India-native — UPI, GST, and WhatsApp aren't the difference here. The difference is who the product is built for.*
 
