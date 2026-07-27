@@ -112,6 +112,7 @@ export function Privacy() {
         <section className="flex flex-col gap-3">
           <h2>Contact</h2>
           <p>Questions about your privacy? Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>.</p>
+          <p>To raise a privacy question or grievance, contact Kaushik at <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a>. We aim to respond within 30 days.</p>
         </section>
       </Prose>
     </PageShell>
