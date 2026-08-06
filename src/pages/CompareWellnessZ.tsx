@@ -352,7 +352,7 @@ export function CompareWellnessZ() {
         <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Now in beta</Eyebrow>
+              <Eyebrow dark>In beta</Eyebrow>
               <h2 className="text-[clamp(28px,4.5vw,46px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "18ch" }}>
                 Built for trainers. Try it free.
               </h2>

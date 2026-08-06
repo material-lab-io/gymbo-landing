@@ -339,7 +339,7 @@ export default function App() {
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
             <div className="max-w-[600px] lg:w-[52%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>Now in beta</Eyebrow>
+                <Eyebrow>In beta</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
@@ -619,7 +619,7 @@ export default function App() {
         <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Now in beta</Eyebrow>
+              <Eyebrow dark>In beta</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
@@ -644,11 +644,6 @@ export default function App() {
                 read as broken/off-brand rather than communicating "Apple Watch". */}
             <Reveal className="mt-12 flex flex-col items-center gap-4">
               <span className="text-[12px] px-4 py-2 rounded-full" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontWeight: 700, letterSpacing: "0.04em" }}>Apple Watch — coming soon</span>
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-                {["iPhone — coming soon"].map((b) => (
-                  <span key={b} className="text-[12px] px-4 py-2 rounded-full" style={{ background: "rgba(240,240,235,0.05)", border: "1px solid rgba(240,240,235,0.1)", color: F.boneLabel, fontFamily: SANS }}>{b}</span>
-                ))}
-              </div>
             </Reveal>
           </div>
         </section>
