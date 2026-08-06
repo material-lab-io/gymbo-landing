@@ -28,5 +28,5 @@ Gymbo is built for the independent personal trainer — not a gym chain, and not
 
 ## Notes
 
-- Status: in private alpha on iOS (iPhone). Android is on the way.
+- Status: in beta on iOS (iPhone).
 - Made by Material Lab (https://materiallab.io). Contact: damini@materiallab.io
