@@ -451,14 +451,14 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-y-14 gap-x-6 md:gap-x-12 justify-items-center">
+            <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
               {SCREENS.map((s) => (
-                <Reveal key={s.slug} className="flex flex-col items-center">
+                <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
                   <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
-                </Reveal>
+                </div>
               ))}
             </div>
 
