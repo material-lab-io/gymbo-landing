@@ -5,7 +5,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, RiskReversal } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -156,7 +156,7 @@ const FAQ = [
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
-  { q: "Which phones does it support?", a: "iPhone now. Android is coming soon — join the waitlist and we'll tell you first." },
+  { q: "Which phones does it support?", a: "iPhone, for now — that's where we're focused." },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance — it doesn't touch your money." },
   { q: "Can I import my existing clients?", a: "Yes. Bring your current roster over in minutes and pick up where you left off." },
 ];
@@ -181,31 +181,6 @@ function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, class
           <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "13px", lineHeight: 1.5 }}>{brief}</p>
         </div>
       </IPhoneMockup>
-    </div>
-  );
-}
-
-/* devices.css Apple Watch Ultra (MIT), scaled, with a "coming soon" badge */
-function Watch({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <div className={`flex flex-col items-center ${className}`} style={style}>
-      <div style={{ width: 100, height: 106 }}>
-        <div className="device device-apple-watch-ultra" style={{ transform: "scale(0.278)", transformOrigin: "top left" }}>
-          <div className="device-frame">
-            <div className="device-screen" style={{ display: "grid", placeItems: "center", alignContent: "center", gap: 18, background: "#0a0a0a" }}>
-              <span style={{ display: "grid", placeItems: "center", width: 96, height: 96, borderRadius: 24, background: F.marigold, color: F.onCta, fontFamily: SANS, fontWeight: 700, fontSize: 56 }}>g</span>
-              <span style={{ color: F.bone, fontFamily: SANS, fontWeight: 700, fontSize: 34, letterSpacing: 2 }}>9:41</span>
-            </div>
-          </div>
-          <div className="device-stripe"></div>
-          <div className="device-header"></div>
-          <div className="device-btns"></div>
-        </div>
-      </div>
-      {/* badge sits clearly BELOW the watch (was occluded by the device frame) */}
-      <span style={{ marginTop: 12, whiteSpace: "nowrap", borderRadius: 999, background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}>
-        Apple Watch — coming soon
-      </span>
     </div>
   );
 }
@@ -364,7 +339,7 @@ export default function App() {
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
             <div className="max-w-[600px] lg:w-[52%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>Private alpha · limited spots</Eyebrow>
+                <Eyebrow>In beta</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
@@ -381,10 +356,6 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              <div className={`mt-4 ${prefersReduced ? "" : "hero-rise d5"}`}>
-                <RiskReversal />
-              </div>
-
               {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
               <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
                 <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(86vw, 380px)" }} />
@@ -488,7 +459,6 @@ export default function App() {
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <PrimaryCTA dark size="lg" />
-              <RiskReversal dark />
             </Reveal>
           </div>
         </section>
@@ -541,7 +511,7 @@ export default function App() {
               <Reveal>
                 <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[20px]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
                   <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold mb-4" style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
-                  <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More alpha trainers are coming on board across India.</p>
+                  <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
                 </div>
               </Reveal>
             </div>
@@ -649,7 +619,7 @@ export default function App() {
         <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Private alpha · limited spots</Eyebrow>
+              <Eyebrow dark>In beta</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
@@ -666,17 +636,14 @@ export default function App() {
                 </svg>
                 Talk to the founder
               </a>
-              <RiskReversal dark />
             </Reveal>
 
-            {/* Apple Watch coming-soon teaser (relocated out of the hero) */}
+            {/* Apple Watch coming-soon teaser (relocated out of the hero) — plain text only,
+                the devices.css mockup below it was removed (gy-5hw2m): it rendered as a generic
+                smartwatch shape carrying the Gymbo "g" mark, not an Apple Watch icon/logo, which
+                read as broken/off-brand rather than communicating "Apple Watch". */}
             <Reveal className="mt-12 flex flex-col items-center gap-4">
-              <Watch />
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-                {["iPhone — coming soon", "Android — coming soon"].map((b) => (
-                  <span key={b} className="text-[12px] px-4 py-2 rounded-full" style={{ background: "rgba(240,240,235,0.05)", border: "1px solid rgba(240,240,235,0.1)", color: F.boneLabel, fontFamily: SANS }}>{b}</span>
-                ))}
-              </div>
+              <span className="text-[12px] px-4 py-2 rounded-full" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontWeight: 700, letterSpacing: "0.04em" }}>Apple Watch — coming soon</span>
             </Reveal>
           </div>
         </section>

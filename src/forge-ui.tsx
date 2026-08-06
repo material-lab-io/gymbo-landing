@@ -173,10 +173,3 @@ export function SecondaryButton({ dark, children }: { dark?: boolean; children: 
   );
 }
 
-export function RiskReversal({ dark }: { dark?: boolean }) {
-  return (
-    <p className="text-[13px]" style={{ color: dark ? F.boneLabel : F.inkLabel, fontFamily: SANS }}>
-      Free · no credit card
-    </p>
-  );
-}
