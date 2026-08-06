@@ -1,6 +1,6 @@
 # Gymbo pricing
 
-Gymbo is a business app for independent personal trainers in India. One simple subscription, **unlimited clients** on every plan, and your **first 7 days free** — no card required.
+Gymbo is a business app for independent personal trainers in India. One simple subscription, **unlimited clients** on every plan, and your **first 7 days free**.
 
 ## Plans
 
@@ -23,7 +23,7 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 
 ## Free trial
 
-Your **first 7 days are free**, no credit card required. After that, choose either plan above.
+Your **first 7 days are free**. After that, choose either plan above.
 
 ## Links
 
