@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Check, Plus, Sun, Moon } from "lucide-react";
-import { IPhoneMockup } from "react-device-mockup";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
@@ -162,26 +161,6 @@ const FAQ = [
 /* ============================================================================
    building blocks
    ============================================================================ */
-
-/* react-device-mockup iPhone 15 Pro (MIT, dynamic island) with a styled
-   "here we'll show" BRIEF as the screen content. Inner content swaps
-   brief → screenshot → muted-loop video later; the frame stays put. */
-function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, className = "", style }: { brief: string; label?: string; screenWidth?: number; className?: string; style?: React.CSSProperties }) {
-  return (
-    <div className={className} style={{ filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))", lineHeight: 0, ...style }}>
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
-        <div style={{ width: "100%", height: "100%", background: F.beige, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "14% 11%", textAlign: "center", lineHeight: 1.5 }}>
-          {label && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: F.amberText, fontFamily: SANS, fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", marginBottom: "8%" }}>
-              <span aria-hidden="true">▶</span> {label}
-            </span>
-          )}
-          <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "13px", lineHeight: 1.5 }}>{brief}</p>
-        </div>
-      </IPhoneMockup>
-    </div>
-  );
-}
 
 function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
   if (chip.kind === "money") {
@@ -697,30 +676,37 @@ export default function App() {
   );
 }
 
-/* ── brand-touchpoints carousel (under the "Your brand" pillar) ── */
+/* ── brand-touchpoints section (under the "Your brand" pillar) ──
+   TEMPORARY (gy-cgfm8): the BriefFrame placeholder-screenshot cards ("Here
+   we'll show…") are gone — Kaushik doesn't want to wait for real artwork.
+   Reduced to a plain bullet list until there's real screenshots/footage to
+   show per touchpoint. Do not treat this bullet layout as the final design. */
 function BrandTouchpoints() {
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
+      <div className="max-w-[720px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
         <Reveal className="text-center mb-8">
           <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
           <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "24ch" }}>
             Your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>
-        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" tabIndex={0} role="region" aria-label="Brand touchpoints">
+        <ul className="mx-auto space-y-3" style={{ maxWidth: "560px" }}>
           {TOUCHPOINTS.map((t) => (
-            <div key={t.name} className="relative snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)" }}>
-              {t.soon && (
-                <span className="absolute top-3 right-3 z-10 rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
-              )}
-              <div style={t.soon ? { opacity: 0.6 } : undefined}>
-                <BriefFrame brief={t.desc} label="" screenWidth={150} />
+            <li key={t.name} className="flex items-start gap-3 rounded-[14px] p-4" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}>
+              <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
+              <div className="text-left">
+                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
+                  {t.name}
+                  {t.soon && (
+                    <span className="ml-2 align-middle rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
+                  )}
+                </span>
+                <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
               </div>
-              <h4 className="mt-5 text-[16px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</h4>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );
