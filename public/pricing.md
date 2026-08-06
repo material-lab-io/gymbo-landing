@@ -23,7 +23,7 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 
 ## Free trial
 
-Your **first 7 days are free**, no credit card required. After that, choose either plan above.
+**Free for 7 days.** Cancel anytime before it renews. After that, choose either plan above.
 
 ## Links
 
