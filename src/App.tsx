@@ -425,7 +425,7 @@ export default function App() {
                       <DemoFrame
                         clip={demoClip(p.demoId)}
                         poster={demoPoster(p.demoId)}
-                        theme={theme}
+                        theme={dark ? "dark" : "light"}
                         label={`${p.title} — demo`}
                         maxWidth={300}
                         comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
