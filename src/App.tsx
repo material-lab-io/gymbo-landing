@@ -188,16 +188,16 @@ function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, class
 function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
   if (chip.kind === "money") {
     return (
-      <div className={`absolute z-10 items-center gap-2 px-4 py-2.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
-        <span className="grid place-items-center w-5 h-5 rounded-full text-[11px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
-        <span className="text-[14px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
+      <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
+        <span className="grid place-items-center w-4 h-4 rounded-full text-[9px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
+        <span className="text-[12px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
       </div>
     );
   }
   return (
-    <div className={`absolute z-10 items-center gap-2 px-4 py-2.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
-      <span className="text-[10px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
-      <span className="text-[14px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
+    <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
+      <span className="text-[9px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
+      <span className="text-[12px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
     </div>
   );
 }
@@ -227,15 +227,16 @@ function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: str
   );
 }
 
-/* Floating Forge UI chip overlapping the hero device — seeded-positive only. */
+/* Floating Forge UI chip beside the hero device — seeded-positive only.
+   Sized down relative to the (now smaller) hero device (gy-pzefj item 3). */
 function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
   const paid = variant === "paid";
   return (
-    <div className={`absolute z-10 flex items-center gap-3 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 18, padding: "14px 18px", boxShadow: "0 24px 44px -16px rgba(10,10,8,.35)", ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 38, height: 38, borderRadius: 11, fontWeight: 800, fontSize: 18, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
+    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 14, padding: "10px 14px", boxShadow: "0 24px 44px -16px rgba(10,10,8,.35)", ...style }}>
+      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: 9, fontWeight: 800, fontSize: 14, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
       <div>
-        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 15, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
-        <div style={{ fontFamily: SANS, fontSize: 12.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
+        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
+        <div style={{ fontFamily: SANS, fontSize: 10.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
       </div>
     </div>
   );
@@ -331,14 +332,17 @@ export default function App() {
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
         <header className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 + off the top/right edges.
-              Stage 38vw + text 46% = 84% at the lg breakpoint (1024px), leaving a ~160px gap so the
-              two regions never touch (gy-v5ltl; was 50vw + 52% = 102%, guaranteed to overlap). */}
-          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(38vw, 680px)" }}>
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(19vw, 274px)", top: 248, right: "min(22.8vw, 334px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(32vw, 456px)", top: -30, right: "-1.2vw" }} />
-            <HeroChip variant="logged" style={{ top: 150, right: "min(23.6vw, 344px)" }} />
-            <HeroChip variant="paid" style={{ top: 548, right: "min(18.2vw, 266px)" }} />
+          {/* desktop device stage — absolute to the section, bleeds past 1180 off the top/right edges.
+              Stage 30vw + text 46% = 76% at the lg breakpoint (1024px) (gy-pzefj: was 38vw + 46% = 84%,
+              Kaushik flagged it as still too big; gy-v5ltl before that was 50vw + 52% = 102%, guaranteed
+              to overlap). The dashboard phone no longer bleeds past the stage's right edge, and the
+              schedule (calendar) phone sits further out from behind it so more of it reads as visible —
+              was ~59% visible, now ~78%. */}
+          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(30vw, 520px)" }}>
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(15vw, 210px)", top: 190, right: "min(18.4vw, 262px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(22vw, 310px)", top: -20, right: "0vw" }} />
+            <HeroChip variant="logged" style={{ top: 110, right: "min(19vw, 270px)" }} />
+            <HeroChip variant="paid" style={{ top: 400, right: "min(12vw, 170px)" }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -363,7 +367,7 @@ export default function App() {
               </div>
               {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
               <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(86vw, 380px)" }} />
+                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} />
               </div>
             </div>
           </div>
@@ -430,7 +434,12 @@ export default function App() {
                         maxWidth={300}
                         comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
                       />
-                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
+                      {/* Chip floats OUTSIDE the composed demo asset (which bakes its own
+                          heading + caption text into the frame) so it never occludes them
+                          (gy-pzefj item 3: "Looks pro" was overlapping the demo's own
+                          "Branded statement" heading; "Class logged" was overlapping the
+                          demo's own bottom caption). */}
+                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "-6%", left: "-6%" } : { top: "-6%", right: "-6%" }} />
                     </div>
                   </Reveal>
                 </div>
@@ -697,7 +706,7 @@ function BrandTouchpoints() {
     <div style={{ background: F.charcoal }}>
       <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
         <Reveal className="text-center mb-8">
-          <span className="block text-[13px] font-bold mb-2" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
+          <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
           <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "24ch" }}>
             Your brand, everywhere — here now, more coming.
           </h3>
