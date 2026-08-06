@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Check, Plus, Sun, Moon } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, RiskReversal } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -153,7 +153,6 @@ export function CompareWellnessZ() {
               <PrimaryCTA size="lg" />
               <SecondaryButton>Talk to the founder</SecondaryButton>
             </Reveal>
-            <Reveal className="mt-4"><RiskReversal /></Reveal>
           </div>
         </header>
 
@@ -312,12 +311,12 @@ export function CompareWellnessZ() {
                 Moving your clients over is straightforward: Gymbo supports bulk client import, so you can bring your roster in rather than re-typing it. Your sessions and payments start fresh in a structure built for training.
               </p>
             </Reveal>
-            {/* Structural social-proof slot — Gymbo is in private alpha; a real switcher
+            {/* Structural social-proof slot — Gymbo is in beta; a real switcher
                 quote goes here post-launch. Do NOT fabricate a testimonial. */}
             <Reveal>
               <div className="mt-8 rounded-[18px] p-6 text-center" style={{ background: F.beigeCard, border: "1px dashed var(--c-line)" }}>
                 <p className="text-[14px] md:text-[15px]" style={{ color: F.inkLabel, fontFamily: SANS, lineHeight: 1.6 }}>
-                  Gymbo is in private alpha. Real trainer stories will appear here as trainers come on board.
+                  Gymbo is in beta. Real trainer stories will appear here as trainers come on board.
                 </p>
               </div>
             </Reveal>
@@ -353,7 +352,7 @@ export function CompareWellnessZ() {
         <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Private alpha · limited spots</Eyebrow>
+              <Eyebrow dark>Now in beta</Eyebrow>
               <h2 className="text-[clamp(28px,4.5vw,46px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "18ch" }}>
                 Built for trainers. Try it free.
               </h2>
@@ -369,7 +368,6 @@ export function CompareWellnessZ() {
                 </svg>
                 Talk to the founder
               </a>
-              <RiskReversal dark />
             </Reveal>
             <Reveal className="mt-10">
               <a href={`${HOME}#pricing`} className="text-[14px] underline underline-offset-4" style={{ color: F.boneMuted, fontFamily: SANS }}>See full Gymbo pricing →</a>
