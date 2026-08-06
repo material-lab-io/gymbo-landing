@@ -67,12 +67,15 @@ test('theme toggle swaps theme and demo variant', async ({ page }) => {
   await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
 });
 
-test('coming-soon overlays render', async ({ page }) => {
+test('coming-soon bullets render inline, not as demo-frame badges', async ({ page }) => {
   await page.goto('/');
-  // pillar demo-frame overlays (travel-aware / AI navigate) + carousel tiles
+  // gy-jaooz: "travel-aware" / "AI navigate" badges were removed from the pillar
+  // demo artwork; the not-yet-shipped items now live as normal bullets with a
+  // "coming soon" tag after the sentence.
   await page.locator('#why').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-coming-soon]').first()).toBeVisible();
-  await expect(page.getByText(/travel-aware/i).first()).toBeVisible();
+  await expect(page.locator('[data-coming-soon]')).toHaveCount(0);
+  await expect(page.getByText(/travel-aware/i)).toHaveCount(0);
+  await expect(page.getByText('coming soon').first()).toBeVisible();
 });
 
 test('pricing shows the two plans and numbers', async ({ page }) => {
