@@ -51,7 +51,6 @@ const PILLARS = [
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
     chip: { kind: "money", text: "₹2,400 received" },
-    comingSoon: "",
     dark: false,
   },
   {
@@ -65,10 +64,10 @@ const PILLARS = [
       "One-tap punch to log a class",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
+      { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
     chip: { kind: "dark", k: "Today", v: "Class logged" },
-    comingSoon: "Coming soon: travel-aware scheduling — slots that respect your commute.",
     dark: true,
   },
   {
@@ -85,7 +84,6 @@ const PILLARS = [
     ],
     brief: "Your brand on a clean statement PDF — share in a tap (India).",
     chip: { kind: "money", text: "Looks pro" },
-    comingSoon: "",
     dark: false,
   },
   {
@@ -99,10 +97,10 @@ const PILLARS = [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
       "Track client progress: logged sessions, adherence, per-exercise gains",
+      { text: "Get directions to your next class, right from the app", soon: true },
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
     chip: { kind: "dark", k: "Adherence", v: "92%" },
-    comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
   },
 ];
@@ -400,28 +398,28 @@ export default function App() {
                       {p.intro}
                     </p>
                     <ul className="flex flex-col gap-3">
-                      {p.bullets.map((b) => (
-                        <li key={b} className="flex items-start gap-3">
-                          <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
-                            <Check size={13} strokeWidth={2.5} />
-                          </span>
-                          <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>{b}</span>
-                        </li>
-                      ))}
+                      {p.bullets.map((b) => {
+                        const bullet = typeof b === "string" ? { text: b, soon: false } : b;
+                        return (
+                          <li key={bullet.text} className="flex items-start gap-3">
+                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
+                              <Check size={13} strokeWidth={2.5} />
+                            </span>
+                            <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
+                              {bullet.text}
+                              {bullet.soon && (
+                                <span
+                                  className="ml-2 rounded-full font-bold align-middle"
+                                  style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
+                                >
+                                  coming soon
+                                </span>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
-                    {p.comingSoon && (
-                      <div className="mt-6 flex items-start gap-2.5">
-                        <span
-                          className="shrink-0 rounded-full font-bold mt-0.5"
-                          style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
-                        >
-                          Soon
-                        </span>
-                        <span className="text-[13px] md:text-[14px]" style={{ color: dark ? F.boneMuted : F.inkMuted, fontFamily: SANS, lineHeight: 1.5 }}>
-                          {p.comingSoon.replace(/^Coming soon:\s*/, "")}
-                        </span>
-                      </div>
-                    )}
                   </Reveal>
 
                   <Reveal className="relative flex items-center justify-center" >
@@ -432,7 +430,6 @@ export default function App() {
                         theme={dark ? "dark" : "light"}
                         label={`${p.title} — demo`}
                         maxWidth={300}
-                        comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
                       />
                       {/* Chip floats OUTSIDE the composed demo asset (which bakes its own
                           heading + caption text into the frame) so it never occludes them

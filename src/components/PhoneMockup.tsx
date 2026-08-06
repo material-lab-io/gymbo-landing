@@ -12,8 +12,6 @@ import { IPhoneMockup } from "react-device-mockup";
    prefers-reduced-motion → static poster (no autoplay).
    ============================================================================ */
 
-const SANS = "var(--font-sans)";
-
 export type ThemeName = "light" | "dark";
 export interface ClipMap {
   light: string;
@@ -75,7 +73,6 @@ export function DemoFrame({
   theme,
   maxWidth = 300,
   label,
-  comingSoon,
   className = "",
   style,
 }: {
@@ -85,8 +82,6 @@ export function DemoFrame({
   /** max rendered width in px (clips are 9:16 portrait) */
   maxWidth?: number;
   label?: string;
-  /** optional "coming soon" overlay tag */
-  comingSoon?: string;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -150,31 +145,6 @@ export function DemoFrame({
           </video>
         ) : (
           <img src={posterSrc} alt={label || ""} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
-        )}
-
-        {comingSoon && (
-          <span
-            data-coming-soon
-            style={{
-              position: "absolute",
-              top: "6%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 5,
-              whiteSpace: "nowrap",
-              borderRadius: 999,
-              background: "#f59e0b",
-              color: "#1a1a1a",
-              fontFamily: SANS,
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              padding: "4px 10px",
-              boxShadow: "0 1px 2px rgba(0,0,0,.1), 0 8px 24px -6px rgba(0,0,0,.18)",
-            }}
-          >
-            {comingSoon}
-          </span>
         )}
       </div>
     </div>
