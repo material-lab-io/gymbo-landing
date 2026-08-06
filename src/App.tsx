@@ -331,16 +331,18 @@ export default function App() {
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
         <header className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 + off the top/right edges */}
-          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(50vw, 820px)" }}>
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(25vw, 360px)", top: 248, right: "min(30vw, 440px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(42vw, 600px)", top: -30, right: "-1.6vw" }} />
-            <HeroChip variant="logged" style={{ top: 150, right: "min(31vw, 452px)" }} />
-            <HeroChip variant="paid" style={{ top: 548, right: "min(24vw, 350px)" }} />
+          {/* desktop device stage — absolute to the section, bleeds past 1180 + off the top/right edges.
+              Stage 38vw + text 46% = 84% at the lg breakpoint (1024px), leaving a ~160px gap so the
+              two regions never touch (gy-v5ltl; was 50vw + 52% = 102%, guaranteed to overlap). */}
+          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(38vw, 680px)" }}>
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(19vw, 274px)", top: 248, right: "min(22.8vw, 334px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(32vw, 456px)", top: -30, right: "-1.2vw" }} />
+            <HeroChip variant="logged" style={{ top: 150, right: "min(23.6vw, 344px)" }} />
+            <HeroChip variant="paid" style={{ top: 548, right: "min(18.2vw, 266px)" }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
-            <div className="max-w-[600px] lg:w-[52%]">
+            <div className="max-w-[600px] lg:w-[46%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
                 <Eyebrow>In beta</Eyebrow>
               </div>
