@@ -1,0 +1,54 @@
+{
+  "$schema": "./MANIFEST.md",
+  "maxAgeDays": 21,
+  "entries": {
+    "hero-01-dashboard-clean.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — capturedAt is this file's last commit date, NOT a real capture timestamp. Confirmed stale by founder 2026-08-06/2026-08-08 (dots vs notches). Needs real capture data from gy-5xmxm."
+    },
+    "organized-01-schedule-day.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — see hero-01-dashboard-clean.png note."
+    },
+    "revenue-01-ledger-history.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — see hero-01-dashboard-clean.png note."
+    },
+    "extra-ai-assistant.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — see hero-01-dashboard-clean.png note."
+    },
+    "workouts-01-template-fullbody.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — see hero-01-dashboard-clean.png note."
+    },
+    "revenue-02-export-statement.png": {
+      "appVersion": null,
+      "buildNumber": null,
+      "gymboCommitSha": null,
+      "capturedAt": "2026-06-17T11:46:39+02:00",
+      "verified": false,
+      "note": "backfilled from git history at gate creation (gy-a73px.15) — see hero-01-dashboard-clean.png note."
+    }
+  }
+}

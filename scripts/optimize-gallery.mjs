@@ -5,19 +5,10 @@
 import sharp from "sharp";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
+import { SCREENS } from "./screens-map.mjs";
 
 const SRC = "public/screens/real";
 const OUT = "public/screens/gallery";
-
-// slug → source file. Each is a clean, full-screen real-app shot (light mode).
-const SCREENS = {
-  dashboard: "hero-01-dashboard-clean.png",
-  schedule: "organized-01-schedule-day.png",
-  payments: "revenue-01-ledger-history.png",
-  ai: "extra-ai-assistant.png",
-  workouts: "workouts-01-template-fullbody.png",
-  export: "revenue-02-export-statement.png",
-};
 
 const WIDTHS = [360, 540, 720, 1080]; // gallery ~230–360px CSS + the large hero phone (~600px → 1080 = ~1.8x)
 const FALLBACK_W = 540;

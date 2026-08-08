@@ -19,6 +19,17 @@ jobs:
 
       - run: npm ci
 
+      # Screenshot staleness gate (gy-a73px.15): every screenshot actually
+      # rendered on the site must have a manifest entry in
+      # public/screens/manifest.json that is verified and not older than
+      # maxAgeDays — see public/screens/MANIFEST.md. Runs before the build
+      # so a stale/missing manifest fails fast, before the full build +
+      # smoke gate. Mechanical, fail-closed replacement for a human noticing
+      # stale screenshots on the live site (happened twice: 2026-08-06,
+      # 2026-08-08).
+      - name: Screenshot staleness gate
+        run: node scripts/check-screenshot-freshness.mjs
+
       - run: npm run build
 
       - name: Install Chromium (smoke-gate console check)
