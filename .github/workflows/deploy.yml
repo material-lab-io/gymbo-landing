@@ -27,9 +27,12 @@ jobs:
       # Pre-deploy smoke gate (gy-kefk3): serve the freshly-built dist via the
       # Cloudflare Pages emulator and (1) assert homepage rendered (SSG didn't
       # break) + key content/og + robots AI-bot regression + /privacy + /terms
-      # live (curl smoke), and (2) load every route in a headless browser and
-      # fail on our JS/console errors (hydration etc.). Non-zero exit fails the
-      # job → the deploy step below is skipped. Blocks bad builds from going live.
+      # live (curl smoke), (2) load every route in a headless browser and fail
+      # on our JS/console errors (hydration etc.), and (3) run the Playwright
+      # visual-regression baselines (gy-a73px.1 / gy-a73px.13) against the same
+      # emulator — a PR that changes rendering with no snapshot update fails
+      # here. Non-zero exit fails the job → the deploy step below is skipped.
+      # Blocks bad builds from going live.
       - name: Pre-deploy smoke gate
         run: |
           npx wrangler pages dev dist --port 8788 --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
@@ -46,8 +49,19 @@ jobs:
           RC=0
           bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788 || RC=1
           node scripts/console-check.mjs http://127.0.0.1:8788 || RC=1
+          PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
           kill $PD 2>/dev/null || true
           exit $RC
+
+      - name: Upload visual regression report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
       - name: Deploy to Cloudflare Pages
         if: github.ref == 'refs/heads/main'
