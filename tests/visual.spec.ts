@@ -39,20 +39,34 @@ const SECTIONS = [
  * what's painted until the browser fires `seeked`, so a screenshot taken
  * right after the assignment can catch whichever frame the loop happened to
  * be on. Wait for `seeked` (or `pause` if it was already sitting on frame 0
- * and no seek is needed) before returning. */
+ * and no seek is needed) before returning.
+ *
+ * `waitVideoMounted` only waits for the element to ATTACH — DemoFrame's own
+ * IntersectionObserver can mount a <video> with readyState still 0
+ * (HAVE_NOTHING). Setting `currentTime` before any data has loaded is a
+ * no-op: there's nothing to seek to, so `seeked` never fires and this hangs
+ * to the test timeout. Below HAVE_CURRENT_DATA (2), wait for `loadeddata`
+ * first so the seek is guaranteed to actually happen. */
 async function freezeVideos(page: Page) {
   await page.evaluate(() =>
     Promise.all(
       Array.from(document.querySelectorAll('video')).map(
         (v) =>
           new Promise<void>((resolve) => {
-            v.pause();
-            if (v.currentTime === 0 && v.readyState >= 2) {
-              resolve();
-              return;
+            const seekToStart = () => {
+              v.pause();
+              if (v.currentTime === 0) {
+                resolve();
+                return;
+              }
+              v.addEventListener('seeked', () => resolve(), { once: true });
+              v.currentTime = 0;
+            };
+            if (v.readyState >= 2) {
+              seekToStart();
+            } else {
+              v.addEventListener('loadeddata', seekToStart, { once: true });
             }
-            v.addEventListener('seeked', () => resolve(), { once: true });
-            v.currentTime = 0;
           })
       )
     )
