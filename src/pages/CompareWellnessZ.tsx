@@ -125,7 +125,7 @@ export function CompareWellnessZ() {
               <Eyebrow>Comparison · personal trainer apps</Eyebrow>
               <h1 className="text-[clamp(30px,5vw,52px)] font-black" style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Gymbo vs WellnessZ:{" "}
-                <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
+                <span className="relative whitespace-nowrap" style={{ color: F.amberText, isolation: "isolate" }}>
                   <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
                   which fits you?
                 </span>
