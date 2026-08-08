@@ -133,14 +133,6 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
 ];
 
-/* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
-// METRICS hidden until real launch figures exist (marketer QA gy-dhcj1) — re-add real numbers here, then uncomment the render block in the trust section.
-// const METRICS = [
-//   { value: "xxx", label: "Trainers" },
-//   { value: "xxx", label: "Classes logged" },
-//   { value: "₹xxx", label: "Tracked" },
-// ];
-
 /* ── pricing ── */
 const PRICING = [
   { name: "Monthly", tagline: "Flexible", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
@@ -459,28 +451,12 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.5 }}>
-                Made for independent fitness trainers in India.
+                We're early — and built for trainers like you.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
-                Log classes, track revenue, look professional.
+                Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
               </p>
             </Reveal>
-
-            {/* metric tiles HIDDEN until real launch figures exist — were literal "xxx" on prod (marketer QA gy-dhcj1; spec: build empty slots, fill post-launch). Re-enable by populating METRICS and uncommenting.
-            <div className="mt-10 grid grid-cols-3 gap-3 md:gap-6">
-              {METRICS.map((m) => (
-                <Reveal key={m.label}>
-                  <div className="h-full flex flex-col items-center justify-center text-center px-3 py-6 md:py-8 rounded-[16px]" style={{ background: F.beigeCard }}>
-                    <span className="font-black" style={{ fontFamily: SERIF, color: F.amberText, fontSize: "clamp(22px,4vw,40px)", letterSpacing: "-0.02em" }}>{m.value}</span>
-                    <span className="mt-1 text-[12px] md:text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS }}>{m.label}</span>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal className="text-center mt-3">
-              <p className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Placeholder — real figures at launch.</p>
-            </Reveal>
-            */}
 
             {/* testimonials */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">
