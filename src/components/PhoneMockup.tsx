@@ -51,7 +51,7 @@ export function ScreenshotFrame({
         <picture>
           <source
             type="image/webp"
-            srcSet={`${base}-360.webp 360w, ${base}-540.webp 540w, ${base}-720.webp 720w`}
+            srcSet={`${base}-360.webp 360w, ${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`}
             sizes={`${screenWidth}px`}
           />
           <img
