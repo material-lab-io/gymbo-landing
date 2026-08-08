@@ -190,15 +190,21 @@ const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
 
 /* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
    in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
-function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties }) {
+function HeroPhone({ slug, alt = "", theme, className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
   const bezel = theme === "dark" ? "#000" : "#1a1a1a";
   const base = `/screens/gallery/${slug}`;
   return (
     <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: SHADOW.elevation5, lineHeight: 0, ...style }}>
       <div style={{ borderRadius: 44, overflow: "hidden", background: "#fff", aspectRatio: "1206 / 2622" }}>
         <picture>
-          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes="(min-width: 1024px) 42vw, 86vw" />
-          <img src={`${base}.png`} alt={alt} decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
+          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes={sizes} />
+          <img
+            src={`${base}.png`}
+            alt={alt}
+            decoding="async"
+            {...(priority ? { fetchpriority: "high" as const } : {})}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+          />
         </picture>
       </div>
     </div>
@@ -325,8 +331,8 @@ export default function App() {
                 SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
                 phone's right edge AND both chips all sit on it, so the callouts read as
                 anchored to the seam between the two phones rather than floating loose. */}
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} />
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} sizes="(min-width: 1024px) calc(min(22vw, 310px) * 0.68)" />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} sizes="(min-width: 1024px) min(22vw, 310px)" priority />
             <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
             <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
           </div>
@@ -353,7 +359,7 @@ export default function App() {
               </div>
               {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
               <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} />
+                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} sizes="min(74vw, 320px)" priority />
               </div>
             </div>
           </div>
