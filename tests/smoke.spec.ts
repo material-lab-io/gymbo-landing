@@ -68,6 +68,10 @@ test('theme toggle swaps theme and demo variant', async ({ page }) => {
 
   await page.locator('[data-theme-toggle]').click();
   await expect(html).toHaveAttribute('data-theme', 'dark');
+  // The "dark" clip variant lives on a different pillar section (dark:true
+  // background) further down the page — scroll it into view so its lazy-mount
+  // IntersectionObserver (rootMargin 250px) fires before asserting.
+  await page.locator('[data-testid="pillar-organized"]').scrollIntoViewIfNeeded();
   await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
 });
 
@@ -110,4 +114,18 @@ test('footer present, and no web-app references remain', async ({ page }) => {
   await footer.scrollIntoViewIfNeeded();
   await expect(footer.getByText(/2026 Material Lab/i)).toBeVisible();
   await expect(page.locator('a[href="https://app.getgymbo.com"]')).toHaveCount(0);
+});
+
+test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', async ({ page }) => {
+  await page.goto('/');
+  const h1 = page.locator('h1');
+  const subheadline = page.locator('p', { hasText: 'Track revenue, stay organized' });
+  await expect(subheadline).toBeVisible();
+
+  const h1Family = await h1.evaluate((el) => getComputedStyle(el).fontFamily);
+  const subFamily = await subheadline.evaluate((el) => getComputedStyle(el).fontFamily);
+
+  expect(h1Family).toContain('Merriweather');
+  expect(subFamily).toContain('Open Sans');
+  expect(subFamily).not.toContain('Merriweather');
 });
