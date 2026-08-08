@@ -179,6 +179,15 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
+/* Grid axis for the desktop hero stage (gy-a73px.5). STAGE_U is the front
+   phone's own width — every other stage offset is `calc(STAGE_U * k)`, so
+   phones and chips scale together instead of the old mix of independent vw
+   expressions (phones) and raw px (chips), which let their relationship
+   drift between breakpoints. STAGE_SEAM is the one shared vertical axis the
+   back phone and both chips anchor to. */
+const STAGE_U = "min(22vw, 310px)";
+const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
+
 /* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
    in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
 function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties }) {
@@ -308,10 +317,18 @@ export default function App() {
               schedule (calendar) phone sits further out from behind it so more of it reads as visible —
               was ~59% visible, now ~78%. */}
           <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(30vw, 520px)" }}>
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(15vw, 210px)", top: 190, right: "min(18.4vw, 262px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(22vw, 310px)", top: -20, right: "0vw" }} />
-            <HeroChip variant="logged" style={{ top: 110, right: "min(19vw, 270px)" }} />
-            <HeroChip variant="paid" style={{ top: 400, right: "min(12vw, 170px)" }} />
+            {/* Grid axis (gy-a73px.5): every offset below is `calc(STAGE_U * k)`, where
+                STAGE_U is the FRONT phone's own width. Nothing is pinned in raw px or an
+                independent vw — offsets scale WITH the phone they annotate, so the
+                relationship holds at every breakpoint instead of drifting between the
+                phones' vw-based sizing and the chips' old px pinning.
+                SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
+                phone's right edge AND both chips all sit on it, so the callouts read as
+                anchored to the seam between the two phones rather than floating loose. */}
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} />
+            <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
+            <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
