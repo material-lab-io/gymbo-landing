@@ -143,10 +143,12 @@
     }
     </script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Fonts — self-hosted (gy-a73px.9). Preload the two families the hero
+         paints on first frame (each file is a variable font covering every
+         weight that family uses, so one preload per family is enough). -->
+    <link rel="preload" href="/fonts/merriweather-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/open-sans-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
 
     <!-- Analytics (Umami website id from ops/umami/wrangler.toml) -->
     <script defer src="https://analytics.getgymbo.com/script.js" data-website-id="36b8e820-a50a-44b3-a57b-5ee37f719916"></script>

@@ -1,0 +1,18 @@
+/* Self-hosted replacement for the Google Fonts CSS API (gy-a73px.9).
+   Same two variable-font files Google served (one file per family covers the
+   whole weight axis) — just fetched from our own origin instead of a
+   render-blocking cross-origin request duplicated on every route. */
+@font-face {
+  font-family: 'Merriweather';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url('/fonts/merriweather-variable.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/open-sans-variable.woff2') format('woff2');
+}
