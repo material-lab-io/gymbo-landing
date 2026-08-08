@@ -35,10 +35,24 @@ export const F = {
   red: "#b80f34",
 };
 
+// 5-step layered elevation scale (--c-elevation-1..5 in FORGE_CSS above): one
+// light direction, tight+medium+ambient layers per step, tinted to the surface
+// hue (warm on light-theme beige, cool on dark-theme charcoal) instead of pure
+// black, offset+blur scaling together as elevation rises. cta/chip/card are
+// semantic aliases onto specific steps so existing call sites keep their names.
 export const SHADOW = {
-  cta: "0 1px 2px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06)",
-  chip: "0 1px 2px rgba(0,0,0,.10), 0 8px 24px -6px rgba(0,0,0,.18)",
-  card: "0 1px 2px rgba(0,0,0,.06), 0 12px 32px -12px rgba(0,0,0,.12)",
+  elevation1: "var(--c-elevation-1)",
+  elevation2: "var(--c-elevation-2)",
+  elevation3: "var(--c-elevation-3)",
+  elevation4: "var(--c-elevation-4)",
+  elevation5: "var(--c-elevation-5)",
+  // filter form for elements shadowed via CSS `filter: drop-shadow(...)`
+  // (transparent-background device frames) — drop-shadow has no spread
+  // parameter, so this is the closest filter-safe rendering of elevation-4.
+  elevation4Filter: "var(--c-elevation-4-filter)",
+  cta: "var(--c-elevation-2)",
+  chip: "var(--c-elevation-3)",
+  card: "var(--c-elevation-2)",
 };
 
 export const SERIF = "var(--font-serif)"; // Merriweather
@@ -87,8 +101,8 @@ export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.S
 // element children — which would emit data-theme=&quot;light&quot; into the
 // served CSS (invalid selector + a hydration mismatch). __html keeps it raw.
 const FORGE_CSS = `
-        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
-        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
+        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
+        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8);--c-elevation-1:0 1px 2px rgba(0,2,8,.06),0 4px 10px -4px rgba(0,2,8,.08),0 10px 20px -10px rgba(0,2,8,.07);--c-elevation-2:0 1px 2px rgba(0,2,8,.08),0 6px 16px -6px rgba(0,2,8,.11),0 16px 32px -14px rgba(0,2,8,.10);--c-elevation-3:0 2px 3px rgba(0,2,8,.09),0 10px 24px -8px rgba(0,2,8,.14),0 24px 48px -20px rgba(0,2,8,.12);--c-elevation-4:0 2px 4px rgba(0,2,8,.11),0 16px 32px -10px rgba(0,2,8,.15),0 36px 64px -26px rgba(0,2,8,.14);--c-elevation-5:0 3px 6px rgba(0,2,8,.12),0 20px 44px -12px rgba(0,2,8,.18),0 52px 96px -34px rgba(0,2,8,.19);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(0,2,8,.11)) drop-shadow(0 14px 26px rgba(0,2,8,.14)) drop-shadow(0 28px 46px rgba(0,2,8,.13))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
