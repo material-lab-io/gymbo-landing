@@ -185,7 +185,7 @@ function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: str
   const bezel = theme === "dark" ? "#000" : "#1a1a1a";
   const base = `/screens/gallery/${slug}`;
   return (
-    <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: "0 70px 120px -28px rgba(10,10,8,.55)", lineHeight: 0, ...style }}>
+    <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: SHADOW.elevation5, lineHeight: 0, ...style }}>
       <div style={{ borderRadius: 44, overflow: "hidden", background: "#fff", aspectRatio: "1206 / 2622" }}>
         <picture>
           <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes="(min-width: 1024px) 42vw, 86vw" />
@@ -201,7 +201,7 @@ function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: str
 function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
   const paid = variant === "paid";
   return (
-    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 14, padding: "10px 14px", boxShadow: "0 24px 44px -16px rgba(10,10,8,.35)", ...style }}>
+    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 14, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
       <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: 9, fontWeight: 800, fontSize: 14, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
       <div>
         <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
