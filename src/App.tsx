@@ -308,7 +308,7 @@ export default function App() {
         {/* Competitor-scale device (gy-k2543.10): copy column verbatim; device stage
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
-        <header className="relative overflow-hidden" style={{ background: F.beige }}>
+        <header data-testid="hero-section" className="relative overflow-hidden" style={{ background: F.beige }}>
           {/* desktop device stage — absolute to the section, bleeds past 1180 off the top/right edges.
               Stage 30vw + text 46% = 76% at the lg breakpoint (1024px) (gy-pzefj: was 38vw + 46% = 84%,
               Kaushik flagged it as still too big; gy-v5ltl before that was 50vw + 52% = 102%, guaranteed
@@ -365,7 +365,7 @@ export default function App() {
             const dark = p.dark;
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
-                <div className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                   <Reveal>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
@@ -427,7 +427,7 @@ export default function App() {
         </section>
 
         {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
-        <section aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
+        <section data-testid="gallery-section" aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>A closer look</Eyebrow>
@@ -524,7 +524,7 @@ export default function App() {
         </section>
 
         {/* ───────── pricing ───────── */}
-        <section id="pricing" aria-label="Pricing" style={{ background: F.charcoal }}>
+        <section id="pricing" data-testid="pricing-section" aria-label="Pricing" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
@@ -606,7 +606,7 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>In beta</Eyebrow>
