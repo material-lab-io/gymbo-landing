@@ -48,9 +48,12 @@ test('nav and hero render with the headline', async ({ page }) => {
 
 test('demo videos play inside device frames', async ({ page }) => {
   await page.goto('/');
-  // hero demo is above the fold → its video mounts (lazy IntersectionObserver)
-  await expect(page.locator('video').first()).toBeVisible();
+  // hero is now a static HeroPhone screenshot (gy-pzefj) — the first <video>
+  // is the "why" pillars' DemoFrame clip, which lazy-mounts on scroll
+  // (IntersectionObserver, rootMargin 250px).
+  await page.locator('#why').scrollIntoViewIfNeeded();
   const v = page.locator('video').first();
+  await expect(v).toBeVisible();
   await expect(v).toHaveJSProperty('muted', true);
   await expect(v).toHaveJSProperty('loop', true);
 });
@@ -60,6 +63,7 @@ test('theme toggle swaps theme and demo variant', async ({ page }) => {
   const html = page.locator('html');
   await expect(html).toHaveAttribute('data-theme', 'light');
 
+  await page.locator('#why').scrollIntoViewIfNeeded();
   await expect(page.locator('video[data-theme-variant="light"]').first()).toBeVisible();
 
   await page.locator('[data-theme-toggle]').click();

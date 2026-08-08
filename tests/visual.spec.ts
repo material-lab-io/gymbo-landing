@@ -34,14 +34,29 @@ const SECTIONS = [
 ] as const;
 
 /** Freeze every <video> on the page at frame 0 so the lazy-mounted, looping
- * demo clips never produce a flaky pixel diff between runs. */
+ * demo clips never produce a flaky pixel diff between runs. Setting
+ * `currentTime` seeks asynchronously — the previously-playing frame is still
+ * what's painted until the browser fires `seeked`, so a screenshot taken
+ * right after the assignment can catch whichever frame the loop happened to
+ * be on. Wait for `seeked` (or `pause` if it was already sitting on frame 0
+ * and no seek is needed) before returning. */
 async function freezeVideos(page: Page) {
-  await page.evaluate(() => {
-    document.querySelectorAll('video').forEach((v) => {
-      v.pause();
-      v.currentTime = 0;
-    });
-  });
+  await page.evaluate(() =>
+    Promise.all(
+      Array.from(document.querySelectorAll('video')).map(
+        (v) =>
+          new Promise<void>((resolve) => {
+            v.pause();
+            if (v.currentTime === 0 && v.readyState >= 2) {
+              resolve();
+              return;
+            }
+            v.addEventListener('seeked', () => resolve(), { once: true });
+            v.currentTime = 0;
+          })
+      )
+    )
+  );
 }
 
 /** Scroll fully through a section (top, then bottom) and wait for every
