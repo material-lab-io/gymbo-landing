@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { IPhoneMockup } from "react-device-mockup";
-import { SHADOW } from "../forge-ui";
+import { F, SHADOW } from "../forge-ui";
 
 /* ============================================================================
    DemoFrame — a real, pre-composed Swift app-demo clip (Wave 2). Each clip is a
@@ -48,7 +48,7 @@ export function ScreenshotFrame({
       className={className}
       style={{ filter: SHADOW.elevation4Filter, lineHeight: 0, ...style }}
     >
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
+      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor={F.onCta} hideStatusBar hideNavBar>
         <picture>
           <source
             type="image/webp"

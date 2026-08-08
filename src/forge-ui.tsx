@@ -33,6 +33,22 @@ export const F = {
   boneLabel: "#a0a0a0",
   green: "#15803d",
   red: "#b80f34",
+  white: "#ffffff",
+  black: "#000000",
+};
+
+// Forge radius scale (--g-radius-sm/md/lg/xl/xxl/full in src/forge/forge.css:
+// 8/12/16/20/28/9999) — the single source of truth for corner radii. Device
+// bezel radii (HeroPhone) are expressed as calc() multiples of this scale
+// rather than raw px so they stay traceable to it while still matching real
+// hardware curvature (rule 1 FIDELITY).
+export const RADIUS = {
+  sm: "var(--g-radius-sm)",
+  md: "var(--g-radius-md)",
+  lg: "var(--g-radius-lg)",
+  xl: "var(--g-radius-xl)",
+  xxl: "var(--g-radius-xxl)",
+  full: "var(--g-radius-full)",
 };
 
 // 5-step layered elevation scale (--c-elevation-1..5 in FORGE_CSS above): one
