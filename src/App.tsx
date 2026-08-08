@@ -245,7 +245,7 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
+    <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>
@@ -319,7 +319,7 @@ export default function App() {
               <div className={prefersReduced ? "" : "hero-rise d1"}>
                 <Eyebrow>In beta</Eyebrow>
               </div>
-              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
+              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
                   fitness business
@@ -327,7 +327,7 @@ export default function App() {
                 </span>{" "}
                 from your phone.
               </h1>
-              <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 300, lineHeight: 1.6, maxWidth: "46ch" }}>
+              <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
                 <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b> — built for independent trainers in India.
               </p>
               <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
@@ -347,7 +347,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
             <Reveal>
               <Eyebrow>Why trainers use Gymbo</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, maxWidth: "18ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
                 Everything the back office of your business needs.
               </h2>
             </Reveal>
@@ -362,10 +362,10 @@ export default function App() {
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
                     </span>
-                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: dark ? F.bone : F.ink }}>
+                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: dark ? F.bone : F.ink }}>
                       {p.title}
                     </h3>
-                    <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 300, lineHeight: 1.6, maxWidth: "44ch" }}>
+                    <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "44ch" }}>
                       {p.intro}
                     </p>
                     <ul className="flex flex-col gap-3">
@@ -423,7 +423,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>A closer look</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 See Gymbo in action.
               </h2>
             </Reveal>
@@ -450,7 +450,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.5 }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
                 We're early — and built for trainers like you.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
@@ -504,7 +504,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
                 Less than one missed session.
               </h2>
             </Reveal>
@@ -518,7 +518,7 @@ export default function App() {
                       <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
-                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.5 }}>{plan.name}</h3>
+                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
                       <div className="flex items-baseline gap-1.5 mb-1">
                         <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
                         <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span>
@@ -554,7 +554,7 @@ export default function App() {
           <div className="max-w-[800px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center mb-10">
               <Eyebrow>Questions</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "16ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "16ch" }}>
                 Everything you might ask.
               </h2>
             </Reveal>
@@ -586,7 +586,7 @@ export default function App() {
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>In beta</Eyebrow>
-              <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
+              <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
@@ -663,7 +663,7 @@ function BrandTouchpoints() {
       <div className="max-w-[720px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
         <Reveal className="text-center mb-8">
           <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
-          <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "24ch" }}>
+          <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
             Your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>

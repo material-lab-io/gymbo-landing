@@ -43,7 +43,7 @@ function FooterNav() {
 export function PageShell({ children }: { children: React.ReactNode }) {
   const { theme, setTheme } = useTheme();
   return (
-    <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
+    <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>

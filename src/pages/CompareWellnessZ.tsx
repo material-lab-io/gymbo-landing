@@ -77,7 +77,7 @@ export function CompareWellnessZ() {
   }, [prefersReduced]);
 
   return (
-    <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
+    <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>
@@ -133,7 +133,7 @@ export function CompareWellnessZ() {
               <p className="mt-6 text-[clamp(15px,1.6vw,18px)]" style={{ color: F.ink, fontWeight: 400, lineHeight: 1.6, maxWidth: "60ch" }}>
                 Gymbo and WellnessZ are both India-native coaching apps — but they're built for different people.
               </p>
-              <p className="mt-4 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontWeight: 300, lineHeight: 1.7, maxWidth: "64ch", fontFamily: SANS }}>
+              <p className="mt-4 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.7, maxWidth: "64ch", fontFamily: SANS }}>
                 WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions — log a class in one tap, track every payment and balance, and look professional, at a flat ₹399/month with no per-client limits.
               </p>
             </Reveal>
@@ -209,10 +209,10 @@ export function CompareWellnessZ() {
               <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.5 }}>Sessions vs. meals</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5" >
-              <p className="text-[15px] md:text-[16px]" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
+              <p className="text-[15px] md:text-[16px]" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
                 WellnessZ leads with nutrition. Its homepage calls it "all-in-one software for dietitians, nutritionists & coaches," and its standout features are a 20,000+ ICMR-NIN verified meal database and nutrition AI. If your business is built on diet plans, that depth is genuinely valuable.
               </p>
-              <p className="text-[15px] md:text-[16px]" style={{ color: F.bone, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
+              <p className="text-[15px] md:text-[16px]" style={{ color: F.bone, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
                 Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning — it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap punch to log a class, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and an AI assistant are built in, but the hero is running your training business, not planning nutrition.
               </p>
               <p className="text-[15px] md:text-[16px] pt-2" style={{ color: F.marigold, fontFamily: SANS, fontWeight: 600, lineHeight: 1.6 }}>
@@ -230,7 +230,7 @@ export function CompareWellnessZ() {
               <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Flat vs. client-tiered</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5">
-              <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
+              <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
                 WellnessZ prices by how many clients you have — ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.ink, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
@@ -292,7 +292,7 @@ export function CompareWellnessZ() {
               </Reveal>
             </div>
             <Reveal>
-              <p className="mt-8 text-center text-[14px] md:text-[15px] mx-auto" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.6, maxWidth: "58ch" }}>
+              <p className="mt-8 text-center text-[14px] md:text-[15px] mx-auto" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.6, maxWidth: "58ch" }}>
                 We'd rather you pick the right tool than the wrong one. If nutrition is your business, WellnessZ is built for that. If training is, Gymbo is built for you.
               </p>
             </Reveal>
@@ -307,7 +307,7 @@ export function CompareWellnessZ() {
               <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Moving from WellnessZ</h2>
             </Reveal>
             <Reveal>
-              <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 300, lineHeight: 1.7 }}>
+              <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
                 Moving your clients over is straightforward: Gymbo supports bulk client import, so you can bring your roster in rather than re-typing it. Your sessions and payments start fresh in a structure built for training.
               </p>
             </Reveal>

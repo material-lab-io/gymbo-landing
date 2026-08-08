@@ -121,7 +121,7 @@ export function PinnedProblemSection({ items }: { items: PainPoint[] }) {
 
             <p
               className="text-[15px] md:text-[17px] text-white/60 max-w-[520px]"
-              style={{ lineHeight: 1.65, fontWeight: 300 }}
+              style={{ lineHeight: 1.65, fontWeight: 400 }}
             >
               {pain.desc}
             </p>
