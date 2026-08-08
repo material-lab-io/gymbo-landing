@@ -151,8 +151,16 @@ export function ForgeStyle() {
 export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
     <span
-      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5"
-      style={{ letterSpacing: "0.08em", color: dark ? F.marigold : F.amberText, fontFamily: SANS }}
+      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5 rounded-full"
+      style={{
+        letterSpacing: "0.08em",
+        color: dark ? F.marigold : F.amberText,
+        fontFamily: SANS,
+        background: dark ? "rgba(251,191,36,0.12)" : "rgba(245,158,11,0.12)",
+        border: dark ? "1px solid rgba(251,191,36,0.22)" : "1px solid rgba(245,158,11,0.22)",
+        padding: "6px 12px 6px 10px",
+        boxShadow: SHADOW.elevation1,
+      }}
     >
       <span className="inline-block w-[7px] h-[7px] rounded-full" style={{ background: dark ? F.marigold : F.amber }} />
       {children}
