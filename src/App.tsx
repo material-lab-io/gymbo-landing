@@ -189,13 +189,57 @@ const STAGE_U = "min(22vw, 310px)";
 const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
 
 /* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
-   in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
-function HeroPhone({ slug, alt = "", theme, className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
-  const bezel = theme === "dark" ? F.black : F.onCta;
+   composited into a photoreal device mockup (MockupNest Silver iPhone 17 Pro,
+   licence cleared for commercial use on getgymbo.com — Kaushik 2026-08-09;
+   gy-a73px.14 / gy-sf5yh). Replaces the old CSS rounded-rectangle bezel.
+
+   The mockup is flat-on (no angle), so this is plain 2D layering, not a
+   homography: the screenshot sits absolutely-positioned inside the frame's
+   own screen cutout, sized to the frame's percentage geometry below, then
+   the frame PNG (with a transparent screen-shaped hole, camera pill baked
+   in as opaque) paints on top.
+
+   Frame geometry (measured from the source PSD, see gy-sf5yh report):
+   the smart object's own internal canvas is exactly 1206×2622 (aspect
+   0.4600) — matching an iPhone screenshot's aspect exactly, confirming
+   AC1's gate before any compositing happened. The extracted frame PNG is
+   1117×2295 (outer device silhouette); the screen hole sits at
+   (50,47)-(1068,2253) within it, i.e. the percentages below. */
+const FRAME_W = 1117;
+const FRAME_H = 2295;
+const HOLE = { x: 50, y: 47, w: 1018, h: 2206 };
+const HOLE_PCT = {
+  left: (HOLE.x / FRAME_W) * 100,
+  top: (HOLE.y / FRAME_H) * 100,
+  width: (HOLE.w / FRAME_W) * 100,
+  height: (HOLE.h / FRAME_H) * 100,
+};
+const DEVICE_FRAME_SRC = "/mockups/iphone-17-pro-silver.png";
+const DEVICE_FRAME_SRCSET = "/mockups/iphone-17-pro-silver-720.webp 720w, /mockups/iphone-17-pro-silver-1080.webp 1080w";
+
+// NOTE: `theme` is accepted (callers already pass it) but not yet used here —
+// the gallery pipeline (scripts/screens-map.mjs / optimize-gallery.mjs) only
+// ever produces ONE screenshot per slug, with no light/dark variant. The
+// bead's "screenshot inside the frame must follow the theme" requirement
+// needs theme-specific source captures before this component can honor it;
+// that's a capture-pipeline gap, not a frame-compositing one. Filed as a
+// follow-up finding in the gy-sf5yh report rather than faked here.
+function HeroPhone({ slug, alt = "", className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
   const base = `/screens/gallery/${slug}`;
   return (
-    <div className={className} style={{ background: bezel, borderRadius: `calc(${RADIUS.xxl} * 2)`, padding: 12, boxShadow: SHADOW.elevation5, lineHeight: 0, ...style }}>
-      <div style={{ borderRadius: `calc(${RADIUS.xxl} + ${RADIUS.lg})`, overflow: "hidden", background: F.white, aspectRatio: "1206 / 2622" }}>
+    <div className={className} style={{ position: "relative", lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, ...style }}>
+      <div
+        style={{
+          position: "absolute",
+          left: `${HOLE_PCT.left}%`,
+          top: `${HOLE_PCT.top}%`,
+          width: `${HOLE_PCT.width}%`,
+          height: `${HOLE_PCT.height}%`,
+          borderRadius: "9%",
+          overflow: "hidden",
+          background: F.white,
+        }}
+      >
         <picture>
           <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes={sizes} />
           <img
@@ -207,6 +251,16 @@ function HeroPhone({ slug, alt = "", theme, className = "", style, sizes, priori
           />
         </picture>
       </div>
+      <picture>
+        <source type="image/webp" srcSet={DEVICE_FRAME_SRCSET} sizes={sizes} />
+        <img
+          src={DEVICE_FRAME_SRC}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+        />
+      </picture>
     </div>
   );
 }
