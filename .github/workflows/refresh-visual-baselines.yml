@@ -1,0 +1,76 @@
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  refresh-visual-baselines.yml                                             ║
+# ║                                                                           ║
+# ║  Regenerates the Playwright visual-regression baselines                  ║
+# ║  (tests/visual.spec.ts-snapshots/*-linux.png) that deploy.yml's           ║
+# ║  pre-deploy smoke gate checks pixel-for-pixel against. Runs on            ║
+# ║  ubuntu-latest — the SAME runner image the deploy gate uses — because     ║
+# ║  Playwright screenshot baselines are sensitive to browser build and font  ║
+# ║  rendering; baselines captured elsewhere will not reliably match what     ║
+# ║  the gate compares against.                                              ║
+# ║                                                                           ║
+# ║  Reuses deploy.yml's exact playwright invocation (plus                   ║
+# ║  --update-snapshots) so the refresh path and the gate path can never      ║
+# ║  drift apart.                                                            ║
+# ║                                                                           ║
+# ║  Dispatch against the branch whose PR is failing on stale baselines.      ║
+# ║  Regenerated PNGs are committed straight back to that branch.             ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+name: Refresh Visual Baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch to check out, regenerate baselines against, and commit back to'
+        required: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to commit + push the regenerated baselines
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Install Chromium (visual regression baselines)
+        run: npx playwright install --with-deps chromium
+
+      # Same invocation as deploy.yml's pre-deploy smoke gate, plus
+      # --update-snapshots. Keeping this identical to the gate's command is
+      # the whole point — any drift here would produce baselines that pass
+      # this job and still fail the gate.
+      - name: Regenerate visual regression baselines
+        run: npx playwright test tests/visual.spec.ts --project=desktop --project=mobile --update-snapshots
+
+      - name: Upload regenerated baselines (for review before commit)
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-${{ github.run_number }}
+          path: tests/visual.spec.ts-snapshots/
+          retention-days: 14
+
+      - name: Commit and push regenerated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/visual.spec.ts-snapshots/
+          if git diff --staged --quiet; then
+            echo "No baseline changes — nothing to commit."
+          else
+            git commit -m "chore(ci): refresh visual regression baselines [skip ci]"
+            git push origin HEAD:${{ inputs.ref }}
+          fi
