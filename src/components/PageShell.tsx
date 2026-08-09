@@ -56,7 +56,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
         <a href={HOME} className="flex items-center gap-2.5 focus-visible:outline-none" aria-label="Gymbo — home">
-          <span className="grid place-items-center w-[30px] h-[30px] rounded-[9px] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
+          <span className="grid place-items-center w-[30px] h-[30px] rounded-[var(--g-radius-sm)] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
           <span className="text-[20px] font-bold tracking-[-0.01em]" style={{ fontFamily: SERIF }}>Gymbo</span>
         </a>
 
@@ -93,7 +93,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 export function Prose({ children, title, updated, intro }: { children: React.ReactNode; title: string; updated?: string; intro?: string }) {
   return (
     <article className="max-w-[760px] mx-auto px-5 md:px-12 pt-12 md:pt-16 pb-20" style={{ fontFamily: SANS }}>
-      <h1 className="text-[clamp(30px,5vw,46px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: F.ink }}>{title}</h1>
+      <h1 className="text-[clamp(30px,5vw,46px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.08, color: F.ink }}>{title}</h1>
       {updated && <p className="mt-3 text-[13px]" style={{ color: F.inkLabel }}>{updated}</p>}
       {intro && <p className="mt-6 text-[16px]" style={{ color: F.inkMuted, lineHeight: 1.7 }}>{intro}</p>}
       <div className="legal-prose mt-8 flex flex-col gap-6" style={{ color: F.inkMuted, fontSize: "15px", lineHeight: 1.7 }}>

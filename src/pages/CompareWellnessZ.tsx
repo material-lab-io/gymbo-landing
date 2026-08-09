@@ -91,7 +91,7 @@ export function CompareWellnessZ() {
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
         <a href={HOME} className="flex items-center gap-2.5 focus-visible:outline-none" aria-label="Gymbo — home">
-          <span className="grid place-items-center w-[30px] h-[30px] rounded-[9px] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
+          <span className="grid place-items-center w-[30px] h-[30px] rounded-[var(--g-radius-sm)] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
           <span className="text-[20px] font-bold tracking-[-0.01em]" style={{ fontFamily: SERIF }}>Gymbo</span>
         </a>
 
@@ -123,11 +123,11 @@ export function CompareWellnessZ() {
           <div className="max-w-[860px] mx-auto px-5 md:px-12 pt-12 md:pt-20 pb-10 md:pb-14">
             <Reveal>
               <Eyebrow>Comparison · personal trainer apps</Eyebrow>
-              <h1 className="text-[clamp(30px,5vw,52px)] font-black" style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
+              <h1 className="text-[clamp(30px,5vw,52px)] font-black" style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Gymbo vs WellnessZ:{" "}
-                <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
+                <span className="relative whitespace-nowrap" style={{ color: F.amberText, isolation: "isolate" }}>
+                  <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
                   which fits you?
-                  <span aria-hidden="true" className="absolute left-0 right-0 -z-0" style={{ bottom: "0.05em", height: "0.16em", background: F.amber, borderRadius: 2, opacity: 0.85 }} />
                 </span>
               </h1>
               <p className="mt-6 text-[clamp(15px,1.6vw,18px)]" style={{ color: F.ink, fontWeight: 400, lineHeight: 1.6, maxWidth: "60ch" }}>
@@ -139,11 +139,11 @@ export function CompareWellnessZ() {
             </Reveal>
 
             <Reveal className="mt-8 grid sm:grid-cols-2 gap-4">
-              <div className="rounded-[18px] p-5" style={{ background: F.beigeCard, border: "1px solid var(--c-line)" }}>
+              <div className="rounded-[var(--g-radius-xl)] p-5" style={{ background: F.beigeCard, border: "1px solid var(--c-line)" }}>
                 <span className="text-[12px] font-bold" style={{ color: F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>Choose Gymbo if</span>
                 <p className="mt-2 text-[14px] md:text-[15px]" style={{ color: F.ink, fontFamily: SANS, lineHeight: 1.6 }}>you train clients and your day is sessions, schedules, and payments.</p>
               </div>
-              <div className="rounded-[18px] p-5" style={{ background: F.beigeCard, border: "1px solid var(--c-line)" }}>
+              <div className="rounded-[var(--g-radius-xl)] p-5" style={{ background: F.beigeCard, border: "1px solid var(--c-line)" }}>
                 <span className="text-[12px] font-bold" style={{ color: F.inkLabel, fontFamily: SANS, letterSpacing: "0.04em" }}>Choose WellnessZ if</span>
                 <p className="mt-2 text-[14px] md:text-[15px]" style={{ color: F.ink, fontFamily: SANS, lineHeight: 1.6 }}>your practice is nutrition and meal planning first.</p>
               </div>
@@ -206,7 +206,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow dark>The real difference</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.5 }}>Sessions vs. meals</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.15 }}>Sessions vs. meals</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5" >
               <p className="text-[15px] md:text-[16px]" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
@@ -227,7 +227,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow>Pricing</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Flat vs. client-tiered</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15 }}>Flat vs. client-tiered</h2>
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5">
               <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
@@ -238,7 +238,7 @@ export function CompareWellnessZ() {
               </p>
             </Reveal>
             <Reveal className="mt-8">
-              <div className="rounded-[18px] overflow-hidden" style={{ border: "1px solid var(--c-line)" }}>
+              <div className="rounded-[var(--g-radius-xl)] overflow-hidden" style={{ border: "1px solid var(--c-line)" }}>
                 <div className="flex items-center justify-between px-5 py-4" style={{ background: F.beigeCard2 }}>
                   <span className="text-[13px] font-bold" style={{ color: F.inkLabel, fontFamily: SANS }}>Real trainer, ~20 clients</span>
                   <span className="text-[13px] font-bold" style={{ color: F.inkLabel, fontFamily: SANS }}>Monthly cost</span>
@@ -261,11 +261,11 @@ export function CompareWellnessZ() {
           <div className="max-w-[1000px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center mb-10">
               <Eyebrow dark>Honest fit</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch", lineHeight: 1.5 }}>Who each is best for</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch", lineHeight: 1.15 }}>Who each is best for</h2>
             </Reveal>
             <div className="grid md:grid-cols-2 gap-6">
               <Reveal>
-                <div className="h-full rounded-[20px] p-6 md:p-7" style={{ background: F.charcoalCard, border: `1px solid ${F.amber}` }}>
+                <div className="h-full rounded-[var(--g-radius-xl)] p-6 md:p-7" style={{ background: F.charcoalCard, border: `1px solid ${F.amber}` }}>
                   <h3 className="text-[18px] md:text-[20px] font-black mb-4" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo is best for you if</h3>
                   <ul className="flex flex-col gap-3">
                     {GYMBO_FOR.map((b) => (
@@ -278,7 +278,7 @@ export function CompareWellnessZ() {
                 </div>
               </Reveal>
               <Reveal>
-                <div className="h-full rounded-[20px] p-6 md:p-7" style={{ background: F.charcoalCard, border: "1px solid rgba(240,240,235,0.1)" }}>
+                <div className="h-full rounded-[var(--g-radius-xl)] p-6 md:p-7" style={{ background: F.charcoalCard, border: "1px solid rgba(240,240,235,0.1)" }}>
                   <h3 className="text-[18px] md:text-[20px] font-black mb-4" style={{ fontFamily: SERIF, color: F.bone }}>WellnessZ is the better choice if</h3>
                   <ul className="flex flex-col gap-3">
                     {WELLNESSZ_FOR.map((b) => (
@@ -304,7 +304,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[820px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal>
               <Eyebrow>Switching</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5 }}>Moving from WellnessZ</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15 }}>Moving from WellnessZ</h2>
             </Reveal>
             <Reveal>
               <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
@@ -314,7 +314,7 @@ export function CompareWellnessZ() {
             {/* Structural social-proof slot — Gymbo is in beta; a real switcher
                 quote goes here post-launch. Do NOT fabricate a testimonial. */}
             <Reveal>
-              <div className="mt-8 rounded-[18px] p-6 text-center" style={{ background: F.beigeCard, border: "1px dashed var(--c-line)" }}>
+              <div className="mt-8 rounded-[var(--g-radius-xl)] p-6 text-center" style={{ background: F.beigeCard, border: "1px dashed var(--c-line)" }}>
                 <p className="text-[14px] md:text-[15px]" style={{ color: F.inkLabel, fontFamily: SANS, lineHeight: 1.6 }}>
                   Gymbo is in beta. Real trainer stories will appear here as trainers come on board.
                 </p>
@@ -328,7 +328,7 @@ export function CompareWellnessZ() {
           <div className="max-w-[800px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
             <Reveal className="text-center mb-10">
               <Eyebrow>Questions</Eyebrow>
-              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "18ch", lineHeight: 1.5 }}>Gymbo vs WellnessZ, answered</h2>
+              <h2 className="text-[clamp(26px,4vw,40px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "18ch", lineHeight: 1.15 }}>Gymbo vs WellnessZ, answered</h2>
             </Reveal>
             <div className="flex flex-col">
               {FAQ.map((item) => (

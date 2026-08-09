@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
+import { F } from "../forge-ui";
 
 type Status = "idle" | "loading" | "done" | "error";
 
@@ -46,7 +47,7 @@ export function WaitlistForm() {
   const fieldStyle = {
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.10)",
-    color: "#fff",
+    color: F.white,
     fontFamily: "var(--font-sans)",
   } as const;
 
@@ -93,7 +94,7 @@ export function WaitlistForm() {
           <a
             href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`}
             className="underline"
-            style={{ color: "#fff" }}
+            style={{ color: F.white }}
           >
             email us to join
           </a>

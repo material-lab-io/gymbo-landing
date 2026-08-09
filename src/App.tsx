@@ -4,7 +4,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, RADIUS, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -190,15 +190,21 @@ const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
 
 /* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
    in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
-function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties }) {
-  const bezel = theme === "dark" ? "#000" : "#1a1a1a";
+function HeroPhone({ slug, alt = "", theme, className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
+  const bezel = theme === "dark" ? F.black : F.onCta;
   const base = `/screens/gallery/${slug}`;
   return (
-    <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: SHADOW.elevation5, lineHeight: 0, ...style }}>
-      <div style={{ borderRadius: 44, overflow: "hidden", background: "#fff", aspectRatio: "1206 / 2622" }}>
+    <div className={className} style={{ background: bezel, borderRadius: `calc(${RADIUS.xxl} * 2)`, padding: 12, boxShadow: SHADOW.elevation5, lineHeight: 0, ...style }}>
+      <div style={{ borderRadius: `calc(${RADIUS.xxl} + ${RADIUS.lg})`, overflow: "hidden", background: F.white, aspectRatio: "1206 / 2622" }}>
         <picture>
-          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes="(min-width: 1024px) 42vw, 86vw" />
-          <img src={`${base}.png`} alt={alt} decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
+          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes={sizes} />
+          <img
+            src={`${base}.png`}
+            alt={alt}
+            decoding="async"
+            {...(priority ? { fetchpriority: "high" as const } : {})}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
+          />
         </picture>
       </div>
     </div>
@@ -210,8 +216,8 @@ function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: str
 function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
   const paid = variant === "paid";
   return (
-    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 14, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: 9, fontWeight: 800, fontSize: 14, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
+    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: RADIUS.lg, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
+      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: RADIUS.sm, fontWeight: 800, fontSize: 14, background: paid ? F.amber : F.green, color: paid ? F.onCta : F.white, fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
       <div>
         <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
         <div style={{ fontFamily: SANS, fontSize: 10.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
@@ -325,8 +331,8 @@ export default function App() {
                 SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
                 phone's right edge AND both chips all sit on it, so the callouts read as
                 anchored to the seam between the two phones rather than floating loose. */}
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} />
+            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} sizes="(min-width: 1024px) calc(min(22vw, 310px) * 0.68)" />
+            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} sizes="(min-width: 1024px) min(22vw, 310px)" priority />
             <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
             <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
           </div>
@@ -353,7 +359,7 @@ export default function App() {
               </div>
               {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
               <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} />
+                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} sizes="min(74vw, 320px)" priority />
               </div>
             </div>
           </div>
@@ -478,7 +484,7 @@ export default function App() {
             {/* testimonials */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">
               <Reveal>
-                <figure className="h-full flex flex-col p-7 md:p-8 rounded-[20px]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
+                <figure className="h-full flex flex-col p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
                   <blockquote className="text-[17px] md:text-[19px] italic" style={{ fontFamily: SERIF, lineHeight: 1.55, color: F.ink }}>
                     “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
                   </blockquote>
@@ -492,7 +498,7 @@ export default function App() {
                 </figure>
               </Reveal>
               <Reveal>
-                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[20px]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
+                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
                   <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold mb-4" style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
                   <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
                 </div>
@@ -501,13 +507,13 @@ export default function App() {
 
             <div className="mt-10 grid sm:grid-cols-2 gap-4">
               <Reveal>
-                <div className="p-6 rounded-[16px]" style={{ background: F.beigeCard }}>
+                <div className="p-6 rounded-[var(--g-radius-lg)]" style={{ background: F.beigeCard }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Your client data is yours</h4>
                   <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
                 </div>
               </Reveal>
               <Reveal>
-                <div className="p-6 rounded-[16px]" style={{ background: F.beigeCard }}>
+                <div className="p-6 rounded-[var(--g-radius-lg)]" style={{ background: F.beigeCard }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Why we built Gymbo</h4>
                   <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
                 </div>
@@ -531,7 +537,7 @@ export default function App() {
                 const hi = plan.highlight;
                 return (
                   <Reveal key={plan.name} className="flex">
-                    <div className="flex flex-col w-full p-7 md:p-8 rounded-[20px]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
+                    <div className="flex flex-col w-full p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
                       <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
@@ -686,7 +692,7 @@ function BrandTouchpoints() {
         </Reveal>
         <ul className="mx-auto space-y-3" style={{ maxWidth: "560px" }}>
           {TOUCHPOINTS.map((t) => (
-            <li key={t.name} className="flex items-start gap-3 rounded-[14px] p-4" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}>
+            <li key={t.name} className="flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}>
               <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
               <div className="text-left">
                 <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
