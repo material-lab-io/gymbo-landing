@@ -346,7 +346,7 @@ export default function App() {
                 Run your entire{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
                   <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
-                  fitness business
+                  GY-SWF7P RED CONTROL
                 </span>{" "}
                 from your phone.
               </h1>
