@@ -8,7 +8,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:09:44+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     },
     "organized-01-schedule-day.png": {
       "appVersion": "1.0.0",
@@ -16,7 +16,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:10:16+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     },
     "revenue-01-ledger-history.png": {
       "appVersion": "1.0.0",
@@ -24,7 +24,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:27:28+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     },
     "extra-ai-assistant.png": {
       "appVersion": "1.0.0",
@@ -32,7 +32,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:18:05+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     },
     "workouts-01-template-fullbody.png": {
       "appVersion": "1.0.0",
@@ -40,7 +40,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:39:18+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     },
     "revenue-02-export-statement.png": {
       "appVersion": "1.0.0",
@@ -48,7 +48,7 @@
       "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
       "capturedAt": "2026-08-08T23:27:39+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-3ov2k."
+      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
     }
   }
 }
