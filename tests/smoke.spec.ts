@@ -58,7 +58,7 @@ test('demo videos play inside device frames', async ({ page }) => {
   await expect(v).toHaveJSProperty('loop', true);
 });
 
-test('theme toggle swaps theme and demo variant', async ({ page }) => {
+test('stored theme swaps theme and demo variant (gy-31moh: no in-page toggle)', async ({ page }) => {
   await page.goto('/');
   const html = page.locator('html');
   await expect(html).toHaveAttribute('data-theme', 'light');
@@ -66,7 +66,10 @@ test('theme toggle swaps theme and demo variant', async ({ page }) => {
   await page.locator('#why').scrollIntoViewIfNeeded();
   await expect(page.locator('video[data-theme-variant="light"]').first()).toBeVisible();
 
-  await page.locator('[data-theme-toggle]').click();
+  // No in-page toggle button (removed, gy-31moh) — theme is set via the
+  // persisted localStorage value the no-flash script reads pre-paint.
+  await page.evaluate(() => localStorage.setItem('gymbo-theme', 'dark'));
+  await page.reload();
   await expect(html).toHaveAttribute('data-theme', 'dark');
   // The "dark" clip variant lives on a different pillar section (dark:true
   // background) further down the page — scroll it into view so its lazy-mount

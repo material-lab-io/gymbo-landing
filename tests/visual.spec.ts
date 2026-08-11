@@ -13,9 +13,10 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  *    a SECOND IntersectionObserver (PhoneMockup.tsx DemoFrame, rootMargin
  *    "250px 0px"). A capture that doesn't actually scroll a section into
  *    view renders it EMPTY.
- *  - Theme is a MANUAL toggle persisted to localStorage
- *    (gymbo-theme) — --force-prefers-color-scheme is INERT here. Dark mode
- *    must be reached by clicking the real [data-theme-toggle] button.
+ *  - Theme is persisted to localStorage (gymbo-theme) and read by a no-flash
+ *    script pre-paint — --force-prefers-color-scheme is INERT here. Dark mode
+ *    is reached by setting localStorage and reloading (there is no in-page
+ *    toggle — gy-31moh removed it).
  *
  * The pillar demo clips are live, looping <video> elements — the flake risk
  * for any pixel-diff baseline. They're frozen (paused + seeked to frame 0)
@@ -139,7 +140,8 @@ async function waitVideoMounted(locator: Locator) {
 async function setTheme(page: Page, theme: 'light' | 'dark') {
   const html = page.locator('html');
   if ((await html.getAttribute('data-theme')) === theme) return;
-  await page.locator('[data-theme-toggle]').click();
+  await page.evaluate((t) => localStorage.setItem('gymbo-theme', t), theme);
+  await page.reload();
   await expect(html).toHaveAttribute('data-theme', theme);
 }
 
