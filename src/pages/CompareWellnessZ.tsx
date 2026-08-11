@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { Check, Plus, Sun, Moon } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -53,7 +53,6 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 
 export function CompareWellnessZ() {
   const prefersReduced = useReducedMotion();
-  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -102,15 +101,6 @@ export function CompareWellnessZ() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-            aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-            aria-pressed={theme === "dark"}
-            className="grid place-items-center w-11 h-11 rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2"
-            style={{ background: F.beigeCard, color: F.ink, border: "1px solid var(--c-line)" }}
-          >
-            {theme === "light" ? <Moon size={17} strokeWidth={1.8} aria-hidden="true" /> : <Sun size={17} strokeWidth={1.8} aria-hidden="true" />}
-          </button>
           <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>

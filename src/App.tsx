@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Check, Plus, Sun, Moon } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, RADIUS, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -49,7 +49,6 @@ const PILLARS = [
       "Cash or UPI logged — nothing slips",
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
-    chip: { kind: "money", text: "₹2,400 received" },
     dark: false,
   },
   {
@@ -66,7 +65,6 @@ const PILLARS = [
       { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
-    chip: { kind: "dark", k: "Today", v: "Class logged" },
     dark: true,
   },
   {
@@ -82,7 +80,6 @@ const PILLARS = [
       "Send any client their statement with a single tap",
     ],
     brief: "Your brand on a clean statement PDF — share in a tap (India).",
-    chip: { kind: "money", text: "Looks pro" },
     dark: false,
   },
   {
@@ -99,7 +96,6 @@ const PILLARS = [
       { text: "Get directions to your next class, right from the app", soon: true },
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "92%" },
     dark: false,
   },
 ];
@@ -154,23 +150,6 @@ const FAQ = [
    building blocks
    ============================================================================ */
 
-function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
-  if (chip.kind === "money") {
-    return (
-      <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
-        <span className="grid place-items-center w-4 h-4 rounded-full text-[9px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
-        <span className="text-[12px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
-      </div>
-    );
-  }
-  return (
-    <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
-      <span className="text-[9px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
-      <span className="text-[12px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
-    </div>
-  );
-}
-
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
 }
@@ -213,25 +192,10 @@ function HeroThreePanel({ alt = "", className = "", style, sizes, priority = fal
   );
 }
 
-/* Floating Forge UI chip beside the hero device — seeded-positive only.
-   Sized down relative to the (now smaller) hero device (gy-pzefj item 3). */
-function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
-  const paid = variant === "paid";
-  return (
-    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: RADIUS.lg, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: RADIUS.sm, fontWeight: 800, fontSize: 14, background: paid ? F.amber : F.green, color: paid ? F.onCta : F.white, fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
-      <div>
-        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
-        <div style={{ fontFamily: SANS, fontSize: 10.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -296,16 +260,6 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-            aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-            aria-pressed={theme === "dark"}
-            data-theme-toggle
-            className="grid place-items-center w-11 h-11 rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2"
-            style={{ background: F.beigeCard, color: F.ink, border: "1px solid var(--c-line)" }}
-          >
-            {theme === "light" ? <Moon size={17} strokeWidth={1.8} aria-hidden="true" /> : <Sun size={17} strokeWidth={1.8} aria-hidden="true" />}
-          </button>
           <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>
@@ -321,11 +275,10 @@ export default function App() {
           {/* desktop device stage — absolute to the section, bleeds past 1180 off the right
               edge. The three-panel mockup is a single flat landscape image (not stacked
               portrait phones), so it's vertically centered rather than stretched the full
-              header height; the two Forge UI chips overlay the front/center phone. */}
+              header height. Floating "class logged" / "paid" chips removed (gy-dfl55.1 —
+              tags read as nonsense at this distance from the screens). */}
           <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
             <HeroThreePanel style={{ width: "100%" }} sizes="(min-width: 1024px) min(46vw, 720px)" priority />
-            <HeroChip variant="logged" style={{ top: "14%", right: "12%" }} />
-            <HeroChip variant="paid" style={{ top: "68%", right: "9%" }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -417,12 +370,6 @@ export default function App() {
                         label={`${p.title} — demo`}
                         maxWidth={300}
                       />
-                      {/* Chip floats OUTSIDE the composed demo asset (which bakes its own
-                          heading + caption text into the frame) so it never occludes them
-                          (gy-pzefj item 3: "Looks pro" was overlapping the demo's own
-                          "Branded statement" heading; "Class logged" was overlapping the
-                          demo's own bottom caption). */}
-                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "-6%", left: "-6%" } : { top: "-6%", right: "-6%" }} />
                     </div>
                   </Reveal>
                 </div>
