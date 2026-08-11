@@ -39,10 +39,7 @@ export const F = {
 };
 
 // Forge radius scale (--g-radius-sm/md/lg/xl/xxl/full in src/forge/forge.css:
-// 8/12/16/20/28/9999) — the single source of truth for corner radii. Device
-// bezel radii (HeroPhone) are expressed as calc() multiples of this scale
-// rather than raw px so they stay traceable to it while still matching real
-// hardware curvature (rule 1 FIDELITY).
+// 8/12/16/20/28/9999) — the single source of truth for corner radii.
 export const RADIUS = {
   sm: "var(--g-radius-sm)",
   md: "var(--g-radius-md)",
@@ -152,9 +149,12 @@ const FORGE_CSS = `
         .article-prose th,.article-prose td{border:1px solid var(--c-line);padding:10px 12px;text-align:left;vertical-align:top}
         .article-prose thead th{background:rgba(245,158,11,0.08);font-family:var(--font-serif);color:var(--c-ink)}
         .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
+        @keyframes waiting-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,158,11,.22)}50%{transform:scale(1.06);box-shadow:0 0 0 9px rgba(245,158,11,0)}}
+        .waiting-pulse{animation:waiting-pulse 2.8s cubic-bezier(.4,0,.6,1) infinite}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
+          .waiting-pulse{animation:none!important;box-shadow:0 0 0 0 rgba(245,158,11,.22)!important}
         }
       `;
 

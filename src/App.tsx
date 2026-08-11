@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Check, Plus, Sun, Moon } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, RADIUS, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -49,7 +49,6 @@ const PILLARS = [
       "Cash or UPI logged — nothing slips",
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
-    chip: { kind: "money", text: "₹2,400 received" },
     dark: false,
   },
   {
@@ -66,7 +65,6 @@ const PILLARS = [
       { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
-    chip: { kind: "dark", k: "Today", v: "Class logged" },
     dark: true,
   },
   {
@@ -82,7 +80,6 @@ const PILLARS = [
       "Send any client their statement with a single tap",
     ],
     brief: "Your brand on a clean statement PDF — share in a tap (India).",
-    chip: { kind: "money", text: "Looks pro" },
     dark: false,
   },
   {
@@ -99,7 +96,6 @@ const PILLARS = [
       { text: "Get directions to your next class, right from the app", soon: true },
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "92%" },
     dark: false,
   },
 ];
@@ -154,23 +150,6 @@ const FAQ = [
    building blocks
    ============================================================================ */
 
-function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
-  if (chip.kind === "money") {
-    return (
-      <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
-        <span className="grid place-items-center w-4 h-4 rounded-full text-[9px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
-        <span className="text-[12px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
-      </div>
-    );
-  }
-  return (
-    <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
-      <span className="text-[9px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
-      <span className="text-[12px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
-    </div>
-  );
-}
-
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
 }
@@ -179,103 +158,36 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
-/* Grid axis for the desktop hero stage (gy-a73px.5). STAGE_U is the front
-   phone's own width — every other stage offset is `calc(STAGE_U * k)`, so
-   phones and chips scale together instead of the old mix of independent vw
-   expressions (phones) and raw px (chips), which let their relationship
-   drift between breakpoints. STAGE_SEAM is the one shared vertical axis the
-   back phone and both chips anchor to. */
-const STAGE_U = "min(22vw, 310px)";
-const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
+/* Hero device art — Kaushik's three-iPhone MockupWorld mockup (founder-
+   verified free/open-source, gy-dfl55.14), NOT a hand-built CSS bezel. The
+   three "Change-This" screen apertures were extracted from the source SVG
+   (composing its nested transform groups for true coordinates — the raw
+   layer x/y report as 0,0), then hero-01/02/03 (dashboard / who-owes /
+   log-payment) were composited into them and the whole scene exported as
+   ONE flat raster (scripts/gy-7yhkh/build-hero.mjs) — the mockup's own
+   metal, reflections, shadows and fan arrangement ship as-is, per Kaushik's
+   direction not to reconstruct a finished asset in CSS (gy-7yhkh). Source:
+   review-artifacts/gy-dfl55.14/mockupworld-three-iphone-17-screens.svg,
+   supplied by Kaushik via Drive, downloaded 2026-08-11.
+   Exported bbox: 4800×3236 (cropped from the 6000×4500 canvas to content). */
+const HERO_PANEL_W = 4800;
+const HERO_PANEL_H = 3236;
+const HERO_PANEL_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
+const HERO_PANEL_PNG = "/mockups/hero-three-panel-1200.png";
 
-/* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
-   composited into a photoreal device mockup (MockupNest Silver iPhone 17 Pro,
-   licence cleared for commercial use on getgymbo.com — Kaushik 2026-08-09;
-   gy-a73px.14 / gy-sf5yh). Replaces the old CSS rounded-rectangle bezel.
-
-   The mockup is flat-on (no angle), so this is plain 2D layering, not a
-   homography: the screenshot sits absolutely-positioned inside the frame's
-   own screen cutout, sized to the frame's percentage geometry below, then
-   the frame PNG (with a transparent screen-shaped hole, camera pill baked
-   in as opaque) paints on top.
-
-   Frame geometry (measured from the source PSD, see gy-sf5yh report):
-   the smart object's own internal canvas is exactly 1206×2622 (aspect
-   0.4600) — matching an iPhone screenshot's aspect exactly, confirming
-   AC1's gate before any compositing happened. The extracted frame PNG is
-   1117×2295 (outer device silhouette); the screen hole sits at
-   (50,47)-(1068,2253) within it, i.e. the percentages below. */
-const FRAME_W = 1117;
-const FRAME_H = 2295;
-const HOLE = { x: 50, y: 47, w: 1018, h: 2206 };
-const HOLE_PCT = {
-  left: (HOLE.x / FRAME_W) * 100,
-  top: (HOLE.y / FRAME_H) * 100,
-  width: (HOLE.w / FRAME_W) * 100,
-  height: (HOLE.h / FRAME_H) * 100,
-};
-const DEVICE_FRAME_SRC = "/mockups/iphone-17-pro-silver.png";
-const DEVICE_FRAME_SRCSET = "/mockups/iphone-17-pro-silver-720.webp 720w, /mockups/iphone-17-pro-silver-1080.webp 1080w";
-
-// NOTE: `theme` is accepted (callers already pass it) but not yet used here —
-// the gallery pipeline (scripts/screens-map.mjs / optimize-gallery.mjs) only
-// ever produces ONE screenshot per slug, with no light/dark variant. The
-// bead's "screenshot inside the frame must follow the theme" requirement
-// needs theme-specific source captures before this component can honor it;
-// that's a capture-pipeline gap, not a frame-compositing one. Filed as a
-// follow-up finding in the gy-sf5yh report rather than faked here.
-function HeroPhone({ slug, alt = "", className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
-  const base = `/screens/gallery/${slug}`;
+function HeroThreePanel({ alt = "", className = "", style, sizes, priority = false }: { alt?: string; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
   return (
-    <div className={className} style={{ position: "relative", lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, ...style }}>
-      <div
-        style={{
-          position: "absolute",
-          left: `${HOLE_PCT.left}%`,
-          top: `${HOLE_PCT.top}%`,
-          width: `${HOLE_PCT.width}%`,
-          height: `${HOLE_PCT.height}%`,
-          borderRadius: "9%",
-          overflow: "hidden",
-          background: F.white,
-        }}
-      >
-        <picture>
-          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes={sizes} />
-          <img
-            src={`${base}.png`}
-            alt={alt}
-            decoding="async"
-            {...(priority ? { fetchpriority: "high" as const } : {})}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
-          />
-        </picture>
-      </div>
+    <div className={className} style={{ lineHeight: 0, aspectRatio: `${HERO_PANEL_W} / ${HERO_PANEL_H}`, ...style }}>
       <picture>
-        <source type="image/webp" srcSet={DEVICE_FRAME_SRCSET} sizes={sizes} />
+        <source type="image/webp" srcSet={HERO_PANEL_SRCSET} sizes={sizes} />
         <img
-          src={DEVICE_FRAME_SRC}
-          alt=""
-          aria-hidden="true"
+          src={HERO_PANEL_PNG}
+          alt={alt}
           decoding="async"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+          {...(priority ? { fetchpriority: "high" as const } : {})}
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
         />
       </picture>
-    </div>
-  );
-}
-
-/* Floating Forge UI chip beside the hero device — seeded-positive only.
-   Sized down relative to the (now smaller) hero device (gy-pzefj item 3). */
-function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
-  const paid = variant === "paid";
-  return (
-    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: RADIUS.lg, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: RADIUS.sm, fontWeight: 800, fontSize: 14, background: paid ? F.amber : F.green, color: paid ? F.onCta : F.white, fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
-      <div>
-        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
-        <div style={{ fontFamily: SANS, fontSize: 10.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
-      </div>
     </div>
   );
 }
@@ -283,7 +195,7 @@ function HeroChip({ variant, className = "", style }: { variant: "logged" | "pai
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -348,16 +260,6 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-            aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-            aria-pressed={theme === "dark"}
-            data-theme-toggle
-            className="grid place-items-center w-11 h-11 rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2"
-            style={{ background: F.beigeCard, color: F.ink, border: "1px solid var(--c-line)" }}
-          >
-            {theme === "light" ? <Moon size={17} strokeWidth={1.8} aria-hidden="true" /> : <Sun size={17} strokeWidth={1.8} aria-hidden="true" />}
-          </button>
           <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>
@@ -370,25 +272,13 @@ export default function App() {
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
         <header data-testid="hero-section" className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 off the top/right edges.
-              Stage 30vw + text 46% = 76% at the lg breakpoint (1024px) (gy-pzefj: was 38vw + 46% = 84%,
-              Kaushik flagged it as still too big; gy-v5ltl before that was 50vw + 52% = 102%, guaranteed
-              to overlap). The dashboard phone no longer bleeds past the stage's right edge, and the
-              schedule (calendar) phone sits further out from behind it so more of it reads as visible —
-              was ~59% visible, now ~78%. */}
-          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(30vw, 520px)" }}>
-            {/* Grid axis (gy-a73px.5): every offset below is `calc(STAGE_U * k)`, where
-                STAGE_U is the FRONT phone's own width. Nothing is pinned in raw px or an
-                independent vw — offsets scale WITH the phone they annotate, so the
-                relationship holds at every breakpoint instead of drifting between the
-                phones' vw-based sizing and the chips' old px pinning.
-                SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
-                phone's right edge AND both chips all sit on it, so the callouts read as
-                anchored to the seam between the two phones rather than floating loose. */}
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} sizes="(min-width: 1024px) calc(min(22vw, 310px) * 0.68)" />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} sizes="(min-width: 1024px) min(22vw, 310px)" priority />
-            <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
-            <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
+          {/* desktop device stage — absolute to the section, bleeds past 1180 off the right
+              edge. The three-panel mockup is a single flat landscape image (not stacked
+              portrait phones), so it's vertically centered rather than stretched the full
+              header height. Floating "class logged" / "paid" chips removed (gy-dfl55.1 —
+              tags read as nonsense at this distance from the screens). */}
+          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
+            <HeroThreePanel style={{ width: "100%" }} sizes="(min-width: 1024px) min(46vw, 720px)" priority />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -411,9 +301,10 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
-              <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} sizes="min(74vw, 320px)" priority />
+              {/* mobile / tablet device — below copy, chips hidden. Landscape three-panel
+                  art (not a tall single phone), so no bottom bleed needed. */}
+              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
+                <HeroThreePanel alt="Gymbo — dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
               </div>
             </div>
           </div>
@@ -479,12 +370,6 @@ export default function App() {
                         label={`${p.title} — demo`}
                         maxWidth={300}
                       />
-                      {/* Chip floats OUTSIDE the composed demo asset (which bakes its own
-                          heading + caption text into the frame) so it never occludes them
-                          (gy-pzefj item 3: "Looks pro" was overlapping the demo's own
-                          "Branded statement" heading; "Class logged" was overlapping the
-                          demo's own bottom caption). */}
-                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "-6%", left: "-6%" } : { top: "-6%", right: "-6%" }} />
                     </div>
                   </Reveal>
                 </div>
@@ -553,7 +438,7 @@ export default function App() {
               </Reveal>
               <Reveal>
                 <div className="h-full flex flex-col items-center justify-center text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
-                  <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold mb-4" style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
+                  <span className={`grid place-items-center w-12 h-12 rounded-full text-[16px] font-bold mb-4 ${prefersReduced ? "" : "waiting-pulse"}`} style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
                   <p className="text-[15px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
                 </div>
               </Reveal>
