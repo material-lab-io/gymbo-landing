@@ -21,6 +21,7 @@ export const F = {
   ink: "var(--c-ink)",
   inkMuted: "var(--c-ink-muted)",
   inkLabel: "var(--c-ink-label)",
+  inkAnchor: "var(--c-ink-anchor)",
   amber: "var(--c-brand)",
   marigold: "#fbbf24",
   amberText: "var(--c-brand-text)",
@@ -114,8 +115,8 @@ export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.S
 // element children — which would emit data-theme=&quot;light&quot; into the
 // served CSS (invalid selector + a hydration mismatch). __html keeps it raw.
 const FORGE_CSS = `
-        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
-        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8);--c-elevation-1:0 1px 2px rgba(0,2,8,.06),0 4px 10px -4px rgba(0,2,8,.08),0 10px 20px -10px rgba(0,2,8,.07);--c-elevation-2:0 1px 2px rgba(0,2,8,.08),0 6px 16px -6px rgba(0,2,8,.11),0 16px 32px -14px rgba(0,2,8,.10);--c-elevation-3:0 2px 3px rgba(0,2,8,.09),0 10px 24px -8px rgba(0,2,8,.14),0 24px 48px -20px rgba(0,2,8,.12);--c-elevation-4:0 2px 4px rgba(0,2,8,.11),0 16px 32px -10px rgba(0,2,8,.15),0 36px 64px -26px rgba(0,2,8,.14);--c-elevation-5:0 3px 6px rgba(0,2,8,.12),0 20px 44px -12px rgba(0,2,8,.18),0 52px 96px -34px rgba(0,2,8,.19);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(0,2,8,.11)) drop-shadow(0 14px 26px rgba(0,2,8,.14)) drop-shadow(0 28px 46px rgba(0,2,8,.13))}
+        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
+        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-anchor:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8);--c-elevation-1:0 1px 2px rgba(0,2,8,.06),0 4px 10px -4px rgba(0,2,8,.08),0 10px 20px -10px rgba(0,2,8,.07);--c-elevation-2:0 1px 2px rgba(0,2,8,.08),0 6px 16px -6px rgba(0,2,8,.11),0 16px 32px -14px rgba(0,2,8,.10);--c-elevation-3:0 2px 3px rgba(0,2,8,.09),0 10px 24px -8px rgba(0,2,8,.14),0 24px 48px -20px rgba(0,2,8,.12);--c-elevation-4:0 2px 4px rgba(0,2,8,.11),0 16px 32px -10px rgba(0,2,8,.15),0 36px 64px -26px rgba(0,2,8,.14);--c-elevation-5:0 3px 6px rgba(0,2,8,.12),0 20px 44px -12px rgba(0,2,8,.18),0 52px 96px -34px rgba(0,2,8,.19);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(0,2,8,.11)) drop-shadow(0 14px 26px rgba(0,2,8,.14)) drop-shadow(0 28px 46px rgba(0,2,8,.13))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
@@ -172,10 +173,10 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
         letterSpacing: "0.08em",
         color: dark ? F.marigold : F.amberText,
         fontFamily: SANS,
-        background: dark ? "rgba(251,191,36,0.12)" : "rgba(245,158,11,0.12)",
-        border: dark ? "1px solid rgba(251,191,36,0.22)" : "1px solid rgba(245,158,11,0.22)",
+        background: dark ? "rgba(251,191,36,0.12)" : "rgba(245,158,11,0.08)",
+        border: dark ? "1px solid rgba(251,191,36,0.22)" : "1px solid rgba(245,158,11,0.14)",
         padding: "6px 12px 6px 10px",
-        boxShadow: SHADOW.elevation1,
+        boxShadow: dark ? SHADOW.elevation1 : "none",
       }}
     >
       <span className="inline-block w-[7px] h-[7px] rounded-full" style={{ background: dark ? F.marigold : F.amber }} />

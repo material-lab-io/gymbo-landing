@@ -415,7 +415,7 @@ export default function App() {
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
                 We're early — and built for trainers like you.
               </h2>
-              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
+              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
                 Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
               </p>
             </Reveal>
@@ -423,8 +423,8 @@ export default function App() {
             {/* testimonials */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">
               <Reveal>
-                <figure className="h-full flex flex-col p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
-                  <blockquote className="text-[17px] md:text-[19px] italic" style={{ fontFamily: SERIF, lineHeight: 1.55, color: F.ink }}>
+                <figure className="h-full flex flex-col p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
+                  <blockquote className="text-[15px] md:text-[17px] italic" style={{ fontFamily: SERIF, lineHeight: 1.75, color: F.ink }}>
                     “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
                   </blockquote>
                   <figcaption className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
@@ -437,24 +437,24 @@ export default function App() {
                 </figure>
               </Reveal>
               <Reveal>
-                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
+                <div className="h-full flex flex-col items-center justify-center text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
                   <span className={`grid place-items-center w-12 h-12 rounded-full text-[16px] font-bold mb-4 ${prefersReduced ? "" : "waiting-pulse"}`} style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
-                  <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
+                  <p className="text-[15px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
                 </div>
               </Reveal>
             </div>
 
             <div className="mt-10 grid sm:grid-cols-2 gap-4">
               <Reveal>
-                <div className="p-6 rounded-[var(--g-radius-lg)]" style={{ background: F.beigeCard }}>
+                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Your client data is yours</h4>
-                  <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
+                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
                 </div>
               </Reveal>
               <Reveal>
-                <div className="p-6 rounded-[var(--g-radius-lg)]" style={{ background: F.beigeCard }}>
+                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Why we built Gymbo</h4>
-                  <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
+                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
                 </div>
               </Reveal>
             </div>
@@ -476,7 +476,7 @@ export default function App() {
                 const hi = plan.highlight;
                 return (
                   <Reveal key={plan.name} className="flex">
-                    <div className="flex flex-col w-full p-7 md:p-8 rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
+                    <div className="flex flex-col w-full p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
                       <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
