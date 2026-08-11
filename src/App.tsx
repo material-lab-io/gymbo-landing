@@ -100,10 +100,15 @@ const PILLARS = [
   },
 ];
 
-/* ── brand touchpoints ── */
-const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
+/* ── brand touchpoints ──
+   `span: 2` is a DELIBERATE per-card call (Kaushik, gy-dfl55.4), not a
+   pattern derived from array position — only the QR profile card (the
+   most tangible, most-shown touchpoint) spans two grid columns; every
+   other card is single-span. Do not replace with an alternating/index
+   rule — that just reads as a different loop. */
+const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2 }[] = [
   // Live now (real — no tag)
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect." },
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2 },
   { name: "Per-client share links", desc: "Send any client their statement with one tap." },
   { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)." },
   // Coming soon (clearly tagged)
@@ -622,16 +627,20 @@ export default function App() {
 function BrandTouchpoints() {
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[720px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
+      <div className="max-w-[900px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
         <Reveal className="text-center mb-8">
           <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
           <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
             Your brand, everywhere — here now, more coming.
           </h3>
         </Reveal>
-        <ul className="mx-auto space-y-3" style={{ maxWidth: "560px" }}>
+        <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
           {TOUCHPOINTS.map((t) => (
-            <li key={t.name} className="flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}>
+            <li
+              key={t.name}
+              className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
+              style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}
+            >
               <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
               <div className="text-left">
                 <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
