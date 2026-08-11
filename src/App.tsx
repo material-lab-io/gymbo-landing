@@ -4,7 +4,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -646,7 +646,26 @@ function BrandTouchpoints() {
                 <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
                   {t.name}
                   {t.soon && (
-                    <span className="ml-2 align-middle rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
+                    // Outline, not fill (Kaushik, gy-dfl55.7): the pill's text sits directly on
+                    // F.charcoalCard now, so it uses F.marigold (#fbbf24) rather than the
+                    // theme-reactive F.amber — measured ~11:1 against #141414, comfortably
+                    // clearing WCAG AA's 4.5:1 (the gy-xn4nk failure mode was amber text on a
+                    // much lighter surface, not this always-dark card).
+                    <span
+                      className="ml-2 align-middle font-bold"
+                      style={{
+                        background: "transparent",
+                        border: `1px solid ${F.marigold}`,
+                        color: F.marigold,
+                        fontFamily: SANS,
+                        fontSize: "9px",
+                        letterSpacing: "0.02em",
+                        padding: "2px 8px",
+                        borderRadius: RADIUS.full,
+                      }}
+                    >
+                      Coming soon
+                    </span>
                   )}
                 </span>
                 <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
