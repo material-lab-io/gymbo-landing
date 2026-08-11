@@ -646,7 +646,7 @@ export default function App() {
 function BrandTouchpoints() {
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[900px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
+      <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
         <Reveal className="text-center mb-8">
           <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
           <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
