@@ -1,5 +1,19 @@
 import { useEffect, useState } from "react";
-import { Check, Plus } from "lucide-react";
+import {
+  Check,
+  Plus,
+  QrCode,
+  Share2,
+  FileText,
+  Palette,
+  Link,
+  Globe,
+  CalendarCheck,
+  BarChart3,
+  Sparkles,
+  Smartphone,
+  type LucideIcon,
+} from "lucide-react";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
@@ -105,20 +119,25 @@ const PILLARS = [
    pattern derived from array position — only the QR profile card (the
    most tangible, most-shown touchpoint) spans two grid columns; every
    other card is single-span. Do not replace with an alternating/index
-   rule — that just reads as a different loop. */
-const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2 }[] = [
+   rule — that just reads as a different loop.
+
+   gy-dfl55.6: `icon` replaces the generic yellow-dot bullet with a
+   minimalist lucide glyph that depicts THIS touchpoint specifically —
+   real SVG (recolourable/animatable), not the brand mark (gy-c571s is
+   open — these must not drift into looking like the logo). */
+const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2; icon: LucideIcon }[] = [
   // Live now (real — no tag)
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2 },
-  { name: "Per-client share links", desc: "Send any client their statement with one tap." },
-  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)." },
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2, icon: QrCode },
+  { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
+  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
   // Coming soon (clearly tagged)
-  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true },
-  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true },
-  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true },
-  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true },
-  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true },
-  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
+  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true, icon: Palette },
+  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true, icon: Link },
+  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true, icon: Globe },
+  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true, icon: CalendarCheck },
+  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true, icon: BarChart3 },
+  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true, icon: Sparkles },
+  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true, icon: Smartphone },
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
@@ -641,7 +660,9 @@ function BrandTouchpoints() {
               className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
               style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}
             >
-              <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
+              <span aria-hidden="true" className="grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+                <t.icon size={16} strokeWidth={2} />
+              </span>
               <div className="text-left">
                 <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
                   {t.name}
