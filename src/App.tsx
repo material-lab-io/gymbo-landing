@@ -642,8 +642,15 @@ export default function App() {
    TEMPORARY (gy-cgfm8): the BriefFrame placeholder-screenshot cards ("Here
    we'll show…") are gone — Kaushik doesn't want to wait for real artwork.
    Reduced to a plain bullet list until there's real screenshots/footage to
-   show per touchpoint. Do not treat this bullet layout as the final design. */
+   show per touchpoint. Do not treat this bullet layout as the final design.
+
+   gy-dfl55.5: shipped and coming-soon touchpoints are split into two
+   visually distinct groups — prominent opaque cards for what's live,
+   a subdued tighter grid below for what's not — so the grouping itself
+   (not just the per-card badge) signals status at a glance. */
 function BrandTouchpoints() {
+  const shipped = TOUCHPOINTS.filter((t) => !t.soon);
+  const soon = TOUCHPOINTS.filter((t) => t.soon);
   return (
     <div style={{ background: F.charcoal }}>
       <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
@@ -653,61 +660,71 @@ function BrandTouchpoints() {
             Your brand, everywhere.
           </h3>
         </Reveal>
+
         <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {TOUCHPOINTS.map((t) => (
+          {shipped.map((t) => (
             <li
               key={t.name}
               className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
-              /* gy-dfl55.8: "soon" cards fade the CHROME (bg/border alpha) by 40% to
-                 read as disabled, not the `opacity` shorthand — that would also fade
-                 the text and drop desc-text contrast to ~3.96:1 (measured), below the
-                 4.5:1 AA floor. Text stays full-opacity: title 16.6:1, desc 9.6:1.
-                 Non-soon cards keep gy-dfl55.10's softened gradient-border treatment. */
-              style={
-                t.soon
-                  ? { background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }
-                  : {
-                      border: "1px solid transparent",
-                      backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
-                      backgroundOrigin: "border-box",
-                      backgroundClip: "padding-box, border-box",
-                    }
-              }
+              /* gy-dfl55.10: softened gradient-border treatment. All `shipped` cards
+                 are non-soon (soon cards moved to their own block below, gy-dfl55.5),
+                 so no soon-branch is needed here anymore. */
+              style={{
+                border: "1px solid transparent",
+                backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+              }}
             >
               <span aria-hidden="true" className="grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
                 <t.icon size={16} strokeWidth={2} />
               </span>
               <div className="text-left">
-                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
-                  {t.name}
-                  {t.soon && (
-                    // Outline, not fill (Kaushik, gy-dfl55.7): the pill's text sits directly on
-                    // F.charcoalCard now, so it uses F.marigold (#fbbf24) rather than the
-                    // theme-reactive F.amber — measured ~11:1 against #141414, comfortably
-                    // clearing WCAG AA's 4.5:1 (the gy-xn4nk failure mode was amber text on a
-                    // much lighter surface, not this always-dark card).
-                    <span
-                      className="ml-2 align-middle font-bold"
-                      style={{
-                        background: "transparent",
-                        border: `1px solid ${F.marigold}`,
-                        color: F.marigold,
-                        fontFamily: SANS,
-                        fontSize: "9px",
-                        letterSpacing: "0.02em",
-                        padding: "2px 8px",
-                        borderRadius: RADIUS.full,
-                      }}
-                    >
-                      Coming soon
-                    </span>
-                  )}
-                </span>
+                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
                 <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
               </div>
             </li>
           ))}
         </ul>
+
+        <Reveal className="mt-9">
+          <span className="block text-center text-[11px] font-bold mb-3" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Coming soon
+          </span>
+          <ul className="mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" style={{ maxWidth: "820px" }}>
+            {soon.map((t) => (
+              <li
+                key={t.name}
+                className="rounded-[var(--g-radius-lg)] p-3"
+                /* gy-dfl55.8: fade the CHROME (bg/border alpha) by 40% to read as
+                   disabled, not the outer `opacity` shorthand — that also fades the
+                   text below the 4.5:1 AA floor. Text below stays full-opacity. */
+                style={{ background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }}
+              >
+                <span className="block text-[13px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
+                  {t.name}
+                  {/* Outline, not fill (Kaushik, gy-dfl55.7) */}
+                  <span
+                    className="ml-2 align-middle font-bold"
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${F.marigold}`,
+                      color: F.marigold,
+                      fontFamily: SANS,
+                      fontSize: "9px",
+                      letterSpacing: "0.02em",
+                      padding: "2px 8px",
+                      borderRadius: RADIUS.full,
+                    }}
+                  >
+                    Coming soon
+                  </span>
+                </span>
+                <span className="block mt-1 text-[12px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </div>
     </div>
   );
