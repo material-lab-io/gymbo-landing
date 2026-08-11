@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, useTheme } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -53,6 +53,7 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 
 export function CompareWellnessZ() {
   const prefersReduced = useReducedMotion();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -89,9 +90,12 @@ export function CompareWellnessZ() {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <a href={HOME} className="flex items-center gap-2.5 focus-visible:outline-none" aria-label="Gymbo — home">
-          <span className="grid place-items-center w-[30px] h-[30px] rounded-[var(--g-radius-sm)] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
-          <span className="text-[20px] font-bold tracking-[-0.01em]" style={{ fontFamily: SERIF }}>Gymbo</span>
+        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
+          <img
+            src={theme === "dark" ? "/gymbo-mark-amber-ff9800.svg" : "/gymbo-mark-darkorange-9d3900.svg"}
+            alt=""
+            className="h-[38px] w-[38px]"
+          />
         </a>
 
         <div className="hidden md:flex items-center gap-8">
