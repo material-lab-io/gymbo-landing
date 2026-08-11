@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IPhoneMockup } from "react-device-mockup";
-import { F, SHADOW } from "../forge-ui";
+import { SHADOW } from "../forge-ui";
 
 /* ============================================================================
    DemoFrame — a real, pre-composed Swift app-demo clip (Wave 2). Each clip is a
@@ -19,13 +18,31 @@ export interface ClipMap {
   dark: string;
 }
 
+/* Single-device frame geometry — the front/center phone cut out of Kaushik's
+   MockupWorld three-iPhone mockup (gy-dfl55.14; same source as the hero's
+   HeroThreePanel in App.tsx), with its "Change-This" screen aperture punched
+   to a transparent hole (scripts/gy-7yhkh/build-hero.mjs → buildSingleFrame).
+   Frame canvas 1538×3191; aperture at (60,51)-(1477,3139) within it. */
+const FRAME_W = 1538;
+const FRAME_H = 3191;
+const HOLE = { x: 60, y: 51, w: 1417, h: 3088 };
+const HOLE_PCT = {
+  left: (HOLE.x / FRAME_W) * 100,
+  top: (HOLE.y / FRAME_H) * 100,
+  width: (HOLE.w / FRAME_W) * 100,
+  height: (HOLE.h / FRAME_H) * 100,
+};
+const FRAME_SRC = "/mockups/iphone-frame-single.png";
+const FRAME_SRCSET = "/mockups/iphone-frame-single-520.webp 520w, /mockups/iphone-frame-single-720.webp 720w, /mockups/iphone-frame-single-1080.webp 1080w";
+
 /* ============================================================================
    ScreenshotFrame — a current real-app screenshot (founder-approved curated set,
-   public/screens/gallery/) composited inside a consistent iPhone-15 device frame
-   (react-device-mockup, dynamic island). Used by the "See Gymbo in action" static
-   gallery. Perf: WebP srcset + PNG fallback via <picture>, native lazy-load +
-   async decode. The screenshots are light-mode captures, so the light screen pops
-   against the charcoal section while the dark bezel reads as a subtle device edge.
+   public/screens/gallery/) composited inside Kaushik's photoreal iPhone frame
+   (replaces react-device-mockup — never a hand-built device, gy-7yhkh). Used by
+   the "See Gymbo in action" static gallery. Perf: WebP srcset + PNG fallback via
+   <picture>, native lazy-load + async decode. The screenshots are light-mode
+   captures, so the light screen pops against the charcoal section while the
+   dark bezel reads as a subtle device edge.
    ============================================================================ */
 export function ScreenshotFrame({
   slug,
@@ -43,12 +60,22 @@ export function ScreenshotFrame({
   style?: React.CSSProperties;
 }) {
   const base = `/screens/gallery/${slug}`;
+  const frameWidth = Math.round(screenWidth / (HOLE_PCT.width / 100));
   return (
     <div
       className={className}
-      style={{ filter: SHADOW.elevation4Filter, lineHeight: 0, ...style }}
+      style={{ position: "relative", filter: SHADOW.elevation4Filter, lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, width: frameWidth, ...style }}
     >
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor={F.onCta} hideStatusBar hideNavBar>
+      <div
+        style={{
+          position: "absolute",
+          left: `${HOLE_PCT.left}%`,
+          top: `${HOLE_PCT.top}%`,
+          width: `${HOLE_PCT.width}%`,
+          height: `${HOLE_PCT.height}%`,
+          overflow: "hidden",
+        }}
+      >
         <picture>
           <source
             type="image/webp"
@@ -63,7 +90,17 @@ export function ScreenshotFrame({
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         </picture>
-      </IPhoneMockup>
+      </div>
+      <picture>
+        <source type="image/webp" srcSet={FRAME_SRCSET} sizes={`${frameWidth}px`} />
+        <img
+          src={FRAME_SRC}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+        />
+      </picture>
     </div>
   );
 }
