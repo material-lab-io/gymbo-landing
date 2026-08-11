@@ -4,7 +4,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, RADIUS, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -49,7 +49,6 @@ const PILLARS = [
       "Cash or UPI logged — nothing slips",
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
-    chip: { kind: "money", text: "₹2,400 received" },
     dark: false,
   },
   {
@@ -66,7 +65,6 @@ const PILLARS = [
       { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
-    chip: { kind: "dark", k: "Today", v: "Class logged" },
     dark: true,
   },
   {
@@ -82,7 +80,6 @@ const PILLARS = [
       "Send any client their statement with a single tap",
     ],
     brief: "Your brand on a clean statement PDF — share in a tap (India).",
-    chip: { kind: "money", text: "Looks pro" },
     dark: false,
   },
   {
@@ -99,7 +96,6 @@ const PILLARS = [
       { text: "Get directions to your next class, right from the app", soon: true },
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "92%" },
     dark: false,
   },
 ];
@@ -154,23 +150,6 @@ const FAQ = [
    building blocks
    ============================================================================ */
 
-function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
-  if (chip.kind === "money") {
-    return (
-      <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
-        <span className="grid place-items-center w-4 h-4 rounded-full text-[9px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
-        <span className="text-[12px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
-      </div>
-    );
-  }
-  return (
-    <div className={`absolute z-10 items-center gap-1.5 px-3 py-1.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
-      <span className="text-[9px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
-      <span className="text-[12px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
-    </div>
-  );
-}
-
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
 }
@@ -181,10 +160,9 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 
 /* Grid axis for the desktop hero stage (gy-a73px.5). STAGE_U is the front
    phone's own width — every other stage offset is `calc(STAGE_U * k)`, so
-   phones and chips scale together instead of the old mix of independent vw
-   expressions (phones) and raw px (chips), which let their relationship
-   drift between breakpoints. STAGE_SEAM is the one shared vertical axis the
-   back phone and both chips anchor to. */
+   phones scale together instead of independent vw expressions drifting
+   between breakpoints. STAGE_SEAM is the shared vertical axis the back
+   phone anchors to. */
 const STAGE_U = "min(22vw, 310px)";
 const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
 
@@ -261,21 +239,6 @@ function HeroPhone({ slug, alt = "", className = "", style, sizes, priority = fa
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
         />
       </picture>
-    </div>
-  );
-}
-
-/* Floating Forge UI chip beside the hero device — seeded-positive only.
-   Sized down relative to the (now smaller) hero device (gy-pzefj item 3). */
-function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
-  const paid = variant === "paid";
-  return (
-    <div className={`absolute z-10 flex items-center gap-2.5 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: RADIUS.lg, padding: "10px 14px", boxShadow: SHADOW.elevation3, ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 30, height: 30, borderRadius: RADIUS.sm, fontWeight: 800, fontSize: 14, background: paid ? F.amber : F.green, color: paid ? F.onCta : F.white, fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
-      <div>
-        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 12.5, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
-        <div style={{ fontFamily: SANS, fontSize: 10.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
-      </div>
     </div>
   );
 }
@@ -380,15 +343,10 @@ export default function App() {
             {/* Grid axis (gy-a73px.5): every offset below is `calc(STAGE_U * k)`, where
                 STAGE_U is the FRONT phone's own width. Nothing is pinned in raw px or an
                 independent vw — offsets scale WITH the phone they annotate, so the
-                relationship holds at every breakpoint instead of drifting between the
-                phones' vw-based sizing and the chips' old px pinning.
-                SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
-                phone's right edge AND both chips all sit on it, so the callouts read as
-                anchored to the seam between the two phones rather than floating loose. */}
+                relationship holds at every breakpoint. SEAM (`STAGE_U * 0.90`) is the
+                shared vertical axis the back phone's right edge sits on. */}
             <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} sizes="(min-width: 1024px) calc(min(22vw, 310px) * 0.68)" />
             <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} sizes="(min-width: 1024px) min(22vw, 310px)" priority />
-            <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
-            <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -411,7 +369,7 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
+              {/* mobile / tablet device — below copy, ~86vw, bleeds off the bottom */}
               <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
                 <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} sizes="min(74vw, 320px)" priority />
               </div>
@@ -479,12 +437,6 @@ export default function App() {
                         label={`${p.title} — demo`}
                         maxWidth={300}
                       />
-                      {/* Chip floats OUTSIDE the composed demo asset (which bakes its own
-                          heading + caption text into the frame) so it never occludes them
-                          (gy-pzefj item 3: "Looks pro" was overlapping the demo's own
-                          "Branded statement" heading; "Class logged" was overlapping the
-                          demo's own bottom caption). */}
-                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "-6%", left: "-6%" } : { top: "-6%", right: "-6%" }} />
                     </div>
                   </Reveal>
                 </div>
