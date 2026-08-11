@@ -38,10 +38,7 @@ export const F = {
 };
 
 // Forge radius scale (--g-radius-sm/md/lg/xl/xxl/full in src/forge/forge.css:
-// 8/12/16/20/28/9999) — the single source of truth for corner radii. Device
-// bezel radii (HeroPhone) are expressed as calc() multiples of this scale
-// rather than raw px so they stay traceable to it while still matching real
-// hardware curvature (rule 1 FIDELITY).
+// 8/12/16/20/28/9999) — the single source of truth for corner radii.
 export const RADIUS = {
   sm: "var(--g-radius-sm)",
   md: "var(--g-radius-md)",

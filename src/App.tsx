@@ -179,86 +179,34 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
-/* Grid axis for the desktop hero stage (gy-a73px.5). STAGE_U is the front
-   phone's own width — every other stage offset is `calc(STAGE_U * k)`, so
-   phones and chips scale together instead of the old mix of independent vw
-   expressions (phones) and raw px (chips), which let their relationship
-   drift between breakpoints. STAGE_SEAM is the one shared vertical axis the
-   back phone and both chips anchor to. */
-const STAGE_U = "min(22vw, 310px)";
-const STAGE_SEAM = `calc(${STAGE_U} * 0.90)`;
+/* Hero device art — Kaushik's three-iPhone MockupWorld mockup (founder-
+   verified free/open-source, gy-dfl55.14), NOT a hand-built CSS bezel. The
+   three "Change-This" screen apertures were extracted from the source SVG
+   (composing its nested transform groups for true coordinates — the raw
+   layer x/y report as 0,0), then hero-01/02/03 (dashboard / who-owes /
+   log-payment) were composited into them and the whole scene exported as
+   ONE flat raster (scripts/gy-7yhkh/build-hero.mjs) — the mockup's own
+   metal, reflections, shadows and fan arrangement ship as-is, per Kaushik's
+   direction not to reconstruct a finished asset in CSS (gy-7yhkh). Source:
+   review-artifacts/gy-dfl55.14/mockupworld-three-iphone-17-screens.svg,
+   supplied by Kaushik via Drive, downloaded 2026-08-11.
+   Exported bbox: 4800×3236 (cropped from the 6000×4500 canvas to content). */
+const HERO_PANEL_W = 4800;
+const HERO_PANEL_H = 3236;
+const HERO_PANEL_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
+const HERO_PANEL_PNG = "/mockups/hero-three-panel-1200.png";
 
-/* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
-   composited into a photoreal device mockup (MockupNest Silver iPhone 17 Pro,
-   licence cleared for commercial use on getgymbo.com — Kaushik 2026-08-09;
-   gy-a73px.14 / gy-sf5yh). Replaces the old CSS rounded-rectangle bezel.
-
-   The mockup is flat-on (no angle), so this is plain 2D layering, not a
-   homography: the screenshot sits absolutely-positioned inside the frame's
-   own screen cutout, sized to the frame's percentage geometry below, then
-   the frame PNG (with a transparent screen-shaped hole, camera pill baked
-   in as opaque) paints on top.
-
-   Frame geometry (measured from the source PSD, see gy-sf5yh report):
-   the smart object's own internal canvas is exactly 1206×2622 (aspect
-   0.4600) — matching an iPhone screenshot's aspect exactly, confirming
-   AC1's gate before any compositing happened. The extracted frame PNG is
-   1117×2295 (outer device silhouette); the screen hole sits at
-   (50,47)-(1068,2253) within it, i.e. the percentages below. */
-const FRAME_W = 1117;
-const FRAME_H = 2295;
-const HOLE = { x: 50, y: 47, w: 1018, h: 2206 };
-const HOLE_PCT = {
-  left: (HOLE.x / FRAME_W) * 100,
-  top: (HOLE.y / FRAME_H) * 100,
-  width: (HOLE.w / FRAME_W) * 100,
-  height: (HOLE.h / FRAME_H) * 100,
-};
-const DEVICE_FRAME_SRC = "/mockups/iphone-17-pro-silver.png";
-const DEVICE_FRAME_SRCSET = "/mockups/iphone-17-pro-silver-720.webp 720w, /mockups/iphone-17-pro-silver-1080.webp 1080w";
-
-// NOTE: `theme` is accepted (callers already pass it) but not yet used here —
-// the gallery pipeline (scripts/screens-map.mjs / optimize-gallery.mjs) only
-// ever produces ONE screenshot per slug, with no light/dark variant. The
-// bead's "screenshot inside the frame must follow the theme" requirement
-// needs theme-specific source captures before this component can honor it;
-// that's a capture-pipeline gap, not a frame-compositing one. Filed as a
-// follow-up finding in the gy-sf5yh report rather than faked here.
-function HeroPhone({ slug, alt = "", className = "", style, sizes, priority = false }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
-  const base = `/screens/gallery/${slug}`;
+function HeroThreePanel({ alt = "", className = "", style, sizes, priority = false }: { alt?: string; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
   return (
-    <div className={className} style={{ position: "relative", lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, ...style }}>
-      <div
-        style={{
-          position: "absolute",
-          left: `${HOLE_PCT.left}%`,
-          top: `${HOLE_PCT.top}%`,
-          width: `${HOLE_PCT.width}%`,
-          height: `${HOLE_PCT.height}%`,
-          borderRadius: "9%",
-          overflow: "hidden",
-          background: F.white,
-        }}
-      >
-        <picture>
-          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes={sizes} />
-          <img
-            src={`${base}.png`}
-            alt={alt}
-            decoding="async"
-            {...(priority ? { fetchpriority: "high" as const } : {})}
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }}
-          />
-        </picture>
-      </div>
+    <div className={className} style={{ lineHeight: 0, aspectRatio: `${HERO_PANEL_W} / ${HERO_PANEL_H}`, ...style }}>
       <picture>
-        <source type="image/webp" srcSet={DEVICE_FRAME_SRCSET} sizes={sizes} />
+        <source type="image/webp" srcSet={HERO_PANEL_SRCSET} sizes={sizes} />
         <img
-          src={DEVICE_FRAME_SRC}
-          alt=""
-          aria-hidden="true"
+          src={HERO_PANEL_PNG}
+          alt={alt}
           decoding="async"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+          {...(priority ? { fetchpriority: "high" as const } : {})}
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
         />
       </picture>
     </div>
@@ -370,25 +318,14 @@ export default function App() {
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
         <header data-testid="hero-section" className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 off the top/right edges.
-              Stage 30vw + text 46% = 76% at the lg breakpoint (1024px) (gy-pzefj: was 38vw + 46% = 84%,
-              Kaushik flagged it as still too big; gy-v5ltl before that was 50vw + 52% = 102%, guaranteed
-              to overlap). The dashboard phone no longer bleeds past the stage's right edge, and the
-              schedule (calendar) phone sits further out from behind it so more of it reads as visible —
-              was ~59% visible, now ~78%. */}
-          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(30vw, 520px)" }}>
-            {/* Grid axis (gy-a73px.5): every offset below is `calc(STAGE_U * k)`, where
-                STAGE_U is the FRONT phone's own width. Nothing is pinned in raw px or an
-                independent vw — offsets scale WITH the phone they annotate, so the
-                relationship holds at every breakpoint instead of drifting between the
-                phones' vw-based sizing and the chips' old px pinning.
-                SEAM (`STAGE_U * 0.90`) is the single shared vertical axis: the back
-                phone's right edge AND both chips all sit on it, so the callouts read as
-                anchored to the seam between the two phones rather than floating loose. */}
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: `calc(${STAGE_U} * 0.68)`, top: `calc(${STAGE_U} * 0.55)`, right: STAGE_SEAM, transform: "rotate(-6deg)", opacity: 0.96 }} sizes="(min-width: 1024px) calc(min(22vw, 310px) * 0.68)" />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: STAGE_U, top: `calc(${STAGE_U} * -0.065)`, right: 0 }} sizes="(min-width: 1024px) min(22vw, 310px)" priority />
-            <HeroChip variant="logged" style={{ top: `calc(${STAGE_U} * 0.28)`, right: STAGE_SEAM }} />
-            <HeroChip variant="paid" style={{ top: `calc(${STAGE_U} * 1.22)`, right: STAGE_SEAM }} />
+          {/* desktop device stage — absolute to the section, bleeds past 1180 off the right
+              edge. The three-panel mockup is a single flat landscape image (not stacked
+              portrait phones), so it's vertically centered rather than stretched the full
+              header height; the two Forge UI chips overlay the front/center phone. */}
+          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
+            <HeroThreePanel style={{ width: "100%" }} sizes="(min-width: 1024px) min(46vw, 720px)" priority />
+            <HeroChip variant="logged" style={{ top: "14%", right: "12%" }} />
+            <HeroChip variant="paid" style={{ top: "68%", right: "9%" }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -411,9 +348,10 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
-              <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(74vw, 320px)" }} sizes="min(74vw, 320px)" priority />
+              {/* mobile / tablet device — below copy, chips hidden. Landscape three-panel
+                  art (not a tall single phone), so no bottom bleed needed. */}
+              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
+                <HeroThreePanel alt="Gymbo — dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
               </div>
             </div>
           </div>
