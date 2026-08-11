@@ -639,9 +639,14 @@ function BrandTouchpoints() {
             <li
               key={t.name}
               className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
+              /* gy-dfl55.8: "soon" cards fade the CHROME (bg/border alpha) by 40% to
+                 read as disabled, not the `opacity` shorthand — that would also fade
+                 the text and drop desc-text contrast to ~3.96:1 (measured), below the
+                 4.5:1 AA floor. Text stays full-opacity: title 16.6:1, desc 9.6:1.
+                 Non-soon cards keep gy-dfl55.10's softened gradient-border treatment. */
               style={
                 t.soon
-                  ? { background: F.charcoalCard, border: "1px dashed rgba(240,240,235,0.16)", opacity: 0.7 }
+                  ? { background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }
                   : {
                       border: "1px solid transparent",
                       backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
