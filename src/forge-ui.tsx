@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 
 /* ============================================================================
-   forge-ui — shared design tokens, theme system, and presentational primitives
-   for getgymbo.com. Single source of truth so the homepage (App.tsx) and the
+   forge-ui — shared design tokens and presentational primitives for
+   getgymbo.com. Single source of truth so the homepage (App.tsx) and the
    comparison pages stay visually identical. Forge palette: amber #F59E0B /
    marigold #FBBF24 accent on flat beige/charcoal, sentence case, no gradients.
+   getgymbo.com is LIGHT ONLY (founder ruling, gy-uesmd 2026-08-12) — there is
+   no page-wide theme toggle. `ThemeName` below still exists as a per-section
+   variant selector (some sections are permanently dark charcoal accent bands
+   by design, e.g. the "brand touchpoints" section and alternating pillar
+   rows) — that is unrelated to the removed global dark mode.
    ============================================================================ */
 
 export type ThemeName = "light" | "dark";
 
-// Theme-reactive tokens resolve to CSS custom properties (see ForgeStyle:
-// :root[data-theme=light|dark]). Charcoal/bone/marigold are always-dark-surface
-// tokens (the contrast bands stay dark in both themes), so they're literal.
+// Charcoal/bone/marigold below are always-dark-surface tokens (used by the
+// permanently-dark accent-band sections), so they're literal, not CSS vars.
 export const F = {
   beige: "var(--c-bg)",
   beigeCard: "var(--c-card)",
@@ -80,43 +83,13 @@ export function scrollToId(id: string) {
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/** data-theme + localStorage theme state, shared by every page.
-   SSR/hydration-safe: the FIRST render is deterministically "light" on both
-   server and client (so prerendered markup hydrates without mismatch). The
-   real theme — already applied to <html data-theme> pre-paint by the no-flash
-   script in each HTML <head>, so page colours are correct immediately via CSS
-   vars — is read into JS state only AFTER hydration. The write-back effect is
-   gated on `ready` so it never clobbers the no-flash value on first commit. */
-export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.SetStateAction<ThemeName>> } {
-  const [theme, setTheme] = useState<ThemeName>("light");
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme");
-    setTheme(t === "dark" ? "dark" : "light");
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("gymbo-theme", theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme, ready]);
-
-  return { theme, setTheme };
-}
-
 // Forge token + animation CSS. Injected via dangerouslySetInnerHTML (NOT JSX
 // children): <style> is a raw-text element, and renderToString HTML-escapes
-// element children — which would emit data-theme=&quot;light&quot; into the
-// served CSS (invalid selector + a hydration mismatch). __html keeps it raw.
+// element children, which would corrupt raw CSS. __html keeps it raw.
+// LIGHT ONLY (gy-uesmd) — no [data-theme="dark"] rule ships here or anywhere
+// else in the bundle; do not reintroduce one without a new founder ruling.
 const FORGE_CSS = `
-        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
-        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-anchor:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8);--c-elevation-1:0 1px 2px rgba(0,2,8,.06),0 4px 10px -4px rgba(0,2,8,.08),0 10px 20px -10px rgba(0,2,8,.07);--c-elevation-2:0 1px 2px rgba(0,2,8,.08),0 6px 16px -6px rgba(0,2,8,.11),0 16px 32px -14px rgba(0,2,8,.10);--c-elevation-3:0 2px 3px rgba(0,2,8,.09),0 10px 24px -8px rgba(0,2,8,.14),0 24px 48px -20px rgba(0,2,8,.12);--c-elevation-4:0 2px 4px rgba(0,2,8,.11),0 16px 32px -10px rgba(0,2,8,.15),0 36px 64px -26px rgba(0,2,8,.14);--c-elevation-5:0 3px 6px rgba(0,2,8,.12),0 20px 44px -12px rgba(0,2,8,.18),0 52px 96px -34px rgba(0,2,8,.19);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(0,2,8,.11)) drop-shadow(0 14px 26px rgba(0,2,8,.14)) drop-shadow(0 28px 46px rgba(0,2,8,.13))}
+        :root{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}

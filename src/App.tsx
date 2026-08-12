@@ -18,7 +18,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -44,9 +44,9 @@ const demoPoster = (id: string): ClipMap =>
    scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
-/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, the theme hook,
-   and the shared presentational primitives now live in ./forge-ui (SSOT shared
-   with the comparison pages). */
+/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
+   presentational primitives now live in ./forge-ui (SSOT shared with the
+   comparison pages). */
 
 /* ── 4 pillars ── */
 const PILLARS = [
@@ -219,7 +219,6 @@ function HeroThreePanel({ alt = "", className = "", style, sizes, priority = fal
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -265,7 +264,7 @@ export default function App() {
       >
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — back to top">
           <img
-            src={theme === "dark" ? "/gymbo-mark-amber-ff9800.svg" : "/gymbo-mark-darkorange-9d3900.svg"}
+            src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
             className="h-[38px] w-[38px]"
           />
