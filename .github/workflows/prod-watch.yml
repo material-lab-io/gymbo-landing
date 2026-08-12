@@ -1,0 +1,42 @@
+name: Prod Watch
+
+# Scheduled regression against the LIVE domain (gy-6stol / G2 of gy-gtyxh).
+# scripts/getgymbo-smoke.sh has said "run on cron against prod" in its own
+# header since gy-kefk3 — this wires that capability up. Dependency-light
+# (curl-only smoke script + the existing console-check.mjs), no credentials.
+# Distinct from gy-7t4sr (external off-infra uptime monitoring, founder-gated
+# on a credential) — this runs in our own CI and must not wait on that.
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      verify_url:
+        description: "Override target (negative-control testing only — leave blank for normal runs)"
+        required: false
+        default: ""
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium (console check)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run prod regression
+        run: |
+          TARGET="${{ github.event.inputs.verify_url }}"
+          if [ -z "$TARGET" ]; then TARGET="https://getgymbo.com"; fi
+          echo "Checking $TARGET"
+          bash scripts/getgymbo-smoke.sh "$TARGET"
+          node scripts/console-check.mjs "$TARGET"
