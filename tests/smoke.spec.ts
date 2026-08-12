@@ -4,8 +4,9 @@ import { test, expect } from '@playwright/test';
  * Smoke + Wave 3 acceptance [F] for getgymbo.com.
  * Runs on both the `desktop` and `mobile` (Pixel 5) projects (see playwright.config.ts).
  * Covers: page renders / no JS errors, nav + hero, pricing, waitlist CTA, footer,
- * AND Wave 3: demo videos present, theme toggle swaps theme + clip variant,
- * coming-soon overlays render, no layout break.
+ * AND Wave 3: demo videos present, coming-soon overlays render, no layout break.
+ * getgymbo.com is LIGHT ONLY (gy-uesmd, founder ruling 2026-08-12) — there is
+ * no global theme toggle or dark palette.
  */
 
 const IGNORE = [
@@ -58,22 +59,24 @@ test('demo videos play inside device frames', async ({ page }) => {
   await expect(v).toHaveJSProperty('loop', true);
 });
 
-test('stored theme swaps theme and demo variant (gy-31moh: no in-page toggle)', async ({ page }) => {
+test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
+  // Regression for the founder-visible bug: gy-31moh removed the theme
+  // toggle but left the no-flash script + dark palette in place, so anyone
+  // with a stale gymbo-theme='dark' from before the toggle was removed got
+  // stuck on a dark site with no way to escape it. Both are now deleted
+  // outright — getgymbo.com never reads gymbo-theme and never sets
+  // data-theme, so a pre-seeded 'dark' value must have zero effect.
+  await page.addInitScript(() => localStorage.setItem('gymbo-theme', 'dark'));
   await page.goto('/');
   const html = page.locator('html');
-  await expect(html).toHaveAttribute('data-theme', 'light');
+  await expect(html).not.toHaveAttribute('data-theme', /.+/);
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 250, 247)'); // --c-bg #fafaf7
+});
 
-  await page.locator('#why').scrollIntoViewIfNeeded();
-  await expect(page.locator('video[data-theme-variant="light"]').first()).toBeVisible();
-
-  // No in-page toggle button (removed, gy-31moh) — theme is set via the
-  // persisted localStorage value the no-flash script reads pre-paint.
-  await page.evaluate(() => localStorage.setItem('gymbo-theme', 'dark'));
-  await page.reload();
-  await expect(html).toHaveAttribute('data-theme', 'dark');
-  // The "dark" clip variant lives on a different pillar section (dark:true
-  // background) further down the page — scroll it into view so its lazy-mount
-  // IntersectionObserver (rootMargin 250px) fires before asserting.
+test('pillar-organized keeps its fixed dark accent-band clip variant (unrelated to page theme)', async ({ page }) => {
+  // PILLARS[].dark is a per-section design constant (charcoal accent band),
+  // independent of the removed global theme system — this is NOT dark mode.
+  await page.goto('/');
   await page.locator('[data-testid="pillar-organized"]').scrollIntoViewIfNeeded();
   await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
 });
