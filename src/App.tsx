@@ -639,7 +639,16 @@ function BrandTouchpoints() {
             <li
               key={t.name}
               className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
-              style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}
+              style={
+                t.soon
+                  ? { background: F.charcoalCard, border: "1px dashed rgba(240,240,235,0.16)", opacity: 0.7 }
+                  : {
+                      border: "1px solid transparent",
+                      backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+                      backgroundOrigin: "border-box",
+                      backgroundClip: "padding-box, border-box",
+                    }
+              }
             >
               <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
               <div className="text-left">
