@@ -1,9 +1,12 @@
-/* Forge design-system SSOT (GENERATED — Gymbo-v1 design-tokens/). Dark-first via
-   <html data-theme="dark">. The site's semantic vars below INHERIT from Forge —
-   change the Forge palette → re-sync src/forge/*.css → everything here updates.
-   Nothing brand-colored is hardcoded. */
+/* Forge design-system SSOT (GENERATED — Gymbo-v1 design-tokens/). getgymbo.com
+   is LIGHT ONLY (founder ruling, gy-uesmd 2026-08-12) — forge.dark.css is
+   deliberately NOT imported here so no [data-theme="dark"] rule ships in the
+   bundle; forge.css's :root already defaults to the light token set. Do not
+   re-add the dark import without a new founder ruling. The site's semantic
+   vars below INHERIT from Forge — change the Forge palette → re-sync
+   src/forge/*.css → everything here updates. Nothing brand-colored is
+   hardcoded. */
 @import "./forge/forge.css";
-@import "./forge/forge.dark.css";
 @import "./forge/forge.hc.css";
 
 :root {

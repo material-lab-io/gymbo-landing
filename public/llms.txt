@@ -18,7 +18,7 @@ Gymbo is built for the independent personal trainer — not a gym chain, and not
 
 - Monthly: ₹399/month (billed monthly)
 - Annual: ₹2,999 per year (₹250/month effective, save 37%)
-- Unlimited clients on every plan; 7-day free trial, no card required
+- Unlimited clients on every plan; 7-day free trial
 
 ## Links
 
@@ -28,5 +28,5 @@ Gymbo is built for the independent personal trainer — not a gym chain, and not
 
 ## Notes
 
-- Status: in private alpha on iOS (iPhone). Android is on the way.
+- Status: in beta on iOS (iPhone).
 - Made by Material Lab (https://materiallab.io). Contact: damini@materiallab.io

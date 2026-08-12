@@ -1,8 +1,7 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <script>try{var t=localStorage.getItem('gymbo-theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Gymbo — Business app for fitness trainers</title>
     <meta name="description" content="AI-powered business app for independent personal trainers. Log sessions, track payments, manage clients. From ₹399/mo, 7 days free." />
@@ -25,8 +24,8 @@
     <meta name="twitter:description" content="AI-powered business app for independent personal trainers." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image.png" />
 
-    <!-- Theme -->
-    <meta name="theme-color" content="#0A0A0A" />
+    <!-- Theme: getgymbo.com is light-only (gy-uesmd), matches --c-bg -->
+    <meta name="theme-color" content="#FAFAF7" />
     <link rel="canonical" href="https://getgymbo.com/" />
 
     <!-- JSON-LD -->
@@ -127,7 +126,7 @@
         {
           "@type": "Question",
           "name": "Which phones does it support?",
-          "acceptedAnswer": { "@type": "Answer", "text": "iPhone now. Android is coming soon — join the waitlist and we'll tell you first." }
+          "acceptedAnswer": { "@type": "Answer", "text": "iPhone, for now — that's where we're focused." }
         },
         {
           "@type": "Question",
@@ -143,10 +142,12 @@
     }
     </script>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <!-- Fonts — self-hosted (gy-a73px.9). Preload the two families the hero
+         paints on first frame (each file is a variable font covering every
+         weight that family uses, so one preload per family is enough). -->
+    <link rel="preload" href="/fonts/merriweather-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/open-sans-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" />
 
     <!-- Analytics (Umami website id from ops/umami/wrangler.toml) -->
     <script defer src="https://analytics.getgymbo.com/script.js" data-website-id="36b8e820-a50a-44b3-a57b-5ee37f719916"></script>

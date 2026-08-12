@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      verify_url:
+        description: "Override target for the post-deploy live check (negative-control testing only — leave blank for normal runs)"
+        required: false
+        default: ""
 
 jobs:
   deploy:
@@ -19,6 +25,17 @@ jobs:
 
       - run: npm ci
 
+      # Screenshot staleness gate (gy-a73px.15): every screenshot actually
+      # rendered on the site must have a manifest entry in
+      # public/screens/manifest.json that is verified and not older than
+      # maxAgeDays — see public/screens/MANIFEST.md. Runs before the build
+      # so a stale/missing manifest fails fast, before the full build +
+      # smoke gate. Mechanical, fail-closed replacement for a human noticing
+      # stale screenshots on the live site (happened twice: 2026-08-06,
+      # 2026-08-08).
+      - name: Screenshot staleness gate
+        run: node scripts/check-screenshot-freshness.mjs
+
       - run: npm run build
 
       - name: Vendored contract freshness (gy-csrt8.1, G4 AC2)
@@ -32,9 +49,12 @@ jobs:
       # Pre-deploy smoke gate (gy-kefk3): serve the freshly-built dist via the
       # Cloudflare Pages emulator and (1) assert homepage rendered (SSG didn't
       # break) + key content/og + robots AI-bot regression + /privacy + /terms
-      # live (curl smoke), and (2) load every route in a headless browser and
-      # fail on our JS/console errors (hydration etc.). Non-zero exit fails the
-      # job → the deploy step below is skipped. Blocks bad builds from going live.
+      # live (curl smoke), (2) load every route in a headless browser and fail
+      # on our JS/console errors (hydration etc.), and (3) run the Playwright
+      # visual-regression baselines (gy-a73px.1 / gy-a73px.13) against the same
+      # emulator — a PR that changes rendering with no snapshot update fails
+      # here. Non-zero exit fails the job → the deploy step below is skipped.
+      # Blocks bad builds from going live.
       - name: Pre-deploy smoke gate
         run: |
           npx wrangler pages dev dist --port 8788 --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
@@ -49,10 +69,40 @@ jobs:
             kill $PD 2>/dev/null || true; exit 1
           fi
           RC=0
+          # Correctness gates — these BLOCK everywhere, including main. A broken
+          # page or a console error must never reach production.
           bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788 || RC=1
           node scripts/console-check.mjs http://127.0.0.1:8788 || RC=1
+
+          # Visual regression is CHANGE DETECTION, not a correctness check: it
+          # fails by design whenever a design change is intentional, until the
+          # baselines are refreshed. Blocking production on it is what wedged
+          # deploys on 2026-08-11 (five merges, five failed deploys, all on
+          # hero-light.png as the diff grew 3,632px -> 49,701px).
+          #
+          # So: BLOCK on pull_request, where the question "did you mean to change
+          # this?" is useful and the author can still act on it. WARN on main,
+          # where the change has already been reviewed and merged and the only
+          # thing blocking achieves is an undeployed site plus a manual rescue
+          # commit. Refresh baselines via refresh-visual-baselines.yml.
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
+              || echo "::warning::Visual baselines are stale on main — deploy proceeding. Run refresh-visual-baselines.yml to resync."
+          else
+            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+          fi
           kill $PD 2>/dev/null || true
           exit $RC
+
+      - name: Upload visual regression report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
       - name: Deploy to Cloudflare Pages
         if: github.ref == 'refs/heads/main'
@@ -60,3 +110,55 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # Post-deploy live verification (gy-7fuot / G1 of gy-gtyxh): every gate
+      # above runs against the wrangler emulator on a fresh dist — after this
+      # point NOTHING checks the real domain. Green CI + a wrong live site was
+      # unobservable. Reuses the same two scripts as the pre-deploy gate,
+      # pointed at the real domain instead of 127.0.0.1. Runs AFTER the deploy
+      # step, so it can never block the deploy itself — it only turns the run
+      # red so a bad live site is visible and alertable (AC3). `verify_url`
+      # exists solely so this step can be manually pointed at a wrong URL to
+      # prove it fails (AC2) — normal push-triggered runs never set it.
+      - name: Post-deploy live verification
+        if: github.ref == 'refs/heads/main'
+        run: |
+          TARGET="${{ github.event.inputs.verify_url }}"
+          if [ -z "$TARGET" ]; then TARGET="https://getgymbo.com"; fi
+          echo "Verifying live deploy at $TARGET"
+
+          run_check() {
+            bash scripts/getgymbo-smoke.sh "$TARGET" || return 1
+            node scripts/console-check.mjs "$TARGET" || return 1
+            return 0
+          }
+
+          # Bounded poll (~90s) for the target to be reachable at all before
+          # running the real checks — do NOT sleep a fixed amount and hope.
+          ready=0
+          for i in $(seq 1 18); do
+            if curl -sf --max-time 5 -o /dev/null "$TARGET"; then ready=1; break; fi
+            sleep 5
+          done
+          if [ "$ready" != "1" ]; then
+            echo "::error::$TARGET never became reachable within 90s"
+            exit 1
+          fi
+
+          if run_check; then
+            echo "Post-deploy live verification passed."
+            exit 0
+          fi
+
+          # Retry the whole check once — a transient network blip must not
+          # page anyone. Kaushik's constraint: this check must be trustworthy
+          # or it will be ignored.
+          echo "::warning::Post-deploy check failed once — retrying after a short backoff."
+          sleep 10
+          if run_check; then
+            echo "Post-deploy live verification passed on retry."
+            exit 0
+          fi
+
+          echo "::error::Post-deploy live verification FAILED against $TARGET after retry. The deploy already happened — this failure is a visible alert, not a rollback."
+          exit 1

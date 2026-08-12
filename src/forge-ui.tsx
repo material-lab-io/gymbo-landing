@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 
 /* ============================================================================
-   forge-ui — shared design tokens, theme system, and presentational primitives
-   for getgymbo.com. Single source of truth so the homepage (App.tsx) and the
+   forge-ui — shared design tokens and presentational primitives for
+   getgymbo.com. Single source of truth so the homepage (App.tsx) and the
    comparison pages stay visually identical. Forge palette: amber #F59E0B /
    marigold #FBBF24 accent on flat beige/charcoal, sentence case, no gradients.
+   getgymbo.com is LIGHT ONLY (founder ruling, gy-uesmd 2026-08-12) — there is
+   no page-wide theme toggle. `ThemeName` below still exists as a per-section
+   variant selector (some sections are permanently dark charcoal accent bands
+   by design, e.g. the "brand touchpoints" section and alternating pillar
+   rows) — that is unrelated to the removed global dark mode.
    ============================================================================ */
 
 export type ThemeName = "light" | "dark";
 
-// Theme-reactive tokens resolve to CSS custom properties (see ForgeStyle:
-// :root[data-theme=light|dark]). Charcoal/bone/marigold are always-dark-surface
-// tokens (the contrast bands stay dark in both themes), so they're literal.
+// Charcoal/bone/marigold below are always-dark-surface tokens (used by the
+// permanently-dark accent-band sections), so they're literal, not CSS vars.
 export const F = {
   beige: "var(--c-bg)",
   beigeCard: "var(--c-card)",
@@ -21,6 +24,7 @@ export const F = {
   ink: "var(--c-ink)",
   inkMuted: "var(--c-ink-muted)",
   inkLabel: "var(--c-ink-label)",
+  inkAnchor: "var(--c-ink-anchor)",
   amber: "var(--c-brand)",
   marigold: "#fbbf24",
   amberText: "var(--c-brand-text)",
@@ -33,12 +37,39 @@ export const F = {
   boneLabel: "#a0a0a0",
   green: "#15803d",
   red: "#b80f34",
+  white: "#ffffff",
+  black: "#000000",
 };
 
+// Forge radius scale (--g-radius-sm/md/lg/xl/xxl/full in src/forge/forge.css:
+// 8/12/16/20/28/9999) — the single source of truth for corner radii.
+export const RADIUS = {
+  sm: "var(--g-radius-sm)",
+  md: "var(--g-radius-md)",
+  lg: "var(--g-radius-lg)",
+  xl: "var(--g-radius-xl)",
+  xxl: "var(--g-radius-xxl)",
+  full: "var(--g-radius-full)",
+};
+
+// 5-step layered elevation scale (--c-elevation-1..5 in FORGE_CSS above): one
+// light direction, tight+medium+ambient layers per step, tinted to the surface
+// hue (warm on light-theme beige, cool on dark-theme charcoal) instead of pure
+// black, offset+blur scaling together as elevation rises. cta/chip/card are
+// semantic aliases onto specific steps so existing call sites keep their names.
 export const SHADOW = {
-  cta: "0 1px 2px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06)",
-  chip: "0 1px 2px rgba(0,0,0,.10), 0 8px 24px -6px rgba(0,0,0,.18)",
-  card: "0 1px 2px rgba(0,0,0,.06), 0 12px 32px -12px rgba(0,0,0,.12)",
+  elevation1: "var(--c-elevation-1)",
+  elevation2: "var(--c-elevation-2)",
+  elevation3: "var(--c-elevation-3)",
+  elevation4: "var(--c-elevation-4)",
+  elevation5: "var(--c-elevation-5)",
+  // filter form for elements shadowed via CSS `filter: drop-shadow(...)`
+  // (transparent-background device frames) — drop-shadow has no spread
+  // parameter, so this is the closest filter-safe rendering of elevation-4.
+  elevation4Filter: "var(--c-elevation-4-filter)",
+  cta: "var(--c-elevation-2)",
+  chip: "var(--c-elevation-3)",
+  card: "var(--c-elevation-2)",
 };
 
 export const SERIF = "var(--font-serif)"; // Merriweather
@@ -52,43 +83,13 @@ export function scrollToId(id: string) {
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/** data-theme + localStorage theme state, shared by every page.
-   SSR/hydration-safe: the FIRST render is deterministically "light" on both
-   server and client (so prerendered markup hydrates without mismatch). The
-   real theme — already applied to <html data-theme> pre-paint by the no-flash
-   script in each HTML <head>, so page colours are correct immediately via CSS
-   vars — is read into JS state only AFTER hydration. The write-back effect is
-   gated on `ready` so it never clobbers the no-flash value on first commit. */
-export function useTheme(): { theme: ThemeName; setTheme: React.Dispatch<React.SetStateAction<ThemeName>> } {
-  const [theme, setTheme] = useState<ThemeName>("light");
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const t = document.documentElement.getAttribute("data-theme");
-    setTheme(t === "dark" ? "dark" : "light");
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    try {
-      localStorage.setItem("gymbo-theme", theme);
-    } catch {
-      /* ignore */
-    }
-  }, [theme, ready]);
-
-  return { theme, setTheme };
-}
-
 // Forge token + animation CSS. Injected via dangerouslySetInnerHTML (NOT JSX
 // children): <style> is a raw-text element, and renderToString HTML-escapes
-// element children — which would emit data-theme=&quot;light&quot; into the
-// served CSS (invalid selector + a hydration mismatch). __html keeps it raw.
+// element children, which would corrupt raw CSS. __html keeps it raw.
+// LIGHT ONLY (gy-uesmd) — no [data-theme="dark"] rule ships here or anywhere
+// else in the bundle; do not reintroduce one without a new founder ruling.
 const FORGE_CSS = `
-        :root,:root[data-theme="light"]{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85)}
-        :root[data-theme="dark"]{--c-bg:#0a0a0a;--c-card:#141414;--c-card2:#1c1c1e;--c-muted:#2c2c2e;--c-ink:#f0f0eb;--c-ink-muted:#b8b8b8;--c-ink-label:#a0a0a0;--c-brand:#fbbf24;--c-brand-text:#fbbf24;--c-line:rgba(240,240,235,.12);--c-nav-bg:rgba(10,10,10,.8)}
+        :root{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
@@ -121,9 +122,12 @@ const FORGE_CSS = `
         .article-prose th,.article-prose td{border:1px solid var(--c-line);padding:10px 12px;text-align:left;vertical-align:top}
         .article-prose thead th{background:rgba(245,158,11,0.08);font-family:var(--font-serif);color:var(--c-ink)}
         .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
+        @keyframes waiting-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,158,11,.22)}50%{transform:scale(1.06);box-shadow:0 0 0 9px rgba(245,158,11,0)}}
+        .waiting-pulse{animation:waiting-pulse 2.8s cubic-bezier(.4,0,.6,1) infinite}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
+          .waiting-pulse{animation:none!important;box-shadow:0 0 0 0 rgba(245,158,11,.22)!important}
         }
       `;
 
@@ -137,8 +141,16 @@ export function ForgeStyle() {
 export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: boolean }) {
   return (
     <span
-      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5"
-      style={{ letterSpacing: "0.08em", color: dark ? F.marigold : F.amberText, fontFamily: SANS }}
+      className="inline-flex items-center gap-2 text-[12px] font-bold mb-5 rounded-full"
+      style={{
+        letterSpacing: "0.08em",
+        color: dark ? F.marigold : F.amberText,
+        fontFamily: SANS,
+        background: dark ? "rgba(251,191,36,0.12)" : "rgba(245,158,11,0.08)",
+        border: dark ? "1px solid rgba(251,191,36,0.22)" : "1px solid rgba(245,158,11,0.14)",
+        padding: "6px 12px 6px 10px",
+        boxShadow: dark ? SHADOW.elevation1 : "none",
+      }}
     >
       <span className="inline-block w-[7px] h-[7px] rounded-full" style={{ background: dark ? F.marigold : F.amber }} />
       {children}
@@ -173,10 +185,3 @@ export function SecondaryButton({ dark, children }: { dark?: boolean; children: 
   );
 }
 
-export function RiskReversal({ dark }: { dark?: boolean }) {
-  return (
-    <p className="text-[13px]" style={{ color: dark ? F.boneLabel : F.inkLabel, fontFamily: SANS }}>
-      Free · no credit card
-    </p>
-  );
-}

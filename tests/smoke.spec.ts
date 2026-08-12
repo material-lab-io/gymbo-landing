@@ -4,8 +4,9 @@ import { test, expect } from '@playwright/test';
  * Smoke + Wave 3 acceptance [F] for getgymbo.com.
  * Runs on both the `desktop` and `mobile` (Pixel 5) projects (see playwright.config.ts).
  * Covers: page renders / no JS errors, nav + hero, pricing, waitlist CTA, footer,
- * AND Wave 3: demo videos present, theme toggle swaps theme + clip variant,
- * coming-soon overlays render, no layout break.
+ * AND Wave 3: demo videos present, coming-soon overlays render, no layout break.
+ * getgymbo.com is LIGHT ONLY (gy-uesmd, founder ruling 2026-08-12) — there is
+ * no global theme toggle or dark palette.
  */
 
 const IGNORE = [
@@ -48,31 +49,47 @@ test('nav and hero render with the headline', async ({ page }) => {
 
 test('demo videos play inside device frames', async ({ page }) => {
   await page.goto('/');
-  // hero demo is above the fold → its video mounts (lazy IntersectionObserver)
-  await expect(page.locator('video').first()).toBeVisible();
+  // hero is now a static HeroPhone screenshot (gy-pzefj) — the first <video>
+  // is the "why" pillars' DemoFrame clip, which lazy-mounts on scroll
+  // (IntersectionObserver, rootMargin 250px).
+  await page.locator('#why').scrollIntoViewIfNeeded();
   const v = page.locator('video').first();
+  await expect(v).toBeVisible();
   await expect(v).toHaveJSProperty('muted', true);
   await expect(v).toHaveJSProperty('loop', true);
 });
 
-test('theme toggle swaps theme and demo variant', async ({ page }) => {
+test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
+  // Regression for the founder-visible bug: gy-31moh removed the theme
+  // toggle but left the no-flash script + dark palette in place, so anyone
+  // with a stale gymbo-theme='dark' from before the toggle was removed got
+  // stuck on a dark site with no way to escape it. Both are now deleted
+  // outright — getgymbo.com never reads gymbo-theme and never sets
+  // data-theme, so a pre-seeded 'dark' value must have zero effect.
+  await page.addInitScript(() => localStorage.setItem('gymbo-theme', 'dark'));
   await page.goto('/');
   const html = page.locator('html');
-  await expect(html).toHaveAttribute('data-theme', 'light');
+  await expect(html).not.toHaveAttribute('data-theme', /.+/);
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 250, 247)'); // --c-bg #fafaf7
+});
 
-  await expect(page.locator('video[data-theme-variant="light"]').first()).toBeVisible();
-
-  await page.locator('[data-theme-toggle]').click();
-  await expect(html).toHaveAttribute('data-theme', 'dark');
+test('pillar-organized keeps its fixed dark accent-band clip variant (unrelated to page theme)', async ({ page }) => {
+  // PILLARS[].dark is a per-section design constant (charcoal accent band),
+  // independent of the removed global theme system — this is NOT dark mode.
+  await page.goto('/');
+  await page.locator('[data-testid="pillar-organized"]').scrollIntoViewIfNeeded();
   await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
 });
 
-test('coming-soon overlays render', async ({ page }) => {
+test('coming-soon bullets render inline, not as demo-frame badges', async ({ page }) => {
   await page.goto('/');
-  // pillar demo-frame overlays (travel-aware / AI navigate) + carousel tiles
+  // gy-jaooz: "travel-aware" / "AI navigate" badges were removed from the pillar
+  // demo artwork; the not-yet-shipped items now live as normal bullets with a
+  // "coming soon" tag after the sentence.
   await page.locator('#why').scrollIntoViewIfNeeded();
-  await expect(page.locator('[data-coming-soon]').first()).toBeVisible();
-  await expect(page.getByText(/travel-aware/i).first()).toBeVisible();
+  await expect(page.locator('[data-coming-soon]')).toHaveCount(0);
+  await expect(page.getByText(/travel-aware/i)).toHaveCount(0);
+  await expect(page.getByText('coming soon').first()).toBeVisible();
 });
 
 test('pricing shows the two plans and numbers', async ({ page }) => {
@@ -103,4 +120,18 @@ test('footer present, and no web-app references remain', async ({ page }) => {
   await footer.scrollIntoViewIfNeeded();
   await expect(footer.getByText(/2026 Material Lab/i)).toBeVisible();
   await expect(page.locator('a[href="https://app.getgymbo.com"]')).toHaveCount(0);
+});
+
+test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', async ({ page }) => {
+  await page.goto('/');
+  const h1 = page.locator('h1');
+  const subheadline = page.locator('p', { hasText: 'Track revenue, stay organized' });
+  await expect(subheadline).toBeVisible();
+
+  const h1Family = await h1.evaluate((el) => getComputedStyle(el).fontFamily);
+  const subFamily = await subheadline.evaluate((el) => getComputedStyle(el).fontFamily);
+
+  expect(h1Family).toContain('Merriweather');
+  expect(subFamily).toContain('Open Sans');
+  expect(subFamily).not.toContain('Merriweather');
 });

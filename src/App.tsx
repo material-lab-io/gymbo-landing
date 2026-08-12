@@ -1,11 +1,24 @@
 import { useEffect, useState } from "react";
-import { Check, Plus, Sun, Moon } from "lucide-react";
-import { IPhoneMockup } from "react-device-mockup";
+import {
+  Check,
+  Plus,
+  QrCode,
+  Share2,
+  FileText,
+  Palette,
+  Link,
+  Globe,
+  CalendarCheck,
+  BarChart3,
+  Sparkles,
+  Smartphone,
+  type LucideIcon,
+} from "lucide-react";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, RiskReversal } from "./forge-ui";
+import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -31,9 +44,9 @@ const demoPoster = (id: string): ClipMap =>
    scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
-/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, the theme hook,
-   and the shared presentational primitives now live in ./forge-ui (SSOT shared
-   with the comparison pages). */
+/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
+   presentational primitives now live in ./forge-ui (SSOT shared with the
+   comparison pages). */
 
 /* ── 4 pillars ── */
 const PILLARS = [
@@ -50,8 +63,6 @@ const PILLARS = [
       "Cash or UPI logged — nothing slips",
     ],
     brief: "Log a payment — UPI or cash, and the balance clears.",
-    chip: { kind: "money", text: "₹2,400 received" },
-    comingSoon: "",
     dark: false,
   },
   {
@@ -65,10 +76,9 @@ const PILLARS = [
       "One-tap punch to log a class",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
+      { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
-    chip: { kind: "dark", k: "Today", v: "Class logged" },
-    comingSoon: "Coming soon: travel-aware scheduling — slots that respect your commute.",
     dark: true,
   },
   {
@@ -84,8 +94,6 @@ const PILLARS = [
       "Send any client their statement with a single tap",
     ],
     brief: "Your brand on a clean statement PDF — share in a tap (India).",
-    chip: { kind: "money", text: "Looks pro" },
-    comingSoon: "",
     dark: false,
   },
   {
@@ -99,28 +107,37 @@ const PILLARS = [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
       "Track client progress: logged sessions, adherence, per-exercise gains",
+      { text: "Get directions to your next class, right from the app", soon: true },
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    chip: { kind: "dark", k: "Adherence", v: "92%" },
-    comingSoon: "Coming soon: AI “navigate to your next session” — directions to your next class.",
     dark: false,
   },
 ];
 
-/* ── brand touchpoints ── */
-const TOUCHPOINTS: { name: string; desc: string; soon?: boolean }[] = [
+/* ── brand touchpoints ──
+   `span: 2` is a DELIBERATE per-card call (Kaushik, gy-dfl55.4), not a
+   pattern derived from array position — only the QR profile card (the
+   most tangible, most-shown touchpoint) spans two grid columns; every
+   other card is single-span. Do not replace with an alternating/index
+   rule — that just reads as a different loop.
+
+   gy-dfl55.6: `icon` replaces the generic yellow-dot bullet with a
+   minimalist lucide glyph that depicts THIS touchpoint specifically —
+   real SVG (recolourable/animatable), not the brand mark (gy-c571s is
+   open — these must not drift into looking like the logo). */
+const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2; icon: LucideIcon }[] = [
   // Live now (real — no tag)
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect." },
-  { name: "Per-client share links", desc: "Send any client their statement with one tap." },
-  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)." },
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2, icon: QrCode },
+  { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
+  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
   // Coming soon (clearly tagged)
-  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true },
-  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true },
-  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true },
-  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true },
-  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true },
-  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
+  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true, icon: Palette },
+  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true, icon: Link },
+  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true, icon: Globe },
+  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true, icon: CalendarCheck },
+  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true, icon: BarChart3 },
+  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true, icon: Sparkles },
+  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true, icon: Smartphone },
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
@@ -136,14 +153,6 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
 ];
 
-/* ── trust metric tiles (PLACEHOLDER values — swap at launch) ── */
-// METRICS hidden until real launch figures exist (marketer QA gy-dhcj1) — re-add real numbers here, then uncomment the render block in the trust section.
-// const METRICS = [
-//   { value: "xxx", label: "Trainers" },
-//   { value: "xxx", label: "Classes logged" },
-//   { value: "₹xxx", label: "Tracked" },
-// ];
-
 /* ── pricing ── */
 const PRICING = [
   { name: "Monthly", tagline: "Flexible", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
@@ -156,7 +165,7 @@ const FAQ = [
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
-  { q: "Which phones does it support?", a: "iPhone now. Android is coming soon — join the waitlist and we'll tell you first." },
+  { q: "Which phones does it support?", a: "iPhone, for now — that's where we're focused." },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance — it doesn't touch your money." },
   { q: "Can I import my existing clients?", a: "Yes. Bring your current roster over in minutes and pick up where you left off." },
 ];
@@ -164,68 +173,6 @@ const FAQ = [
 /* ============================================================================
    building blocks
    ============================================================================ */
-
-/* react-device-mockup iPhone 15 Pro (MIT, dynamic island) with a styled
-   "here we'll show" BRIEF as the screen content. Inner content swaps
-   brief → screenshot → muted-loop video later; the frame stays put. */
-function BriefFrame({ brief, label = "Here we'll show", screenWidth = 224, className = "", style }: { brief: string; label?: string; screenWidth?: number; className?: string; style?: React.CSSProperties }) {
-  return (
-    <div className={className} style={{ filter: "drop-shadow(3px 22px 45px rgba(20,20,30,0.18)) drop-shadow(1px 6px 14px rgba(20,20,30,0.10))", lineHeight: 0, ...style }}>
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
-        <div style={{ width: "100%", height: "100%", background: F.beige, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "14% 11%", textAlign: "center", lineHeight: 1.5 }}>
-          {label && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: F.amberText, fontFamily: SANS, fontSize: "11px", fontWeight: 700, letterSpacing: "0.04em", marginBottom: "8%" }}>
-              <span aria-hidden="true">▶</span> {label}
-            </span>
-          )}
-          <p style={{ color: F.ink, fontFamily: SERIF, fontSize: "13px", lineHeight: 1.5 }}>{brief}</p>
-        </div>
-      </IPhoneMockup>
-    </div>
-  );
-}
-
-/* devices.css Apple Watch Ultra (MIT), scaled, with a "coming soon" badge */
-function Watch({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <div className={`flex flex-col items-center ${className}`} style={style}>
-      <div style={{ width: 100, height: 106 }}>
-        <div className="device device-apple-watch-ultra" style={{ transform: "scale(0.278)", transformOrigin: "top left" }}>
-          <div className="device-frame">
-            <div className="device-screen" style={{ display: "grid", placeItems: "center", alignContent: "center", gap: 18, background: "#0a0a0a" }}>
-              <span style={{ display: "grid", placeItems: "center", width: 96, height: 96, borderRadius: 24, background: F.marigold, color: F.onCta, fontFamily: SANS, fontWeight: 700, fontSize: 56 }}>g</span>
-              <span style={{ color: F.bone, fontFamily: SANS, fontWeight: 700, fontSize: 34, letterSpacing: 2 }}>9:41</span>
-            </div>
-          </div>
-          <div className="device-stripe"></div>
-          <div className="device-header"></div>
-          <div className="device-btns"></div>
-        </div>
-      </div>
-      {/* badge sits clearly BELOW the watch (was occluded by the device frame) */}
-      <span style={{ marginTop: 12, whiteSpace: "nowrap", borderRadius: 999, background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em", padding: "4px 10px", boxShadow: SHADOW.chip }}>
-        Apple Watch — coming soon
-      </span>
-    </div>
-  );
-}
-
-function Chip({ chip, className = "", style }: { chip: { kind: string; text?: string; k?: string; v?: string }; className?: string; style?: React.CSSProperties }) {
-  if (chip.kind === "money") {
-    return (
-      <div className={`absolute z-10 items-center gap-2 px-4 py-2.5 rounded-full ${className}`} style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.chip, ...style }}>
-        <span className="grid place-items-center w-5 h-5 rounded-full text-[11px]" style={{ background: "rgba(26,26,26,0.16)" }}>↓</span>
-        <span className="text-[14px] font-bold" style={{ fontFamily: SANS }}>{chip.text}</span>
-      </div>
-    );
-  }
-  return (
-    <div className={`absolute z-10 items-center gap-2 px-4 py-2.5 rounded-full ${className}`} style={{ background: F.charcoal, color: F.bone, boxShadow: SHADOW.chip, ...style }}>
-      <span className="text-[10px]" style={{ color: F.boneMuted, fontFamily: SANS }}>{chip.k}</span>
-      <span className="text-[14px] font-bold" style={{ color: F.marigold, fontFamily: SANS }}>{chip.v}</span>
-    </div>
-  );
-}
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
@@ -235,33 +182,36 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
-/* Hero device — a real screenshot (optimized WebP from public/screens/gallery)
-   in a plain rounded bezel, sized large to bleed (competitor scale, gy-k2543.10). */
-function HeroPhone({ slug, alt = "", theme, className = "", style }: { slug: string; alt?: string; theme: "light" | "dark"; className?: string; style?: React.CSSProperties }) {
-  const bezel = theme === "dark" ? "#000" : "#1a1a1a";
-  const base = `/screens/gallery/${slug}`;
-  return (
-    <div className={className} style={{ background: bezel, borderRadius: 56, padding: 12, boxShadow: "0 70px 120px -28px rgba(10,10,8,.55)", lineHeight: 0, ...style }}>
-      <div style={{ borderRadius: 44, overflow: "hidden", background: "#fff", aspectRatio: "1206 / 2622" }}>
-        <picture>
-          <source type="image/webp" srcSet={`${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`} sizes="(min-width: 1024px) 42vw, 86vw" />
-          <img src={`${base}.png`} alt={alt} decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "top center", display: "block" }} />
-        </picture>
-      </div>
-    </div>
-  );
-}
+/* Hero device art — Kaushik's three-iPhone MockupWorld mockup (founder-
+   verified free/open-source, gy-dfl55.14), NOT a hand-built CSS bezel. The
+   three "Change-This" screen apertures were extracted from the source SVG
+   (composing its nested transform groups for true coordinates — the raw
+   layer x/y report as 0,0), then hero-01/02/03 (dashboard / who-owes /
+   log-payment) were composited into them and the whole scene exported as
+   ONE flat raster (scripts/gy-7yhkh/build-hero.mjs) — the mockup's own
+   metal, reflections, shadows and fan arrangement ship as-is, per Kaushik's
+   direction not to reconstruct a finished asset in CSS (gy-7yhkh). Source:
+   review-artifacts/gy-dfl55.14/mockupworld-three-iphone-17-screens.svg,
+   supplied by Kaushik via Drive, downloaded 2026-08-11.
+   Exported bbox: 4800×3236 (cropped from the 6000×4500 canvas to content). */
+const HERO_PANEL_W = 4800;
+const HERO_PANEL_H = 3236;
+const HERO_PANEL_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
+const HERO_PANEL_PNG = "/mockups/hero-three-panel-1200.png";
 
-/* Floating Forge UI chip overlapping the hero device — seeded-positive only. */
-function HeroChip({ variant, className = "", style }: { variant: "logged" | "paid"; className?: string; style?: React.CSSProperties }) {
-  const paid = variant === "paid";
+function HeroThreePanel({ alt = "", className = "", style, sizes, priority = false }: { alt?: string; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
   return (
-    <div className={`absolute z-10 flex items-center gap-3 ${className}`} style={{ background: F.beigeCard, border: "1px solid var(--c-line)", borderRadius: 18, padding: "14px 18px", boxShadow: "0 24px 44px -16px rgba(10,10,8,.35)", ...style }}>
-      <span className="grid place-items-center shrink-0" style={{ width: 38, height: 38, borderRadius: 11, fontWeight: 800, fontSize: 18, background: paid ? F.amber : "#16a34a", color: paid ? "#1a1a1a" : "#fff", fontFamily: SANS }}>{paid ? "₹" : "✓"}</span>
-      <div>
-        <div style={{ fontFamily: SANS, fontWeight: 700, fontSize: 15, color: F.ink, lineHeight: 1.2 }}>{paid ? "₹12,000 received" : "Class logged"}</div>
-        <div style={{ fontFamily: SANS, fontSize: 12.5, color: F.inkMuted, marginTop: 2 }}>{paid ? "Balance updated" : "Aadesh · 1 tap"}</div>
-      </div>
+    <div className={className} style={{ lineHeight: 0, aspectRatio: `${HERO_PANEL_W} / ${HERO_PANEL_H}`, ...style }}>
+      <picture>
+        <source type="image/webp" srcSet={HERO_PANEL_SRCSET} sizes={sizes} />
+        <img
+          src={HERO_PANEL_PNG}
+          alt={alt}
+          decoding="async"
+          {...(priority ? { fetchpriority: "high" as const } : {})}
+          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+        />
+      </picture>
     </div>
   );
 }
@@ -269,7 +219,6 @@ function HeroChip({ variant, className = "", style }: { variant: "logged" | "pai
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -300,7 +249,7 @@ export default function App() {
   }, []);
 
   return (
-    <div style={{ background: F.beige, color: F.ink, fontFamily: SERIF, lineHeight: 1.5 }}>
+    <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>
@@ -313,9 +262,12 @@ export default function App() {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-2.5 focus-visible:outline-none" aria-label="Gymbo — back to top">
-          <span className="grid place-items-center w-[30px] h-[30px] rounded-[9px] font-bold text-[17px]" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>g</span>
-          <span className="text-[20px] font-bold tracking-[-0.01em]" style={{ fontFamily: SERIF }}>Gymbo</span>
+        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — back to top">
+          <img
+            src="/gymbo-mark-darkorange-9d3900.svg"
+            alt=""
+            className="h-[38px] w-[38px]"
+          />
         </button>
 
         <div className="hidden md:flex items-center gap-8">
@@ -331,16 +283,6 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}
-            aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
-            aria-pressed={theme === "dark"}
-            data-theme-toggle
-            className="grid place-items-center w-11 h-11 rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.95] focus-visible:outline-none focus-visible:ring-2"
-            style={{ background: F.beigeCard, color: F.ink, border: "1px solid var(--c-line)" }}
-          >
-            {theme === "light" ? <Moon size={17} strokeWidth={1.8} aria-hidden="true" /> : <Sun size={17} strokeWidth={1.8} aria-hidden="true" />}
-          </button>
           <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>
@@ -352,42 +294,40 @@ export default function App() {
         {/* Competitor-scale device (gy-k2543.10): copy column verbatim; device stage
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
-        <header className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 + off the top/right edges */}
-          <div aria-hidden="true" className={`hidden lg:block absolute inset-y-0 right-0 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(50vw, 820px)" }}>
-            <HeroPhone slug="schedule" theme={theme} className="absolute" style={{ width: "min(25vw, 360px)", top: 248, right: "min(30vw, 440px)", transform: "rotate(-6deg)", opacity: 0.96 }} />
-            <HeroPhone slug="hero-dashboard" theme={theme} className="absolute" style={{ width: "min(42vw, 600px)", top: -30, right: "-1.6vw" }} />
-            <HeroChip variant="logged" style={{ top: 150, right: "min(31vw, 452px)" }} />
-            <HeroChip variant="paid" style={{ top: 548, right: "min(24vw, 350px)" }} />
+        <header data-testid="hero-section" className="relative overflow-hidden" style={{ background: F.beige }}>
+          {/* desktop device stage — absolute to the section, bleeds past 1180 off the right
+              edge. The three-panel mockup is a single flat landscape image (not stacked
+              portrait phones), so it's vertically centered rather than stretched the full
+              header height. Floating "class logged" / "paid" chips removed (gy-dfl55.1 —
+              tags read as nonsense at this distance from the screens). */}
+          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
+            <HeroThreePanel style={{ width: "100%" }} sizes="(min-width: 1024px) min(46vw, 720px)" priority />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
-            <div className="max-w-[600px] lg:w-[52%]">
+            <div className="max-w-[600px] lg:w-[46%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>Private alpha · limited spots</Eyebrow>
+                <Eyebrow>In beta</Eyebrow>
               </div>
-              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.5, letterSpacing: "-0.022em" }}>
+              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
+                  <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
                   fitness business
-                  <span aria-hidden="true" className="absolute left-0 right-0 -z-0" style={{ bottom: "0.05em", height: "0.16em", background: F.amber, borderRadius: 2, opacity: 0.85 }} />
                 </span>{" "}
                 from your phone.
               </h1>
-              <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 300, lineHeight: 1.6, maxWidth: "46ch" }}>
+              <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
                 <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b> — built for independent trainers in India.
               </p>
               <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              <div className={`mt-4 ${prefersReduced ? "" : "hero-rise d5"}`}>
-                <RiskReversal />
-              </div>
-
-              {/* mobile / tablet device — below copy, ~86vw, chips hidden, bleeds off the bottom */}
-              <div className={`lg:hidden mt-12 -mb-16 md:-mb-24 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroPhone slug="hero-dashboard" alt="Gymbo — a client's punch card, 3 of 10 classes" theme={theme} style={{ width: "min(86vw, 380px)" }} />
+              {/* mobile / tablet device — below copy, chips hidden. Landscape three-panel
+                  art (not a tall single phone), so no bottom bleed needed. */}
+              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
+                <HeroThreePanel alt="Gymbo — dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
               </div>
             </div>
           </div>
@@ -398,7 +338,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
             <Reveal>
               <Eyebrow>Why trainers use Gymbo</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, maxWidth: "18ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
                 Everything the back office of your business needs.
               </h2>
             </Reveal>
@@ -408,40 +348,40 @@ export default function App() {
             const dark = p.dark;
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
-                <div className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                   <Reveal>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
                     </span>
-                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.5, color: dark ? F.bone : F.ink }}>
+                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: dark ? F.bone : F.ink }}>
                       {p.title}
                     </h3>
-                    <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 300, lineHeight: 1.6, maxWidth: "44ch" }}>
+                    <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "44ch" }}>
                       {p.intro}
                     </p>
                     <ul className="flex flex-col gap-3">
-                      {p.bullets.map((b) => (
-                        <li key={b} className="flex items-start gap-3">
-                          <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
-                            <Check size={13} strokeWidth={2.5} />
-                          </span>
-                          <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>{b}</span>
-                        </li>
-                      ))}
+                      {p.bullets.map((b) => {
+                        const bullet = typeof b === "string" ? { text: b, soon: false } : b;
+                        return (
+                          <li key={bullet.text} className="flex items-start gap-3">
+                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
+                              <Check size={13} strokeWidth={2.5} />
+                            </span>
+                            <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
+                              {bullet.text}
+                              {bullet.soon && (
+                                <span
+                                  className="ml-2 rounded-full font-bold align-middle"
+                                  style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
+                                >
+                                  coming soon
+                                </span>
+                              )}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
-                    {p.comingSoon && (
-                      <div className="mt-6 flex items-start gap-2.5">
-                        <span
-                          className="shrink-0 rounded-full font-bold mt-0.5"
-                          style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
-                        >
-                          Soon
-                        </span>
-                        <span className="text-[13px] md:text-[14px]" style={{ color: dark ? F.boneMuted : F.inkMuted, fontFamily: SANS, lineHeight: 1.5 }}>
-                          {p.comingSoon.replace(/^Coming soon:\s*/, "")}
-                        </span>
-                      </div>
-                    )}
                   </Reveal>
 
                   <Reveal className="relative flex items-center justify-center" >
@@ -449,12 +389,10 @@ export default function App() {
                       <DemoFrame
                         clip={demoClip(p.demoId)}
                         poster={demoPoster(p.demoId)}
-                        theme={theme}
+                        theme={dark ? "dark" : "light"}
                         label={`${p.title} — demo`}
                         maxWidth={300}
-                        comingSoon={p.id === "organized" ? "Travel-aware · soon" : p.id === "workouts" ? "AI navigate · soon" : undefined}
                       />
-                      <Chip chip={p.chip} className="inline-flex" style={i % 2 === 1 ? { bottom: "12%", left: "-4%" } : { top: "12%", right: "-4%" }} />
                     </div>
                   </Reveal>
                 </div>
@@ -466,29 +404,28 @@ export default function App() {
         </section>
 
         {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
-        <section aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
+        <section data-testid="gallery-section" aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>A closer look</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 See Gymbo in action.
               </h2>
             </Reveal>
 
-            <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 gap-y-14 gap-x-6 md:gap-x-12 justify-items-center">
+            <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
               {SCREENS.map((s) => (
-                <Reveal key={s.slug} className="flex flex-col items-center">
+                <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
                   <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
-                </Reveal>
+                </div>
               ))}
             </div>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <PrimaryCTA dark size="lg" />
-              <RiskReversal dark />
             </Reveal>
           </div>
         </section>
@@ -498,35 +435,19 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.5 }}>
-                Made for independent fitness trainers in India.
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
+                We're early — and built for trainers like you.
               </h2>
-              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkMuted, fontFamily: SANS, maxWidth: "40ch" }}>
-                Log classes, track revenue, look professional.
+              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
+                Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
               </p>
             </Reveal>
-
-            {/* metric tiles HIDDEN until real launch figures exist — were literal "xxx" on prod (marketer QA gy-dhcj1; spec: build empty slots, fill post-launch). Re-enable by populating METRICS and uncommenting.
-            <div className="mt-10 grid grid-cols-3 gap-3 md:gap-6">
-              {METRICS.map((m) => (
-                <Reveal key={m.label}>
-                  <div className="h-full flex flex-col items-center justify-center text-center px-3 py-6 md:py-8 rounded-[16px]" style={{ background: F.beigeCard }}>
-                    <span className="font-black" style={{ fontFamily: SERIF, color: F.amberText, fontSize: "clamp(22px,4vw,40px)", letterSpacing: "-0.02em" }}>{m.value}</span>
-                    <span className="mt-1 text-[12px] md:text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS }}>{m.label}</span>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-            <Reveal className="text-center mt-3">
-              <p className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Placeholder — real figures at launch.</p>
-            </Reveal>
-            */}
 
             {/* testimonials */}
             <div className="mt-12 grid md:grid-cols-2 gap-6">
               <Reveal>
-                <figure className="h-full flex flex-col p-7 md:p-8 rounded-[20px]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
-                  <blockquote className="text-[17px] md:text-[19px] italic" style={{ fontFamily: SERIF, lineHeight: 1.55, color: F.ink }}>
+                <figure className="h-full flex flex-col p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
+                  <blockquote className="text-[15px] md:text-[17px] italic" style={{ fontFamily: SERIF, lineHeight: 1.75, color: F.ink }}>
                     “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
                   </blockquote>
                   <figcaption className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
@@ -539,24 +460,24 @@ export default function App() {
                 </figure>
               </Reveal>
               <Reveal>
-                <div className="h-full flex flex-col items-center justify-center text-center p-7 md:p-8 rounded-[20px]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
-                  <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold mb-4" style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
-                  <p className="text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More alpha trainers are coming on board across India.</p>
+                <div className="h-full flex flex-col items-center justify-center text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
+                  <span className={`grid place-items-center w-12 h-12 rounded-full text-[16px] font-bold mb-4 ${prefersReduced ? "" : "waiting-pulse"}`} style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
+                  <p className="text-[15px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
                 </div>
               </Reveal>
             </div>
 
             <div className="mt-10 grid sm:grid-cols-2 gap-4">
               <Reveal>
-                <div className="p-6 rounded-[16px]" style={{ background: F.beigeCard }}>
+                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Your client data is yours</h4>
-                  <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
+                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
                 </div>
               </Reveal>
               <Reveal>
-                <div className="p-6 rounded-[16px]" style={{ background: F.beigeCard }}>
+                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Why we built Gymbo</h4>
-                  <p className="text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
+                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
                 </div>
               </Reveal>
             </div>
@@ -564,11 +485,11 @@ export default function App() {
         </section>
 
         {/* ───────── pricing ───────── */}
-        <section id="pricing" aria-label="Pricing" style={{ background: F.charcoal }}>
+        <section id="pricing" data-testid="pricing-section" aria-label="Pricing" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "20ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
                 Less than one missed session.
               </h2>
             </Reveal>
@@ -578,11 +499,11 @@ export default function App() {
                 const hi = plan.highlight;
                 return (
                   <Reveal key={plan.name} className="flex">
-                    <div className="flex flex-col w-full p-7 md:p-8 rounded-[20px]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
+                    <div className="flex flex-col w-full p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
                       <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
-                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.5 }}>{plan.name}</h3>
+                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
                       <div className="flex items-baseline gap-1.5 mb-1">
                         <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
                         <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span>
@@ -618,7 +539,7 @@ export default function App() {
           <div className="max-w-[800px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center mb-10">
               <Eyebrow>Questions</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "16ch" }}>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "16ch" }}>
                 Everything you might ask.
               </h2>
             </Reveal>
@@ -646,11 +567,11 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Private alpha · limited spots</Eyebrow>
-              <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "16ch" }}>
+              <Eyebrow dark>In beta</Eyebrow>
+              <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
@@ -666,17 +587,14 @@ export default function App() {
                 </svg>
                 Talk to the founder
               </a>
-              <RiskReversal dark />
             </Reveal>
 
-            {/* Apple Watch coming-soon teaser (relocated out of the hero) */}
+            {/* Apple Watch coming-soon teaser (relocated out of the hero) — plain text only,
+                the devices.css mockup below it was removed (gy-5hw2m): it rendered as a generic
+                smartwatch shape carrying the Gymbo "g" mark, not an Apple Watch icon/logo, which
+                read as broken/off-brand rather than communicating "Apple Watch". */}
             <Reveal className="mt-12 flex flex-col items-center gap-4">
-              <Watch />
-              <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
-                {["iPhone — coming soon", "Android — coming soon"].map((b) => (
-                  <span key={b} className="text-[12px] px-4 py-2 rounded-full" style={{ background: "rgba(240,240,235,0.05)", border: "1px solid rgba(240,240,235,0.1)", color: F.boneLabel, fontFamily: SANS }}>{b}</span>
-                ))}
-              </div>
+              <span className="text-[12px] px-4 py-2 rounded-full" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontWeight: 700, letterSpacing: "0.04em" }}>Apple Watch — coming soon</span>
             </Reveal>
           </div>
         </section>
@@ -719,30 +637,93 @@ export default function App() {
   );
 }
 
-/* ── brand-touchpoints carousel (under the "Your brand" pillar) ── */
+/* ── brand-touchpoints section (under the "Your brand" pillar) ──
+   TEMPORARY (gy-cgfm8): the BriefFrame placeholder-screenshot cards ("Here
+   we'll show…") are gone — Kaushik doesn't want to wait for real artwork.
+   Reduced to a plain bullet list until there's real screenshots/footage to
+   show per touchpoint. Do not treat this bullet layout as the final design.
+
+   gy-dfl55.5: shipped and coming-soon touchpoints are split into two
+   visually distinct groups — prominent opaque cards for what's live,
+   a subdued tighter grid below for what's not — so the grouping itself
+   (not just the per-card badge) signals status at a glance. */
 function BrandTouchpoints() {
+  const shipped = TOUCHPOINTS.filter((t) => !t.soon);
+  const soon = TOUCHPOINTS.filter((t) => t.soon);
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
+      <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
         <Reveal className="text-center mb-8">
-          <span className="block text-[13px] font-bold mb-2" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
-          <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "24ch" }}>
-            Your brand, everywhere — here now, more coming.
+          <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
+          <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
+            Your brand, everywhere.
           </h3>
         </Reveal>
-        <div className="carousel flex gap-5 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" tabIndex={0} role="region" aria-label="Brand touchpoints">
-          {TOUCHPOINTS.map((t) => (
-            <div key={t.name} className="relative snap-center shrink-0 w-[70vw] sm:w-[48vw] md:w-[260px] flex flex-col items-center text-center p-5 rounded-[20px]" style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)" }}>
-              {t.soon && (
-                <span className="absolute top-3 right-3 z-10 rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
-              )}
-              <div style={t.soon ? { opacity: 0.6 } : undefined}>
-                <BriefFrame brief={t.desc} label="" screenWidth={150} />
+
+        <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
+          {shipped.map((t) => (
+            <li
+              key={t.name}
+              className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
+              /* gy-dfl55.10: softened gradient-border treatment. All `shipped` cards
+                 are non-soon (soon cards moved to their own block below, gy-dfl55.5),
+                 so no soon-branch is needed here anymore. */
+              style={{
+                border: "1px solid transparent",
+                backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+              }}
+            >
+              <span aria-hidden="true" className="grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+                <t.icon size={16} strokeWidth={2} />
+              </span>
+              <div className="text-left">
+                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
+                <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
               </div>
-              <h4 className="mt-5 text-[16px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</h4>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        <Reveal className="mt-9">
+          <span className="block text-center text-[11px] font-bold mb-3" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Coming soon
+          </span>
+          <ul className="mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" style={{ maxWidth: "820px" }}>
+            {soon.map((t) => (
+              <li
+                key={t.name}
+                className="rounded-[var(--g-radius-lg)] p-3"
+                /* gy-dfl55.8: fade the CHROME (bg/border alpha) by 40% to read as
+                   disabled, not the outer `opacity` shorthand — that also fades the
+                   text below the 4.5:1 AA floor. Text below stays full-opacity. */
+                style={{ background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }}
+              >
+                <span className="block text-[13px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
+                  {t.name}
+                  {/* Outline, not fill (Kaushik, gy-dfl55.7) */}
+                  <span
+                    className="ml-2 align-middle font-bold"
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${F.marigold}`,
+                      color: F.marigold,
+                      fontFamily: SANS,
+                      fontSize: "9px",
+                      letterSpacing: "0.02em",
+                      padding: "2px 8px",
+                      borderRadius: RADIUS.full,
+                    }}
+                  >
+                    Coming soon
+                  </span>
+                </span>
+                <span className="block mt-1 text-[12px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
       </div>
     </div>
   );

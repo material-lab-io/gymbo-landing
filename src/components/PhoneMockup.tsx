@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { IPhoneMockup } from "react-device-mockup";
+import { SHADOW } from "../forge-ui";
 
 /* ============================================================================
    DemoFrame — a real, pre-composed Swift app-demo clip (Wave 2). Each clip is a
@@ -12,21 +12,37 @@ import { IPhoneMockup } from "react-device-mockup";
    prefers-reduced-motion → static poster (no autoplay).
    ============================================================================ */
 
-const SANS = "var(--font-sans)";
-
 export type ThemeName = "light" | "dark";
 export interface ClipMap {
   light: string;
   dark: string;
 }
 
+/* Single-device frame geometry — the front/center phone cut out of Kaushik's
+   MockupWorld three-iPhone mockup (gy-dfl55.14; same source as the hero's
+   HeroThreePanel in App.tsx), with its "Change-This" screen aperture punched
+   to a transparent hole (scripts/gy-7yhkh/build-hero.mjs → buildSingleFrame).
+   Frame canvas 1538×3191; aperture at (60,51)-(1477,3139) within it. */
+const FRAME_W = 1538;
+const FRAME_H = 3191;
+const HOLE = { x: 60, y: 51, w: 1417, h: 3088 };
+const HOLE_PCT = {
+  left: (HOLE.x / FRAME_W) * 100,
+  top: (HOLE.y / FRAME_H) * 100,
+  width: (HOLE.w / FRAME_W) * 100,
+  height: (HOLE.h / FRAME_H) * 100,
+};
+const FRAME_SRC = "/mockups/iphone-frame-single.png";
+const FRAME_SRCSET = "/mockups/iphone-frame-single-520.webp 520w, /mockups/iphone-frame-single-720.webp 720w, /mockups/iphone-frame-single-1080.webp 1080w";
+
 /* ============================================================================
    ScreenshotFrame — a current real-app screenshot (founder-approved curated set,
-   public/screens/gallery/) composited inside a consistent iPhone-15 device frame
-   (react-device-mockup, dynamic island). Used by the "See Gymbo in action" static
-   gallery. Perf: WebP srcset + PNG fallback via <picture>, native lazy-load +
-   async decode. The screenshots are light-mode captures, so the light screen pops
-   against the charcoal section while the dark bezel reads as a subtle device edge.
+   public/screens/gallery/) composited inside Kaushik's photoreal iPhone frame
+   (replaces react-device-mockup — never a hand-built device, gy-7yhkh). Used by
+   the "See Gymbo in action" static gallery. Perf: WebP srcset + PNG fallback via
+   <picture>, native lazy-load + async decode. The screenshots are light-mode
+   captures, so the light screen pops against the charcoal section while the
+   dark bezel reads as a subtle device edge.
    ============================================================================ */
 export function ScreenshotFrame({
   slug,
@@ -44,16 +60,26 @@ export function ScreenshotFrame({
   style?: React.CSSProperties;
 }) {
   const base = `/screens/gallery/${slug}`;
+  const frameWidth = Math.round(screenWidth / (HOLE_PCT.width / 100));
   return (
     <div
       className={className}
-      style={{ filter: "drop-shadow(0 24px 48px rgba(0,0,0,.45)) drop-shadow(0 6px 14px rgba(0,0,0,.3))", lineHeight: 0, ...style }}
+      style={{ position: "relative", filter: SHADOW.elevation4Filter, lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, width: frameWidth, ...style }}
     >
-      <IPhoneMockup screenWidth={screenWidth} screenType="island" frameColor="#1a1a1a" hideStatusBar hideNavBar>
+      <div
+        style={{
+          position: "absolute",
+          left: `${HOLE_PCT.left}%`,
+          top: `${HOLE_PCT.top}%`,
+          width: `${HOLE_PCT.width}%`,
+          height: `${HOLE_PCT.height}%`,
+          overflow: "hidden",
+        }}
+      >
         <picture>
           <source
             type="image/webp"
-            srcSet={`${base}-360.webp 360w, ${base}-540.webp 540w, ${base}-720.webp 720w`}
+            srcSet={`${base}-360.webp 360w, ${base}-540.webp 540w, ${base}-720.webp 720w, ${base}-1080.webp 1080w`}
             sizes={`${screenWidth}px`}
           />
           <img
@@ -64,7 +90,17 @@ export function ScreenshotFrame({
             style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           />
         </picture>
-      </IPhoneMockup>
+      </div>
+      <picture>
+        <source type="image/webp" srcSet={FRAME_SRCSET} sizes={`${frameWidth}px`} />
+        <img
+          src={FRAME_SRC}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block", pointerEvents: "none" }}
+        />
+      </picture>
     </div>
   );
 }
@@ -75,7 +111,6 @@ export function DemoFrame({
   theme,
   maxWidth = 300,
   label,
-  comingSoon,
   className = "",
   style,
 }: {
@@ -85,8 +120,6 @@ export function DemoFrame({
   /** max rendered width in px (clips are 9:16 portrait) */
   maxWidth?: number;
   label?: string;
-  /** optional "coming soon" overlay tag */
-  comingSoon?: string;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -150,31 +183,6 @@ export function DemoFrame({
           </video>
         ) : (
           <img src={posterSrc} alt={label || ""} loading="lazy" style={{ width: "100%", height: "auto", display: "block" }} />
-        )}
-
-        {comingSoon && (
-          <span
-            data-coming-soon
-            style={{
-              position: "absolute",
-              top: "6%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              zIndex: 5,
-              whiteSpace: "nowrap",
-              borderRadius: 999,
-              background: "#f59e0b",
-              color: "#1a1a1a",
-              fontFamily: SANS,
-              fontSize: "10px",
-              fontWeight: 700,
-              letterSpacing: "0.04em",
-              padding: "4px 10px",
-              boxShadow: "0 1px 2px rgba(0,0,0,.1), 0 8px 24px -6px rgba(0,0,0,.18)",
-            }}
-          >
-            {comingSoon}
-          </span>
         )}
       </div>
     </div>
