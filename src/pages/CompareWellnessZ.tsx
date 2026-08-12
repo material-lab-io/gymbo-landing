@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, useTheme } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -53,7 +53,6 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 
 export function CompareWellnessZ() {
   const prefersReduced = useReducedMotion();
-  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -92,7 +91,7 @@ export function CompareWellnessZ() {
       >
         <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
           <img
-            src={theme === "dark" ? "/gymbo-mark-amber-ff9800.svg" : "/gymbo-mark-darkorange-9d3900.svg"}
+            src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
             className="h-[38px] w-[38px]"
           />
