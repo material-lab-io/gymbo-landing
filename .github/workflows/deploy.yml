@@ -21,6 +21,11 @@ jobs:
 
       - run: npm run build
 
+      - name: Vendored contract freshness (gy-csrt8.1, G4 AC2)
+        run: bash scripts/assert-contract-fresh.sh product-contract.json
+        env:
+          GYMBO_V1_PAT: ${{ secrets.GYMBO_V1_PAT }}
+
       - name: Install Chromium (smoke-gate console check)
         run: npx playwright install --with-deps chromium
 

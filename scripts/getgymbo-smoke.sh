@@ -51,6 +51,41 @@ for p in privacy terms; do
   [ "$c" = "200" ] && log "OK   /$p 200" || fail "/$p HTTP $c"
 done
 
+# --- 4. product-contract.json consistency (gy-csrt8.1, G4 AC2) ---
+# Deterministic string/JSON match only, against the VENDORED contract file (no
+# live-fetch here — that's assert-contract-fresh.sh's job, run as a separate CI
+# step). Contract drift between gymbo-landing and Gymbo-v1 fails loudly there.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTRACT="${CONTRACT:-$SCRIPT_DIR/../product-contract.json}"
+if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
+  MONTHLY="$(jq -r '.pricing.monthly_inr' "$CONTRACT")"
+  ANNUAL_DISPLAY="$(jq -r '.pricing.annual_inr_display' "$CONTRACT")"
+  SAVINGS="$(jq -r '.pricing.annual_savings_percent' "$CONTRACT")"
+
+  grep -qF "$MONTHLY" "$HOME_FILE" && log "OK   contract: monthly price ($MONTHLY) present" || fail "contract: monthly price ($MONTHLY) missing from rendered site"
+  grep -qF "$ANNUAL_DISPLAY" "$HOME_FILE" && log "OK   contract: annual price display ($ANNUAL_DISPLAY) present" || fail "contract: annual price display ($ANNUAL_DISPLAY) missing from rendered site"
+  grep -qF "${SAVINGS}%" "$HOME_FILE" && log "OK   contract: annual savings (${SAVINGS}%) present" || fail "contract: annual savings (${SAVINGS}%) missing from rendered site"
+
+  # Anthropic sub-processor disclosure (gy-lucuj) — WARN ONLY, not a hard gate yet.
+  # gy-lucuj (site copy omits "today's session client names") is still BLOCKED on a
+  # compliance/PM ruling; hard-failing here would red-block every landing deploy on
+  # an unrelated bug. Flip this to `fail` once gy-lucuj's copy fix lands (see bead
+  # gy-csrt8.1 comments for the ruling).
+  ANTHROPIC_ITEM="$(jq -r '.sub_processors[] | select(.name=="Anthropic") | .data_sent[] | select(. == "today'"'"'s session client names")' "$CONTRACT")"
+  if [ -n "$ANTHROPIC_ITEM" ]; then
+    PRIVACY_FILE="$(mktemp)"
+    curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
+    if grep -qiF "today's session client names" "$PRIVACY_FILE" || grep -qiF "today’s session client names" "$PRIVACY_FILE"; then
+      log "OK   contract: Anthropic disclosure includes 'today's session client names'"
+    else
+      log "WARN contract: /privacy does not yet disclose 'today's session client names' (tracked as gy-lucuj, not gating deploys)"
+    fi
+    rm -f "$PRIVACY_FILE"
+  fi
+else
+  log "WARN product-contract.json or jq unavailable — skipping contract assertions"
+fi
+
 echo "=== getgymbo smoke ($URL) ==="
 echo "$OUT"
 if [ "$FAIL" = "1" ]; then echo "RESULT: FAIL (gate would block deploy)"; exit 1; else echo "RESULT: PASS"; exit 0; fi

@@ -1,0 +1,45 @@
+{
+  "_comment": "gy-csrt8 (G4): single source of truth for facts that must agree across Gymbo-v1 (app) and gymbo-landing (site). Owned by Gymbo-v1. Every value is a plain string or list of strings so gates can do deterministic string/JSON matching only — no schema library, no flake (AC4). Not all fields are gated yet — see 'gated' below.",
+  "pricing": {
+    "monthly_inr": "399",
+    "annual_inr": "2999",
+    "annual_inr_display": "2,999",
+    "annual_savings_percent": "37"
+  },
+  "sub_processors": [
+    {
+      "name": "Anthropic",
+      "purpose": "AI chat assistant + note parsing",
+      "region": "US",
+      "data_sent": [
+        "question",
+        "top-5 balances",
+        "today's session client names",
+        "note text"
+      ],
+      "excludes": ["client phone numbers", "client notes (chat, non-parse-notes calls)", "full client roster"]
+    },
+    {
+      "name": "Groq",
+      "purpose": "voice input transcription (Whisper STT)",
+      "region": "US",
+      "data_sent": ["voice/mic audio"]
+    },
+    {
+      "name": "PostHog",
+      "purpose": "product analytics",
+      "region": "EU",
+      "data_sent": ["trainer name", "trainer phone"],
+      "excludes": ["trainee/client data"]
+    }
+  ],
+  "gated": {
+    "pricing": "AC2 (gymbo-landing) + AC3 (Gymbo-v1, this PR)",
+    "sub_processors": "AC2 (gymbo-landing) + AC3 (Gymbo-v1, this PR) — closes gy-lucuj"
+  },
+  "not_yet_populated": {
+    "features": "here_now / coming_soon lists — needs marketer's already-built round-4 feature-box content as the rendered ground truth; filing separately rather than guessing (gy-csrt8 follow-up)",
+    "links": "App Store / TestFlight URLs — not present anywhere in this repo; needs the live URLs from whoever holds App Store Connect access",
+    "brand": "wordmark asset + colourway rule — depends on gy-c571s (brand mark single-source-of-truth), which is still open"
+  }
+}
