@@ -28,6 +28,21 @@ done
 # OG tags present (share previews)
 grep -qiE 'property="og:title"' "$HOME_FILE" && log "OK   og:title present" || fail "og:title missing"
 
+# --- 1b. Light-only theme invariant (PM scope addition, gy-ruxbj, 2026-08-12) ---
+# Kaushik was served a dark site with no escape (gy-31moh removed the toggle
+# but a runtime theme-flip script was still reading localStorage). Ruling:
+# LIGHT ONLY, dark removed entirely (gy-uesmd). This is a STATIC regression
+# guard on the served HTML — it cannot see a post-hydration localStorage
+# flip (that needs a browser; see console-check.mjs's dark-seed check for
+# the assertion that covers gy-31moh's exact failure mode), but it does
+# catch the theme ever shipping dark by default again.
+grep -qiE 'theme-color["'"'"'][^>]*content="#FAFAF[0-9A-F]"' "$HOME_FILE" \
+  && log "OK   theme-color meta is light (#FAFAFx family)" \
+  || fail "theme-color meta missing or not light — dark-by-default regression?"
+grep -qiE 'data-theme="dark"' "$HOME_FILE" \
+  && fail "raw HTML ships data-theme=\"dark\" — light-only invariant (gy-uesmd) broken" \
+  || log "OK   no data-theme=\"dark\" baked into served HTML"
+
 # --- 2. robots.txt regression (the CF managed-robots AI-bot block must NOT reappear) ---
 ROBOTS_FILE="$(mktemp)"
 curl -sL --compressed --max-time 15 -o "$ROBOTS_FILE" "$URL/robots.txt" 2>/dev/null

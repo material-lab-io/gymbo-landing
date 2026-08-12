@@ -1,0 +1,183 @@
+name: Gate Self-Test (negative controls)
+
+# gy-ruxbj (G3 of gy-gtyxh): "a gate never seen to fail is not a gate."
+# getgymbo-smoke.sh, console-check.mjs, and check-screenshot-freshness.mjs
+# have blocked deploys since they were written, but were never proven to
+# actually fail on bad input — only the visual-baseline diff has ever gone
+# red. This workflow feeds each gate a fixture that VIOLATES its rule and
+# fails the job if the gate PASSES anyway (inverted exit code). Fixtures are
+# served from a temp dir via a throwaway local HTTP server — production is
+# never touched (AC3).
+#
+# If a future gate is added to deploy.yml without a matching negative
+# control here, that is incomplete work and must be called out in the PR
+# description (AC4).
+
+on:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - ".github/workflows/**"
+  schedule:
+    - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  negative-controls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium (console-check negative controls)
+        run: npx playwright install --with-deps chromium
+
+      - name: Sanity — the GOOD fixture must PASS both curl gates
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" good
+          python3 -m http.server 8901 --directory "$FIX" &
+          SRV=$!
+          sleep 1
+          trap 'kill $SRV 2>/dev/null || true' EXIT
+          if ! CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8901; then
+            echo "::error::getgymbo-smoke.sh FAILED on the well-formed baseline fixture — a fixture bug, not a real regression. Fix the fixture before trusting any negative control below."
+            exit 1
+          fi
+          echo "OK: baseline fixture passes cleanly (negative controls below are meaningful)."
+
+      - name: Negative control — getgymbo-smoke.sh must FAIL on missing <title>
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" no-title
+          python3 -m http.server 8902 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8902; then
+            echo "::error::getgymbo-smoke.sh PASSED on a fixture with no <title> — the gate is not wired."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed on a missing <title>."
+
+      - name: Negative control — getgymbo-smoke.sh must FAIL on missing pricing (₹399)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" missing-pricing
+          python3 -m http.server 8903 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8903; then
+            echo "::error::getgymbo-smoke.sh PASSED on a fixture missing ₹399 — the gate is not wired."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed on missing ₹399."
+
+      - name: Negative control — getgymbo-smoke.sh must FAIL when ClaudeBot is Disallowed
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" robots-disallow-claudebot
+          python3 -m http.server 8904 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8904; then
+            echo "::error::getgymbo-smoke.sh PASSED on a robots.txt that Disallows ClaudeBot — the AI-crawler regression gate is not wired."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed on a ClaudeBot Disallow."
+
+      - name: Negative control — getgymbo-smoke.sh must FAIL on a contract/site price mismatch
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" good
+          BAD_CONTRACT="$FIX/bad-product-contract.json"
+          cat > "$BAD_CONTRACT" <<'JSON'
+          { "pricing": { "monthly_inr": "999", "annual_inr_display": "9,999", "annual_savings_percent": "12" } }
+          JSON
+          python3 -m http.server 8905 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT="$BAD_CONTRACT" bash scripts/getgymbo-smoke.sh http://127.0.0.1:8905; then
+            echo "::error::getgymbo-smoke.sh PASSED against a contract that doesn't match the rendered price — G4's contract assertion is not wired."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed on a contract/site price mismatch."
+
+      - name: Negative control — theme invariant must FAIL if dark-mode leaks back in (data-theme, static)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" dark-theme-leak
+          # Force the static assertion by shipping data-theme="dark" in the raw HTML too.
+          sed -i 's/<body>/<body data-theme="dark">/' "$FIX/index.html"
+          cp "$FIX/index.html" "$FIX/privacy"
+          cp "$FIX/index.html" "$FIX/terms"
+          python3 -m http.server 8906 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8906; then
+            echo "::error::getgymbo-smoke.sh PASSED on HTML shipping data-theme=\"dark\" — the light-only static gate (gy-uesmd regression) is not wired."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed on baked-in data-theme=dark."
+
+      - name: Negative control — console-check.mjs must FAIL when a page throws a JS error
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" js-error
+          python3 -m http.server 8907 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if node scripts/console-check.mjs http://127.0.0.1:8907; then
+            echo "::error::console-check.mjs PASSED on a page that throws a JS error — the console-error gate is not wired."
+            exit 1
+          fi
+          echo "OK: console-check.mjs correctly failed on a page that throws."
+
+      - name: Negative control — console-check.mjs must FAIL when dark leaks back in under a seeded localStorage
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" dark-theme-leak
+          python3 -m http.server 8908 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if node scripts/console-check.mjs http://127.0.0.1:8908; then
+            echo "::error::console-check.mjs PASSED on a fixture that flips dark under localStorage theme=dark — the dark-seed invariant (the incident that actually shipped) is not wired."
+            exit 1
+          fi
+          echo "OK: console-check.mjs correctly failed under a seeded-dark localStorage."
+
+      - name: Negative control — check-screenshot-freshness.mjs must FAIL on a stale/missing manifest entry
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/scripts" "$FIX/public/screens"
+          cp scripts/check-screenshot-freshness.mjs "$FIX/scripts/"
+          cp scripts/screens-map.mjs "$FIX/scripts/"
+          # One entry present-but-stale (400d old, past the 21d default), the
+          # rest of the SCREENS set entirely missing from the manifest.
+          cat > "$FIX/public/screens/manifest.json" <<'JSON'
+          {
+            "maxAgeDays": 21,
+            "entries": {
+              "hero-01-dashboard-clean.png": {
+                "capturedAt": "2025-07-01T00:00:00+05:30",
+                "verified": true
+              }
+            }
+          }
+          JSON
+          cd "$FIX"
+          if node scripts/check-screenshot-freshness.mjs; then
+            echo "::error::check-screenshot-freshness.mjs PASSED on a stale/missing manifest — the staleness gate (gy-a73px.15) is not wired."
+            exit 1
+          fi
+          echo "OK: check-screenshot-freshness.mjs correctly failed on a stale/missing manifest."
+
+      - name: All negative controls fired correctly
+        run: echo "Every gate above correctly rejected a fixture that violates its rule."
