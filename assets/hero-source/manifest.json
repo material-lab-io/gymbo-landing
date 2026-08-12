@@ -1,0 +1,101 @@
+[
+  {
+    "file": "01__1_shadow.png",
+    "group": "_1",
+    "kind": "shadow",
+    "abs": [
+      189.0,
+      3612.0,
+      2959.0,
+      387.0
+    ]
+  },
+  {
+    "file": "02__1_iPhone-17.png",
+    "group": "_1",
+    "kind": "iPhone-17",
+    "abs": [
+      1123.0,
+      773.0,
+      1307.0,
+      3116.0
+    ]
+  },
+  {
+    "file": "03__1_Change-This.png",
+    "group": "_1",
+    "kind": "Change-This",
+    "abs": [
+      1243.0,
+      814.0,
+      1156.0,
+      3032.0
+    ]
+  },
+  {
+    "file": "04__3_shadow.png",
+    "group": "_3",
+    "kind": "shadow",
+    "abs": [
+      2884.0,
+      3558.0,
+      2789.0,
+      519.0
+    ]
+  },
+  {
+    "file": "05__3_iPhone-17.png",
+    "group": "_3",
+    "kind": "iPhone-17",
+    "abs": [
+      3570.0,
+      772.0,
+      1310.0,
+      3120.0
+    ]
+  },
+  {
+    "file": "06__3_Change-This.png",
+    "group": "_3",
+    "kind": "Change-This",
+    "abs": [
+      3602.0,
+      813.0,
+      1159.0,
+      3036.0
+    ]
+  },
+  {
+    "file": "07__2_shadow.png",
+    "group": "_2",
+    "kind": "shadow",
+    "abs": [
+      1390.0,
+      3631.0,
+      3299.0,
+      315.0
+    ]
+  },
+  {
+    "file": "08__2_iPhone-17.png",
+    "group": "_2",
+    "kind": "iPhone-17",
+    "abs": [
+      2231.0,
+      730.0,
+      1538.0,
+      3191.0
+    ]
+  },
+  {
+    "file": "09__2_Change-This.png",
+    "group": "_2",
+    "kind": "Change-This",
+    "abs": [
+      2291.0,
+      781.0,
+      1417.0,
+      3088.0
+    ]
+  }
+]
