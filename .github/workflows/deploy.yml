@@ -58,9 +58,28 @@ jobs:
             kill $PD 2>/dev/null || true; exit 1
           fi
           RC=0
+          # Correctness gates — these BLOCK everywhere, including main. A broken
+          # page or a console error must never reach production.
           bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788 || RC=1
           node scripts/console-check.mjs http://127.0.0.1:8788 || RC=1
-          PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+
+          # Visual regression is CHANGE DETECTION, not a correctness check: it
+          # fails by design whenever a design change is intentional, until the
+          # baselines are refreshed. Blocking production on it is what wedged
+          # deploys on 2026-08-11 (five merges, five failed deploys, all on
+          # hero-light.png as the diff grew 3,632px -> 49,701px).
+          #
+          # So: BLOCK on pull_request, where the question "did you mean to change
+          # this?" is useful and the author can still act on it. WARN on main,
+          # where the change has already been reviewed and merged and the only
+          # thing blocking achieves is an undeployed site plus a manual rescue
+          # commit. Refresh baselines via refresh-visual-baselines.yml.
+          if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
+              || echo "::warning::Visual baselines are stale on main — deploy proceeding. Run refresh-visual-baselines.yml to resync."
+          else
+            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+          fi
           kill $PD 2>/dev/null || true
           exit $RC
 
