@@ -1,7 +1,7 @@
-import { F, SHADOW, SERIF, SANS, useTheme, ForgeStyle } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, ForgeStyle } from "../forge-ui";
 
 /* ============================================================================
-   PageShell — shared chrome (nav + footer + theme) for standalone content pages
+   PageShell — shared chrome (nav + footer) for standalone content pages
    (privacy, terms, blog). Cross-page nav links point back to the homepage
    anchors. Keeps these pages visually identical to the rest of getgymbo.com
    without re-duplicating the header/footer markup.
@@ -40,7 +40,6 @@ function FooterNav() {
 }
 
 export function PageShell({ children }: { children: React.ReactNode }) {
-  const { theme } = useTheme();
   return (
     <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
@@ -56,7 +55,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
       >
         <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
           <img
-            src={theme === "dark" ? "/gymbo-mark-amber-ff9800.svg" : "/gymbo-mark-darkorange-9d3900.svg"}
+            src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
             className="h-[38px] w-[38px]"
           />
