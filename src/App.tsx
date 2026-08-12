@@ -1,10 +1,24 @@
-import { useEffect, useState } from "react";
-import { Check, Plus } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  Check,
+  Plus,
+  QrCode,
+  Share2,
+  FileText,
+  Palette,
+  Link,
+  Globe,
+  CalendarCheck,
+  BarChart3,
+  Sparkles,
+  Smartphone,
+  type LucideIcon,
+} from "lucide-react";
 import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, useTheme, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -30,9 +44,9 @@ const demoPoster = (id: string): ClipMap =>
    scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
-/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, the theme hook,
-   and the shared presentational primitives now live in ./forge-ui (SSOT shared
-   with the comparison pages). */
+/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
+   presentational primitives now live in ./forge-ui (SSOT shared with the
+   comparison pages). */
 
 /* ── 4 pillars ── */
 const PILLARS = [
@@ -105,20 +119,25 @@ const PILLARS = [
    pattern derived from array position — only the QR profile card (the
    most tangible, most-shown touchpoint) spans two grid columns; every
    other card is single-span. Do not replace with an alternating/index
-   rule — that just reads as a different loop. */
-const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2 }[] = [
+   rule — that just reads as a different loop.
+
+   gy-dfl55.6: `icon` replaces the generic yellow-dot bullet with a
+   minimalist lucide glyph that depicts THIS touchpoint specifically —
+   real SVG (recolourable/animatable), not the brand mark (gy-c571s is
+   open — these must not drift into looking like the logo). */
+const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2; icon: LucideIcon }[] = [
   // Live now (real — no tag)
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2 },
-  { name: "Per-client share links", desc: "Send any client their statement with one tap." },
-  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India)." },
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2, icon: QrCode },
+  { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
+  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
   // Coming soon (clearly tagged)
-  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true },
-  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true },
-  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true },
-  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true },
-  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true },
-  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true },
+  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true, icon: Palette },
+  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true, icon: Link },
+  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true, icon: Globe },
+  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true, icon: CalendarCheck },
+  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true, icon: BarChart3 },
+  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true, icon: Sparkles },
+  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true, icon: Smartphone },
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
@@ -157,6 +176,73 @@ const FAQ = [
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+/* gy-dfl55.11: staggered scroll reveal for the touchpoint/feature cards.
+   Deliberately NOT the site-wide .reveal-on-scroll class (that bakes
+   opacity:0 into CSS unconditionally, so it never appears without JS).
+   Here the card renders at its normal visible style until JS mounts and
+   arms the hidden-then-reveal transition — a JS failure (or the SSG
+   prerender pass, which never runs effects) leaves the card visible,
+   never blank. Dependency decision settled on the epic: CSS transition +
+   native IntersectionObserver, no GSAP/ScrollTrigger. */
+function CardReveal({
+  index,
+  className,
+  style,
+  children,
+}: {
+  index: number;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  const prefersReduced = useReducedMotion();
+  const [armed, setArmed] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (prefersReduced) {
+      // useReducedMotion() starts false and flips true asynchronously after
+      // its own mount effect reads matchMedia — if we already armed (and the
+      // card hadn't scrolled into view yet), un-arm so it falls back to its
+      // default visible style instead of getting stuck at opacity:0.
+      setArmed(false);
+      return;
+    }
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    setArmed(true);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [prefersReduced]);
+
+  const revealStyle: React.CSSProperties | undefined = armed
+    ? {
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(30px)",
+        transition: `opacity .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s, transform .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s`,
+      }
+    : undefined;
+
+  return (
+    <li ref={ref} className={className} style={{ ...style, ...revealStyle }}>
+      {children}
+    </li>
+  );
 }
 
 /* ============================================================================
@@ -200,7 +286,6 @@ function HeroThreePanel({ alt = "", className = "", style, sizes, priority = fal
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  const { theme } = useTheme();
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -246,7 +331,7 @@ export default function App() {
       >
         <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — back to top">
           <img
-            src={theme === "dark" ? "/gymbo-mark-amber-ff9800.svg" : "/gymbo-mark-darkorange-9d3900.svg"}
+            src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
             className="h-[38px] w-[38px]"
           />
@@ -398,7 +483,7 @@ export default function App() {
             <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
               {SCREENS.map((s) => (
                 <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
-                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={276} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
@@ -623,37 +708,97 @@ export default function App() {
    TEMPORARY (gy-cgfm8): the BriefFrame placeholder-screenshot cards ("Here
    we'll show…") are gone — Kaushik doesn't want to wait for real artwork.
    Reduced to a plain bullet list until there's real screenshots/footage to
-   show per touchpoint. Do not treat this bullet layout as the final design. */
+   show per touchpoint. Do not treat this bullet layout as the final design.
+
+   gy-dfl55.5: shipped and coming-soon touchpoints are split into two
+   visually distinct groups — prominent opaque cards for what's live,
+   a subdued tighter grid below for what's not — so the grouping itself
+   (not just the per-card badge) signals status at a glance. */
 function BrandTouchpoints() {
+  const shipped = TOUCHPOINTS.filter((t) => !t.soon);
+  const soon = TOUCHPOINTS.filter((t) => t.soon);
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[900px] mx-auto px-5 md:px-12 pb-16 md:pb-24 -mt-4 md:-mt-8">
+      <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
         <Reveal className="text-center mb-8">
           <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
           <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
-            Your brand, everywhere — here now, more coming.
+            Your brand, everywhere.
           </h3>
         </Reveal>
+
         <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {TOUCHPOINTS.map((t) => (
-            <li
+          {shipped.map((t, i) => (
+            <CardReveal
               key={t.name}
-              className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
-              style={{ background: F.charcoalCard, border: t.soon ? "1px dashed rgba(240,240,235,0.16)" : "1px solid rgba(240,240,235,0.08)", opacity: t.soon ? 0.7 : 1 }}
+              index={i}
+              /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover
+                 (scale 1.02 + brighten) and feature-card-icon drives the icon
+                 micro-interaction on the same hover — active cards only, guarded
+                 to hover-capable pointers in CSS. */
+              className={`feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
+              /* gy-dfl55.10: softened gradient-border treatment. All `shipped` cards
+                 are non-soon (soon cards moved to their own block below, gy-dfl55.5),
+                 so no soon-branch is needed here anymore. */
+              style={{
+                border: "1px solid transparent",
+                backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+              }}
             >
-              <span aria-hidden="true" className="mt-[3px] text-[14px]" style={{ color: F.marigold }}>●</span>
+              <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+                <t.icon size={16} strokeWidth={2} />
+              </span>
               <div className="text-left">
-                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
-                  {t.name}
-                  {t.soon && (
-                    <span className="ml-2 align-middle rounded-full font-bold" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.02em", padding: "3px 9px", boxShadow: SHADOW.chip }}>Coming soon</span>
-                  )}
-                </span>
+                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
                 <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
               </div>
-            </li>
+            </CardReveal>
           ))}
         </ul>
+
+        <Reveal className="mt-9">
+          <span className="block text-center text-[11px] font-bold mb-3" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Coming soon
+          </span>
+          <ul className="mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" style={{ maxWidth: "820px" }}>
+            {soon.map((t, i) => (
+              <CardReveal
+                key={t.name}
+                index={i}
+                className="rounded-[var(--g-radius-lg)] p-3"
+                /* gy-dfl55.8: fade the CHROME (bg/border alpha) by 40% to read as
+                   disabled, not the outer `opacity` shorthand — that also fades the
+                   text below the 4.5:1 AA floor. Text below stays full-opacity.
+                   gy-dfl55.12: soon cards intentionally get NO feature-card-hover
+                   class — disabled-looking cards must not respond to hover. */
+                style={{ background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }}
+              >
+                <span className="block text-[13px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
+                  {t.name}
+                  {/* Outline, not fill (Kaushik, gy-dfl55.7) */}
+                  <span
+                    className="ml-2 align-middle font-bold"
+                    style={{
+                      background: "transparent",
+                      border: `1px solid ${F.marigold}`,
+                      color: F.marigold,
+                      fontFamily: SANS,
+                      fontSize: "9px",
+                      letterSpacing: "0.02em",
+                      padding: "2px 8px",
+                      borderRadius: RADIUS.full,
+                    }}
+                  >
+                    Coming soon
+                  </span>
+                </span>
+                <span className="block mt-1 text-[12px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
+              </CardReveal>
+            ))}
+          </ul>
+        </Reveal>
       </div>
     </div>
   );

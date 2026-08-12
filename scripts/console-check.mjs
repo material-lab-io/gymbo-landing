@@ -21,6 +21,35 @@ const ignore = (t) =>
 
 const browser = await chromium.launch();
 const failures = [];
+
+// Light-only theme invariant, dark-seed case (gy-ruxbj, PM scope addition
+// 2026-08-12 — "the one that matters"). Kaushik was served a dark site
+// because a runtime theme-flip script read a pre-existing localStorage
+// value with no way to escape it (gy-31moh removed the toggle, not the
+// flip). Pre-seed localStorage BEFORE the app boots and assert the site
+// still renders light — this is the one check that would have caught the
+// actual incident; a plain page-load check (no seeded storage) never would.
+{
+  const themePage = await browser.newPage();
+  await themePage.addInitScript(() => localStorage.setItem("theme", "dark"));
+  await themePage.goto(base + "/", { waitUntil: "load", timeout: 30000 });
+  await themePage.waitForTimeout(300);
+  const bg = await themePage.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const htmlDark = await themePage.evaluate(() => document.documentElement.getAttribute("data-theme") === "dark");
+  await themePage.close();
+  // Light token is #FAFAF7 -> rgb(250, 250, 247). Allow the whole FAFAFx
+  // family (a couple of points of anti-aliasing/rounding slack) rather than
+  // an exact string match.
+  const m = bg.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  const isLight = m && Number(m[1]) > 240 && Number(m[2]) > 240 && Number(m[3]) > 235;
+  if (htmlDark || !isLight) {
+    failures.push("/ (dark-seeded)");
+    console.error(`FAIL / with localStorage theme="dark" pre-seeded — rendered dark (bg=${bg}, data-theme dark=${htmlDark})`);
+  } else {
+    console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
+  }
+}
+
 for (const p of paths) {
   const page = await browser.newPage();
   const errors = [];

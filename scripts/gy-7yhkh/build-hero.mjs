@@ -1,8 +1,10 @@
 import sharp from "sharp";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
+import { execFileSync } from "node:child_process";
 
-const EXTRACT = "/tmp/claude-1000/gy7yhkh-extract";
+const EXTRACT = path.resolve("assets/hero-source");
 const SCREENS = path.resolve("public/screens/real");
 const OUT_DIR = path.resolve("public/mockups");
 
@@ -49,15 +51,76 @@ const SHADOW_ABS = {
   _2: { x: 1390, y: 3631, w: 3299, h: 315 },
 };
 
+// gy-lwb7t: groups _1 (back-left) and _3 (back-right) are photographed at a
+// real 3D angle — their Change-This mask apertures are trapezoids, not
+// rectangles, because the physical screen glass recedes in perspective. The
+// old code pasted an axis-aligned rectangular screenshot into that trapezoid
+// aperture (masked to the correct silhouette but with unwarped, flat
+// content) — correct outline, wrong perspective on the content. Fixing that
+// requires warping the screenshot's four corners onto the mask's actual
+// screen quad before compositing. sharp/libvips has no perspective-distort
+// primitive, so this step shells out to ImageMagick (approved for this
+// script only, PM 2026-08-12) via `convert -distort Perspective`.
+//
+// Quad corners below were measured directly from each Change-This mask's
+// alpha channel (alpha>128 region), not eyeballed: for each mask, the pixel
+// with min(x+y) is the top-left corner, max(x+y) is bottom-right,
+// max(x-y) is top-right, min(x-y) is bottom-left — the standard corner-
+// extraction trick for a convex quad. Group _2 (front-center) measured as a
+// near-perfect rectangle (top/bottom y within 2-3px across the width),
+// confirming it is genuinely head-on and does not need a warp — left as-is.
+const SCREEN_QUAD = {
+  _1: { tl: [66, 55], tr: [1094, 94], br: [1096, 2947], bl: [53, 2965] },
+  _3: { tl: [62, 93], tr: [1090, 54], br: [1092, 2981], bl: [60, 2951] },
+};
+
+function perspectiveWarp(inputPath, w, h, quad) {
+  const outPath = path.join(os.tmpdir(), `gy-lwb7t-warp-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
+  const cp = (pt) => pt.join(",");
+  // src corners are the flat screenshot's own rect; dst corners are the
+  // mask's measured screen quad, in the same aperture-local pixel space.
+  const controlPoints = [
+    `0,0 ${cp(quad.tl)}`,
+    `${w},0 ${cp(quad.tr)}`,
+    `${w},${h} ${cp(quad.br)}`,
+    `0,${h} ${cp(quad.bl)}`,
+  ].join("  ");
+  execFileSync("convert", [
+    inputPath,
+    "-matte",
+    "-virtual-pixel",
+    "transparent",
+    "-distort",
+    "Perspective",
+    controlPoints,
+    "-crop",
+    `${w}x${h}+0+0`,
+    "+repage",
+    outPath,
+  ]);
+  const buf = fs.readFileSync(outPath);
+  fs.rmSync(outPath, { force: true });
+  return buf;
+}
+
 async function maskedScreenshot(group) {
   const p = PHONES[group];
   const { w, h } = p.aperture;
-  const shot = await sharp(path.join(SCREENS, p.screenshot))
+  let shotBuf = await sharp(path.join(SCREENS, p.screenshot))
     .resize(w, h, { fit: "cover", position: "top" })
     .png()
     .toBuffer();
+
+  const quad = SCREEN_QUAD[group];
+  if (quad) {
+    const tmpIn = path.join(os.tmpdir(), `gy-lwb7t-flat-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
+    fs.writeFileSync(tmpIn, shotBuf);
+    shotBuf = perspectiveWarp(tmpIn, w, h, quad);
+    fs.rmSync(tmpIn, { force: true });
+  }
+
   const mask = await sharp(path.join(EXTRACT, p.changeThis)).png().toBuffer();
-  const masked = await sharp(shot)
+  const masked = await sharp(shotBuf)
     .composite([{ input: mask, blend: "dest-in" }])
     .png()
     .toBuffer();

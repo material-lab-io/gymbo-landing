@@ -28,6 +28,21 @@ done
 # OG tags present (share previews)
 grep -qiE 'property="og:title"' "$HOME_FILE" && log "OK   og:title present" || fail "og:title missing"
 
+# --- 1b. Light-only theme invariant (PM scope addition, gy-ruxbj, 2026-08-12) ---
+# Kaushik was served a dark site with no escape (gy-31moh removed the toggle
+# but a runtime theme-flip script was still reading localStorage). Ruling:
+# LIGHT ONLY, dark removed entirely (gy-uesmd). This is a STATIC regression
+# guard on the served HTML — it cannot see a post-hydration localStorage
+# flip (that needs a browser; see console-check.mjs's dark-seed check for
+# the assertion that covers gy-31moh's exact failure mode), but it does
+# catch the theme ever shipping dark by default again.
+grep -qiE 'theme-color["'"'"'][^>]*content="#FAFAF[0-9A-F]"' "$HOME_FILE" \
+  && log "OK   theme-color meta is light (#FAFAFx family)" \
+  || fail "theme-color meta missing or not light — dark-by-default regression?"
+grep -qiE 'data-theme="dark"' "$HOME_FILE" \
+  && fail "raw HTML ships data-theme=\"dark\" — light-only invariant (gy-uesmd) broken" \
+  || log "OK   no data-theme=\"dark\" baked into served HTML"
+
 # --- 2. robots.txt regression (the CF managed-robots AI-bot block must NOT reappear) ---
 ROBOTS_FILE="$(mktemp)"
 curl -sL --compressed --max-time 15 -o "$ROBOTS_FILE" "$URL/robots.txt" 2>/dev/null
@@ -50,6 +65,41 @@ for p in privacy terms; do
   c="$(curl -sL -o /dev/null -w '%{http_code}' --max-time 15 "$URL/$p" 2>/dev/null)"
   [ "$c" = "200" ] && log "OK   /$p 200" || fail "/$p HTTP $c"
 done
+
+# --- 4. product-contract.json consistency (gy-csrt8.1, G4 AC2) ---
+# Deterministic string/JSON match only, against the VENDORED contract file (no
+# live-fetch here — that's assert-contract-fresh.sh's job, run as a separate CI
+# step). Contract drift between gymbo-landing and Gymbo-v1 fails loudly there.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CONTRACT="${CONTRACT:-$SCRIPT_DIR/../product-contract.json}"
+if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
+  MONTHLY="$(jq -r '.pricing.monthly_inr' "$CONTRACT")"
+  ANNUAL_DISPLAY="$(jq -r '.pricing.annual_inr_display' "$CONTRACT")"
+  SAVINGS="$(jq -r '.pricing.annual_savings_percent' "$CONTRACT")"
+
+  grep -qF "$MONTHLY" "$HOME_FILE" && log "OK   contract: monthly price ($MONTHLY) present" || fail "contract: monthly price ($MONTHLY) missing from rendered site"
+  grep -qF "$ANNUAL_DISPLAY" "$HOME_FILE" && log "OK   contract: annual price display ($ANNUAL_DISPLAY) present" || fail "contract: annual price display ($ANNUAL_DISPLAY) missing from rendered site"
+  grep -qF "${SAVINGS}%" "$HOME_FILE" && log "OK   contract: annual savings (${SAVINGS}%) present" || fail "contract: annual savings (${SAVINGS}%) missing from rendered site"
+
+  # Anthropic sub-processor disclosure (gy-lucuj) — WARN ONLY, not a hard gate yet.
+  # gy-lucuj (site copy omits "today's session client names") is still BLOCKED on a
+  # compliance/PM ruling; hard-failing here would red-block every landing deploy on
+  # an unrelated bug. Flip this to `fail` once gy-lucuj's copy fix lands (see bead
+  # gy-csrt8.1 comments for the ruling).
+  ANTHROPIC_ITEM="$(jq -r '.sub_processors[] | select(.name=="Anthropic") | .data_sent[] | select(. == "today'"'"'s session client names")' "$CONTRACT")"
+  if [ -n "$ANTHROPIC_ITEM" ]; then
+    PRIVACY_FILE="$(mktemp)"
+    curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
+    if grep -qiF "today's session client names" "$PRIVACY_FILE" || grep -qiF "today’s session client names" "$PRIVACY_FILE"; then
+      log "OK   contract: Anthropic disclosure includes 'today's session client names'"
+    else
+      log "WARN contract: /privacy does not yet disclose 'today's session client names' (tracked as gy-lucuj, not gating deploys)"
+    fi
+    rm -f "$PRIVACY_FILE"
+  fi
+else
+  log "WARN product-contract.json or jq unavailable — skipping contract assertions"
+fi
 
 echo "=== getgymbo smoke ($URL) ==="
 echo "$OUT"
