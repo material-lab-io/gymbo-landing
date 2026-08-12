@@ -2,7 +2,7 @@ import sharp from "sharp";
 import fs from "node:fs";
 import path from "node:path";
 
-const EXTRACT = "/tmp/claude-1000/gy7yhkh-extract";
+const EXTRACT = path.resolve("assets/hero-source");
 const SCREENS = path.resolve("public/screens/real");
 const OUT_DIR = path.resolve("public/mockups");
 
