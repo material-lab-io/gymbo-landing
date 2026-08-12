@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   Plus,
@@ -176,6 +176,73 @@ const FAQ = [
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
+}
+
+/* gy-dfl55.11: staggered scroll reveal for the touchpoint/feature cards.
+   Deliberately NOT the site-wide .reveal-on-scroll class (that bakes
+   opacity:0 into CSS unconditionally, so it never appears without JS).
+   Here the card renders at its normal visible style until JS mounts and
+   arms the hidden-then-reveal transition — a JS failure (or the SSG
+   prerender pass, which never runs effects) leaves the card visible,
+   never blank. Dependency decision settled on the epic: CSS transition +
+   native IntersectionObserver, no GSAP/ScrollTrigger. */
+function CardReveal({
+  index,
+  className,
+  style,
+  children,
+}: {
+  index: number;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLLIElement>(null);
+  const prefersReduced = useReducedMotion();
+  const [armed, setArmed] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (prefersReduced) {
+      // useReducedMotion() starts false and flips true asynchronously after
+      // its own mount effect reads matchMedia — if we already armed (and the
+      // card hadn't scrolled into view yet), un-arm so it falls back to its
+      // default visible style instead of getting stuck at opacity:0.
+      setArmed(false);
+      return;
+    }
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    setArmed(true);
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [prefersReduced]);
+
+  const revealStyle: React.CSSProperties | undefined = armed
+    ? {
+        opacity: visible ? 1 : 0,
+        transform: visible ? "none" : "translateY(30px)",
+        transition: `opacity .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s, transform .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s`,
+      }
+    : undefined;
+
+  return (
+    <li ref={ref} className={className} style={{ ...style, ...revealStyle }}>
+      {children}
+    </li>
+  );
 }
 
 /* ============================================================================
@@ -661,10 +728,15 @@ function BrandTouchpoints() {
         </Reveal>
 
         <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {shipped.map((t) => (
-            <li
+          {shipped.map((t, i) => (
+            <CardReveal
               key={t.name}
-              className={`flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
+              index={i}
+              /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover
+                 (scale 1.02 + brighten) and feature-card-icon drives the icon
+                 micro-interaction on the same hover — active cards only, guarded
+                 to hover-capable pointers in CSS. */
+              className={`feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
               /* gy-dfl55.10: softened gradient-border treatment. All `shipped` cards
                  are non-soon (soon cards moved to their own block below, gy-dfl55.5),
                  so no soon-branch is needed here anymore. */
@@ -675,14 +747,14 @@ function BrandTouchpoints() {
                 backgroundClip: "padding-box, border-box",
               }}
             >
-              <span aria-hidden="true" className="grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+              <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
                 <t.icon size={16} strokeWidth={2} />
               </span>
               <div className="text-left">
                 <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
                 <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
               </div>
-            </li>
+            </CardReveal>
           ))}
         </ul>
 
@@ -691,13 +763,16 @@ function BrandTouchpoints() {
             Coming soon
           </span>
           <ul className="mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" style={{ maxWidth: "820px" }}>
-            {soon.map((t) => (
-              <li
+            {soon.map((t, i) => (
+              <CardReveal
                 key={t.name}
+                index={i}
                 className="rounded-[var(--g-radius-lg)] p-3"
                 /* gy-dfl55.8: fade the CHROME (bg/border alpha) by 40% to read as
                    disabled, not the outer `opacity` shorthand — that also fades the
-                   text below the 4.5:1 AA floor. Text below stays full-opacity. */
+                   text below the 4.5:1 AA floor. Text below stays full-opacity.
+                   gy-dfl55.12: soon cards intentionally get NO feature-card-hover
+                   class — disabled-looking cards must not respond to hover. */
                 style={{ background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }}
               >
                 <span className="block text-[13px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
@@ -720,7 +795,7 @@ function BrandTouchpoints() {
                   </span>
                 </span>
                 <span className="block mt-1 text-[12px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
-              </li>
+              </CardReveal>
             ))}
           </ul>
         </Reveal>

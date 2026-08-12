@@ -124,10 +124,18 @@ const FORGE_CSS = `
         .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
         @keyframes waiting-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(245,158,11,.22)}50%{transform:scale(1.06);box-shadow:0 0 0 9px rgba(245,158,11,0)}}
         .waiting-pulse{animation:waiting-pulse 2.8s cubic-bezier(.4,0,.6,1) infinite}
+        .feature-card-hover{transition:transform .25s cubic-bezier(.22,.9,.3,1),background-color .25s ease,border-color .25s ease}
+        .feature-card-icon{transition:transform .25s cubic-bezier(.22,.9,.3,1)}
+        @media (hover:hover) and (pointer:fine){
+          .feature-card-hover:hover{transform:scale(1.02);background-color:rgba(240,240,235,0.04)}
+          .feature-card-hover:hover .feature-card-icon{transform:rotate(8deg) scale(1.08)}
+        }
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
           .waiting-pulse{animation:none!important;box-shadow:0 0 0 0 rgba(245,158,11,.22)!important}
+          .feature-card-hover,.feature-card-icon{transition:none!important}
+          .feature-card-hover:hover,.feature-card-hover:hover .feature-card-icon{transform:none!important}
         }
       `;
 
