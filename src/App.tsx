@@ -483,7 +483,7 @@ export default function App() {
             <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
               {SCREENS.map((s) => (
                 <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
-                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={276} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
