@@ -18,7 +18,7 @@ import "devices.css/dist/devices.min.css";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, RADIUS, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
 
 // Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
 // public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
@@ -76,7 +76,7 @@ const PILLARS = [
       "One-tap punch to log a class",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
-      { text: "Account for travel distance between clients on the calendar, so you can optimize your day", soon: true },
+      "Account for travel distance between clients on the calendar, so you can optimize your day",
     ],
     brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
     dark: true,
@@ -107,7 +107,7 @@ const PILLARS = [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
       "Track client progress: logged sessions, adherence, per-exercise gains",
-      { text: "Get directions to your next class, right from the app", soon: true },
+      "Get directions to your next class, right from the app",
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
     dark: false,
@@ -125,19 +125,17 @@ const PILLARS = [
    minimalist lucide glyph that depicts THIS touchpoint specifically —
    real SVG (recolourable/animatable), not the brand mark (gy-c571s is
    open — these must not drift into looking like the logo). */
-const TOUCHPOINTS: { name: string; desc: string; soon?: boolean; span?: 2; icon: LucideIcon }[] = [
-  // Live now (real — no tag)
+const TOUCHPOINTS: { name: string; desc: string; span?: 2; icon: LucideIcon }[] = [
   { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2, icon: QrCode },
   { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
   { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
-  // Coming soon (clearly tagged)
-  { name: "In-app brand theming", desc: "Your colours across the app.", soon: true, icon: Palette },
-  { name: "Personalized URL", desc: "Your own Gymbo link.", soon: true, icon: Link },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at.", soon: true, icon: Globe },
-  { name: "Shareable booking link", desc: "Let clients reach out to book.", soon: true, icon: CalendarCheck },
-  { name: "Fitness reports", desc: "Shareable client progress summaries.", soon: true, icon: BarChart3 },
-  { name: "Welcome + logo splash", desc: "Your logo on first open.", soon: true, icon: Sparkles },
-  { name: "Custom-branded client app", desc: "Your brand, your app.", soon: true, icon: Smartphone },
+  { name: "In-app brand theming", desc: "Your colours across the app.", icon: Palette },
+  { name: "Personalized URL", desc: "Your own Gymbo link.", icon: Link },
+  { name: "Mini-site / public profile", desc: "A page clients can find you at.", icon: Globe },
+  { name: "Shareable booking link", desc: "Let clients reach out to book.", icon: CalendarCheck },
+  { name: "Fitness reports", desc: "Shareable client progress summaries.", icon: BarChart3 },
+  { name: "Welcome + logo splash", desc: "Your logo on first open.", icon: Sparkles },
+  { name: "Custom-branded client app", desc: "Your brand, your app.", icon: Smartphone },
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
@@ -428,22 +426,13 @@ export default function App() {
                     </p>
                     <ul className="flex flex-col gap-3">
                       {p.bullets.map((b) => {
-                        const bullet = typeof b === "string" ? { text: b, soon: false } : b;
                         return (
-                          <li key={bullet.text} className="flex items-start gap-3">
+                          <li key={b} className="flex items-start gap-3">
                             <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
                               <Check size={13} strokeWidth={2.5} />
                             </span>
                             <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
-                              {bullet.text}
-                              {bullet.soon && (
-                                <span
-                                  className="ml-2 rounded-full font-bold align-middle"
-                                  style={{ background: dark ? F.marigold : F.amber, color: F.onCta, fontFamily: SANS, fontSize: "10px", letterSpacing: "0.04em", padding: "3px 9px" }}
-                                >
-                                  coming soon
-                                </span>
-                              )}
+                              {b}
                             </span>
                           </li>
                         );
@@ -656,13 +645,6 @@ export default function App() {
               </a>
             </Reveal>
 
-            {/* Apple Watch coming-soon teaser (relocated out of the hero) — plain text only,
-                the devices.css mockup below it was removed (gy-5hw2m): it rendered as a generic
-                smartwatch shape carrying the Gymbo "g" mark, not an Apple Watch icon/logo, which
-                read as broken/off-brand rather than communicating "Apple Watch". */}
-            <Reveal className="mt-12 flex flex-col items-center gap-4">
-              <span className="text-[12px] px-4 py-2 rounded-full" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, fontWeight: 700, letterSpacing: "0.04em" }}>Apple Watch — coming soon</span>
-            </Reveal>
           </div>
         </section>
       </main>
@@ -710,13 +692,13 @@ export default function App() {
    Reduced to a plain bullet list until there's real screenshots/footage to
    show per touchpoint. Do not treat this bullet layout as the final design.
 
-   gy-dfl55.5: shipped and coming-soon touchpoints are split into two
-   visually distinct groups — prominent opaque cards for what's live,
-   a subdued tighter grid below for what's not — so the grouping itself
-   (not just the per-card badge) signals status at a glance. */
+   gy-slagn (2026-08-13): ONE unified grid, one card treatment — no
+   shipped/coming-soon split
+   (gy-slagn, founder 2026-08-13: "you don't have to call out what's
+   coming soon, mix it in"). Every card renders identically regardless
+   of ship status; the founder's explicit instruction is to STOP
+   LABELLING, not to delete unshipped items. */
 function BrandTouchpoints() {
-  const shipped = TOUCHPOINTS.filter((t) => !t.soon);
-  const soon = TOUCHPOINTS.filter((t) => t.soon);
   return (
     <div style={{ background: F.charcoal }}>
       <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
@@ -728,18 +710,14 @@ function BrandTouchpoints() {
         </Reveal>
 
         <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {shipped.map((t, i) => (
+          {TOUCHPOINTS.map((t, i) => (
             <CardReveal
               key={t.name}
               index={i}
               /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover
                  (scale 1.02 + brighten) and feature-card-icon drives the icon
-                 micro-interaction on the same hover — active cards only, guarded
-                 to hover-capable pointers in CSS. */
+                 micro-interaction on the same hover. */
               className={`feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
-              /* gy-dfl55.10: softened gradient-border treatment. All `shipped` cards
-                 are non-soon (soon cards moved to their own block below, gy-dfl55.5),
-                 so no soon-branch is needed here anymore. */
               style={{
                 border: "1px solid transparent",
                 backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
@@ -757,48 +735,6 @@ function BrandTouchpoints() {
             </CardReveal>
           ))}
         </ul>
-
-        <Reveal className="mt-9">
-          <span className="block text-center text-[11px] font-bold mb-3" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-            Coming soon
-          </span>
-          <ul className="mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2" style={{ maxWidth: "820px" }}>
-            {soon.map((t, i) => (
-              <CardReveal
-                key={t.name}
-                index={i}
-                className="rounded-[var(--g-radius-lg)] p-3"
-                /* gy-dfl55.8: fade the CHROME (bg/border alpha) by 40% to read as
-                   disabled, not the outer `opacity` shorthand — that also fades the
-                   text below the 4.5:1 AA floor. Text below stays full-opacity.
-                   gy-dfl55.12: soon cards intentionally get NO feature-card-hover
-                   class — disabled-looking cards must not respond to hover. */
-                style={{ background: "rgba(20,20,20,0.6)", border: "1px solid rgba(240,240,235,0.16)" }}
-              >
-                <span className="block text-[13px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>
-                  {t.name}
-                  {/* Outline, not fill (Kaushik, gy-dfl55.7) */}
-                  <span
-                    className="ml-2 align-middle font-bold"
-                    style={{
-                      background: "transparent",
-                      border: `1px solid ${F.marigold}`,
-                      color: F.marigold,
-                      fontFamily: SANS,
-                      fontSize: "9px",
-                      letterSpacing: "0.02em",
-                      padding: "2px 8px",
-                      borderRadius: RADIUS.full,
-                    }}
-                  >
-                    Coming soon
-                  </span>
-                </span>
-                <span className="block mt-1 text-[12px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
-              </CardReveal>
-            ))}
-          </ul>
-        </Reveal>
       </div>
     </div>
   );
