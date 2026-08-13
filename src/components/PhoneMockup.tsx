@@ -66,6 +66,7 @@ export function ScreenshotFrame({
   const apertureRadiusPx = Math.round(frameWidth * (HOLE_PCT.width / 100) * 0.1656);
   return (
     <div
+      data-testid="screenshot-frame"
       className={className}
       style={{ position: "relative", filter: SHADOW.elevation4Filter, lineHeight: 0, aspectRatio: `${FRAME_W} / ${FRAME_H}`, width: frameWidth, ...style }}
     >

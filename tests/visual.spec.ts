@@ -177,4 +177,27 @@ test.describe('visual baselines', () => {
       await expect(locator).toHaveScreenshot(`${section.name}-light.png`);
     });
   }
+
+  // gy-wh9li.3: a ZOOMED top-left corner of the first "See Gymbo in action"
+  // phone. The full-section gallery snapshot is too low-res to catch a subtly
+  // wrong aperture radius (the elliptical-vs-circular corner Kaushik flagged, and
+  // that gy-oooc9 missed by checking the number not the curve). This dedicated
+  // corner clip fails loudly if the screenshot edge stops tracing the bezel.
+  // Runs in both projects (desktop + mobile).
+  test('gallery-phone-corner', async ({ page }) => {
+    const gallery = page.getByTestId('gallery-section');
+    await revealSection(page, gallery);
+    await waitImagesLoaded(gallery);
+    const phone = page.getByTestId('screenshot-frame').first();
+    await expect(phone).toBeVisible();
+    // revealSection ends scrolled to the section BOTTOM, so pull the first phone
+    // fully back into the viewport before clipping its top-left corner.
+    await phone.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    const box = await phone.boundingBox();
+    if (!box) throw new Error('gallery phone frame has no bounding box');
+    await expect(page).toHaveScreenshot('gallery-phone-corner-light.png', {
+      clip: { x: Math.max(0, box.x), y: Math.max(0, box.y), width: 96, height: 96 },
+    });
+  });
 });
