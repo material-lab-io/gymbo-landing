@@ -32,30 +32,39 @@ const SECTIONS = [
   { name: 'footer-cta', testId: 'footer-cta-section' },
 ] as const;
 
-/** Freeze every <video> on the page at frame 0 so the lazy-mounted, looping
- * demo clips never produce a flaky pixel diff between runs. Setting
- * `currentTime` seeks asynchronously — the previously-playing frame is still
- * what's painted until the browser fires `seeked`, so a screenshot taken
- * right after the assignment can catch whichever frame the loop happened to
- * be on. Wait for `seeked` (or `pause` if it was already sitting on frame 0
- * and no seek is needed) before returning. */
+/** gy-cjdtw: a looping <video>'s decoded frame is NON-DETERMINISTIC across gt2
+ * runs — even after seeking to frame 0, two separate runs (and the 3 physical
+ * gt2 runners) decode subtly different pixels, so the demo-clip region can never
+ * be reliably matched by a pixel baseline (seeking-to-0 was the previous, still-
+ * flaky attempt: pillar-revenue-mobile diffed 16k px purely inside the video).
+ *
+ * Instead, swap each demo <video> for its own POSTER — a static PNG of the SAME
+ * composed scene (phone frame, rounded corners, aperture edges AND the app
+ * screen). The snapshot becomes deterministic while EVERYTHING stays GATED:
+ * nothing is masked, so the frame/corner/aperture-edge regression class (round-7
+ * F3) is still fully checked, along with all surrounding copy and layout. The
+ * poster is the video's own `poster` attribute, rendered at the identical box so
+ * the page layout is pixel-unchanged. */
 async function freezeVideos(page: Page) {
-  await page.evaluate(() =>
-    Promise.all(
-      Array.from(document.querySelectorAll('video')).map(
-        (v) =>
-          new Promise<void>((resolve) => {
-            v.pause();
-            if (v.currentTime === 0 && v.readyState >= 2) {
-              resolve();
-              return;
-            }
-            v.addEventListener('seeked', () => resolve(), { once: true });
-            v.currentTime = 0;
-          })
-      )
-    )
-  );
+  await page.evaluate(async () => {
+    const decode = (img: HTMLImageElement) =>
+      img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+    for (const v of Array.from(document.querySelectorAll('video'))) {
+      v.pause();
+      const poster = v.getAttribute('poster');
+      if (!poster) continue;
+      const img = document.createElement('img');
+      img.src = poster;
+      img.setAttribute('aria-hidden', 'true');
+      // Mirror the video's box so the poster's baked-in frame + the surrounding
+      // layout land pixel-identical to the live element.
+      img.className = v.className;
+      const style = v.getAttribute('style');
+      if (style) img.setAttribute('style', style);
+      v.replaceWith(img);
+      await decode(img);
+    }
+  });
 }
 
 /** Scroll fully through a section (top, then bottom) and wait for every

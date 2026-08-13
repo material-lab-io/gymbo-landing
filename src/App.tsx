@@ -54,13 +54,13 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance automatically — so you always know where every client stands.",
+    intro: "The Gymbo ledger tracks every class, payment, and balance automatically, so you always know where every client stands.",
     bullets: [
-      "Every balance, clear — credit and classes left, always current",
+      "Every balance, clear: credit and classes left, always current",
       "Get paid for every class you teach",
-      "Cash or UPI logged — nothing slips",
+      "Cash or UPI logged. Nothing slips.",
     ],
-    brief: "Log a payment — UPI or cash, and the balance clears.",
+    brief: "Log a payment: UPI or cash, and the balance clears.",
     dark: false,
   },
   {
@@ -69,14 +69,14 @@ const PILLARS = [
     n: "02",
     eyebrow: "Your whole roster",
     title: "Get organized",
-    intro: "Less busywork, more training. Every client, schedule, and class in one place — not in your head.",
+    intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
     bullets: [
       "One-tap punch to log a class",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
       "Account for travel distance between clients on the calendar, so you can optimize your day",
     ],
-    brief: "Your week, classes morning to evening — Ravi, Sara, group, Imran.",
+    brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
     dark: true,
   },
   {
@@ -85,13 +85,13 @@ const PILLARS = [
     n: "03",
     eyebrow: "Look professional",
     title: "Your brand, your business",
-    intro: "Look like the professional you already are. Your name and details on every statement your client sees — plus a QR profile card you can share anywhere.",
+    intro: "Look like the professional you already are. Your name and details on every statement your client sees, plus a QR profile card you can share anywhere.",
     bullets: [
-      "Branded PDF statements — your name, tagline, and details on each one",
+      "Branded PDF statements: your name, tagline, and details on each one",
       "A shareable QR profile card in three styles",
       "Send any client their statement with a single tap",
     ],
-    brief: "Your brand on a clean statement PDF — share in a tap (India).",
+    brief: "Your brand on a clean statement PDF. Share in a tap (India).",
     dark: false,
   },
   {
@@ -100,7 +100,7 @@ const PILLARS = [
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
-    intro: "Build workouts, assign them to clients, and track real progress — adherence and per-exercise gains. And Ask Gymbo — an AI chat assistant grounded in your real client and payment data — answers 'who owes me?' or 'who's due this week?' in a tap.",
+    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains. And Ask Gymbo, an AI chat assistant grounded in your real client and payment data, answers 'who owes me?' or 'who's due this week?' in a tap.",
     bullets: [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
@@ -137,11 +137,11 @@ const PILLARS = [
    depict its own touchpoint, never drift toward the Gymbo logo mark (gy-c571s). */
 type Touchpoint = { name: string; desc: string; icon: LucideIcon };
 const TOUCHPOINTS_SHIPPED: Touchpoint[] = [
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", icon: QrCode },
+  { name: "QR profile card", desc: "Your shareable pro card: name, city, QR to connect.", icon: QrCode },
   { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
   { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
   { name: "In-app brand theming", desc: "Your colours, icon, and logo across the app.", icon: Palette },
-  { name: "Personalized URL", desc: "Your own page — portfolio, website, public profile.", icon: Link },
+  { name: "Personalized URL", desc: "Your own page: portfolio, website, public profile.", icon: Link },
 ];
 const TOUCHPOINTS_FORTHCOMING: Touchpoint[] = [
   { name: "Shareable booking link", desc: "Let clients reach out to book.", icon: CalendarCheck },
@@ -154,7 +154,7 @@ const TOUCHPOINTS_FORTHCOMING: Touchpoint[] = [
    Static stills (the motion lives in the hero + pillar demo clips). Source files:
    public/screens/real/* → optimized via scripts/optimize-gallery.mjs (gy-9bmwm.4). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
-  { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card — Aadesh, 3 of 10 classes used" },
+  { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
   { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
   { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments logged for June" },
   { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
@@ -170,12 +170,12 @@ const PRICING = [
 
 /* ── FAQ ── */
 const FAQ = [
-  { q: "Is it free?", a: "Your first 7 days are free on every plan. After that, Gymbo Pro is ₹399/month — or ₹250/month effective on the annual plan — billed through the App Store." },
-  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train — you log it." },
+  { q: "Is it free?", a: "Your first 7 days are free on every plan. After that, Gymbo Pro is ₹399/month, or ₹250/month effective on the annual plan, billed through the App Store." },
+  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
-  { q: "Which phones does it support?", a: "iPhone, for now — that's where we're focused." },
-  { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance — it doesn't touch your money." },
+  { q: "Which phones does it support?", a: "iPhone, for now. That's where we're focused." },
+  { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
   { q: "Can I import my existing clients?", a: "Yes. Bring your current roster over in minutes and pick up where you left off." },
 ];
 
@@ -338,7 +338,7 @@ export default function App() {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — back to top">
+        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none" aria-label="Gymbo, back to top">
           <img
             src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
@@ -394,7 +394,7 @@ export default function App() {
                 from your phone.
               </h1>
               <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
-                <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b> — built for independent trainers in India.
+                <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b>. Built for independent trainers in India.
               </p>
               <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
                 <PrimaryCTA size="lg" />
@@ -403,7 +403,7 @@ export default function App() {
               {/* mobile / tablet device — below copy, chips hidden. Landscape three-panel
                   art (not a tall single phone), so no bottom bleed needed. */}
               <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroThreePanel alt="Gymbo — dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
+                <HeroThreePanel alt="Gymbo: dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
               </div>
             </div>
           </div>
@@ -415,7 +415,7 @@ export default function App() {
             <Reveal>
               <Eyebrow>Why trainers use Gymbo</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
-                Everything the back office of your business needs.
+                Everything your training business needs to run.
               </h2>
             </Reveal>
           </div>
@@ -424,7 +424,7 @@ export default function App() {
             const dark = p.dark;
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
-                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                   <Reveal>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
@@ -503,10 +503,10 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
-                Built in India, for the trainers running their own show.
+                Made for the trainers building their own business.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
-                Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
+                Gymbo is built in India with real trainers. Your client data is yours, and we never contact your clients.
               </p>
             </Reveal>
 
@@ -544,7 +544,7 @@ export default function App() {
               <Reveal>
                 <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
                   <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Why we built Gymbo</h4>
-                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers — so we built Gymbo.</p>
+                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers, so we built Gymbo.</p>
                 </div>
               </Reveal>
             </div>
