@@ -45,3 +45,33 @@ jobs:
           echo "Checking $TARGET"
           bash scripts/getgymbo-smoke.sh "$TARGET"
           node scripts/console-check.mjs "$TARGET"
+
+      # Merged-but-not-deployed guard (gy-sa0fm AC3): the actual gy-sa0fm
+      # defect was never a red check — deploy.yml simply never RAN on the
+      # merge (suppressed by inherited [skip ci], or wedged on the visual
+      # gate), so nothing inside that workflow could ever have caught it.
+      # This runs hourly on a fresh checkout of main (the schedule trigger's
+      # default ref) and compares that HEAD against what the live site's
+      # deploy.yml build step actually stamped into dist/build-sha.txt
+      # (see deploy.yml "Stamp build SHA"). A mismatch means a commit landed
+      # on main that the live site has never served — exactly the silent gap
+      # that got worked around twice with manual trigger commits on
+      # 2026-08-11 instead of being visible. Skipped on a manual verify_url
+      # override (negative-control testing) since that target won't carry
+      # our build-sha.txt.
+      - name: Verify live deploy matches main HEAD
+        if: github.event.inputs.verify_url == ''
+        run: |
+          head_sha=$(git rev-parse HEAD)
+          live_sha=$(curl -sf --max-time 10 https://getgymbo.com/build-sha.txt || echo "")
+          echo "main HEAD:        $head_sha"
+          echo "live build-sha:   $live_sha"
+          if [ -z "$live_sha" ]; then
+            echo "::error::Could not fetch https://getgymbo.com/build-sha.txt at all — either the guard itself hasn't deployed yet, or the site is down (getgymbo-smoke.sh above should already have caught the latter)."
+            exit 1
+          fi
+          if [ "$live_sha" != "$head_sha" ]; then
+            echo "::error::Live site is serving $live_sha but main's HEAD is $head_sha — a merge to main has not reached production. Check whether deploy.yml actually ran on the merge commit (gh run list --branch main) before assuming a fresh push is needed."
+            exit 1
+          fi
+          echo "OK   live site matches main HEAD"
