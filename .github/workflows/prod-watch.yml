@@ -19,7 +19,7 @@ on:
 
 jobs:
   watch:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, gt2]
     steps:
       - uses: actions/checkout@v4
 
@@ -30,8 +30,13 @@ jobs:
 
       - run: npm ci
 
+      # --with-deps dropped deliberately: it shells out to apt-get and needs
+      # root, which a self-hosted runner does not grant. The gt2 runners
+      # already carry the Playwright system libraries and a warm
+      # ~/.cache/ms-playwright, so this resolves from cache. Do NOT re-add
+      # --with-deps when moving a job to self-hosted.
       - name: Install Chromium (console check)
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       - name: Run prod regression
         run: |
