@@ -74,6 +74,15 @@ export function ScreenshotFrame({
           width: `${HOLE_PCT.width}%`,
           height: `${HOLE_PCT.height}%`,
           overflow: "hidden",
+          /* gy-oooc9: the frame's punched aperture in iphone-frame-single.png
+             is a real rounded corner (R=234.7px on a 1417px-wide aperture,
+             measured directly from the asset's alpha channel — a 299-point
+             circle fit, residual std 2.5px). This div's square corners were
+             clipping the screenshot past that curve, showing as a protruding
+             square notch over the rounded bezel. 16.56% is that measured
+             radius expressed as a % of this div's own width (which scales
+             with screenWidth), not a hand-tuned value. */
+          borderRadius: "16.56%",
         }}
       >
         <picture>
