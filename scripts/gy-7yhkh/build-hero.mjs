@@ -62,17 +62,67 @@ const SHADOW_ABS = {
 // primitive, so this step shells out to ImageMagick (approved for this
 // script only, PM 2026-08-12) via `convert -distort Perspective`.
 //
-// Quad corners below were measured directly from each Change-This mask's
-// alpha channel (alpha>128 region), not eyeballed: for each mask, the pixel
-// with min(x+y) is the top-left corner, max(x+y) is bottom-right,
-// max(x-y) is top-right, min(x-y) is bottom-left — the standard corner-
-// extraction trick for a convex quad. Group _2 (front-center) measured as a
-// near-perfect rectangle (top/bottom y within 2-3px across the width),
-// confirming it is genuinely head-on and does not need a warp — left as-is.
-const SCREEN_QUAD = {
-  _1: { tl: [66, 55], tr: [1094, 94], br: [1096, 2947], bl: [53, 2965] },
-  _3: { tl: [62, 93], tr: [1090, 54], br: [1092, 2981], bl: [60, 2951] },
-};
+// Group _2 (front-center) measures as a near-perfect rectangle (top/bottom y
+// within 2-3px across the width), confirming it is genuinely head-on and does
+// not need a warp — left as-is. _1 and _3 each slant ~46px across the width.
+//
+// gy-syg40: the quad corners used to be hardcoded, extracted by the "extremal
+// point" trick — min(x+y) is top-left, max(x+y) bottom-right, max(x-y)
+// top-right, min(x-y) bottom-left. That trick is only valid for a quad with
+// SHARP corners. These apertures are rounded rectangles, so every extremal
+// point lands somewhere on a corner ARC rather than on the corner itself, and
+// each one is pulled inward by roughly the corner radius. The resulting quad
+// spanned x 60..1092 inside a screen that actually spans 0..1156 — so the warp
+// shrank the screenshot ~60px away from every screen edge, under-filling the
+// glass and leaving the near-vertical hard edge the founder reported.
+//
+// Corners are now derived from the mask at build time instead: fit a least-
+// squares line to each of the four STRAIGHT edge runs (sampled from the middle
+// of each side, well clear of the corner arcs) and intersect adjacent lines to
+// recover the true corner. This is robust to corner radius by construction and
+// re-derives itself if the mask art is ever replaced.
+const SLANTED_GROUPS = new Set(["_1", "_3"]);
+const quadCache = new Map();
+
+async function screenQuadFromMask(maskPath) {
+  const { data, info } = await sharp(maskPath).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const W = info.width, H = info.height;
+  const alphaAt = (x, y) => data[(y * W + x) * 4 + 3];
+
+  // y = m*x + c for the horizontal edges; x = m*y + c for the vertical ones.
+  const fitLine = (pts) => {
+    const n = pts.length;
+    let sa = 0, sb = 0, saa = 0, sab = 0;
+    for (const [a, b] of pts) { sa += a; sb += b; saa += a * a; sab += a * b; }
+    const m = (n * sab - sa * sb) / (n * saa - sa * sa);
+    return [m, (sb - m * sa) / n];
+  };
+  // intersect horizontal line (y = m1*x + c1) with vertical line (x = m2*y + c2)
+  const intersect = ([m1, c1], [m2, c2]) => {
+    const x = (m2 * c1 + c2) / (1 - m1 * m2);
+    return [Math.round(x), Math.round(m1 * x + c1)];
+  };
+
+  const yInset = Math.round(H * 0.12), xInset = Math.round(W * 0.15);
+  const left = [], right = [], top = [], bottom = [];
+  for (let y = yInset; y < H - yInset; y += 7) {
+    let lo = -1, hi = -1;
+    for (let x = 0; x < W; x++) if (alphaAt(x, y) > 128) { lo = x; break; }
+    for (let x = W - 1; x >= 0; x--) if (alphaAt(x, y) > 128) { hi = x; break; }
+    if (lo >= 0) { left.push([y, lo]); right.push([y, hi]); }
+  }
+  for (let x = xInset; x < W - xInset; x += 7) {
+    let t = -1, b = -1;
+    for (let y = 0; y < H; y++) if (alphaAt(x, y) > 128) { t = y; break; }
+    for (let y = H - 1; y >= 0; y--) if (alphaAt(x, y) > 128) { b = y; break; }
+    if (t >= 0) { top.push([x, t]); bottom.push([x, b]); }
+  }
+  const lT = fitLine(top), lB = fitLine(bottom), lL = fitLine(left), lR = fitLine(right);
+  return {
+    tl: intersect(lT, lL), tr: intersect(lT, lR),
+    br: intersect(lB, lR), bl: intersect(lB, lL),
+  };
+}
 
 function perspectiveWarp(inputPath, w, h, quad) {
   const outPath = path.join(os.tmpdir(), `gy-lwb7t-warp-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
@@ -103,15 +153,65 @@ function perspectiveWarp(inputPath, w, h, quad) {
   return buf;
 }
 
+// gy-syg40: the side apertures are far narrower than the source screenshot's
+// aspect — _1 is 1156x3032 (0.3814) and _3 is 1159x3036 (0.3818) against a
+// 1206x2622 (0.4600) screenshot, a ~17% aspect mismatch. fit:"cover" resolves
+// that by upscaling 1.156x and centre-cropping ~103px off BOTH horizontal
+// edges (position:"top" only pins the vertical axis), which is what ate the
+// leading characters — "Classes left: 7" rendered as "s left: 7". Those two
+// panels are art-directed as foreshortened phones, and a real angled view
+// compresses screen width uniformly rather than slicing its edges off, so
+// fit:"fill" (non-uniform stretch into the exact box, nothing cropped) is the
+// physically-correct treatment, not merely the least-bad one.
+// _2 (front-centre) keeps "cover": its aperture aspect is 0.4589 vs the
+// source's 0.4600, so cover crops ~1px there and the panel is already correct.
+const SCREENSHOT_FIT = { _1: "fill", _3: "fill", _2: "cover" };
+
+// gy-syg40: the front-centre phone is painted last and physically covers a
+// band of each side phone's screen — measured from the _2 frame's opaque
+// extent (abs x 2231..3768) against each side aperture: 168px off _1's RIGHT
+// edge and 166px off _3's LEFT edge, ~14% of the screen each. Fitting a
+// screenshot to the FULL aperture therefore drops that much of the app UI
+// behind the centre phone, which is what cut the leading characters off
+// "Classes left: 7" and "Per class:". The resize below targets only the
+// VISIBLE part of the aperture and then extends the covered band with the
+// screenshot's own background colour, so the whole app UI lands where the
+// visitor can actually read it and the band under the centre phone still has
+// opaque pixels (the frame's rounded corners don't cover it perfectly).
+const OCCLUDED_BY_FRONT = {
+  _1: { side: "right", px: 168 },
+  _3: { side: "left", px: 166 },
+};
+
 async function maskedScreenshot(group) {
   const p = PHONES[group];
   const { w, h } = p.aperture;
-  let shotBuf = await sharp(path.join(SCREENS, p.screenshot))
-    .resize(w, h, { fit: "cover", position: "top" })
-    .png()
-    .toBuffer();
+  const src = sharp(path.join(SCREENS, p.screenshot));
+  const occ = OCCLUDED_BY_FRONT[group];
 
-  const quad = SCREEN_QUAD[group];
+  let shotBuf;
+  if (occ) {
+    // background colour to pad the covered band with — sampled from the
+    // screenshot's own top-left corner, which is always chrome/background.
+    const { data: px } = await src.clone().extract({ left: 4, top: 4, width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
+    const bg = { r: px[0], g: px[1], b: px[2], alpha: 1 };
+    shotBuf = await src
+      .clone()
+      .resize(w - occ.px, h, { fit: "fill" })
+      .extend({ [occ.side]: occ.px, background: bg })
+      .png()
+      .toBuffer();
+  } else {
+    shotBuf = await src.resize(w, h, { fit: SCREENSHOT_FIT[group], position: "top" }).png().toBuffer();
+  }
+
+  let quad = null;
+  if (SLANTED_GROUPS.has(group)) {
+    const maskPath = path.join(EXTRACT, p.changeThis);
+    if (!quadCache.has(maskPath)) quadCache.set(maskPath, await screenQuadFromMask(maskPath));
+    quad = quadCache.get(maskPath);
+    console.log(`quad ${group}:`, JSON.stringify(quad));
+  }
   if (quad) {
     const tmpIn = path.join(os.tmpdir(), `gy-lwb7t-flat-${Date.now()}-${Math.random().toString(36).slice(2)}.png`);
     fs.writeFileSync(tmpIn, shotBuf);
