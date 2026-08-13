@@ -54,6 +54,12 @@ jobs:
       - name: Install Chromium (visual regression baselines)
         run: npx playwright install chromium
 
+      # gy-cjdtw: bind the preview server to a per-run free port so two jobs on
+      # the shared gt2 host never collide on a fixed :4173 ('localhost:4173
+      # already used'). playwright.config reads PW_PORT.
+      - name: Pick a free preview port
+        run: echo "PW_PORT=$(node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})')" >> "$GITHUB_ENV"
+
       # Same invocation as deploy.yml's pre-deploy smoke gate, plus
       # --update-snapshots. Keeping this identical to the gate's command is
       # the whole point — any drift here would produce baselines that pass
