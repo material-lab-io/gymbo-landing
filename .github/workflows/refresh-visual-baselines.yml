@@ -28,7 +28,7 @@ on:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, gt2]
     permissions:
       contents: write   # needed to commit + push the regenerated baselines
 
@@ -46,8 +46,13 @@ jobs:
 
       - run: npm run build
 
+      # --with-deps dropped deliberately: it shells out to apt-get and needs
+      # root, which a self-hosted runner does not grant. The gt2 runners
+      # already carry the Playwright system libraries and a warm
+      # ~/.cache/ms-playwright, so this resolves from cache. Do NOT re-add
+      # --with-deps when moving a job to self-hosted.
       - name: Install Chromium (visual regression baselines)
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       # Same invocation as deploy.yml's pre-deploy smoke gate, plus
       # --update-snapshots. Keeping this identical to the gate's command is
