@@ -756,9 +756,11 @@ function BrandTouchpoints() {
    authenticated spec (gy-yedub 2026-08-13 10:02): portrait LEFT col-5, carousel
    RIGHT col-7, four shipped touchpoints, stack on mobile.
    ============================================================================ */
+/* Designer sign-off (gy-yedub 12:27): CURATE to 3 slides (not all shipped) so
+   the band reads as intentional brand emphasis next to the photo rather than a
+   verbatim re-list of the BrandTouchpoints grid (which keeps all 8). */
 const BRAND_STORY_SLIDES: Touchpoint[] = [
   TOUCHPOINTS_SHIPPED[0], // QR profile card
-  TOUCHPOINTS_SHIPPED[1], // Per-client share links
   TOUCHPOINTS_SHIPPED[2], // Invoices, exported as PDF
   TOUCHPOINTS_SHIPPED[3], // In-app brand theming
 ];
