@@ -88,7 +88,7 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
   if [ -n "$ANTHROPIC_ITEM" ]; then
     PRIVACY_FILE="$(mktemp)"
     curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
-    if grep -qiF "today's session client names" "$PRIVACY_FILE" || grep -qiF "today’s session client names" "$PRIVACY_FILE"; then
+    if grep -qiE "today(&#x27;|&#39;|'|’)s session client names" "$PRIVACY_FILE"; then
       log "OK   contract: Anthropic disclosure includes 'today's session client names'"
     else
       fail "contract: /privacy does not disclose 'today's session client names' (gy-lucuj)"
