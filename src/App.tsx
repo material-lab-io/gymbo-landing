@@ -447,7 +447,7 @@ export default function App() {
                         poster={demoPoster(p.demoId)}
                         theme={dark ? "dark" : "light"}
                         label={`${p.title} — demo`}
-                        maxWidth={300}
+                        maxWidth={360}
                       />
                     </div>
                   </Reveal>
@@ -492,7 +492,7 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
-                We're early — and built for trainers like you.
+                Built for trainers like you.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
                 Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
