@@ -12,9 +12,18 @@ on:
         required: false
         default: ""
 
+# Serializes every run of this workflow on the gt2 host (gy-5e9u6): the
+# pre-deploy smoke gate below binds port 8788 on the RUNNER ITSELF, not a
+# throwaway hosted VM. Two concurrent runs (e.g. two PRs pushed close
+# together) would collide on that port. cancel-in-progress is deliberately
+# false — this must queue runs, not cancel an in-flight main deploy.
+concurrency:
+  group: gymbo-landing-deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, gt2]
     steps:
       - uses: actions/checkout@v4
 
@@ -43,8 +52,13 @@ jobs:
         env:
           GYMBO_V1_PAT: ${{ secrets.GYMBO_V1_PAT }}
 
+      # --with-deps dropped deliberately: it shells out to apt-get and needs
+      # root, which a self-hosted runner does not grant. The gt2 runners
+      # already carry the Playwright system libraries and a warm
+      # ~/.cache/ms-playwright, so this resolves from cache. Do NOT re-add
+      # --with-deps when moving a job to self-hosted.
       - name: Install Chromium (smoke-gate console check)
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
       # Pre-deploy smoke gate (gy-kefk3): serve the freshly-built dist via the
       # Cloudflare Pages emulator and (1) assert homepage rendered (SSG didn't
