@@ -7,10 +7,8 @@ import {
   FileText,
   Palette,
   Link,
-  Globe,
   CalendarCheck,
   BarChart3,
-  Sparkles,
   Smartphone,
   type LucideIcon,
 } from "lucide-react";
@@ -125,16 +123,29 @@ const PILLARS = [
    minimalist lucide glyph that depicts THIS touchpoint specifically —
    real SVG (recolourable/animatable), not the brand mark (gy-c571s is
    open — these must not drift into looking like the logo). */
-const TOUCHPOINTS: { name: string; desc: string; span?: 2; icon: LucideIcon }[] = [
-  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", span: 2, icon: QrCode },
+/* gy-mdqxp round 5 (items 3+4). Kaushik 2026-08-13: group by READINESS —
+   shipped cards first, forthcoming below — with NO badge/label/heading/dimming.
+   Grouping is order + whitespace only; re-introducing any status label re-opens
+   gy-slagn. Rendered as two stacked grids by <BrandTouchpoints/>, same card
+   treatment for both. Classification is source-verified (marketer, 2026-08-13):
+   in-app brand theming (brand_logo_url/app_icon/accent_color fields, live
+   ProfileSettingsView) and personalized URL (app/(public)/t/[slug]/page.tsx)
+   both confirmed SHIPPING this session; shareable booking link, fitness reports
+   and custom-branded client app are NOT built. Item 4: "Welcome + logo splash"
+   card is cut (logo folded into brand theming's copy), and "Mini-site / public
+   profile" is merged into Personalized URL (same /t/slug page). Each glyph must
+   depict its own touchpoint, never drift toward the Gymbo logo mark (gy-c571s). */
+type Touchpoint = { name: string; desc: string; icon: LucideIcon };
+const TOUCHPOINTS_SHIPPED: Touchpoint[] = [
+  { name: "QR profile card", desc: "Your shareable pro card — name, city, QR to connect.", icon: QrCode },
   { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
   { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
-  { name: "In-app brand theming", desc: "Your colours across the app.", icon: Palette },
-  { name: "Personalized URL", desc: "Your own Gymbo link.", icon: Link },
-  { name: "Mini-site / public profile", desc: "A page clients can find you at.", icon: Globe },
+  { name: "In-app brand theming", desc: "Your colours, icon, and logo across the app.", icon: Palette },
+  { name: "Personalized URL", desc: "Your own page — portfolio, website, public profile.", icon: Link },
+];
+const TOUCHPOINTS_FORTHCOMING: Touchpoint[] = [
   { name: "Shareable booking link", desc: "Let clients reach out to book.", icon: CalendarCheck },
   { name: "Fitness reports", desc: "Shareable client progress summaries.", icon: BarChart3 },
-  { name: "Welcome + logo splash", desc: "Your logo on first open.", icon: Sparkles },
   { name: "Custom-branded client app", desc: "Your brand, your app.", icon: Smartphone },
 ];
 
@@ -447,7 +458,7 @@ export default function App() {
                         poster={demoPoster(p.demoId)}
                         theme={dark ? "dark" : "light"}
                         label={`${p.title} — demo`}
-                        maxWidth={300}
+                        maxWidth={360}
                       />
                     </div>
                   </Reveal>
@@ -492,7 +503,7 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow>Built in India, for Indian trainers</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
-                We're early — and built for trainers like you.
+                Built in India, for the trainers running their own show.
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
                 Gymbo is in beta, built in India with real trainers. Your client data is yours, and we never contact your clients.
@@ -709,33 +720,51 @@ function BrandTouchpoints() {
           </h3>
         </Reveal>
 
+        {/* gy-mdqxp item 3: two stacked grids — shipped above, forthcoming below.
+            Two grids (not one grid) guarantee the shipped-then-forthcoming break
+            holds cleanly at 1440/768/390 with no ragged wrap. Identical card
+            treatment for both, standard gap-3 between the blocks: grouping is
+            ORDER + WHITESPACE only — no badge, label, heading, divider, or
+            dimming (any of those re-opens gy-slagn). */}
         <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {TOUCHPOINTS.map((t, i) => (
-            <CardReveal
-              key={t.name}
-              index={i}
-              /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover
-                 (scale 1.02 + brighten) and feature-card-icon drives the icon
-                 micro-interaction on the same hover. */
-              className={`feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4 ${t.span === 2 ? "sm:col-span-2" : ""}`}
-              style={{
-                border: "1px solid transparent",
-                backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
-                backgroundOrigin: "border-box",
-                backgroundClip: "padding-box, border-box",
-              }}
-            >
-              <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
-                <t.icon size={16} strokeWidth={2} />
-              </span>
-              <div className="text-left">
-                <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
-                <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
-              </div>
-            </CardReveal>
+          {TOUCHPOINTS_SHIPPED.map((t, i) => (
+            <TouchpointCard key={t.name} t={t} index={i} />
+          ))}
+        </ul>
+        <ul className="mx-auto mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
+          {TOUCHPOINTS_FORTHCOMING.map((t, i) => (
+            <TouchpointCard key={t.name} t={t} index={TOUCHPOINTS_SHIPPED.length + i} />
           ))}
         </ul>
       </div>
     </div>
+  );
+}
+
+/* One brand-touchpoint card. Shipped and forthcoming render through the SAME
+   component (gy-slagn / gy-mdqxp item 3: no per-status styling). */
+function TouchpointCard({ t, index }: { t: Touchpoint; index: number }) {
+  return (
+    <CardReveal
+      index={index}
+      /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover (scale
+         1.02 + brighten) and feature-card-icon drives the icon micro-interaction
+         on the same hover. */
+      className="feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4"
+      style={{
+        border: "1px solid transparent",
+        backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+        backgroundOrigin: "border-box",
+        backgroundClip: "padding-box, border-box",
+      }}
+    >
+      <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+        <t.icon size={16} strokeWidth={2} />
+      </span>
+      <div className="text-left">
+        <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
+        <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
+      </div>
+    </CardReveal>
   );
 }
