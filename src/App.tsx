@@ -10,6 +10,8 @@ import {
   CalendarCheck,
   BarChart3,
   Smartphone,
+  ChevronLeft,
+  ChevronRight,
   type LucideIcon,
 } from "lucide-react";
 import "devices.css/dist/devices.min.css";
@@ -470,6 +472,9 @@ export default function App() {
           })}
         </section>
 
+        {/* ───────── brand story (gy-yedub item 6): trainer portrait + touchpoints carousel ───────── */}
+        <BrandStory />
+
         {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
         <section data-testid="gallery-section" aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
@@ -738,6 +743,208 @@ function BrandTouchpoints() {
         </ul>
       </div>
     </div>
+  );
+}
+
+/* ============================================================================
+   gy-yedub item 6 — "brand story" band: a trainer portrait beside a swipeable
+   carousel of the shipped brand touchpoints. Portrait is Unsplash h4i9G-de7Po
+   (John Arano, STANDARD Unsplash License), downloaded + optimised to
+   public/photos (scripts/gy-yedub/optimize-trainer-photo.mjs) — NOT hot-linked.
+   Reuses F tokens, the gradient-border card treatment, Reveal, useReducedMotion
+   and the site's .carousel snap pattern; no new deps. Built to designer's
+   authenticated spec (gy-yedub 2026-08-13 10:02): portrait LEFT col-5, carousel
+   RIGHT col-7, four shipped touchpoints, stack on mobile.
+   ============================================================================ */
+const BRAND_STORY_SLIDES: Touchpoint[] = [
+  TOUCHPOINTS_SHIPPED[0], // QR profile card
+  TOUCHPOINTS_SHIPPED[1], // Per-client share links
+  TOUCHPOINTS_SHIPPED[2], // Invoices, exported as PDF
+  TOUCHPOINTS_SHIPPED[3], // In-app brand theming
+];
+
+function TrainerPortrait({ className = "" }: { className?: string }) {
+  return (
+    <div className={`relative overflow-hidden ${className}`} style={{ background: F.charcoalCard }}>
+      <picture>
+        <source
+          type="image/webp"
+          srcSet="/photos/trainer-lifting-480.webp 480w, /photos/trainer-lifting-720.webp 720w, /photos/trainer-lifting-960.webp 960w, /photos/trainer-lifting-1280.webp 1280w, /photos/trainer-lifting-1600.webp 1600w"
+          sizes="(min-width: 768px) 42vw, 100vw"
+        />
+        <img
+          src="/photos/trainer-lifting.png"
+          alt="A trainer lifting weights mid-session."
+          loading="lazy"
+          decoding="async"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+        />
+      </picture>
+      {/* subtle bottom scrim for depth (no overlaid text → contrast unaffected) */}
+      <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/3" style={{ background: "linear-gradient(to bottom, transparent, rgba(10,10,10,0.85))" }} />
+    </div>
+  );
+}
+
+/* A swipeable, snap-scrolling carousel of touchpoint cards with dot + arrow
+   controls and keyboard support. Auto-advances only when reduced-motion is OFF,
+   and pauses on hover/focus. Active slide is tracked from scroll position so
+   swipe, arrows, dots and auto-advance all stay in sync. */
+function TouchpointCarousel({ items }: { items: Touchpoint[] }) {
+  const prefersReduced = useReducedMotion();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const activeRef = useRef(0);
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const setActiveIdx = (i: number) => {
+    activeRef.current = i;
+    setActive(i);
+  };
+
+  const go = (i: number) => {
+    const n = items.length;
+    const idx = ((i % n) + n) % n;
+    const track = trackRef.current;
+    const slide = track?.children[idx] as HTMLElement | undefined;
+    if (track && slide) {
+      track.scrollTo({ left: slide.offsetLeft - track.offsetLeft, behavior: prefersReduced ? "auto" : "smooth" });
+    }
+    setActiveIdx(idx);
+  };
+
+  const onScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const center = track.scrollLeft + track.clientWidth / 2;
+    let best = 0;
+    let bestD = Infinity;
+    Array.from(track.children).forEach((el, i) => {
+      const s = el as HTMLElement;
+      const c = s.offsetLeft - track.offsetLeft + s.clientWidth / 2;
+      const d = Math.abs(c - center);
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
+    });
+    if (best !== activeRef.current) setActiveIdx(best);
+  };
+
+  useEffect(() => {
+    if (prefersReduced || paused) return;
+    const t = setInterval(() => go(activeRef.current + 1), 4500);
+    return () => clearInterval(t);
+    // go/items are stable for the section's lifetime; guarded by refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefersReduced, paused]);
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "ArrowRight") {
+      e.preventDefault();
+      go(activeRef.current + 1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      go(activeRef.current - 1);
+    }
+  };
+
+  const arrowBtn = "grid place-items-center w-11 h-11 rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2";
+  const arrowStyle = { border: "1px solid rgba(240,240,235,0.22)", color: F.bone } as React.CSSProperties;
+
+  return (
+    <div
+      className="relative flex flex-col h-full"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Your brand across Gymbo"
+      onKeyDown={onKeyDown}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        tabIndex={0}
+        className="carousel flex-1 flex overflow-x-auto snap-x snap-mandatory rounded-[var(--g-radius-xl)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+      >
+        {items.map((t, i) => (
+          <div
+            key={t.name}
+            role="group"
+            aria-roledescription="slide"
+            aria-label={`${i + 1} of ${items.length}: ${t.name}`}
+            className="snap-center shrink-0 basis-full w-full flex"
+          >
+            <div
+              className="feature-card-hover flex flex-col justify-center gap-5 w-full rounded-[var(--g-radius-xl)] p-6 md:p-8"
+              style={{
+                border: "1px solid transparent",
+                backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
+                backgroundOrigin: "border-box",
+                backgroundClip: "padding-box, border-box",
+              }}
+            >
+              <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[46px] h-[46px] rounded-xl" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+                <t.icon size={22} strokeWidth={2} />
+              </span>
+              <div>
+                <span className="block text-[19px] md:text-[22px] font-bold" style={{ fontFamily: SERIF, color: F.bone, letterSpacing: "-0.01em" }}>{t.name}</span>
+                <span className="block mt-2 text-[14px] md:text-[15px]" style={{ fontFamily: SANS, color: F.boneMuted, lineHeight: 1.6 }}>{t.desc}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* controls: prev/next arrows + dots (all ≥44px tap targets) */}
+      <div className="mt-5 flex items-center justify-center gap-3">
+        <button type="button" aria-label="Previous touchpoint" onClick={() => go(activeRef.current - 1)} className={arrowBtn} style={arrowStyle}>
+          <ChevronLeft size={18} />
+        </button>
+        <div className="flex items-center" role="group" aria-label="Choose touchpoint">
+          {items.map((t, i) => (
+            <button
+              key={t.name}
+              type="button"
+              aria-label={`Go to ${t.name}`}
+              aria-current={active === i}
+              onClick={() => go(i)}
+              className="grid place-items-center w-11 h-11 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              <span className="block rounded-full transition-all duration-300" style={{ width: active === i ? 22 : 8, height: 8, background: active === i ? F.marigold : "rgba(240,240,235,0.3)" }} />
+            </button>
+          ))}
+        </div>
+        <button type="button" aria-label="Next touchpoint" onClick={() => go(activeRef.current + 1)} className={arrowBtn} style={arrowStyle}>
+          <ChevronRight size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function BrandStory() {
+  return (
+    <section aria-label="Your brand across Gymbo" style={{ background: F.charcoal }}>
+      <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16">
+        <Reveal className="text-center mb-8 md:mb-10">
+          <span className="block text-[13px] font-bold" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Your brand across Gymbo</span>
+        </Reveal>
+        <div className="grid md:grid-cols-12 items-stretch gap-6 md:gap-10">
+          {/* LEFT ~42%: portrait. Mobile = 16:9 banner; desktop = fills column height. */}
+          <div className="md:col-span-5">
+            <TrainerPortrait className="rounded-[var(--g-radius-lg)] md:rounded-[var(--g-radius-xl)] aspect-[16/9] md:aspect-auto md:h-full" />
+          </div>
+          {/* RIGHT ~58%: touchpoints carousel. */}
+          <div className="md:col-span-7 min-w-0">
+            <TouchpointCarousel items={BRAND_STORY_SLIDES} />
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
