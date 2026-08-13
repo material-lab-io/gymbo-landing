@@ -81,11 +81,9 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
   grep -qF "$ANNUAL_DISPLAY" "$HOME_FILE" && log "OK   contract: annual price display ($ANNUAL_DISPLAY) present" || fail "contract: annual price display ($ANNUAL_DISPLAY) missing from rendered site"
   grep -qF "${SAVINGS}%" "$HOME_FILE" && log "OK   contract: annual savings (${SAVINGS}%) present" || fail "contract: annual savings (${SAVINGS}%) missing from rendered site"
 
-  # Anthropic sub-processor disclosure (gy-lucuj) — WARN ONLY, not a hard gate yet.
-  # gy-lucuj (site copy omits "today's session client names") is still BLOCKED on a
-  # compliance/PM ruling; hard-failing here would red-block every landing deploy on
-  # an unrelated bug. Flip this to `fail` once gy-lucuj's copy fix lands (see bead
-  # gy-csrt8.1 comments for the ruling).
+  # Anthropic sub-processor disclosure (gy-lucuj) — hard gate (gy-ps60p AC2).
+  # gy-lucuj's copy fix landed 2026-08-12 (PR #70); this now fails deploys instead
+  # of just warning.
   ANTHROPIC_ITEM="$(jq -r '.sub_processors[] | select(.name=="Anthropic") | .data_sent[] | select(. == "today'"'"'s session client names")' "$CONTRACT")"
   if [ -n "$ANTHROPIC_ITEM" ]; then
     PRIVACY_FILE="$(mktemp)"
@@ -93,7 +91,7 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
     if grep -qiF "today's session client names" "$PRIVACY_FILE" || grep -qiF "today’s session client names" "$PRIVACY_FILE"; then
       log "OK   contract: Anthropic disclosure includes 'today's session client names'"
     else
-      log "WARN contract: /privacy does not yet disclose 'today's session client names' (tracked as gy-lucuj, not gating deploys)"
+      fail "contract: /privacy does not disclose 'today's session client names' (gy-lucuj)"
     fi
     rm -f "$PRIVACY_FILE"
   fi
