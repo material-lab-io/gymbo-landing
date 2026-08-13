@@ -61,6 +61,9 @@ export function ScreenshotFrame({
 }) {
   const base = `/screens/gallery/${slug}`;
   const frameWidth = Math.round(screenWidth / (HOLE_PCT.width / 100));
+  // gy-wh9li.3: the aperture radius must be CIRCULAR. R measured at 16.56% of the
+  // aperture WIDTH (gy-oooc9); this div's rendered px width is frameWidth·HOLE_PCT.width.
+  const apertureRadiusPx = Math.round(frameWidth * (HOLE_PCT.width / 100) * 0.1656);
   return (
     <div
       className={className}
@@ -81,8 +84,13 @@ export function ScreenshotFrame({
              clipping the screenshot past that curve, showing as a protruding
              square notch over the rounded bezel. 16.56% is that measured
              radius expressed as a % of this div's own width (which scales
-             with screenWidth), not a hand-tuned value. */
-          borderRadius: "16.56%",
+             with screenWidth), not a hand-tuned value.
+             gy-wh9li.3: a single-% border-radius is PER-AXIS (16.56% of width
+             horizontally, 16.56% of HEIGHT vertically) — on this portrait div
+             (~0.46 aspect) that made the vertical radius ~2.2x the horizontal =
+             an ELLIPSE, not the aperture's circular R. Kaushik flagged it live.
+             Use an equal PX radius on both axes so the curve traces the bezel. */
+          borderRadius: `${apertureRadiusPx}px`,
         }}
       >
         <picture>
