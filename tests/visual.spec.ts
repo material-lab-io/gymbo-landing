@@ -149,7 +149,7 @@ test.describe('visual baselines', () => {
     const gallery = page.getByTestId('gallery-section');
     await revealSection(page, gallery);
     await waitImagesLoaded(gallery);
-    const card = page.getByTestId('screen-card').first();
+    const card = gallery.getByTestId('screen-card').first();
     await expect(card).toBeVisible();
     // revealSection ends scrolled to the section BOTTOM, so pull the first card
     // fully back into the viewport before clipping its top-left corner.
