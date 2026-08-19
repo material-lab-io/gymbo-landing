@@ -17,17 +17,38 @@ gate — it does not require a human to notice anything.
 ## Scope: which screenshots are gated
 
 Only the master files actually composited into the live site are gated —
-today, the six entries in `SCREENS` in `scripts/screens-map.mjs`
-(`hero-01-dashboard-clean.png`, `organized-01-schedule-day.png`,
-`revenue-01-ledger-history.png`, `extra-ai-assistant.png`,
-`workouts-01-template-fullbody.png`, `revenue-02-export-statement.png`).
-Both `scripts/optimize-gallery.mjs` (build) and
+today, the nine entries in `SCREENS` in `scripts/screens-map.mjs`. Both
+`scripts/optimize-gallery.mjs` (build) and
 `scripts/check-screenshot-freshness.mjs` (this gate) import that single
 map, so the gated set always matches what actually ships — no separate
 list to fall out of sync. The other files under `public/screens/real/`
 are not currently rendered anywhere and are not gated (add them to
 `screens-map.mjs`'s `SCREENS` map when they go live, and they'll pick up
 the gate automatically — as long as a manifest entry exists for them).
+
+The gated set grew from six to nine on 2026-08-19 (gy-k095b). Under the
+founder's no-bezel rule (gy-r4nzh) the hero and the four pillar visuals
+stopped being composed device art and pre-composed demo clips and became
+real screenshots in bezel-less cards — so three more masters
+(`hero-02-who-owes-balance.png`, `hero-03-log-payment.png`,
+`workouts-04-builder.png`) now render on the live site and are in scope.
+
+### The gate was fail-open from 2026-08-12 to 2026-08-19 (fixed)
+
+Worth knowing, because it is the exact failure this gate exists to catch,
+and it happened *to the gate itself*. Commit `2809c37` (gy-5xmxm, 08-12)
+re-shot **all 20** masters in `public/screens/real/` from a newer build —
+and did not touch this manifest. The six entries kept asserting the older
+08-08 capture (`gymboCommitSha: ba35b647`) for files that had been
+replaced on disk. The gate went on passing, because it checks that an
+entry is fresh and verified, not that it *describes the file it names*.
+
+Corrected in gy-k095b by transcribing the real provenance out of
+`2809c37`'s capture-run record, with each file attested by byte-identity
+against the blob that commit introduced. The residual weakness is
+unchanged and worth a follow-up: nothing binds an entry to its file's
+content, so a recapture that forgets this manifest is still invisible.
+A content hash per entry (`sha256`), checked at gate time, would close it.
 
 ## Manifest schema
 

@@ -1,7 +1,14 @@
-// Optimize "See Gymbo in action" gallery screenshots (bead gy-9bmwm.4).
-// Source: founder-approved curated set in public/screens/real/ (current app UI).
+// Optimize the real app screenshots the site renders (bead gy-9bmwm.4;
+// rescoped by gy-k095b).
+// Source: founder-approved curated masters in public/screens/real/ (current app UI).
 // Output: public/screens/gallery/<slug>-<w>.webp (responsive srcset) + <slug>.png fallback.
 // Run: node scripts/optimize-gallery.mjs
+//
+// gy-k095b: this used to serve only the "See Gymbo in action" gallery, with the
+// hero device handled by a separate special case. Under the no-bezel rule
+// (gy-r4nzh) the hero and the four pillar visuals are the same kind of thing as
+// a gallery card — a real screenshot in a bezel-less card — so they all come
+// from this one pipeline and the same SCREENS map. No per-slot special cases.
 import sharp from "sharp";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
@@ -10,7 +17,9 @@ import { SCREENS } from "./screens-map.mjs";
 const SRC = "public/screens/real";
 const OUT = "public/screens/gallery";
 
-const WIDTHS = [360, 540, 720, 1080]; // gallery ~230–360px CSS + the large hero phone (~600px → 1080 = ~1.8x)
+// 360/540 cover the gallery + pillar cards at 1x/2x; 720/1080 cover the hero
+// cards and 2x/3x on the widest pillar card.
+const WIDTHS = [360, 540, 720, 1080];
 const FALLBACK_W = 540;
 
 await rm(OUT, { recursive: true, force: true });
@@ -29,22 +38,6 @@ for (const [slug, file] of Object.entries(SCREENS)) {
   const pInfo = await sharp(input).resize(FALLBACK_W).png({ compressionLevel: 9, palette: true }).toFile(pngOut);
   total += pInfo.size;
   console.log(`${pngOut}  ${(pInfo.size / 1024).toFixed(1)} kB  (fallback)`);
-}
-// Hero device (gy-a73px.7): keep the master's full device aspect, like every other
-// slug — no extra crop on top of the optimizer. HeroPhone's box (1206/2622) is still
-// taller than this master (1206x2282, pre-trimmed by 340px upstream — see sibling
-// bead for a clean full-height capture), so a small residual cover-crop remains, but
-// the ~1.645x double-crop from the old top=690 region is gone.
-{
-  const heroSrc = path.join(SRC, "hero-01-dashboard-clean.png");
-  for (const w of [540, 720, 1080]) {
-    const out = path.join(OUT, `hero-dashboard-${w}.webp`);
-    const info = await sharp(heroSrc).resize(w).webp({ quality: 80, effort: 6 }).toFile(out);
-    total += info.size;
-    console.log(`${out}  ${(info.size / 1024).toFixed(1)} kB`);
-  }
-  const heroPng = path.join(OUT, "hero-dashboard.png");
-  await sharp(heroSrc).resize(540).png({ compressionLevel: 9, palette: true }).toFile(heroPng);
 }
 
 console.log(`\nTotal on disk: ${(total / 1024).toFixed(1)} kB across ${Object.keys(SCREENS).length} screens`);

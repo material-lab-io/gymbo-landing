@@ -3,8 +3,8 @@
 # ║                                                                           ║
 # ║  Regenerates the Playwright visual-regression baselines                  ║
 # ║  (tests/visual.spec.ts-snapshots/*-linux.png) that deploy.yml's           ║
-# ║  pre-deploy smoke gate checks pixel-for-pixel against. Runs on            ║
-# ║  ubuntu-latest — the SAME runner image the deploy gate uses — because     ║
+# ║  pre-deploy smoke gate checks pixel-for-pixel against. Runs on the        ║
+# ║  SAME self-hosted gt2 runners the deploy gate uses — because              ║
 # ║  Playwright screenshot baselines are sensitive to browser build and font  ║
 # ║  rendering; baselines captured elsewhere will not reliably match what     ║
 # ║  the gate compares against.                                              ║

@@ -48,7 +48,19 @@ jobs:
       - name: Screenshot staleness gate
         run: node scripts/check-screenshot-freshness.mjs
 
+      # No-bezel gate (gy-k095b, founder rule gy-r4nzh): the site shows REAL app
+      # screenshots with NO phone bezels or device frames — "bezels give away AI".
+      # Runs twice: here against src/ so an authored regression fails fast, and
+      # again after the build against dist/, because the old frame art lived in
+      # public/ and Vite copies that into dist/ with no source file referencing
+      # it — a src-only scan would pass while the bezel shipped.
+      - name: No-bezel gate (source)
+        run: node scripts/check-no-bezel.mjs
+
       - run: npm run build
+
+      - name: No-bezel gate (built output)
+        run: node scripts/check-no-bezel.mjs --dist
 
       # Deploy-SHA guard (gy-sa0fm AC3): "merged but not deployed" was
       # invisible until someone manually curled the site — that is exactly

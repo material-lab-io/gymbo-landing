@@ -15,7 +15,6 @@ const IGNORE = [
   'fonts.gstatic.com',
   'favicon',
   'og-image',
-  'hero-demo.mp4', // stand-in clip may 416/range-fail under preview; not a code error
   'Failed to load resource',
   'net::ERR',
 ];
@@ -47,16 +46,45 @@ test('nav and hero render with the headline', async ({ page }) => {
   await expect(h1).toContainText(/from your phone/i);
 });
 
-test('demo videos play inside device frames', async ({ page }) => {
+// gy-k095b — the runtime half of founder rule gy-r4nzh ("REAL screenshots, NO
+// phone bezels; bezels give away AI"). scripts/check-no-bezel.mjs gates the
+// SOURCE and the BUILT OUTPUT; this gates the RENDERED PAGE, which is the thing
+// Kaushik actually looks at. A denylist can only catch device art it can name or
+// pattern-match — this catches "a frame got rendered" regardless of how.
+//
+// This replaced a test that asserted demo videos play INSIDE DEVICE FRAMES —
+// i.e. it gated the exact thing now forbidden. A test that outlives the rule it
+// encoded silently protects the regression.
+test('product visuals are real screenshots in bezel-less cards, with no device frames', async ({ page }) => {
   await page.goto('/');
-  // hero is now a static HeroPhone screenshot (gy-pzefj) — the first <video>
-  // is the "why" pillars' DemoFrame clip, which lazy-mounts on scroll
-  // (IntersectionObserver, rootMargin 250px).
+
+  // Every product visual is a ScreenCard...
   await page.locator('#why').scrollIntoViewIfNeeded();
-  const v = page.locator('video').first();
-  await expect(v).toBeVisible();
-  await expect(v).toHaveJSProperty('muted', true);
-  await expect(v).toHaveJSProperty('loop', true);
+  const cards = page.getByTestId('screen-card');
+  expect(await cards.count()).toBeGreaterThan(0);
+  // Scope to VISIBLE cards: the hero renders a desktop trio (`hidden lg:block`)
+  // and a separate single mobile card, so on a phone viewport the first card in
+  // DOM order is deliberately hidden — .first() alone would fail there for a
+  // reason that has nothing to do with the rule under test.
+  const shown = cards.locator('visible=true');
+  expect(await shown.count()).toBeGreaterThan(0);
+  await expect(shown.first()).toBeVisible();
+
+  // ...each showing a real screenshot that actually loaded (a broken <img> would
+  // still satisfy a "card exists" assertion).
+  const firstImg = shown.first().locator('img');
+  await expect(firstImg).toBeVisible();
+  expect(await firstImg.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+
+  // ...and nothing on the page is a device frame or a composed demo clip.
+  expect(await page.locator('video').count()).toBe(0);
+  const framedAssets = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('img, source, video'))
+      .flatMap((el) => [el.getAttribute('src'), el.getAttribute('srcset'), el.getAttribute('poster')])
+      .filter((v): v is string => !!v)
+      .filter((v) => /iphone-frame|three-panel|-frame-|\/mockups\//.test(v))
+  );
+  expect(framedAssets, `device-frame art is rendering on the page: ${framedAssets.join(', ')}`).toEqual([]);
 });
 
 test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
@@ -73,12 +101,19 @@ test('a pre-seeded dark localStorage value is ignored — site is light only (gy
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 250, 247)'); // --c-bg #fafaf7
 });
 
-test('pillar-organized keeps its fixed dark accent-band clip variant (unrelated to page theme)', async ({ page }) => {
+test('pillar-organized keeps its fixed dark accent band (unrelated to page theme)', async ({ page }) => {
   // PILLARS[].dark is a per-section design constant (charcoal accent band),
   // independent of the removed global theme system — this is NOT dark mode.
+  //
+  // gy-k095b: this used to assert `video[data-theme-variant="dark"]` — it proved
+  // the band by way of the demo clip's light/dark variant, which is gone with the
+  // videos. Assert the band itself, which is what the test was ever about and
+  // survives the next change to how the visual is rendered.
   await page.goto('/');
-  await page.locator('[data-testid="pillar-organized"]').scrollIntoViewIfNeeded();
-  await expect(page.locator('video[data-theme-variant="dark"]').first()).toBeVisible();
+  const pillar = page.locator('[data-testid="pillar-organized"]');
+  await pillar.scrollIntoViewIfNeeded();
+  await expect(pillar).toBeVisible();
+  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)'); // F.charcoal #0a0a0a
 });
 
 test('coming-soon bullets render inline, not as demo-frame badges', async ({ page }) => {
