@@ -508,57 +508,35 @@ export default function App() {
           </div>
         </section>
 
-        {/* ───────── trust (positioning-led) ───────── */}
-        <section aria-label="Trusted by trainers" style={{ background: F.beige }}>
+        {/* ───────── why we built gymbo (F5 dedup + F6 restructure) ───────── */}
+        <section aria-label="Why we built Gymbo" style={{ background: F.beige }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
-              <Eyebrow>Built in India, for Indian trainers</Eyebrow>
+              <Eyebrow>Why we built Gymbo</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
-                Made for the trainers building their own business.
+                Built in India for Indian trainers
               </h2>
-              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "40ch" }}>
-                Gymbo is built in India with real trainers. Your client data is yours, and we never contact your clients.
+              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
+                Most independent trainers in India run their business through WhatsApp threads, paper registers, and mental math. Payments get missed, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are.
               </p>
             </Reveal>
 
-            {/* testimonials */}
-            <div className="mt-12 grid md:grid-cols-2 gap-6">
-              <Reveal>
-                <figure className="h-full flex flex-col p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
-                  <blockquote className="text-[15px] md:text-[17px] italic" style={{ fontFamily: SERIF, lineHeight: 1.75, color: F.ink }}>
-                    “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
-                  </blockquote>
-                  <figcaption className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
-                    <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: F.amberText, fontFamily: SANS }}>S</span>
-                    <span className="flex flex-col">
-                      <span className="text-[14px] font-bold" style={{ color: F.ink, fontFamily: SANS }}>Sarfaraz</span>
-                      <span className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Fitness trainer · Bangalore</span>
-                    </span>
-                  </figcaption>
-                </figure>
-              </Reveal>
-              <Reveal>
-                <div className="h-full flex flex-col items-center justify-center text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: "transparent", border: "1px dashed var(--c-line)" }}>
-                  <span className={`grid place-items-center w-12 h-12 rounded-full text-[16px] font-bold mb-4 ${prefersReduced ? "" : "waiting-pulse"}`} style={{ background: "rgba(245,158,11,0.12)", color: F.amberText, fontFamily: SANS }}>+</span>
-                  <p className="text-[15px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.5, maxWidth: "26ch" }}>More trainers are coming on board across India.</p>
-                </div>
-              </Reveal>
-            </div>
-
-            <div className="mt-10 grid sm:grid-cols-2 gap-4">
-              <Reveal>
-                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
-                  <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Your client data is yours</h4>
-                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>Export anytime. We never contact your clients.</p>
-                </div>
-              </Reveal>
-              <Reveal>
-                <div className="p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-lg)]" style={{ background: F.beige, border: "1px solid var(--c-line)" }}>
-                  <h4 className="text-[15px] font-bold mb-1.5" style={{ fontFamily: SANS, color: F.ink }}>Why we built Gymbo</h4>
-                  <p className="text-[14px]" style={{ color: F.inkAnchor, fontFamily: SANS, lineHeight: 1.55 }}>We watched trainers run their whole business on WhatsApp threads and paper registers, so we built Gymbo.</p>
-                </div>
-              </Reveal>
-            </div>
+            {/* testimonial */}
+            <Reveal className="mt-12 mx-auto max-w-[720px]">
+              <figure className="flex flex-col text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
+                <blockquote className="text-[15px] md:text-[17px] italic" style={{ fontFamily: SERIF, lineHeight: 1.75, color: F.ink }}>
+                  “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
+                </blockquote>
+                <figcaption className="flex flex-col items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
+                  <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: F.amberText, fontFamily: SANS }}>S</span>
+                  <span className="flex flex-col items-center">
+                    <span className="text-[14px] font-bold" style={{ color: F.ink, fontFamily: SANS }}>Sarfaraz</span>
+                    <span className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Fitness trainer · Bangalore</span>
+                  </span>
+                </figcaption>
+              </figure>
+              <p className="mt-4 text-center text-[14px]" style={{ color: F.inkLabel, fontFamily: SANS }}>More trainers across India are coming on board.</p>
+            </Reveal>
           </div>
         </section>
 
