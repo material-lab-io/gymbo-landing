@@ -11,14 +11,16 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  *
  * The one trap this file works around (see the bead for the full writeup):
  *  - Below-the-fold content is gated on IntersectionObserver
- *    (.reveal-on-scroll in App.tsx) and the pillar demo videos lazy-mount on
- *    a SECOND IntersectionObserver (PhoneMockup.tsx DemoFrame, rootMargin
- *    "250px 0px"). A capture that doesn't actually scroll a section into
- *    view renders it EMPTY.
+ *    (.reveal-on-scroll in App.tsx). A capture that doesn't actually scroll a
+ *    section into view renders it EMPTY.
  *
- * The pillar demo clips are live, looping <video> elements — the flake risk
- * for any pixel-diff baseline. They're frozen (paused + seeked to frame 0)
- * right before every screenshot rather than accepting a wide diff threshold.
+ * gy-k095b: there are no <video> elements on the site any more. Under the
+ * founder's no-bezel rule (gy-r4nzh) the pillar demo clips — which had the
+ * device frame and captions burnt into the video — were replaced by real
+ * screenshots in bezel-less ScreenCards. That deletes this file's single
+ * largest flake source (gy-cjdtw: a looping video's decoded frame is
+ * non-deterministic across the 3 gt2 runners), along with the poster-swap
+ * workaround it needed. Everything captured now is static images and DOM.
  */
 
 const SECTIONS = [
@@ -31,41 +33,6 @@ const SECTIONS = [
   { name: 'pricing', testId: 'pricing-section' },
   { name: 'footer-cta', testId: 'footer-cta-section' },
 ] as const;
-
-/** gy-cjdtw: a looping <video>'s decoded frame is NON-DETERMINISTIC across gt2
- * runs — even after seeking to frame 0, two separate runs (and the 3 physical
- * gt2 runners) decode subtly different pixels, so the demo-clip region can never
- * be reliably matched by a pixel baseline (seeking-to-0 was the previous, still-
- * flaky attempt: pillar-revenue-mobile diffed 16k px purely inside the video).
- *
- * Instead, swap each demo <video> for its own POSTER — a static PNG of the SAME
- * composed scene (phone frame, rounded corners, aperture edges AND the app
- * screen). The snapshot becomes deterministic while EVERYTHING stays GATED:
- * nothing is masked, so the frame/corner/aperture-edge regression class (round-7
- * F3) is still fully checked, along with all surrounding copy and layout. The
- * poster is the video's own `poster` attribute, rendered at the identical box so
- * the page layout is pixel-unchanged. */
-async function freezeVideos(page: Page) {
-  await page.evaluate(async () => {
-    const decode = (img: HTMLImageElement) =>
-      img.decode ? img.decode().catch(() => {}) : Promise.resolve();
-    for (const v of Array.from(document.querySelectorAll('video'))) {
-      v.pause();
-      const poster = v.getAttribute('poster');
-      if (!poster) continue;
-      const img = document.createElement('img');
-      img.src = poster;
-      img.setAttribute('aria-hidden', 'true');
-      // Mirror the video's box so the poster's baked-in frame + the surrounding
-      // layout land pixel-identical to the live element.
-      img.className = v.className;
-      const style = v.getAttribute('style');
-      if (style) img.setAttribute('style', style);
-      v.replaceWith(img);
-      await decode(img);
-    }
-  });
-}
 
 /** Scroll fully through a section (top, then bottom) and wait for every
  * .reveal-on-scroll descendant to pick up `is-visible` before we screenshot
@@ -118,8 +85,8 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
 }
 
 /** Wait for every <img> inside the locator to finish loading (real natural
- * size, not a still-pending/broken placeholder) — covers the hero device
- * screenshot and the gallery's real-app screenshots. */
+ * size, not a still-pending/broken placeholder) — covers every ScreenCard on
+ * the page: the hero trio, the four pillar screens, and the gallery strip. */
 async function waitImagesLoaded(locator: Locator) {
   await locator.evaluate((el) =>
     Promise.all(
@@ -132,16 +99,6 @@ async function waitImagesLoaded(locator: Locator) {
       })
     )
   );
-}
-
-/** If this section lazy-mounts a demo <video> (DemoFrame's own
- * IntersectionObserver), give it a moment to actually attach before we try
- * to freeze it. */
-async function waitVideoMounted(locator: Locator) {
-  const video = locator.locator('video').first();
-  if (await video.count()) {
-    await video.waitFor({ state: 'attached', timeout: 10000 });
-  }
 }
 
 /** The sticky top nav and the mobile fixed bottom CTA bar sit OUTSIDE every
@@ -172,31 +129,35 @@ test.describe('visual baselines', () => {
       await revealSection(page, locator);
       await scrollHorizontalCarousels(page, locator);
       await waitImagesLoaded(locator);
-      await waitVideoMounted(locator);
-      await freezeVideos(page);
       await expect(locator).toHaveScreenshot(`${section.name}-light.png`);
     });
   }
 
-  // gy-wh9li.3: a ZOOMED top-left corner of the first "See Gymbo in action"
-  // phone. The full-section gallery snapshot is too low-res to catch a subtly
-  // wrong aperture radius (the elliptical-vs-circular corner Kaushik flagged, and
-  // that gy-oooc9 missed by checking the number not the curve). This dedicated
-  // corner clip fails loudly if the screenshot edge stops tracing the bezel.
+  // A ZOOMED top-left corner of the first "See Gymbo in action" card. The
+  // full-section snapshot is too low-res to catch what goes wrong at a card
+  // edge: originally a subtly wrong FRAME APERTURE radius (gy-wh9li.3 — the
+  // elliptical-vs-circular corner Kaushik flagged, which gy-oooc9 missed by
+  // checking the number instead of the curve).
+  //
+  // gy-k095b: the aperture is gone with the device frame, but the corner is
+  // still the right place to look — it is where a bezel would come BACK
+  // visually. This clip now gates the ScreenCard's own contract: the Forge
+  // radius actually clips the screenshot, and there is no frame edge, notch
+  // or device rail between the card boundary and the app's own pixels.
   // Runs in both projects (desktop + mobile).
-  test('gallery-phone-corner', async ({ page }) => {
+  test('gallery-card-corner', async ({ page }) => {
     const gallery = page.getByTestId('gallery-section');
     await revealSection(page, gallery);
     await waitImagesLoaded(gallery);
-    const phone = page.getByTestId('screenshot-frame').first();
-    await expect(phone).toBeVisible();
-    // revealSection ends scrolled to the section BOTTOM, so pull the first phone
+    const card = page.getByTestId('screen-card').first();
+    await expect(card).toBeVisible();
+    // revealSection ends scrolled to the section BOTTOM, so pull the first card
     // fully back into the viewport before clipping its top-left corner.
-    await phone.scrollIntoViewIfNeeded();
+    await card.scrollIntoViewIfNeeded();
     await page.waitForTimeout(150);
-    const box = await phone.boundingBox();
-    if (!box) throw new Error('gallery phone frame has no bounding box');
-    await expect(page).toHaveScreenshot('gallery-phone-corner-light.png', {
+    const box = await card.boundingBox();
+    if (!box) throw new Error('gallery screen card has no bounding box');
+    await expect(page).toHaveScreenshot('gallery-card-corner-light.png', {
       clip: { x: Math.max(0, box.x), y: Math.max(0, box.y), width: 96, height: 96 },
     });
   });

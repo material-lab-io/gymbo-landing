@@ -13,33 +13,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import "devices.css/dist/devices.min.css";
-import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
+import { ScreenCard } from "./components/ScreenCard";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
-
-// Wave 2↔3 seam (marketer dr-g4ps): video renders per-journey clips to
-// public/demos/<journey-id>-<theme>.mp4 (+ poster), plus hero-light/hero-dark
-// montages. ids: hero, client-list, punch-class, log-payment, branded-statement,
-// schedule, build-workout, ask-gymbo, profile-qr. 1080x1920 9:16 H.264, light+dark.
-// Until those real renders land, every slot uses the stand-in hero-demo.mp4 —
-// flip DEMOS_READY to true (one line) when public/demos/* ships.
-const DEMOS_READY = true;
-const STANDIN_CLIP = "/hero-demo.mp4";
-const STANDIN_POSTER = "/hero-demo-poster.png";
-const demoClip = (id: string): ClipMap =>
-  DEMOS_READY ? { light: `/demos/${id}-light.mp4`, dark: `/demos/${id}-dark.mp4` } : { light: STANDIN_CLIP, dark: STANDIN_CLIP };
-const demoPoster = (id: string): ClipMap =>
-  DEMOS_READY ? { light: `/demos/${id}-light.png`, dark: `/demos/${id}-dark.png` } : { light: STANDIN_POSTER, dark: STANDIN_POSTER };
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
    Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
    beige/charcoal + solid amber accent). Brand = Forge amber #F59E0B / marigold
-   #FBBF24, accent only. Hero + 4 pillars use composed demo clips (DemoFrame);
-   the "see it in action" gallery uses current real-app screenshots in a device
-   frame (ScreenshotFrame) — founder-approved curated set, optimized to WebP via
-   scripts/optimize-gallery.mjs (gy-9bmwm.4).
+   #FBBF24, accent only. Every product visual on the page — hero, the 4 pillars,
+   and the "see it in action" gallery — is a REAL app screenshot in a bezel-less
+   ScreenCard (founder rule gy-r4nzh / build gy-k095b). No device frames, no
+   composed demo clips. Masters are the founder-approved curated set, optimized
+   to WebP via scripts/optimize-gallery.mjs (gy-9bmwm.4).
    ============================================================================ */
 
 /* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
@@ -50,7 +37,8 @@ const demoPoster = (id: string): ClipMap =>
 const PILLARS = [
   {
     id: "revenue",
-    demoId: "log-payment",
+    screen: "payments",
+    screenAlt: "The Gymbo ledger showing a client's class and payment history with a running balance",
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
@@ -65,7 +53,8 @@ const PILLARS = [
   },
   {
     id: "organized",
-    demoId: "schedule",
+    screen: "schedule",
+    screenAlt: "The Gymbo schedule for a single day, with each client's class in its time slot",
     n: "02",
     eyebrow: "Your whole roster",
     title: "Get organized",
@@ -81,7 +70,8 @@ const PILLARS = [
   },
   {
     id: "brand",
-    demoId: "branded-statement",
+    screen: "export",
+    screenAlt: "A branded client statement being exported from Gymbo as a PDF",
     n: "03",
     eyebrow: "Look professional",
     title: "Your brand, your business",
@@ -96,7 +86,8 @@ const PILLARS = [
   },
   {
     id: "workouts",
-    demoId: "build-workout",
+    screen: "workouts",
+    screenAlt: "A full-body workout built in Gymbo, with squat, bench press and barbell row",
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
@@ -150,9 +141,10 @@ const TOUCHPOINTS_FORTHCOMING: Touchpoint[] = [
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
-   curated set, public/screens/gallery/) shown in a unified iPhone device frame.
-   Static stills (the motion lives in the hero + pillar demo clips). Source files:
-   public/screens/real/* → optimized via scripts/optimize-gallery.mjs (gy-9bmwm.4). ── */
+   curated set, public/screens/gallery/) shown as bezel-less ScreenCards — the
+   iPhone device frame this used to composite into is gone site-wide (gy-r4nzh /
+   gy-k095b). Static stills. Source files: public/screens/real/* → optimized via
+   scripts/optimize-gallery.mjs (gy-9bmwm.4). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
   { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
@@ -258,36 +250,40 @@ function CardReveal({
    page
    ============================================================================ */
 
-/* Hero device art — Kaushik's three-iPhone MockupWorld mockup (founder-
-   verified free/open-source, gy-dfl55.14), NOT a hand-built CSS bezel. The
-   three "Change-This" screen apertures were extracted from the source SVG
-   (composing its nested transform groups for true coordinates — the raw
-   layer x/y report as 0,0), then hero-01/02/03 (dashboard / who-owes /
-   log-payment) were composited into them and the whole scene exported as
-   ONE flat raster (scripts/gy-7yhkh/build-hero.mjs) — the mockup's own
-   metal, reflections, shadows and fan arrangement ship as-is, per Kaushik's
-   direction not to reconstruct a finished asset in CSS (gy-7yhkh). Source:
-   review-artifacts/gy-dfl55.14/mockupworld-three-iphone-17-screens.svg,
-   supplied by Kaushik via Drive, downloaded 2026-08-11.
-   Exported bbox: 4800×3236 (cropped from the 6000×4500 canvas to content). */
-const HERO_PANEL_W = 4800;
-const HERO_PANEL_H = 3236;
-const HERO_PANEL_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
-const HERO_PANEL_PNG = "/mockups/hero-three-panel-1200.png";
+/* Hero screens — three bezel-less ScreenCards (gy-k095b, founder rule gy-r4nzh).
+   REPLACES the baked three-iPhone MockupWorld raster (its art now lives, unserved,
+   in assets-src/ — the gate in scripts/check-no-bezel.mjs forbids naming it here):
+   Kaushik ruled on 2026-08-14 that device frames read as AI-generated, so the
+   mockup's metal/reflections/fan arrangement are gone and the three real screens
+   stand on their own. Same three captures as before — dashboard, who-owes-balance,
+   log-payment — now shown directly.
 
-function HeroThreePanel({ alt = "", className = "", style, sizes, priority = false }: { alt?: string; className?: string; style?: React.CSSProperties; sizes: string; priority?: boolean }) {
+   The centre card leads (larger, level); the two flanking cards are slightly
+   smaller and dropped a touch, which keeps the "three screens" read of the
+   original arrangement without implying a physical device. Widths are
+   percentages of the stage so the whole group scales with the hero's own
+   min(46vw, 720px) box. */
+const HERO_CARDS = [
+  { slug: "balances", alt: "", w: "29%", drop: 22 },
+  { slug: "dashboard", alt: "Gymbo's home screen, showing each client's punch card and classes remaining", w: "36%", drop: 0 },
+  { slug: "log-payment", alt: "", w: "29%", drop: 22 },
+];
+
+function HeroScreens({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <div className={className} style={{ lineHeight: 0, aspectRatio: `${HERO_PANEL_W} / ${HERO_PANEL_H}`, ...style }}>
-      <picture>
-        <source type="image/webp" srcSet={HERO_PANEL_SRCSET} sizes={sizes} />
-        <img
-          src={HERO_PANEL_PNG}
-          alt={alt}
-          decoding="async"
-          {...(priority ? { fetchpriority: "high" as const } : {})}
-          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+    <div className={`flex items-center justify-center gap-[3%] ${className}`} style={style}>
+      {HERO_CARDS.map((c) => (
+        <ScreenCard
+          key={c.slug}
+          slug={c.slug}
+          alt={c.alt}
+          width={c.w}
+          /* stage is min(46vw,720px); the widest card is 36% of it */
+          sizes="(min-width: 1024px) min(16vw, 240px), 33vw"
+          priority
+          style={c.drop ? { transform: `translateY(${c.drop}px)` } : undefined}
         />
-      </picture>
+      ))}
     </div>
   );
 }
@@ -376,8 +372,14 @@ export default function App() {
               portrait phones), so it's vertically centered rather than stretched the full
               header height. Floating "class logged" / "paid" chips removed (gy-dfl55.1 —
               tags read as nonsense at this distance from the screens). */}
-          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
-            <HeroThreePanel style={{ width: "100%" }} sizes="(min-width: 1024px) min(46vw, 720px)" priority />
+          {/* gy-k095b: the stage used to bleed flush to the right viewport edge
+              (gy-k2543.10) — correct for the old landscape raster, which had its
+              own margin baked in and read as art running off the page. Three
+              discrete screen cards bleeding off the edge instead read as a
+              clipping BUG: the third card loses its right corner radius and its
+              shadow. Inset so all three cards sit whole. */}
+          <div aria-hidden="true" className={`hidden lg:block absolute right-[clamp(20px,3vw,56px)] top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(44vw, 660px)" }}>
+            <HeroScreens style={{ width: "100%" }} />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -400,10 +402,19 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              {/* mobile / tablet device — below copy, chips hidden. Landscape three-panel
-                  art (not a tall single phone), so no bottom bleed needed. */}
+              {/* mobile / tablet screens — below the copy. Deliberately ONE card, not
+                  the desktop trio: three portrait screens across a phone viewport render
+                  at ~160px each, and a real screenshot that small is an unreadable smudge —
+                  which is the opposite of what the no-bezel rule (gy-r4nzh) is for. The
+                  other two hero screens still appear further down the page. */}
               <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <HeroThreePanel alt="Gymbo: dashboard, balances, and payment logging shown across three phones" style={{ width: "min(92vw, 560px)" }} sizes="min(92vw, 560px)" priority />
+                <ScreenCard
+                  slug="dashboard"
+                  alt="Gymbo's home screen, showing each client's punch card and classes remaining"
+                  width="min(64vw, 280px)"
+                  sizes="min(64vw, 280px)"
+                  priority
+                />
               </div>
             </div>
           </div>
@@ -453,13 +464,13 @@ export default function App() {
 
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
-                      <DemoFrame
-                        clip={demoClip(p.demoId)}
-                        poster={demoPoster(p.demoId)}
-                        theme={dark ? "dark" : "light"}
-                        label={`${p.title} — demo`}
-                        maxWidth={360}
-                      />
+                      {/* gy-k095b: was a DemoFrame .mp4 with the device bezel, a title
+                          card and a caption burnt into the clip — unshippable under
+                          gy-r4nzh. Screen-only motion loops are the fast-follow
+                          (gy-39v87); until then the real screen carries the pillar.
+                          320px of pure screen reads larger than the old 360px clip,
+                          which spent most of its width on bezel and background. */}
+                      <ScreenCard slug={p.screen} alt={p.screenAlt} width={320} />
                     </div>
                   </Reveal>
                 </div>
@@ -483,7 +494,7 @@ export default function App() {
             <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
               {SCREENS.map((s) => (
                 <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
-                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={276} />
+                  <ScreenCard slug={s.slug} alt={s.alt} width={276} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
