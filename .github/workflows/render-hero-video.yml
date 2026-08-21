@@ -30,7 +30,14 @@ on:
 
 jobs:
   render:
-    runs-on: ubuntu-latest
+    # gy-5e9u6: self-hosted only (Kaushik standing rule 2026-08-13). gt2 has
+    # docker, node, npx, google-chrome. NOTE: this job spins a FULL local
+    # Supabase stack (~10 containers) + Next.js + a headless Remotion render on
+    # the SHARED gt2 box that also runs the town control plane — heavy, so it is
+    # workflow_dispatch-only and has an always() teardown (below) to stop the
+    # Supabase containers and the backgrounded Next.js, which a throwaway hosted
+    # VM used to discard for free.
+    runs-on: [self-hosted, gt2]
     timeout-minutes: 30
     permissions:
       contents: write   # needed to commit + push rendered files when deploy=true
@@ -118,7 +125,11 @@ jobs:
       # Privacy: fictional phone + static OTP. No real SMS sent.
       - name: Install Playwright Chromium
         working-directory: video
-        run: npx playwright install chromium --with-deps
+        # gy-5e9u6: no --with-deps on self-hosted — that apt-get installs system
+        # libraries as root, which the runner is not granted. gt2 already has the
+        # Playwright system libs + a warm ~/.cache/ms-playwright, so chromium
+        # resolves from cache.
+        run: npx playwright install chromium
 
       - name: Capture screenshots
         working-directory: video
@@ -169,3 +180,17 @@ jobs:
             git commit -m "chore(video): re-render hero video [skip ci]"
             git push
           fi
+
+      # ── 10. Teardown (self-hosted only) ────────────────────────────────────
+      # gy-5e9u6: the gt2 runner is PERSISTENT — a hosted VM discarded all of
+      # this for free, but here we must stop the Supabase Docker stack and the
+      # backgrounded Next.js so containers, volumes, and the :3000 process do not
+      # leak across runs on the shared box. always() so it runs even on failure.
+      - name: Stop local Supabase + Next.js
+        if: always()
+        working-directory: gymbo-v1
+        run: |
+          supabase stop --no-backup || true
+          # kill whatever is still bound to :3000 (the backgrounded dev server)
+          pids=$(lsof -ti tcp:3000 2>/dev/null || true)
+          if [ -n "$pids" ]; then echo "killing stray :3000 pids: $pids"; kill $pids 2>/dev/null || true; fi
