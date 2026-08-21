@@ -130,12 +130,17 @@ const FORGE_CSS = `
           .feature-card-hover:hover{transform:scale(1.02);background-color:rgba(240,240,235,0.04)}
           .feature-card-hover:hover .feature-card-icon{transform:rotate(8deg) scale(1.08)}
         }
+        @keyframes g-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        .marquee-mask{-webkit-mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent)}
+        .marquee-track{animation:g-marquee 38s linear infinite}
+        .marquee-mask:hover .marquee-track,.marquee-mask:focus-within .marquee-track{animation-play-state:paused}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
           .waiting-pulse{animation:none!important;box-shadow:0 0 0 0 rgba(245,158,11,.22)!important}
           .feature-card-hover,.feature-card-icon{transition:none!important}
           .feature-card-hover:hover,.feature-card-hover:hover .feature-card-icon{transform:none!important}
+          .marquee-track{animation:none!important;transform:none!important}
         }
       `;
 
