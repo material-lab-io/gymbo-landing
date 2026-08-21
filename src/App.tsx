@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   Plus,
@@ -103,43 +103,6 @@ const PILLARS = [
   },
 ];
 
-/* ── brand touchpoints ──
-   `span: 2` is a DELIBERATE per-card call (Kaushik, gy-dfl55.4), not a
-   pattern derived from array position — only the QR profile card (the
-   most tangible, most-shown touchpoint) spans two grid columns; every
-   other card is single-span. Do not replace with an alternating/index
-   rule — that just reads as a different loop.
-
-   gy-dfl55.6: `icon` replaces the generic yellow-dot bullet with a
-   minimalist lucide glyph that depicts THIS touchpoint specifically —
-   real SVG (recolourable/animatable), not the brand mark (gy-c571s is
-   open — these must not drift into looking like the logo). */
-/* gy-mdqxp round 5 (items 3+4). Kaushik 2026-08-13: group by READINESS —
-   shipped cards first, forthcoming below — with NO badge/label/heading/dimming.
-   Grouping is order + whitespace only; re-introducing any status label re-opens
-   gy-slagn. Rendered as two stacked grids by <BrandTouchpoints/>, same card
-   treatment for both. Classification is source-verified (marketer, 2026-08-13):
-   in-app brand theming (brand_logo_url/app_icon/accent_color fields, live
-   ProfileSettingsView) and personalized URL (app/(public)/t/[slug]/page.tsx)
-   both confirmed SHIPPING this session; shareable booking link, fitness reports
-   and custom-branded client app are NOT built. Item 4: "Welcome + logo splash"
-   card is cut (logo folded into brand theming's copy), and "Mini-site / public
-   profile" is merged into Personalized URL (same /t/slug page). Each glyph must
-   depict its own touchpoint, never drift toward the Gymbo logo mark (gy-c571s). */
-type Touchpoint = { name: string; desc: string; icon: LucideIcon };
-const TOUCHPOINTS_SHIPPED: Touchpoint[] = [
-  { name: "QR profile card", desc: "Your shareable pro card: name, city, QR to connect.", icon: QrCode },
-  { name: "Per-client share links", desc: "Send any client their statement with one tap.", icon: Share2 },
-  { name: "Invoices, exported as PDF", desc: "Clean, professional PDFs with your details (India).", icon: FileText },
-  { name: "In-app brand theming", desc: "Your colours, icon, and logo across the app.", icon: Palette },
-  { name: "Personalized URL", desc: "Your own page: portfolio, website, public profile.", icon: Link },
-];
-const TOUCHPOINTS_FORTHCOMING: Touchpoint[] = [
-  { name: "Shareable booking link", desc: "Let clients reach out to book.", icon: CalendarCheck },
-  { name: "Fitness reports", desc: "Shareable client progress summaries.", icon: BarChart3 },
-  { name: "Custom-branded client app", desc: "Your brand, your app.", icon: Smartphone },
-];
-
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
    curated set, public/screens/gallery/) shown as bezel-less ScreenCards — the
    iPhone device frame this used to composite into is gone site-wide (gy-r4nzh /
@@ -177,73 +140,6 @@ const FAQ = [
 
 function Reveal({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`reveal-on-scroll ${className}`}>{children}</div>;
-}
-
-/* gy-dfl55.11: staggered scroll reveal for the touchpoint/feature cards.
-   Deliberately NOT the site-wide .reveal-on-scroll class (that bakes
-   opacity:0 into CSS unconditionally, so it never appears without JS).
-   Here the card renders at its normal visible style until JS mounts and
-   arms the hidden-then-reveal transition — a JS failure (or the SSG
-   prerender pass, which never runs effects) leaves the card visible,
-   never blank. Dependency decision settled on the epic: CSS transition +
-   native IntersectionObserver, no GSAP/ScrollTrigger. */
-function CardReveal({
-  index,
-  className,
-  style,
-  children,
-}: {
-  index: number;
-  className?: string;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
-}) {
-  const ref = useRef<HTMLLIElement>(null);
-  const prefersReduced = useReducedMotion();
-  const [armed, setArmed] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (prefersReduced) {
-      // useReducedMotion() starts false and flips true asynchronously after
-      // its own mount effect reads matchMedia — if we already armed (and the
-      // card hadn't scrolled into view yet), un-arm so it falls back to its
-      // default visible style instead of getting stuck at opacity:0.
-      setArmed(false);
-      return;
-    }
-    const el = ref.current;
-    if (!el || typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-    setArmed(true);
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setVisible(true);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.15, rootMargin: "0px 0px -8% 0px" }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [prefersReduced]);
-
-  const revealStyle: React.CSSProperties | undefined = armed
-    ? {
-        opacity: visible ? 1 : 0,
-        transform: visible ? "none" : "translateY(30px)",
-        transition: `opacity .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s, transform .5s cubic-bezier(.22,.9,.3,1) ${(index * 0.1).toFixed(2)}s`,
-      }
-    : undefined;
-
-  return (
-    <li ref={ref} className={className} style={{ ...style, ...revealStyle }}>
-      {children}
-    </li>
-  );
 }
 
 /* ============================================================================
@@ -475,7 +371,7 @@ export default function App() {
                   </Reveal>
                 </div>
 
-                {p.id === "brand" && <BrandTouchpoints />}
+                {p.id === "brand" && <BrandMarquee />}
               </div>
             );
           })}
@@ -708,60 +604,68 @@ export default function App() {
   );
 }
 
-/* ── brand-touchpoints section (under the "Your brand" pillar) ──
-   TEMPORARY (gy-cgfm8): the BriefFrame placeholder-screenshot cards ("Here
-   we'll show…") are gone — Kaushik doesn't want to wait for real artwork.
-   Reduced to a plain bullet list until there's real screenshots/footage to
-   show per touchpoint. Do not treat this bullet layout as the final design.
+/* ── brand-touchpoint marquee (under the "Your brand" pillar, F2 gy-wh9li.2) ──
+   Kaushik (round 7): "Your brand everywhere" is a subset of "Look
+   professional" — no standalone section, just "a little marquee ... that
+   talks about all the brand touch points". Replaces the old two-grid
+   BrandTouchpoints block. Designer spec (2026-08-14): compact chips, single
+   continuous auto-scroll, label-free (gy-slagn — no shipped/forthcoming
+   split), pause on hover + keyboard focus, static wrapped row under
+   prefers-reduced-motion.
 
-   gy-slagn (2026-08-13): ONE unified grid, one card treatment — no
-   shipped/coming-soon split
-   (gy-slagn, founder 2026-08-13: "you don't have to call out what's
-   coming soon, mix it in"). Every card renders identically regardless
-   of ship status; the founder's explicit instruction is to STOP
-   LABELLING, not to delete unshipped items. */
-function BrandTouchpoints() {
+   Chip list is the 8 already source-verified touchpoints (marketer,
+   gy-mdqxp 2026-08-13) — shortened to scannable labels, tangible/shipped
+   ones leading. */
+const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
+  { name: "QR profile", icon: QrCode },
+  { name: "Share links", icon: Share2 },
+  { name: "PDF invoices", icon: FileText },
+  { name: "Brand theming", icon: Palette },
+  { name: "Your own URL", icon: Link },
+  { name: "Booking link", icon: CalendarCheck },
+  { name: "Fitness reports", icon: BarChart3 },
+  { name: "Branded client app", icon: Smartphone },
+];
+
+function BrandMarquee() {
+  const prefersReduced = useReducedMotion();
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="max-w-[900px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-16 md:pb-24">
-        <Reveal className="text-center mb-8">
-          <span className="block text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>Brand touchpoints</span>
-          <h3 className="text-[clamp(22px,3vw,32px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
-            Your brand, everywhere.
-          </h3>
-        </Reveal>
-
-        {/* gy-mdqxp item 3: two stacked grids — shipped above, forthcoming below.
-            Two grids (not one grid) guarantee the shipped-then-forthcoming break
-            holds cleanly at 1440/768/390 with no ragged wrap. Identical card
-            treatment for both, standard gap-3 between the blocks: grouping is
-            ORDER + WHITESPACE only — no badge, label, heading, divider, or
-            dimming (any of those re-opens gy-slagn). */}
-        <ul className="mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {TOUCHPOINTS_SHIPPED.map((t, i) => (
-            <TouchpointCard key={t.name} t={t} index={i} />
-          ))}
-        </ul>
-        <ul className="mx-auto mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" style={{ maxWidth: "820px" }}>
-          {TOUCHPOINTS_FORTHCOMING.map((t, i) => (
-            <TouchpointCard key={t.name} t={t} index={TOUCHPOINTS_SHIPPED.length + i} />
-          ))}
-        </ul>
+      <div className="pt-10 md:pt-14 pb-16 md:pb-24">
+        <span className="block text-center text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>
+          Your brand, everywhere
+        </span>
+        {prefersReduced ? (
+          <div role="region" aria-label="Brand touchpoints" className="mx-auto flex flex-wrap justify-center gap-2 max-w-[820px] px-5">
+            {MARQUEE_CHIPS.map((c) => (
+              <MarqueeChip key={c.name} t={c} />
+            ))}
+          </div>
+        ) : (
+          <div
+            role="region"
+            aria-label="Brand touchpoints"
+            tabIndex={0}
+            className="marquee-mask relative overflow-hidden"
+          >
+            <div className="marquee-track flex gap-2 w-max">
+              {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
+                <MarqueeChip key={`${c.name}-${i}`} t={c} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* One brand-touchpoint card. Shipped and forthcoming render through the SAME
-   component (gy-slagn / gy-mdqxp item 3: no per-status styling). */
-function TouchpointCard({ t, index }: { t: Touchpoint; index: number }) {
+/* One brand-touchpoint chip — compact, icon + name only (no description),
+   same gradient-border card treatment as the rest of the site's chips. */
+function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
   return (
-    <CardReveal
-      index={index}
-      /* gy-dfl55.12/.13: feature-card-hover drives the magnetic hover (scale
-         1.02 + brighten) and feature-card-icon drives the icon micro-interaction
-         on the same hover. */
-      className="feature-card-hover flex items-start gap-3 rounded-[var(--g-radius-lg)] p-4"
+    <span
+      className="shrink-0 flex items-center gap-2 rounded-[var(--g-radius-lg)] pl-2.5 pr-4 h-11"
       style={{
         border: "1px solid transparent",
         backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
@@ -769,13 +673,10 @@ function TouchpointCard({ t, index }: { t: Touchpoint; index: number }) {
         backgroundClip: "padding-box, border-box",
       }}
     >
-      <span aria-hidden="true" className="feature-card-icon grid place-items-center shrink-0 w-[30px] h-[30px] rounded-lg" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
-        <t.icon size={16} strokeWidth={2} />
+      <span aria-hidden="true" className="grid place-items-center shrink-0 w-[26px] h-[26px] rounded-md" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+        <t.icon size={14} strokeWidth={2} />
       </span>
-      <div className="text-left">
-        <span className="block text-[15px] font-bold" style={{ fontFamily: SERIF, color: F.bone }}>{t.name}</span>
-        <span className="block mt-1 text-[13px]" style={{ fontFamily: SANS, color: F.boneMuted }}>{t.desc}</span>
-      </div>
-    </CardReveal>
+      <span className="text-[13px] md:text-[14px] font-bold whitespace-nowrap" style={{ fontFamily: SANS, color: F.bone }}>{t.name}</span>
+    </span>
   );
 }
