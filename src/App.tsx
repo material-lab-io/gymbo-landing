@@ -470,7 +470,7 @@ export default function App() {
                           (gy-39v87); until then the real screen carries the pillar.
                           320px of pure screen reads larger than the old 360px clip,
                           which spent most of its width on bezel and background. */}
-                      <ScreenCard slug={p.screen} alt={p.screenAlt} width={320} />
+                      <ScreenCard slug={p.screen} alt={p.screenAlt} width="clamp(320px, 44vw, 460px)" />
                     </div>
                   </Reveal>
                 </div>
