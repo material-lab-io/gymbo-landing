@@ -21,6 +21,13 @@ const ignore = (t) =>
 
 const browser = await chromium.launch();
 const failures = [];
+// gy-pvi8y: tracked separately from `failures`/`paths` on purpose. The
+// dark-seed check below is a single extra assertion, not one of the
+// sitemap routes -- folding its failure into `failures` while reporting
+// against `paths.length` produced impossible counts like "23/22 pages"
+// (23 failures against a 22-page denominator that never counted this
+// check in the first place).
+let darkSeedFailed = null;
 
 // Light-only theme invariant, dark-seed case (gy-ruxbj, PM scope addition
 // 2026-08-12 — "the one that matters"). Kaushik was served a dark site
@@ -43,7 +50,7 @@ const failures = [];
   const m = bg.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
   const isLight = m && Number(m[1]) > 240 && Number(m[2]) > 240 && Number(m[3]) > 235;
   if (htmlDark || !isLight) {
-    failures.push("/ (dark-seeded)");
+    darkSeedFailed = "/ (dark-seeded)";
     console.error(`FAIL / with localStorage theme="dark" pre-seeded — rendered dark (bg=${bg}, data-theme dark=${htmlDark})`);
   } else {
     console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
@@ -76,8 +83,9 @@ for (const p of paths) {
 }
 await browser.close();
 
+if (darkSeedFailed) console.error(`\nconsole-check: dark-seed invariant FAILED (${darkSeedFailed})`);
 if (failures.length) {
-  console.error(`\nconsole-check: ${failures.length}/${paths.length} page(s) have console errors → gate FAIL`);
-  process.exit(1);
+  console.error(`console-check: ${failures.length}/${paths.length} page(s) have console errors → gate FAIL`);
 }
-console.log(`\nconsole-check: all ${paths.length} pages clean`);
+if (darkSeedFailed || failures.length) process.exit(1);
+console.log(`\nconsole-check: all ${paths.length} pages clean, dark-seed invariant holds`);
