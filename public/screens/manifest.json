@@ -2,53 +2,69 @@
   "$schema": "./MANIFEST.md",
   "maxAgeDays": 21,
   "entries": {
+    "extra-ai-assistant.png": {
+      "appVersion": "1.0.0",
+      "buildNumber": "1",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
+      "verified": true,
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
+    },
     "hero-01-dashboard-clean.png": {
       "appVersion": "1.0.0",
       "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:09:44+05:30",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
+    },
+    "hero-02-who-owes-balance.png": {
+      "appVersion": "1.0.0",
+      "buildNumber": "1",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
+      "verified": true,
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
+    },
+    "hero-03-log-payment.png": {
+      "appVersion": "1.0.0",
+      "buildNumber": "1",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
+      "verified": true,
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
     },
     "organized-01-schedule-day.png": {
       "appVersion": "1.0.0",
       "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:10:16+05:30",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
     },
     "revenue-01-ledger-history.png": {
       "appVersion": "1.0.0",
       "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:27:28+05:30",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
-    },
-    "extra-ai-assistant.png": {
-      "appVersion": "1.0.0",
-      "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:18:05+05:30",
-      "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
-    },
-    "workouts-01-template-fullbody.png": {
-      "appVersion": "1.0.0",
-      "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:39:18+05:30",
-      "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
     },
     "revenue-02-export-statement.png": {
       "appVersion": "1.0.0",
       "buildNumber": "1",
-      "gymboCommitSha": "ba35b647874f7587824cf1cfda2aa2c7047079bf",
-      "capturedAt": "2026-08-08T23:27:39+05:30",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
       "verified": true,
-      "note": "captured by scripts/capture-appstore-screenshots.sh --profile landing (gy-bhcbo): iPhone 17 Pro 1206x2622 LIGHT, isolated capture backend, seed-priya.sh --with-history. Transcribed by the operator who ran the pass, not emitted by the lane \u2014 each entry was attested by sha256-matching the committed file against the staged capture artifact before verified was set. Lane-emitted provenance is gy-v62tg."
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
+    },
+    "workouts-01-template-fullbody.png": {
+      "appVersion": "1.0.0",
+      "buildNumber": "1",
+      "gymboCommitSha": "86f34ef2",
+      "capturedAt": "2026-08-12T10:32:00+05:30",
+      "verified": true,
+      "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
     }
   }
 }

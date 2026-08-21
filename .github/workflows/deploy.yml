@@ -12,11 +12,14 @@ on:
         required: false
         default: ""
 
-# Serializes every run of this workflow on the gt2 host (gy-5e9u6): the
-# pre-deploy smoke gate below binds port 8788 on the RUNNER ITSELF, not a
-# throwaway hosted VM. Two concurrent runs (e.g. two PRs pushed close
-# together) would collide on that port. cancel-in-progress is deliberately
-# false — this must queue runs, not cancel an in-flight main deploy.
+# Serializes every run of THIS workflow on the gt2 host (gy-5e9u6) so two main
+# deploys never race the actual `wrangler pages deploy`. cancel-in-progress is
+# deliberately false — queue runs, never cancel an in-flight main deploy.
+# NOTE (gy-cjdtw): this does NOT prevent the smoke-gate port race, because that
+# collision was cross-workflow (a deploy's Playwright preview vs a concurrent
+# refresh-visual-baselines run, both on a fixed :4173). The gate below now binds
+# per-run FREE ports for both the Pages emulator and the preview, which removes
+# the race regardless of concurrency.
 concurrency:
   group: gymbo-landing-deploy
   cancel-in-progress: false
@@ -45,7 +48,19 @@ jobs:
       - name: Screenshot staleness gate
         run: node scripts/check-screenshot-freshness.mjs
 
+      # No-bezel gate (gy-k095b, founder rule gy-r4nzh): the site shows REAL app
+      # screenshots with NO phone bezels or device frames — "bezels give away AI".
+      # Runs twice: here against src/ so an authored regression fails fast, and
+      # again after the build against dist/, because the old frame art lived in
+      # public/ and Vite copies that into dist/ with no source file referencing
+      # it — a src-only scan would pass while the bezel shipped.
+      - name: No-bezel gate (source)
+        run: node scripts/check-no-bezel.mjs
+
       - run: npm run build
+
+      - name: No-bezel gate (built output)
+        run: node scripts/check-no-bezel.mjs --dist
 
       # Deploy-SHA guard (gy-sa0fm AC3): "merged but not deployed" was
       # invisible until someone manually curled the site — that is exactly
@@ -82,22 +97,33 @@ jobs:
       # Blocks bad builds from going live.
       - name: Pre-deploy smoke gate
         run: |
-          npx wrangler pages dev dist --port 8788 --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
+          # gy-cjdtw: per-run free ports so concurrent jobs on the shared
+          # [self-hosted, gt2] host never collide on a FIXED :8788 (Pages
+          # emulator) or :4173 (Playwright preview). A fixed-port collision
+          # surfaced as 'localhost:4173 already used' and 'Pages emulator never
+          # became ready' -> a degraded/racey render (e.g. hero 650px vs 679px).
+          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
+          WPORT=$(freeport)
+          export PW_PORT=$(freeport)   # Playwright's own preview server; playwright.config reads PW_PORT
+          BASE="http://127.0.0.1:$WPORT"
+
+          npx wrangler pages dev dist --port "$WPORT" --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
           PD=$!
+          trap 'kill $PD 2>/dev/null || true' EXIT
           ready=0
-          for i in $(seq 1 40); do
-            if curl -sf -o /dev/null http://127.0.0.1:8788/; then ready=1; break; fi
+          for i in $(seq 1 60); do
+            if curl -sf -o /dev/null "$BASE/"; then ready=1; break; fi
             sleep 1
           done
           if [ "$ready" != "1" ]; then
-            echo "::error::Pages emulator never became ready"; cat /tmp/pagesdev.log
-            kill $PD 2>/dev/null || true; exit 1
+            echo "::error::Pages emulator never became ready on $BASE"; cat /tmp/pagesdev.log
+            exit 1
           fi
           RC=0
           # Correctness gates — these BLOCK everywhere, including main. A broken
           # page or a console error must never reach production.
-          bash scripts/getgymbo-smoke.sh http://127.0.0.1:8788 || RC=1
-          node scripts/console-check.mjs http://127.0.0.1:8788 || RC=1
+          bash scripts/getgymbo-smoke.sh "$BASE" || RC=1
+          node scripts/console-check.mjs "$BASE" || RC=1
 
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
@@ -110,13 +136,17 @@ jobs:
           # where the change has already been reviewed and merged and the only
           # thing blocking achieves is an undeployed site plus a manual rescue
           # commit. Refresh baselines via refresh-visual-baselines.yml.
+          #
+          # The visual test runs against Playwright's OWN preview server
+          # (playwright.config webServer, on $PW_PORT) — the same server type the
+          # refresh workflow uses to GENERATE baselines — NOT this wrangler
+          # emulator, so gate and baselines stay consistent.
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
+            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
               || echo "::warning::Visual baselines are stale on main — deploy proceeding. Run refresh-visual-baselines.yml to resync."
           else
-            PLAYWRIGHT_BASE_URL=http://127.0.0.1:8788 npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
           fi
-          kill $PD 2>/dev/null || true
           exit $RC
 
       - name: Upload visual regression report
