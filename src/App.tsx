@@ -365,8 +365,14 @@ export default function App() {
                           gy-r4nzh. Screen-only motion loops are the fast-follow
                           (gy-39v87); until then the real screen carries the pillar.
                           320px of pure screen reads larger than the old 360px clip,
-                          which spent most of its width on bezel and background. */}
-                      <ScreenCard slug={p.screen} alt={p.screenAlt} width="clamp(320px, 44vw, 460px)" />
+                          which spent most of its width on bezel and background.
+                          gy-91a8l: the clamp's 320px floor overflowed a genuine
+                          320px viewport (px-5 = 20px padding each side leaves only
+                          280px available below md) — outer min() caps the whole
+                          expression to the actual available width so it can never
+                          exceed the viewport, while leaving every breakpoint that
+                          already fit (>=375px) unchanged. */}
+                      <ScreenCard slug={p.screen} alt={p.screenAlt} width="min(calc(100vw - 40px), clamp(320px, 44vw, 460px))" />
                     </div>
                   </Reveal>
                 </div>
