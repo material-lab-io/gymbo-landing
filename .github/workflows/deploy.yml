@@ -182,25 +182,6 @@ jobs:
           if [ -z "$TARGET" ]; then TARGET="https://getgymbo.com"; fi
           echo "Verifying live deploy at $TARGET"
 
-          run_check() {
-            bash scripts/getgymbo-smoke.sh "$TARGET" || return 1
-            node scripts/console-check.mjs "$TARGET" || return 1
-
-            # Deploy-SHA guard (gy-sa0fm AC3): confirm the CDN is actually
-            # serving THIS run's build, not a stale/cached prior deploy.
-            # Only meaningful against the real domain — a verify_url override
-            # (negative-control testing) won't carry our build-sha.txt.
-            if [ "$TARGET" = "https://getgymbo.com" ]; then
-              live_sha=$(curl -sf --max-time 5 "$TARGET/build-sha.txt" || echo "")
-              if [ "$live_sha" != "${{ github.sha }}" ]; then
-                echo "::error::Live build-sha.txt ('$live_sha') does not match this run's commit (${{ github.sha }}) — deploy did not reach the CDN as expected."
-                return 1
-              fi
-              echo "OK   live build-sha.txt matches this deploy (${{ github.sha }})"
-            fi
-            return 0
-          }
-
           # Bounded poll (~90s) for the target to be reachable at all before
           # running the real checks — do NOT sleep a fixed amount and hope.
           ready=0
@@ -213,14 +194,49 @@ jobs:
             exit 1
           fi
 
+          # gy-pvi8y: the CDN propagation guard now runs FIRST and BLOCKS,
+          # not after the content checks as a third thing that could fail.
+          # Mid-propagation the edge can serve a MIX of old HTML and new JS
+          # (or vice versa) — the two disagree and the page throws, which
+          # console-check.mjs correctly reports as a real error even though
+          # it is purely a propagation artifact, not a defect in this build.
+          # Waiting here for build-sha.txt to match THIS run's commit before
+          # asserting anything else removes that race at its source, rather
+          # than retrying past it and reporting whichever of two different
+          # answers happened to land (what produced the original 23/22 and
+          # 6/22 split-brain result on run 32472712245).
+          # Only meaningful against the real domain — a verify_url override
+          # (negative-control testing) won't carry our build-sha.txt.
+          if [ "$TARGET" = "https://getgymbo.com" ]; then
+            synced=0
+            for i in $(seq 1 18); do
+              live_sha=$(curl -sf --max-time 5 "$TARGET/build-sha.txt" || echo "")
+              if [ "$live_sha" = "${{ github.sha }}" ]; then synced=1; break; fi
+              sleep 5
+            done
+            if [ "$synced" != "1" ]; then
+              echo "::error::Live build-sha.txt ('$live_sha') never matched this run's commit (${{ github.sha }}) within 90s — deploy did not reach the CDN as expected."
+              exit 1
+            fi
+            echo "OK   live build-sha.txt matches this deploy (${{ github.sha }})"
+          fi
+
+          run_check() {
+            bash scripts/getgymbo-smoke.sh "$TARGET" || return 1
+            node scripts/console-check.mjs "$TARGET" || return 1
+            return 0
+          }
+
           if run_check; then
             echo "Post-deploy live verification passed."
             exit 0
           fi
 
-          # Retry the whole check once — a transient network blip must not
-          # page anyone. Kaushik's constraint: this check must be trustworthy
-          # or it will be ignored.
+          # Retry once — now a genuine content-check retry, not a second
+          # sample of the propagation race (that race is already resolved
+          # above). A transient network blip must not page anyone.
+          # Kaushik's constraint: this check must be trustworthy or it will
+          # be ignored.
           echo "::warning::Post-deploy check failed once — retrying after a short backoff."
           sleep 10
           if run_check; then
