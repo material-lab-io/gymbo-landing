@@ -15,7 +15,8 @@ Contents:
 
 - `mockups/` — the three-iPhone MockupWorld raster (`hero-three-panel*`) and the
   punched single-phone frame (`iphone-frame-single*`). Approved optimized
-  derivatives of these files ship from `public/mockups/`.
+  derivatives listed in PR #97 ship from `public/mockups/`; source-size and
+  alternate PNG exports remain here only.
 - `demos/` — the pre-composed pillar demo clips. Each `.mp4` is a fully-composed
   scene with the bezel, a title upper-third and a caption lower-third burnt into
   the video, so they cannot be cropped into compliance. They are kept as the

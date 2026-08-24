@@ -255,17 +255,5 @@ jobs:
       - name: All negative controls fired correctly
         run: echo "Every gate above correctly rejected a fixture that violates its rule."
 
-      - name: Negative control — photoreal-device gate must FAIL without an approved gallery frame
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/public/mockups" "$FIX/src"
-          cp scripts/check-photoreal-device.mjs "$FIX/scripts/"
-          for asset in hero-three-panel-800.webp hero-three-panel-1200.webp hero-three-panel-1800.webp hero-three-panel-1200.png iphone-frame-single-520.webp iphone-frame-single-720.webp iphone-frame-single-1080.webp; do touch "$FIX/public/mockups/$asset"; done
-          echo 'export const hero = "hero-device-art hero-three-panel"; export const gallery = "gallery-device-art iphone-frame-single";' > "$FIX/src/App.tsx"
-          cd "$FIX"
-          if node scripts/check-photoreal-device.mjs; then
-            echo "::error::photoreal-device gate PASSED without its required approved gallery frame."
-            exit 1
-          fi
-          echo "OK: photoreal-device gate correctly failed when a required asset was absent."
+      - name: Photoreal-device gate self-test
+        run: node scripts/check-photoreal-device.selftest.mjs
