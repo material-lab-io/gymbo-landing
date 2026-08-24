@@ -4,9 +4,9 @@
 // Output: public/screens/gallery/<slug>-<w>.webp (responsive srcset) + <slug>.png fallback.
 // Run: node scripts/optimize-gallery.mjs
 //
-// The gallery places these derivatives in the approved photoreal frame; the
-// four pillars render them directly in Forge ScreenCards. The baked hero is a
-// separate licensed composition derived from the first three masters.
+// The gallery places these derivatives in the approved photoreal frame. The
+// four pillars use separately licensed light/dark motion demos and posters;
+// the baked hero is a licensed composition derived from the first three masters.
 import sharp from "sharp";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";

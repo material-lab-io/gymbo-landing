@@ -46,19 +46,93 @@ test('nav and hero render with the headline', async ({ page }) => {
   await expect(h1).toContainText(/from your phone/i);
 });
 
-// gy-dyu6r.6: the source/dist gate checks the approved asset allowlist; this
-// test checks that the same contract actually renders and loads in a browser.
-test('hero and gallery render the approved photoreal device assets', async ({ page }) => {
+// gy-dyu6r.9: the source/dist gate checks exact asset identity; these browser
+// assertions prove that all three user-visible slots render the contract.
+test('hero and all six gallery screens render approved photoreal device assets', async ({ page }) => {
   await page.goto('/');
   const hero = page.getByTestId('hero-device-art').locator('img:visible');
   await expect(hero).toBeVisible();
   await expect(hero).toHaveAttribute('src', /hero-three-panel-1200\.png/);
   expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
-  const gallery = page.getByTestId('gallery-device-art').first();
-  await gallery.scrollIntoViewIfNeeded();
-  await expect(gallery.locator('img').last()).toHaveAttribute('src', /iphone-frame-single\.png/);
-  await expect.poll(() => gallery.locator('img').first().evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
-  expect(await page.locator('video').count()).toBe(0);
+
+  const gallery = page.getByTestId('gallery-device-art');
+  await expect(gallery).toHaveCount(6);
+  for (let index = 0; index < 6; index += 1) {
+    const frame = gallery.nth(index);
+    await frame.scrollIntoViewIfNeeded();
+    await expect(frame.locator('img').last()).toHaveAttribute('src', /iphone-frame-single\.png/);
+    await expect.poll(() => frame.locator('img').first().evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+
+    const geometry = await frame.evaluate((element) => {
+      const aperture = element.querySelector<HTMLElement>('[data-testid="gallery-screen-aperture"]');
+      const screen = aperture?.querySelector<HTMLImageElement>('img');
+      if (!aperture || !screen) throw new Error('gallery aperture contract missing');
+      const style = getComputedStyle(aperture);
+      const apertureBox = aperture.getBoundingClientRect();
+      const screenBox = screen.getBoundingClientRect();
+      return {
+        radiusX: Number.parseFloat(style.borderTopLeftRadius.split(' ')[0]),
+        radiusY: Number.parseFloat(style.borderTopLeftRadius.split(' ')[1] || style.borderTopLeftRadius),
+        expectedRadius: apertureBox.width * 0.1656,
+        aperture: { left: apertureBox.left, top: apertureBox.top, right: apertureBox.right, bottom: apertureBox.bottom },
+        screen: { left: screenBox.left, top: screenBox.top, right: screenBox.right, bottom: screenBox.bottom },
+      };
+    });
+    expect(Math.abs(geometry.radiusX - geometry.expectedRadius)).toBeLessThan(1);
+    expect(Math.abs(geometry.radiusY - geometry.expectedRadius)).toBeLessThan(1);
+    expect(geometry.screen.left).toBeGreaterThanOrEqual(geometry.aperture.left - 0.5);
+    expect(geometry.screen.top).toBeGreaterThanOrEqual(geometry.aperture.top - 0.5);
+    expect(geometry.screen.right).toBeLessThanOrEqual(geometry.aperture.right + 0.5);
+    expect(geometry.screen.bottom).toBeLessThanOrEqual(geometry.aperture.bottom + 0.5);
+  }
+});
+
+test('all four pillar demos lazy-load and advance as muted looping inline video', async ({ page }) => {
+  await page.goto('/');
+  const demos = page.getByTestId('pillar-demo');
+  await expect(demos).toHaveCount(4);
+  const expected = [
+    ['log-payment', 'light'],
+    ['schedule', 'dark'],
+    ['branded-statement', 'light'],
+    ['build-workout', 'light'],
+  ] as const;
+
+  for (let index = 0; index < expected.length; index += 1) {
+    const [id, theme] = expected[index];
+    const demo = demos.nth(index);
+    await expect(demo).toHaveAttribute('data-demo-id', id);
+    await demo.scrollIntoViewIfNeeded();
+    const video = demo.locator('video');
+    await expect(video).toHaveCount(1);
+    await expect(video.locator('source')).toHaveAttribute('src', `/demos/${id}-${theme}.mp4`);
+    const playback = await video.evaluate((element: HTMLVideoElement) => ({
+      muted: element.muted,
+      loop: element.loop,
+      playsInline: element.playsInline,
+      autoplay: element.autoplay,
+      preload: element.preload,
+    }));
+    expect(playback).toEqual({ muted: true, loop: true, playsInline: true, autoplay: true, preload: 'metadata' });
+    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 10000 }).toBeGreaterThan(0.05);
+  }
+});
+
+test('reduced motion renders all four matching posters without autoplay', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  await expect(page.locator('video')).toHaveCount(0);
+  const posters = page.getByTestId('pillar-demo-poster');
+  await expect(posters).toHaveCount(4);
+  const expected = [
+    '/demos/log-payment-light.png',
+    '/demos/schedule-dark.png',
+    '/demos/branded-statement-light.png',
+    '/demos/build-workout-light.png',
+  ];
+  for (let index = 0; index < expected.length; index += 1) {
+    await expect(posters.nth(index)).toHaveAttribute('src', expected[index]);
+  }
 });
 
 test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
@@ -79,15 +153,14 @@ test('pillar-organized keeps its fixed dark accent band (unrelated to page theme
   // PILLARS[].dark is a per-section design constant (charcoal accent band),
   // independent of the removed global theme system — this is NOT dark mode.
   //
-  // gy-k095b: this used to assert `video[data-theme-variant="dark"]` — it proved
-  // the band by way of the demo clip's light/dark variant, which is gone with the
-  // videos. Assert the band itself, which is what the test was ever about and
-  // survives the next change to how the visual is rendered.
+  // The organized pillar also selects the dark clip variant so the baked scene
+  // blends into this fixed charcoal band; this remains independent of page theme.
   await page.goto('/');
   const pillar = page.locator('[data-testid="pillar-organized"]');
   await pillar.scrollIntoViewIfNeeded();
   await expect(pillar).toBeVisible();
   await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)'); // F.charcoal #0a0a0a
+  await expect(pillar.locator('video')).toHaveAttribute('data-theme-variant', 'dark');
 });
 
 test('retired demo-frame badges are absent', async ({ page }) => {

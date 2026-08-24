@@ -27,11 +27,12 @@ are not currently rendered anywhere and are not gated (add them to
 the gate automatically — as long as a manifest entry exists for them).
 
 The gated set grew on 2026-08-19 (gy-k095b) when the four pillar visuals became
-real screenshots in screen-only cards. Founder correction gy-dyu6r.6 later
-restored approved photoreal device art to the hero and gallery without changing
-the freshness scope, so the additional masters
+real screenshots in screen-only cards. Founder correction gy-dyu6r.9 later
+restored the approved photoreal hero, motion pillars, and framed gallery without
+shrinking the conservative freshness scope, so the additional masters
 (`hero-02-who-owes-balance.png`, `hero-03-log-payment.png`,
-`workouts-04-builder.png`) now render on the live site and are in scope.
+`workouts-04-builder.png`) remain source inputs for approved site media and stay
+in scope.
 
 ### The gate was fail-open from 2026-08-12 to 2026-08-19 (fixed)
 

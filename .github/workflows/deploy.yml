@@ -51,10 +51,10 @@ jobs:
       - name: Screenshot staleness gate
         run: node scripts/check-screenshot-freshness.mjs
 
-      # Photoreal-device gate (gy-dyu6r.6): hero and gallery must use only the
-      # approved licensed MockupWorld assets and exact rendered contract. Runs
-      # before build for authored source and after build for the public assets
-      # Vite copies into dist/ without an import reference.
+      # Photoreal-device gate (gy-dyu6r.9): exact corrected hero identity, all
+      # four demo/poster pairs, measured gallery mask geometry, and approved
+      # self-hosted runner policy. Runs before build for authored source and
+      # after build for the public assets Vite copies into dist/.
       - name: Photoreal-device gate (source)
         run: node scripts/check-photoreal-device.mjs
 

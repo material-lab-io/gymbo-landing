@@ -14,9 +14,9 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  *    (.reveal-on-scroll in App.tsx). A capture that doesn't actually scroll a
  *    section into view renders it EMPTY.
  *
- * There are no <video> elements on the site. The hero/gallery photoreal art
- * and pillar ScreenCards are static images and DOM, avoiding the decoded-frame
- * nondeterminism that previously made visual baselines flaky on gt2 runners.
+ * Pillars use motion in production. Visual snapshots freeze those videos on
+ * their matching posters through reduced motion, keeping the baseline stable
+ * while smoke tests independently prove real playback advances.
  */
 
 const SECTIONS = [
@@ -78,11 +78,12 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
       c.scrollLeft = 0;
     });
   });
+  await page.waitForTimeout(200); // let the position cue resync to the first card
 }
 
 /** Wait for every <img> inside the locator to finish loading (real natural
- * size, not a still-pending/broken placeholder) — covers every ScreenCard on
- * the page: the hero trio, the four pillar screens, and the gallery strip. */
+ * size, not a still-pending/broken placeholder) — covers the static hero,
+ * reduced-motion pillar posters, and the gallery strip. */
 async function waitImagesLoaded(locator: Locator) {
   await locator.evaluate((el) =>
     Promise.all(
@@ -114,6 +115,7 @@ async function neutralizeFixedChrome(page: Page) {
 
 test.describe('visual baselines', () => {
   test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await neutralizeFixedChrome(page);
   });

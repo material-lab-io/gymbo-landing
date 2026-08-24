@@ -7,9 +7,9 @@ only when the approved composition requires them.
 ## Why
 
 The source directory preserves the licensed artwork and the reproducible
-composition pipeline. Founder correction gy-dyu6r (2026-08-24) restored the
-photoreal MockupWorld phone treatment to the hero and gallery while keeping the
-four Forge pillars screen-only.
+composition pipeline. Founder correction gy-dyu6r.9 (2026-08-24) restored the
+complete photoreal system: corrected hero art, framed gallery screenshots, and
+the four approved light/dark pillar demo scenes.
 
 Contents:
 
@@ -17,16 +17,15 @@ Contents:
   punched single-phone frame (`iphone-frame-single*`). Approved optimized
   derivatives listed in PR #97 ship from `public/mockups/`; source-size and
   alternate PNG exports remain here only.
-- `demos/` — the pre-composed pillar demo clips. Each `.mp4` is a fully-composed
-  scene with the bezel, a title upper-third and a caption lower-third burnt into
-  the video, so they cannot be cropped into compliance. They are kept as the
-  SOURCE for the screen-only motion loops (gy-39v87), which will re-render the
-  same journeys with no device and no baked captions.
+- `demos/` — the pre-composed pillar demo clips and reduced-motion posters. The
+  approved log-payment, schedule, branded-statement, and build-workout light/
+  dark variants are promoted byte-for-byte to `public/demos/`.
 - `hero-demo.mp4` / `hero-demo-poster.png` — the old stand-in hero clip.
 - `legacy-bezel-pipeline/` — was `scripts/gy-7yhkh/`, the builder that composited
   screenshots into the mockup and punched the frame aperture. It is preserved
   as the licensed composition/provenance pipeline and is run deliberately when
   the approved hero art must be refreshed from current screenshot masters.
 
-`scripts/check-photoreal-device.mjs` fails CI unless the approved hero/gallery
-assets and rendered contract are present in both source and built output.
+`scripts/check-photoreal-device.mjs` fails CI unless the exact corrected hero,
+all demo/poster variants, gallery frame, measured mask geometry, rendered
+contract, and self-hosted workflow policy are present in source and build.

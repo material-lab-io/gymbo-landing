@@ -14,8 +14,7 @@ import {
   Smartphone,
   type LucideIcon,
 } from "lucide-react";
-import { ScreenCard } from "./components/ScreenCard";
-import { ScreenshotFrame } from "./components/PhoneMockup";
+import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
@@ -25,9 +24,9 @@ import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, Prim
    Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
    beige/charcoal + solid amber accent). Brand = Forge amber #F59E0B / marigold
    #FBBF24, accent only. Hero and gallery use the approved licensed photoreal
-   device compositions; the 4 pillars remain real app screenshots in Forge
-   ScreenCards. Masters are the founder-approved curated set, optimized to WebP
-   via scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.6).
+   device compositions; all 4 pillars use the approved light/dark photoreal demo
+   clips. Masters are the founder-approved curated set, optimized to WebP via
+   scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.9).
    ============================================================================ */
 
 /* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
@@ -38,8 +37,7 @@ import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, Prim
 const PILLARS = [
   {
     id: "revenue",
-    screen: "payments",
-    screenAlt: "The Gymbo ledger showing a client's class and payment history with a running balance",
+    demoId: "log-payment",
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
@@ -54,8 +52,7 @@ const PILLARS = [
   },
   {
     id: "organized",
-    screen: "schedule",
-    screenAlt: "The Gymbo schedule for a single day, with each client's class in its time slot",
+    demoId: "schedule",
     n: "02",
     eyebrow: "Your whole roster",
     title: "Get organized",
@@ -71,8 +68,7 @@ const PILLARS = [
   },
   {
     id: "brand",
-    screen: "export",
-    screenAlt: "A branded client statement being exported from Gymbo as a PDF",
+    demoId: "branded-statement",
     n: "03",
     eyebrow: "Look professional",
     title: "Your brand, your business",
@@ -87,8 +83,7 @@ const PILLARS = [
   },
   {
     id: "workouts",
-    screen: "workouts",
-    screenAlt: "A full-body workout built in Gymbo, with squat, bench press and barbell row",
+    demoId: "build-workout",
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
@@ -104,9 +99,18 @@ const PILLARS = [
   },
 ];
 
+const demoClip = (id: string): ClipMap => ({
+  light: `/demos/${id}-light.mp4`,
+  dark: `/demos/${id}-dark.mp4`,
+});
+const demoPoster = (id: string): ClipMap => ({
+  light: `/demos/${id}-light.png`,
+  dark: `/demos/${id}-dark.png`,
+});
+
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
    curated set, public/screens/gallery/) composited into the approved licensed
-   photoreal frame. Pillar visuals remain screen-only. Static stills. Source
+   photoreal frame. Pillar visuals use the approved animated demo scenes. Source
    files: public/screens/real/* → optimized via scripts/optimize-gallery.mjs
    (gy-9bmwm.4, gy-dyu6r.6). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
@@ -351,19 +355,14 @@ export default function App() {
 
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
-                      {/* gy-k095b: was a DemoFrame .mp4 with the device bezel, a title
-                          card and a caption burnt into the clip. Pillars remain
-                          screen-only under gy-dyu6r.6; motion loops are the fast-follow
-                          (gy-39v87); until then the real screen carries the pillar.
-                          320px of pure screen reads larger than the old 360px clip,
-                          which spent most of its width on bezel and background.
-                          gy-91a8l: the clamp's 320px floor overflowed a genuine
-                          320px viewport (px-5 = 20px padding each side leaves only
-                          280px available below md) — outer min() caps the whole
-                          expression to the actual available width so it can never
-                          exceed the viewport, while leaving every breakpoint that
-                          already fit (>=375px) unchanged. */}
-                      <ScreenCard slug={p.screen} alt={p.screenAlt} width="min(calc(100vw - 40px), clamp(320px, 44vw, 460px))" />
+                      <DemoFrame
+                        demoId={p.demoId}
+                        clip={demoClip(p.demoId)}
+                        poster={demoPoster(p.demoId)}
+                        theme={dark ? "dark" : "light"}
+                        label={`${p.title} — demo`}
+                        maxWidth={360}
+                      />
                     </div>
                   </Reveal>
                 </div>
