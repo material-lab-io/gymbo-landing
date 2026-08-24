@@ -140,6 +140,26 @@ test('pricing shows the two plans and numbers', async ({ page }) => {
   }
 });
 
+test('gallery controls make the fourth product screen discoverable', async ({ page }) => {
+  await page.goto('/');
+  const gallery = page.getByRole('region', { name: 'See Gymbo in action gallery' });
+  await gallery.scrollIntoViewIfNeeded();
+  const previous = page.getByRole('button', { name: 'Show previous Gymbo screen' });
+  const next = page.getByRole('button', { name: 'Show next Gymbo screen' });
+
+  await expect(page.getByText('1 of 6', { exact: true })).toBeVisible();
+  await expect(previous).toBeDisabled();
+  for (let step = 2; step <= 4; step += 1) {
+    await next.click();
+    await expect(page.getByText(`${step} of 6`, { exact: true })).toBeVisible();
+  }
+
+  const workouts = gallery.locator('[data-gallery-index="3"]');
+  await expect(workouts).toBeInViewport();
+  await expect(workouts.getByText('Build and assign workouts', { exact: true })).toBeVisible();
+  await expect(previous).toBeEnabled();
+});
+
 test('waitlist CTA section and form resolve', async ({ page }) => {
   await page.goto('/');
   const cta = page.locator('#cta');

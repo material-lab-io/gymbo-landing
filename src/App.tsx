@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Check,
   Plus,
@@ -9,6 +9,8 @@ import {
   Link,
   CalendarCheck,
   BarChart3,
+  ChevronLeft,
+  ChevronRight,
   Smartphone,
   type LucideIcon,
 } from "lucide-react";
@@ -187,6 +189,42 @@ function HeroScreens({ className = "", style }: { className?: string; style?: Re
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const galleryNavigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const scrollGalleryTo = (index: number) => {
+    const gallery = galleryRef.current;
+    const card = gallery?.querySelector<HTMLElement>(`[data-gallery-index="${index}"]`);
+    if (!gallery || !card) return;
+    if (galleryNavigationTimer.current) clearTimeout(galleryNavigationTimer.current);
+    galleryNavigationTimer.current = setTimeout(() => {
+      galleryNavigationTimer.current = null;
+    }, 100);
+    setGalleryIndex(index);
+    gallery.scrollTo({
+      left: card.offsetLeft - gallery.offsetLeft - (gallery.clientWidth - card.offsetWidth) / 2,
+      // Keep the visible position cue and the strip in lockstep. Native swipe
+      // remains available; button navigation is deliberately immediate.
+      behavior: "auto",
+    });
+  };
+
+  const syncGalleryPosition = () => {
+    if (galleryNavigationTimer.current) return;
+    const gallery = galleryRef.current;
+    if (!gallery) return;
+    const cards = Array.from(gallery.querySelectorAll<HTMLElement>("[data-gallery-index]"));
+    const centre = gallery.scrollLeft + gallery.clientWidth / 2;
+    const closest = cards.reduce(
+      (winner, card, index) =>
+        Math.abs(card.offsetLeft + card.offsetWidth / 2 - centre) < Math.abs(cards[winner].offsetLeft + cards[winner].offsetWidth / 2 - centre)
+          ? index
+          : winner,
+      0,
+    );
+    setGalleryIndex(closest);
+  };
 
   useEffect(() => {
     const els = Array.from(document.querySelectorAll<HTMLElement>(".reveal-on-scroll"));
@@ -393,9 +431,35 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="carousel mt-14 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery">
-              {SCREENS.map((s) => (
-                <div key={s.slug} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
+            <div className="mt-10 flex items-center justify-center gap-4" aria-label="Gallery controls">
+              <button
+                type="button"
+                onClick={() => scrollGalleryTo(galleryIndex - 1)}
+                disabled={galleryIndex === 0}
+                aria-label="Show previous Gymbo screen"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+              >
+                <ChevronLeft size={18} aria-hidden="true" />
+              </button>
+              <p className="min-w-[5.5rem] text-center text-[13px] font-bold tabular-nums" style={{ color: F.boneMuted, fontFamily: SANS }} aria-live="polite">
+                {galleryIndex + 1} of {SCREENS.length}
+              </p>
+              <button
+                type="button"
+                onClick={() => scrollGalleryTo(galleryIndex + 1)}
+                disabled={galleryIndex === SCREENS.length - 1}
+                aria-label="Show next Gymbo screen"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+              >
+                <ChevronRight size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel mt-6 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery" aria-describedby="gallery-position">
+              {SCREENS.map((s, index) => (
+                <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
                   <ScreenCard slug={s.slug} alt={s.alt} width={276} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
@@ -403,6 +467,7 @@ export default function App() {
                 </div>
               ))}
             </div>
+            <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <PrimaryCTA dark size="lg" />
