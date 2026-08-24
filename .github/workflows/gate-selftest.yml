@@ -28,12 +28,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Approved self-hosted runner guard
+        run: node scripts/check-workflow-runners.mjs
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
+
+      - name: Negative control — runner guard must FAIL on GitHub-hosted labels
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Hosted runner regression' 'jobs:' '  hosted:' '    runs-on: ubuntu-latest' > "$FIX/hosted.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on ubuntu-latest — hosted runners can consume billed minutes."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected ubuntu-latest."
+
+      - name: Negative control — runner guard must FAIL on any unapproved label
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Unapproved runner regression' 'jobs:' '  hosted:' '    runs-on: windows-latest' > "$FIX/unapproved.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on windows-latest — an unapproved GitHub-hosted label slipped through."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected windows-latest."
 
       # --with-deps dropped deliberately: it shells out to apt-get and needs
       # root, which a self-hosted runner does not grant. The gt2 runners

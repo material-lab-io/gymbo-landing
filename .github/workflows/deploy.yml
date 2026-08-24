@@ -30,6 +30,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Approved self-hosted runner guard
+        run: node scripts/check-workflow-runners.mjs
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
