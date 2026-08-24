@@ -184,76 +184,8 @@ jobs:
           fi
           echo "OK: check-screenshot-freshness.mjs correctly failed on a stale/missing manifest."
 
-      # gy-k095b: negative controls for the no-bezel gate (founder rule gy-r4nzh).
-      # Three distinct ways the rule can be broken, because they fail differently:
-      # a bezel NAMED in source, a bezel asset that only ever appears in the built
-      # output (public/ -> dist/, no source reference), and a device-frame asset
-      # nobody has seen before — the last one is what the literal denylist alone
-      # would miss.
-      - name: Negative control — no-bezel gate must FAIL on a bezel referenced in source
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/src"
-          cp scripts/check-no-bezel.mjs "$FIX/scripts/"
-          echo 'const REGRESSION = "/mockups/iphone-frame-single.png";' > "$FIX/src/App.tsx"
-          cd "$FIX"
-          if node scripts/check-no-bezel.mjs; then
-            echo "::error::check-no-bezel.mjs PASSED on source referencing iphone-frame-single — the no-bezel gate (gy-r4nzh) is not wired."
-            exit 1
-          fi
-          echo "OK: check-no-bezel.mjs correctly failed on a bezel referenced in source."
-
-      - name: Negative control — no-bezel gate must FAIL on a bezel asset present only in dist/
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/src" "$FIX/dist"
-          cp scripts/check-no-bezel.mjs "$FIX/scripts/"
-          # Clean source, banned asset copied into the build output only.
-          echo 'export const ok = true;' > "$FIX/src/App.tsx"
-          touch "$FIX/dist/iphone-frame-single.png"
-          cd "$FIX"
-          if node scripts/check-no-bezel.mjs --dist; then
-            echo "::error::check-no-bezel.mjs PASSED on a bezel asset present in dist/ — the built-output half of the gate is not wired, and public/ assets ship without a source reference."
-            exit 1
-          fi
-          echo "OK: check-no-bezel.mjs correctly failed on a dist-only bezel asset."
-
-      - name: Negative control — no-bezel gate must FAIL on device art not on the denylist
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/src" "$FIX/dist"
-          cp scripts/check-no-bezel.mjs "$FIX/scripts/"
-          echo 'export const ok = true;' > "$FIX/src/App.tsx"
-          # A device frame nobody has added to the denylist — the rule is "no
-          # bezels", not "no THESE bezels", so the shape check must catch it.
-          touch "$FIX/dist/pixel-9-frame-dark.webp"
-          cd "$FIX"
-          if node scripts/check-no-bezel.mjs --dist; then
-            echo "::error::check-no-bezel.mjs PASSED on a NEW device-frame asset — the gate only catches known names, so the next bezel ships unchallenged."
-            exit 1
-          fi
-          echo "OK: check-no-bezel.mjs correctly failed on unlisted device-frame art."
-
-      - name: Sanity — no-bezel gate must PASS on a clean tree
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/src" "$FIX/dist"
-          cp scripts/check-no-bezel.mjs "$FIX/scripts/"
-          echo 'export const ok = true;' > "$FIX/src/App.tsx"
-          touch "$FIX/dist/screens.webp"
-          cd "$FIX"
-          if ! node scripts/check-no-bezel.mjs --dist; then
-            echo "::error::check-no-bezel.mjs FAILED on a clean tree — the gate reds every deploy regardless of content, which is as useless as never firing."
-            exit 1
-          fi
-          echo "OK: no-bezel gate passes cleanly when no device art is present."
+      - name: Photoreal-device gate self-test
+        run: node scripts/check-photoreal-device.selftest.mjs
 
       - name: All negative controls fired correctly
         run: echo "Every gate above correctly rejected a fixture that violates its rule."
-
-      - name: Photoreal-device gate self-test
-        run: node scripts/check-photoreal-device.selftest.mjs

@@ -352,8 +352,8 @@ export default function App() {
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
                       {/* gy-k095b: was a DemoFrame .mp4 with the device bezel, a title
-                          card and a caption burnt into the clip — unshippable under
-                          gy-r4nzh. Screen-only motion loops are the fast-follow
+                          card and a caption burnt into the clip. Pillars remain
+                          screen-only under gy-dyu6r.6; motion loops are the fast-follow
                           (gy-39v87); until then the real screen carries the pillar.
                           320px of pure screen reads larger than the old 360px clip,
                           which spent most of its width on bezel and background.
