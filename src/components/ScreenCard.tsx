@@ -1,26 +1,11 @@
 import { SHADOW } from "../forge-ui";
 
 /* ============================================================================
-   ScreenCard — the ONLY way a product visual ships on getgymbo.com.
+   ScreenCard — the screen-only product visual used by the four Forge pillars.
 
-   FOUNDER RULE (Kaushik 2026-08-14, bead gy-r4nzh, standing, site-wide): the
-   site shows REAL app screenshots with NO phone bezels or device frames.
-   "Bezels give away AI" — the phone-frame chrome reads as AI-generated/fake.
-   This component replaced all three framed paths in one pass (gy-k095b):
-
-     - HeroThreePanel   a baked three-phone raster (MockupWorld device art)
-     - ScreenshotFrame  a real screenshot composited into an iPhone frame PNG,
-                        with a punched aperture and a measured corner radius
-     - DemoFrame        pre-composed .mp4 demo clips with the device bezel,
-                        a title card and a caption burnt into the video
-
-   All three are deleted, not hidden. scripts/check-no-bezel.mjs is the CI gate
-   that keeps them from coming back — see that file for the denylist.
-
-   The card itself: a real screenshot, clipped to the Forge card radius, with
-   the Forge elevation-4 drop-shadow. No frame art, no notch, no faux status
-   bar, no home indicator, no letterbox padding. The screenshot fills the card
-   edge to edge, so the ONLY chrome on screen is the app's own UI.
+   Hero and gallery use the approved photoreal device compositions restored by
+   gy-dyu6r.6. Pillars deliberately remain direct screenshots: clipped to the
+   Forge card radius with the Forge elevation-4 drop-shadow and no extra chrome.
 
    Radius is deliberately per-breakpoint (--g-radius-lg on mobile, --g-radius-xl
    at >=lg) to match the rest of the Forge card system at each size. Shadow is

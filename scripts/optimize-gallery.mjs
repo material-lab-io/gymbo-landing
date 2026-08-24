@@ -1,14 +1,12 @@
-// Optimize the real app screenshots the site renders (bead gy-9bmwm.4;
-// rescoped by gy-k095b).
+// Optimize the real app screenshots the site renders (beads gy-9bmwm.4 and
+// gy-dyu6r.6).
 // Source: founder-approved curated masters in public/screens/real/ (current app UI).
 // Output: public/screens/gallery/<slug>-<w>.webp (responsive srcset) + <slug>.png fallback.
 // Run: node scripts/optimize-gallery.mjs
 //
-// gy-k095b: this used to serve only the "See Gymbo in action" gallery, with the
-// hero device handled by a separate special case. Under the no-bezel rule
-// (gy-r4nzh) the hero and the four pillar visuals are the same kind of thing as
-// a gallery card — a real screenshot in a bezel-less card — so they all come
-// from this one pipeline and the same SCREENS map. No per-slot special cases.
+// The gallery places these derivatives in the approved photoreal frame; the
+// four pillars render them directly in Forge ScreenCards. The baked hero is a
+// separate licensed composition derived from the first three masters.
 import sharp from "sharp";
 import { mkdir, rm } from "node:fs/promises";
 import path from "node:path";
@@ -17,8 +15,8 @@ import { SCREENS } from "./screens-map.mjs";
 const SRC = "public/screens/real";
 const OUT = "public/screens/gallery";
 
-// 360/540 cover the gallery + pillar cards at 1x/2x; 720/1080 cover the hero
-// cards and 2x/3x on the widest pillar card.
+// 360/540 cover gallery apertures + pillar cards at 1x/2x; 720/1080 cover
+// higher-density gallery apertures and the widest pillar card.
 const WIDTHS = [360, 540, 720, 1080];
 const FALLBACK_W = 540;
 
