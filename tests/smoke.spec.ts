@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
  * Smoke + Wave 3 acceptance [F] for getgymbo.com.
  * Runs on both the `desktop` and `mobile` (Pixel 5) projects (see playwright.config.ts).
  * Covers: page renders / no JS errors, nav + hero, pricing, waitlist CTA, footer,
- * AND Wave 3: demo videos present, coming-soon overlays render, no layout break.
+ * plus the current static product imagery and no layout break.
  * getgymbo.com is LIGHT ONLY (gy-uesmd, founder ruling 2026-08-12) — there is
  * no global theme toggle or dark palette.
  */
@@ -46,45 +46,19 @@ test('nav and hero render with the headline', async ({ page }) => {
   await expect(h1).toContainText(/from your phone/i);
 });
 
-// gy-k095b — the runtime half of founder rule gy-r4nzh ("REAL screenshots, NO
-// phone bezels; bezels give away AI"). scripts/check-no-bezel.mjs gates the
-// SOURCE and the BUILT OUTPUT; this gates the RENDERED PAGE, which is the thing
-// Kaushik actually looks at. A denylist can only catch device art it can name or
-// pattern-match — this catches "a frame got rendered" regardless of how.
-//
-// This replaced a test that asserted demo videos play INSIDE DEVICE FRAMES —
-// i.e. it gated the exact thing now forbidden. A test that outlives the rule it
-// encoded silently protects the regression.
-test('product visuals are real screenshots in bezel-less cards, with no device frames', async ({ page }) => {
+// gy-dyu6r.6: the source/dist gate checks the approved asset allowlist; this
+// test checks that the same contract actually renders and loads in a browser.
+test('hero and gallery render the approved photoreal device assets', async ({ page }) => {
   await page.goto('/');
-
-  // Every product visual is a ScreenCard...
-  await page.locator('#why').scrollIntoViewIfNeeded();
-  const cards = page.getByTestId('screen-card');
-  expect(await cards.count()).toBeGreaterThan(0);
-  // Scope to VISIBLE cards: the hero renders a desktop trio (`hidden lg:block`)
-  // and a separate single mobile card, so on a phone viewport the first card in
-  // DOM order is deliberately hidden — .first() alone would fail there for a
-  // reason that has nothing to do with the rule under test.
-  const shown = cards.locator('visible=true');
-  expect(await shown.count()).toBeGreaterThan(0);
-  await expect(shown.first()).toBeVisible();
-
-  // ...each showing a real screenshot that actually loaded (a broken <img> would
-  // still satisfy a "card exists" assertion).
-  const firstImg = shown.first().locator('img');
-  await expect(firstImg).toBeVisible();
-  expect(await firstImg.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
-
-  // ...and nothing on the page is a device frame or a composed demo clip.
+  const hero = page.getByTestId('hero-device-art').locator('img:visible');
+  await expect(hero).toBeVisible();
+  await expect(hero).toHaveAttribute('src', /hero-three-panel-1200\.png/);
+  expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
+  const gallery = page.getByTestId('gallery-device-art').first();
+  await gallery.scrollIntoViewIfNeeded();
+  await expect(gallery.locator('img').last()).toHaveAttribute('src', /iphone-frame-single\.png/);
+  await expect.poll(() => gallery.locator('img').first().evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
   expect(await page.locator('video').count()).toBe(0);
-  const framedAssets = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('img, source, video'))
-      .flatMap((el) => [el.getAttribute('src'), el.getAttribute('srcset'), el.getAttribute('poster')])
-      .filter((v): v is string => !!v)
-      .filter((v) => /iphone-frame|three-panel|-frame-|\/mockups\//.test(v))
-  );
-  expect(framedAssets, `device-frame art is rendering on the page: ${framedAssets.join(', ')}`).toEqual([]);
 });
 
 test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
@@ -116,7 +90,7 @@ test('pillar-organized keeps its fixed dark accent band (unrelated to page theme
   await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)'); // F.charcoal #0a0a0a
 });
 
-test('coming-soon bullets render inline, not as demo-frame badges', async ({ page }) => {
+test('retired demo-frame badges are absent', async ({ page }) => {
   await page.goto('/');
   // gy-jaooz: "travel-aware" / "AI navigate" badges were removed from the pillar
   // demo artwork; the not-yet-shipped items now live as normal bullets with a
@@ -124,7 +98,7 @@ test('coming-soon bullets render inline, not as demo-frame badges', async ({ pag
   await page.locator('#why').scrollIntoViewIfNeeded();
   await expect(page.locator('[data-coming-soon]')).toHaveCount(0);
   await expect(page.getByText(/travel-aware/i)).toHaveCount(0);
-  await expect(page.getByText('coming soon').first()).toBeVisible();
+  await expect(page.getByText('coming soon')).toHaveCount(0);
 });
 
 test('pricing shows the two plans and numbers', async ({ page }) => {

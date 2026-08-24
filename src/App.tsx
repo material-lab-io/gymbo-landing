@@ -14,8 +14,8 @@ import {
   Smartphone,
   type LucideIcon,
 } from "lucide-react";
-import "devices.css/dist/devices.min.css";
 import { ScreenCard } from "./components/ScreenCard";
+import { ScreenshotFrame } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
@@ -24,11 +24,10 @@ import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, Prim
    getgymbo.com — Forge redesign (epic gy-9bmwm)
    Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
    beige/charcoal + solid amber accent). Brand = Forge amber #F59E0B / marigold
-   #FBBF24, accent only. Every product visual on the page — hero, the 4 pillars,
-   and the "see it in action" gallery — is a REAL app screenshot in a bezel-less
-   ScreenCard (founder rule gy-r4nzh / build gy-k095b). No device frames, no
-   composed demo clips. Masters are the founder-approved curated set, optimized
-   to WebP via scripts/optimize-gallery.mjs (gy-9bmwm.4).
+   #FBBF24, accent only. Hero and gallery use the approved licensed photoreal
+   device compositions; the 4 pillars remain real app screenshots in Forge
+   ScreenCards. Masters are the founder-approved curated set, optimized to WebP
+   via scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.6).
    ============================================================================ */
 
 /* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
@@ -106,10 +105,10 @@ const PILLARS = [
 ];
 
 /* ── "see it in action" gallery: current real-app screenshots (founder-approved
-   curated set, public/screens/gallery/) shown as bezel-less ScreenCards — the
-   iPhone device frame this used to composite into is gone site-wide (gy-r4nzh /
-   gy-k095b). Static stills. Source files: public/screens/real/* → optimized via
-   scripts/optimize-gallery.mjs (gy-9bmwm.4). ── */
+   curated set, public/screens/gallery/) composited into the approved licensed
+   photoreal frame. Pillar visuals remain screen-only. Static stills. Source
+   files: public/screens/real/* → optimized via scripts/optimize-gallery.mjs
+   (gy-9bmwm.4, gy-dyu6r.6). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
   { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
@@ -148,42 +147,9 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
    page
    ============================================================================ */
 
-/* Hero screens — three bezel-less ScreenCards (gy-k095b, founder rule gy-r4nzh).
-   REPLACES the baked three-iPhone MockupWorld raster (its art now lives, unserved,
-   in assets-src/ — the gate in scripts/check-no-bezel.mjs forbids naming it here):
-   Kaushik ruled on 2026-08-14 that device frames read as AI-generated, so the
-   mockup's metal/reflections/fan arrangement are gone and the three real screens
-   stand on their own. Same three captures as before — dashboard, who-owes-balance,
-   log-payment — now shown directly.
-
-   The centre card leads (larger, level); the two flanking cards are slightly
-   smaller and dropped a touch, which keeps the "three screens" read of the
-   original arrangement without implying a physical device. Widths are
-   percentages of the stage so the whole group scales with the hero's own
-   min(46vw, 720px) box. */
-const HERO_CARDS = [
-  { slug: "balances", alt: "", w: "29%", drop: 22 },
-  { slug: "dashboard", alt: "Gymbo's home screen, showing each client's punch card and classes remaining", w: "36%", drop: 0 },
-  { slug: "log-payment", alt: "", w: "29%", drop: 22 },
-];
-
-function HeroScreens({ className = "", style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <div className={`flex items-center justify-center gap-[3%] ${className}`} style={style}>
-      {HERO_CARDS.map((c) => (
-        <ScreenCard
-          key={c.slug}
-          slug={c.slug}
-          alt={c.alt}
-          width={c.w}
-          /* stage is min(46vw,720px); the widest card is 36% of it */
-          sizes="(min-width: 1024px) min(16vw, 240px), 33vw"
-          priority
-          style={c.drop ? { transform: `translateY(${c.drop}px)` } : undefined}
-        />
-      ))}
-    </div>
-  );
+const HERO_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
+function HeroDeviceArt({ alt = "", priority = false }: { alt?: string; priority?: boolean }) {
+  return <div data-testid="hero-device-art" style={{ aspectRatio: "4800 / 3236", lineHeight: 0 }}><picture><source type="image/webp" srcSet={HERO_SRCSET} sizes="(min-width: 1024px) min(46vw, 720px), min(92vw, 560px)" /><img src="/mockups/hero-three-panel-1200.png" alt={alt} aria-hidden={alt ? undefined : true} decoding="async" {...(priority ? { fetchpriority: "high" as const } : {})} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} /></picture></div>;
 }
 
 export default function App() {
@@ -202,12 +168,7 @@ export default function App() {
       galleryNavigationTimer.current = null;
     }, 100);
     setGalleryIndex(index);
-    gallery.scrollTo({
-      left: card.offsetLeft - gallery.offsetLeft - (gallery.clientWidth - card.offsetWidth) / 2,
-      // Keep the visible position cue and the strip in lockstep. Native swipe
-      // remains available; button navigation is deliberately immediate.
-      behavior: "auto",
-    });
+    card.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
   };
 
   const syncGalleryPosition = () => {
@@ -312,8 +273,8 @@ export default function App() {
               discrete screen cards bleeding off the edge instead read as a
               clipping BUG: the third card loses its right corner radius and its
               shadow. Inset so all three cards sit whole. */}
-          <div aria-hidden="true" className={`hidden lg:block absolute right-[clamp(20px,3vw,56px)] top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(44vw, 660px)" }}>
-            <HeroScreens style={{ width: "100%" }} />
+          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
+            <HeroDeviceArt priority />
           </div>
 
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
@@ -336,19 +297,11 @@ export default function App() {
                 <PrimaryCTA size="lg" />
                 <SecondaryButton>Talk to us</SecondaryButton>
               </div>
-              {/* mobile / tablet screens — below the copy. Deliberately ONE card, not
-                  the desktop trio: three portrait screens across a phone viewport render
-                  at ~160px each, and a real screenshot that small is an unreadable smudge —
-                  which is the opposite of what the no-bezel rule (gy-r4nzh) is for. The
-                  other two hero screens still appear further down the page. */}
-              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`}>
-                <ScreenCard
-                  slug="dashboard"
-                  alt="Gymbo's home screen, showing each client's punch card and classes remaining"
-                  width="min(64vw, 280px)"
-                  sizes="min(64vw, 280px)"
-                  priority
-                />
+              {/* Mobile/tablet keeps the approved three-phone composition below
+                  the copy, scaled as one coherent image so its screens and device
+                  silhouettes remain legible without clipping. */}
+              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(92vw, 560px)" }}>
+                <HeroDeviceArt alt="Gymbo dashboard, balances, and payment logging shown across three phones." priority />
               </div>
             </div>
           </div>
@@ -399,8 +352,8 @@ export default function App() {
                   <Reveal className="relative flex items-center justify-center" >
                     <div className="relative">
                       {/* gy-k095b: was a DemoFrame .mp4 with the device bezel, a title
-                          card and a caption burnt into the clip — unshippable under
-                          gy-r4nzh. Screen-only motion loops are the fast-follow
+                          card and a caption burnt into the clip. Pillars remain
+                          screen-only under gy-dyu6r.6; motion loops are the fast-follow
                           (gy-39v87); until then the real screen carries the pillar.
                           320px of pure screen reads larger than the old 360px clip,
                           which spent most of its width on bezel and background.
@@ -460,7 +413,7 @@ export default function App() {
             <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel mt-6 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery" aria-describedby="gallery-position">
               {SCREENS.map((s, index) => (
                 <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
-                  <ScreenCard slug={s.slug} alt={s.alt} width={276} />
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>

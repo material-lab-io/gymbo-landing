@@ -14,13 +14,9 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  *    (.reveal-on-scroll in App.tsx). A capture that doesn't actually scroll a
  *    section into view renders it EMPTY.
  *
- * gy-k095b: there are no <video> elements on the site any more. Under the
- * founder's no-bezel rule (gy-r4nzh) the pillar demo clips — which had the
- * device frame and captions burnt into the video — were replaced by real
- * screenshots in bezel-less ScreenCards. That deletes this file's single
- * largest flake source (gy-cjdtw: a looping video's decoded frame is
- * non-deterministic across the 3 gt2 runners), along with the poster-swap
- * workaround it needed. Everything captured now is static images and DOM.
+ * There are no <video> elements on the site. The hero/gallery photoreal art
+ * and pillar ScreenCards are static images and DOM, avoiding the decoded-frame
+ * nondeterminism that previously made visual baselines flaky on gt2 runners.
  */
 
 const SECTIONS = [
@@ -139,17 +135,14 @@ test.describe('visual baselines', () => {
   // elliptical-vs-circular corner Kaushik flagged, which gy-oooc9 missed by
   // checking the number instead of the curve).
   //
-  // gy-k095b: the aperture is gone with the device frame, but the corner is
-  // still the right place to look — it is where a bezel would come BACK
-  // visually. This clip now gates the ScreenCard's own contract: the Forge
-  // radius actually clips the screenshot, and there is no frame edge, notch
-  // or device rail between the card boundary and the app's own pixels.
+  // The approved photoreal frame restores its aperture; this clip keeps the
+  // physical frame edge and current screenshot crop under visual review.
   // Runs in both projects (desktop + mobile).
   test('gallery-card-corner', async ({ page }) => {
     const gallery = page.getByTestId('gallery-section');
     await revealSection(page, gallery);
     await waitImagesLoaded(gallery);
-    const card = gallery.getByTestId('screen-card').first();
+    const card = gallery.getByTestId('gallery-device-art').first();
     await expect(card).toBeVisible();
     // revealSection ends scrolled to the section BOTTOM, so pull the first card
     // fully back into the viewport before clipping its top-left corner.
