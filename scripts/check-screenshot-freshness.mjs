@@ -32,6 +32,28 @@ function failUnknown(detail) {
   for (const file of expectedFiles) row("UNKNOWN", file, detail);
 }
 
+function isIsoTimestamp(value) {
+  return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function hasContractShape(value) {
+  return value
+    && value.schema_version === 1
+    && value.profile === "landing"
+    && isIsoTimestamp(value.captured_at)
+    && (value.capture_commit === null || /^[a-f0-9]{40}$/i.test(value.capture_commit))
+    && (value.capture_commit_short === null || /^[a-f0-9]{12}$/i.test(value.capture_commit_short))
+    && [true, false, null].includes(value.capture_tree_dirty)
+    && typeof value.capture_branch === "string"
+    && isIsoTimestamp(value.capture_commit_committed_at)
+    && typeof value.app_version === "string"
+    && (typeof value.app_build === "string" || typeof value.app_build === "number" || value.app_build === null)
+    && Number.isInteger(value.expected_width) && value.expected_width > 0
+    && Number.isInteger(value.expected_height) && value.expected_height > 0
+    && Number.isInteger(value.image_count) && value.image_count >= 0
+    && Array.isArray(value.images);
+}
+
 let provenance;
 try {
   provenance = JSON.parse(await readFile(PROVENANCE_PATH, "utf8"));
@@ -40,13 +62,12 @@ try {
 }
 
 if (provenance) {
-  if (provenance.schema_version !== 1 || provenance.profile !== "landing") {
-    failUnknown("unsupported capture-provenance schema/profile");
-  } else if (!Array.isArray(provenance.images)) {
-    failUnknown("capture provenance has no images array");
+  if (!hasContractShape(provenance)) {
+    failUnknown("invalid capture-provenance contract fields");
   } else {
     const mapping = provenance.build_mapping;
-    if (!mapping || !["matched", "not_a_shipped_build", "unknown"].includes(mapping.status)) {
+    if (!mapping || !["matched", "not_a_shipped_build", "unknown"].includes(mapping.status)
+      || (mapping.status === "matched" && (mapping.reason !== null || !mapping.build))) {
       failUnknown("capture provenance has invalid build_mapping status");
     } else if (mapping.status === "unknown") {
       failUnknown(`TestFlight mapping unresolved${mapping.reason ? `: ${mapping.reason}` : ""}`);
