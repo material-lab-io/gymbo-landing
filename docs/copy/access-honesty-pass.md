@@ -1,7 +1,12 @@
 # CTA and access-route honesty copy spec
 
-**Bead:** gm-7pd (child of gm-t0e) · **Author:** content · **Date:** 2026-08-31
+**Bead:** gm-7pd (child of gm-t0e), raised P2 → **P1** 2026-08-31 · **Author:** content
+**Date:** 2026-08-31, revised same day after pm's funnel-data addition
 **Input:** gy-gim46 (closed, product rig) — ranked recommendation-action list ranks 2, 4, 6.
+Item 4 (pricing legibility, rank 7) folded in by pm's routing from gm-kkl (marketer). Rank 2 is
+sequenced first below — pm's 2026-08-31 addition confirmed via a live Supabase read that the
+current CTA/access ambiguity has a measured outcome (3 signups in 10 weeks), not just an
+inferred one, so it's the highest-value item in this spec, not a tidiness pass.
 **Verified against:** `origin/main` of `gymbo-landing` (commit `2b0bdd8`, matches live
 `build-sha.txt`), traced through `src/App.tsx`, `src/forge-ui.tsx`,
 `src/components/WaitlistForm.tsx`, and `functions/api/waitlist.js`.
@@ -13,7 +18,9 @@ new line of plain text under the hero (audit rank 4's own ask).
 
 ## AC2 — access route, verified against actual behaviour
 
-**Verdict: the word "waitlist" is mechanically accurate. Not UNKNOWN.**
+**Verdict: the mechanism ("waitlist" as a form) is accurate. The word "waitlist" as user-facing
+copy is a separate, real risk — see below. Not UNKNOWN either way; both are now decided with
+evidence.**
 
 Traced every CTA on the page to what it actually does:
 
@@ -22,24 +29,34 @@ Traced every CTA on the page to what it actually does:
   `id="cta"` footer section. None of them link out or start access directly.
 - That footer section (`src/App.tsx:557-558`) renders `<WaitlistForm />` — a real form
   (`src/components/WaitlistForm.tsx`) that `POST`s name + email to `/api/waitlist`
-  (`functions/api/waitlist.js`), which inserts into a Supabase `waitlist` table. A 201 or 409
-  (already on the list) both resolve to the same on-screen confirmation: *"You're on the list —
-  we'll email you when it's your turn."*
-- So: every "Get Gymbo" / "Join the waitlist" CTA on the page today leads to the exact same
-  place — a real email-capture waitlist, not an App Store link, not a TestFlight link, not an
-  immediate start. "Waitlist" is not a euphemism here; it is literally what the code does.
+  (`functions/api/waitlist.js`), which inserts into a Supabase `waitlist` table.
 - Distribution channel after that: confirmed as TestFlight (product-rig beads gy-hgfkl,
   gy-3h80k, gy-ifg87.2 — active TestFlight cut/QA work). I could not find evidence of what
-  triggers a TestFlight invite after a waitlist signup (manual vs. automated) — that operational
-  detail is out of my visibility and not needed to write an honest "what happens next" (below),
-  which deliberately doesn't promise a mechanism I can't confirm.
+  triggers a TestFlight invite after a signup (manual vs. automated) — that operational detail
+  is out of my visibility and not needed to write an honest "what happens next" (below), which
+  deliberately doesn't promise a mechanism I can't confirm.
+
+**Measured, not just verified — pm's 2026-08-31 addition, from push's gm-d5d discovery:** push
+read `public.waitlist` on the live product Supabase (project `kpvhnbemumjmgpmmgfjp`, SELECT-only,
+no PII exposed) and found **3 signups in 10 weeks** (first 2026-06-22, latest 2026-08-21). This
+changes the weight of this whole item, not just its comprehension case: whatever the page is
+currently asking people to do, almost nobody is doing it. Rank 2 is sequenced first in this spec
+for that reason — it's the highest-value row, not a tidiness item.
+
+**It also changes the copy itself, not just the priority.** With n=3, any copy implying a queue
+of people waiting is a fabricated-demand claim the voice guide's own honest-claim guardrails
+forbid. That's why this revision removes "waitlist" as a *word* from every user-facing string
+(the unified CTA label already avoided it; this revision also fixes the strings I originally
+left unchanged — see "Exact changes" below) and removes "when it's your turn" / "your turn"
+phrasing throughout, since "turn" implies an ordered queue that doesn't meaningfully exist at
+n=3. The underlying mechanism (a real form, a real database row) is unchanged and still
+accurately described — the fix is entirely about not implying scale that isn't there.
 
 **Separate, still-open question — not resolved by this verification:** whether the *site's
-overall status framing* ("In beta" / pre-launch positioning) is still accurate now that a first
-paid subscription exists (flagged on gm-d5d, pending gy-2f2ak.4). That is a product-availability
-call, distinct from "does clicking this button do what it says" — which I've now confirmed it
-does. This spec does not touch the broader status-framing question; if pm wants "In beta" itself
-reconsidered, that's a gy-2f2ak.4 follow-up, not this bead.
+overall status framing* ("In beta" vs. the founder-ruled "private alpha", gy-2f2ak.4 closed
+2026-08-23) is internally consistent. That is a founder-level phrase choice pm is carrying (see
+gm-mva item 5) — distinct from "does clicking this button do what it says," which is what this
+section verifies. This spec does not pick a status word; it only fixes CTA/access mechanics.
 
 ---
 
@@ -72,13 +89,16 @@ same real waitlist form. "Get Gymbo" is retired everywhere until a CTA directly 
 | `src/App.tsx:258`, nav button | `Get Gymbo` | `Join the iPhone beta` |
 | `src/App.tsx:499`, pricing card button | `Get Gymbo` | `Join the iPhone beta` |
 | `src/App.tsx:545`, footer `<section>` `aria-label` | `aria-label="Join the waitlist"` | `aria-label="Join the iPhone beta"` |
-| `src/App.tsx:553`, footer CTA intro line | `Join the waitlist and we'll tell you the moment it's your turn.` | `Join the iPhone beta and we'll tell you the moment it's your turn.` |
+| `src/App.tsx:553`, footer CTA intro line | `Join the waitlist and we'll tell you the moment it's your turn.` | `Join the iPhone beta and we'll email you a TestFlight invite.` |
 | `src/components/WaitlistForm.tsx:88`, form submit button | `Join the waitlist` | `Join the iPhone beta` |
+| `src/components/WaitlistForm.tsx:40`, success message | `You're on the list — we'll email you when it's your turn.` | `Request received. We'll email you a TestFlight invite.` |
 
-Not changed: the `WaitlistForm`'s "Joining…" loading state (`WaitlistForm.tsx:88`, ternary) and
-its success message *"You're on the list — we'll email you when it's your turn."* — both are
-accurate as written and don't reference "waitlist" as a status claim, just describe the real
-mechanism.
+**Revised from the first version of this spec** (which left the success message unchanged):
+`"You're on the list — we'll email you when it's your turn."` has two problems, not one. "On the
+list" / "your turn" implies an ordered queue — at n=3 that's a fabricated-demand claim (see AC2
+above). It also contains an em dash, which voice guide §5 bans in shipped copy; the replacement
+uses two sentences instead. The loading state `"Joining…"` (`WaitlistForm.tsx:88`, ternary) is
+unchanged — it's a transient state label, not a claim about demand.
 
 ### Above-fold access line (part of rank 2's "add one line stating the real access route")
 
@@ -87,8 +107,12 @@ CTA row (~line 300).
 
 New line (insert, doesn't replace anything):
 ```
-iPhone beta — join now, and we'll email you a TestFlight invite when it's your turn.
+iPhone beta: request access and we'll email you a TestFlight invite.
 ```
+
+Revised from the first version of this spec, which read "...when it's your turn" — dropped for
+the same reason as the `WaitlistForm` success message above (queue implication at n=3), and the
+em dash swapped for a colon per voice guide §5.
 
 I did not state a wait time — I have no evidence of typical turnaround (see AC2 verification
 above: I could not confirm what triggers an invite after signup). If pm can confirm a real
@@ -121,10 +145,14 @@ Three steps (AC: state a wait time only if it can be met — none confirmed, see
 none stated):
 
 ```
-1. Request access — join the iPhone beta with your name and email.
+1. Join the iPhone beta with your name and email.
 2. Get your TestFlight invite by email.
 3. Import your first clients and log your first class.
 ```
+
+(Step 1 revised from the first version of this spec, which read "Request access — join the
+iPhone beta..." — the em dash violated voice guide §5; rewritten as one clause instead of two
+rather than swapped for a colon, since "request access" was redundant with "join.")
 
 This is new content (no "current string" to replace) — a plain three-item list is enough,
 matching the section's existing typographic scale; no new component. Exact copy above is what I
@@ -133,13 +161,33 @@ N days"), that's an amendment to this file, not a blocker to landing the rest.
 
 ---
 
+## 4. Pricing legibility (marketer fold-in, gy-gim46 rank 7, routed here by pm off gm-kkl)
+
+Location: `src/App.tsx`, `PRICING` array / pricing card render, adjacent to the price headline
+(near the `/month` number and the "Billed yearly at ₹2,999 via the App Store. Save 37%." note).
+
+| Location | Current | New | Reason |
+|---|---|---|---|
+| Near price headline, both plan cards | *(no per-client-pricing contrast exists near the price today; "Unlimited clients" is a separate feature bullet elsewhere on the card)* | `One price. No per-client fees.` | Marketer's addition, evidence class MEASURED — gy-gim46 rank 7's first-party fetch of three competitor pricing pages (My PT Hub, ABC Trainerize, Everfit; all fetched 2026-08-30) confirms all three price by seat/tier/add-on; the gap on our own page (stating unlimited clients without contrasting it against per-client pricing at the point of decision) is directly observable. |
+
+**Constraint, carried from marketer's note — do not touch:** this is legibility only. One plan,
+two billing periods stays exactly as-is; this does not add a tier, change plan/billing
+structure, or reverse the audit's rank-7 DELIBERATE-CHOICE-KEEP verdict on single-plan pricing.
+No target metric attached — marketer's own framing, legibility not conversion.
+
+---
+
 ## AC4 — contradiction check against gm-mva
 
-No contradiction found. gm-mva's hero rewrite (`Run classes, payments, and balances from your
-phone.`) and this spec's above-fold qualifier and access line sit in the same hero block but
-don't overlap in wording or claim — gm-mva narrows the *scope* claim, this spec adds *who it's
-for* and *what clicking does*. Sequencing (gm-mva lands first per pm's ruling on gm-111) doesn't
-change any string in this file.
+No contradiction found. gm-mva's hero rewrite (`The business app for independent personal
+trainers: payments, balances, schedules and classes from your phone.`, updated 2026-08-31 to
+fold in marketer's category framing) and this spec's above-fold qualifier and access line sit in
+the same hero block but don't overlap in wording or claim — gm-mva narrows the *scope and
+category* claim, this spec adds *who it's for* (redundant framing check: gm-mva's H1 now also
+says "independent personal trainers," and this spec's qualifier adds "in India · iPhone · no
+client app required" — overlapping subject, non-contradicting content, both can ship) and *what
+clicking does*. Sequencing (gm-mva lands first per pm's ruling on gm-111) doesn't change any
+string in this file.
 
 ## Target metric
 
