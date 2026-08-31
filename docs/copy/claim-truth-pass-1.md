@@ -28,7 +28,7 @@ marquee it feeds. Five labels, five verdicts (AC2):
 | `Your own URL` | **KEEP as-is** | Shipped: personalised public-profile slug, `/t/slug` (`CoachCardSheetData.swift` — "gy-jx67w: public-profile slug — drives the QR (/t/slug)"), live route `app/(public)/t/[slug]/page.tsx`. |
 | `Booking link` | **DEFERRED — pending product shipped-status, pm chasing** | pm's 2026-08-31 ruling: Kaushik's verbatim quote in `gy-mdqxp` item 4 names "shareable booking link" as a touchpoint to keep, so this is founder-endorsed, not a REMOVE candidate. What's still unsettled is not whether to talk about it, but *which group* it belongs in — `gy-mdqxp` item 3 rules the strip groups by shipped-readiness (shipped items in the top row(s), not-yet-shipped below, no "coming soon" badges). That's a shipped-status question that lives in the product repo; I could not establish it from code (see my original search below), and per pm's ruling I'm not the one chasing it — pm is taking it to the product rig directly. Chip stays unchanged in pass 1. |
 | `Fitness reports` | **DEFERRED — pending product shipped-status, pm chasing** | Same ruling and same reason as `Booking link` — Kaushik's `gy-mdqxp` item 4 quote also names "fitness reports" explicitly, so this is founder-endorsed content, not a REMOVE. Grouping (shipped vs. not-yet-shipped row) is the open question, owned by pm. Chip stays unchanged in pass 1. |
-| `Branded client app` | **RE-WORD → "Custom-branded client content"** | pm's 2026-08-31 ruling, reading `gy-mdqxp` item 4 directly: Kaushik's verbatim quote is *"...shareable booking link, fitness reports, and custom branded client **content**. Brand themes are fine."* — content, not app. The "Branded client app" phrasing on the live chip is a downstream paraphrase that drifted one word from the founder's own text; it was never a ruling that clients get an app. My original REMOVE verdict was right in substance (no client-facing app exists, and the phrase as-shipped does contradict "clients download nothing") but pm's re-word is the better fix: it restores Kaushik's own phrase instead of deleting a touchpoint he explicitly asked to be talked about. When a bead's prose summary and its quoted founder text disagree, the quote wins. |
+| `Branded client app` | **RE-WORD → "Custom branded client content"** | pm's 2026-08-31 ruling, reading `gy-mdqxp` item 4 directly: Kaushik's verbatim quote is *"...shareable booking link, fitness reports, and custom branded client **content**. Brand themes are fine."* — content, not app. The "Branded client app" phrasing on the live chip is a downstream paraphrase that drifted one word from the founder's own text; it was never a ruling that clients get an app. My original REMOVE verdict was right in substance (no client-facing app exists, and the phrase as-shipped does contradict "clients download nothing") but pm's re-word is the better fix: it restores Kaushik's own phrase instead of deleting a touchpoint he explicitly asked to be talked about. When a bead's prose summary and its quoted founder text disagree, the quote wins. Using his exact wording, unhyphenated ("custom branded client content"), rather than my first pass's compound-adjective hyphen — caught during the gm-111 voice pass: a paraphrase-of-a-quote is exactly the failure mode this ruling exists to correct, so the safer move is his literal string, not a copyedited version of it. |
 
 **Exact change**, `MARQUEE_CHIPS` array (`src/App.tsx` ~line 620) — only the `Branded client app`
 entry is renamed; `Booking link` and `Fitness reports` are untouched (deferred, not decided
@@ -58,7 +58,7 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your own URL", icon: Link },
   { name: "Booking link", icon: CalendarCheck },
   { name: "Fitness reports", icon: BarChart3 },
-  { name: "Custom-branded client content", icon: Smartphone },
+  { name: "Custom branded client content", icon: Smartphone },
 ];
 ```
 
@@ -72,8 +72,21 @@ Location: `src/App.tsx`, hero H1 (~line 289) and hero subhead (~line 298).
 
 | Location | Exact current string | Exact replacement string | Reason |
 |---|---|---|---|
-| Hero H1 | `Run your entire fitness business from your phone.` (rendered across three JSX text nodes, with "fitness business" in a highlighted `<span>`) | `The business app for independent personal trainers: payments, balances, schedules and classes from your phone.` | Two fixes folded into one string, per pm/marketer's 2026-08-31 note on this bead (see below): the truth fix (this bead, gy-gim46 rank 3 — narrows the promise to the concrete core job, no "revenue"/"entire" overclaim) and a category-framing fix (marketer, gy-gim46 rank 8, folded in from gm-kkl at pm's direction so it lands in one string, not two competing edits to the same line). Marketer's proposed string used an em dash ("...trainers — payments..."); replaced with a colon per voice guide §5 ("no em dashes in shipped copy... a colon where one clause introduces or explains another") — a mechanical fix, not a wording judgment call. Which words (if any) land in the highlighted span is a component/design decision for landing, not fixed by this spec — AC3 keeps this copy-only. |
+| Hero H1 | `Run your entire fitness business from your phone.` (rendered across three JSX text nodes, with "fitness business" in a highlighted `<span>`) | `The business app for independent personal trainers.` | **Revised during the gm-111 voice pass** — see the note below. Fixes the same overclaim (this bead, gy-gim46 rank 3) and carries marketer's category framing (gy-gim46 rank 8, folded in from gm-kkl), but as the guide's own canonical §7 one-liner rather than a colon-plus-feature-list construction. |
 | Hero subhead | `Track revenue, stay organized, look professional, train smarter.` (the rest of the sentence, "Built for independent trainers like you in India.", is unchanged) | `Track payments and balances, stay organized, look professional, train smarter.` | Audit: use "payments and balances," not "revenue," unless accounting-grade revenue scope is documented — it is not; Gymbo records cash/UPI and does not process money. |
+
+**Revision note (gm-111 voice pass, 2026-08-31):** my first pass folded marketer's fix in as
+`The business app for independent personal trainers: payments, balances, schedules and classes
+from your phone.` — truth-clean, but on the voice pass I flagged it as a feature-dump construction
+(named axis: voice, not truth). The subhead directly below it already carries the concrete scope
+("payments and balances, stay organized..."), so a colon-plus-list H1 duplicates that list one
+line above it — two consecutive lines both enumerating product nouns is denser than the "short
+sentences, concrete nouns, zero fluff" register calls for in the highest-impact spot on the page.
+The shorter replacement is the guide's own §7 one-liner verbatim — it satisfies the truth fix (no
+"entire"/"revenue" claim, nothing broader than what's substantiated), carries marketer's category
+framing intact ("business app for independent personal trainers"), and lets the subhead do the
+scope-listing work it already does, rather than doing it twice. Same INFERRED evidence-class note
+applies to the category-framing half as before; no "SEO" justification used anywhere.
 
 **Note — pm's gm-111 hero clearance, cross-referenced:** marketer's 2026-08-31 spot-check cleared
 the *current* hero string on voice ("calm, precise, no fear register"). That clearance stands on
@@ -81,19 +94,13 @@ the voice axis and is not contradicted here — this is a truth-axis fix to a di
 (overclaim vs. our own terms/privacy). Per pm's ruling, gm-111 audits the *new* hero for voice,
 not this one.
 
-**Note — marketer's category-framing evidence class:** the "business app for independent personal
-trainers" framing is marketer's fold-in (gy-gim46 rank 8). Evidence class is INFERRED —
-comprehension/discoverability only, not measured; the analyst search/entry-page data request is
-still open. Per pm's explicit instruction, do not write "SEO" as a justification anywhere this
-lands, on this bead or in the PR. Noting it here so the record is honest about what kind of
-evidence this half of the string rests on, separate from the truth-fix half which is fully
-substantiated (terms/privacy).
-
-**Note — this string is also the recorded canonical tagline:** the current live H1 is verbatim the
-voice guide's own §7 "Longer tagline" entry ("Run your entire fitness business from your phone.").
-Landing this change means §7 goes stale the moment it ships. I'll update the guide's tagline entry
-to the new string in the same pass this lands, per §8.2 (voice ruling folds back at the next
-version bump) — flagging here so it isn't lost as a follow-up nobody owns.
+**Note — this string is also the recorded canonical one-liner:** the new H1 is now verbatim the
+voice guide's own §7 "One-liner" entry ("The business app for independent personal trainers.") —
+no guide update needed for that entry. What DOES go stale: §7's "Longer tagline" entry ("Run your
+entire fitness business from your phone.") is the *old* H1, word for word, and stops being used
+anywhere on the page once this ships. I'll update §7 to drop or replace the stale tagline entry in
+the same pass this lands, per §8.2 (voice ruling folds back at the next version bump) — flagging
+here so it isn't lost as a follow-up nobody owns.
 
 **Adjacent finding, not in scope for this bead — flagging only:** a second "revenue" instance
 exists elsewhere on the page, outside the hero: `src/App.tsx:43`, feature-card title `"Track your
@@ -177,7 +184,7 @@ directly; not investigated, not drafted, not filed here.
 
 | Location | Exact current string | Exact new string | Reason |
 |---|---|---|---|
-| New line, gallery section, under the `<h2>` | *(does not exist today)* | `Screens show synthetic demo data.` | `gm-zag`'s proposed disclosure string, high-confidence sourced to the capture pipeline (`scripts/capture-appstore-screenshots.sh` + `scripts/seed-priya.sh`, both cited on that bead). Ships as-is per pm's ruling — substance is settled; wording is mine to gut-check on the voice pass this feeds into `gm-111`, which flagged this exact string as "honest and necessary, but a flat systems phrase on a marketing page" worth a second look on tone, not substance. |
+| New line, gallery section, under the `<h2>` | *(does not exist today)* | `Screens shown with sample data.` | Substance is `gm-zag`'s finding, settled and unchanged — high-confidence sourced to the capture pipeline (`scripts/capture-appstore-screenshots.sh` + `scripts/seed-priya.sh`, both cited on that bead). Wording revised during the gm-111 voice pass: pm flagged the original proposal ("Screens show synthetic demo data.") as "honest and necessary, but a flat systems phrase on a marketing page." "Synthetic" is accurate but technical/ML-register vocabulary, not the plain, concrete word choice the voice guide calls for and not something that "reads identically Mumbai/Manila/Manchester" the way "sample" does. "Sample data" carries the identical disclosure — this is demo content, not a real trainer's account — without the jargon. Same claim, same honesty, plainer word. |
 
 ---
 
