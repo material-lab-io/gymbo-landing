@@ -1,71 +1,100 @@
-// Screenshot staleness gate (gy-a73px.15).
+// Screenshot capture-provenance gate (gy-v9pwo.2).
 //
-// Kaushik caught the same stale app screenshots on the live site twice
-// (2026-08-06, 2026-08-08) with no mechanical detector — just a human
-// noticing a rendering detail. This script is that mechanical, fail-closed
-// detector: every screenshot actually composited into the site (the SCREENS
-// map in optimize-gallery.mjs) must have a manifest entry in
-// public/screens/manifest.json that is verified and not older than
-// maxAgeDays. See public/screens/MANIFEST.md for the full schema + rationale.
+// The producer contract lives at
+// Gymbo-v1/appstore/metadata/capture-provenance-contract.md. This consumer
+// reads only the emitted capture-provenance.json beside the masters it
+// describes — never the hand-transcribed legacy manifest.
 //
-// Run: node scripts/check-screenshot-freshness.mjs
-// Exit 0 = all gated screenshots fresh. Exit 1 = at least one is stale,
-// unverified, or missing a manifest entry — this should block deploy.
+// Exit 0 = every rendered master is byte-bound to a clean capture whose
+// TestFlight mapping is matched. Exit 1 = NOT_FRESH or UNKNOWN. UNKNOWN is
+// intentionally visible and non-passing: absent mapping evidence is not proof
+// of freshness.
 
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { SCREENS } from "./screens-map.mjs";
 
-const MANIFEST_PATH = "public/screens/manifest.json";
-
-const manifest = JSON.parse(await readFile(MANIFEST_PATH, "utf8"));
-const maxAgeDays = manifest.maxAgeDays ?? 21;
-const maxAgeMs = maxAgeDays * 24 * 60 * 60 * 1000;
-const now = Date.now();
-
-let failed = false;
+const MASTERS_DIR = "public/screens/real";
+const PROVENANCE_PATH = join(MASTERS_DIR, "capture-provenance.json");
+const expectedFiles = Object.values(SCREENS);
 const rows = [];
+let failed = false;
+let unknown = false;
 
-for (const [slug, sourceFile] of Object.entries(SCREENS)) {
-  const entry = manifest.entries?.[sourceFile];
-
-  if (!entry) {
-    failed = true;
-    rows.push(`FAIL  ${slug.padEnd(12)} ${sourceFile.padEnd(34)} no manifest entry`);
-    continue;
-  }
-
-  if (entry.verified !== true) {
-    failed = true;
-    rows.push(`FAIL  ${slug.padEnd(12)} ${sourceFile.padEnd(34)} unverified (verified: ${entry.verified})`);
-    continue;
-  }
-
-  const capturedAt = Date.parse(entry.capturedAt ?? "");
-  if (Number.isNaN(capturedAt)) {
-    failed = true;
-    rows.push(`FAIL  ${slug.padEnd(12)} ${sourceFile.padEnd(34)} invalid/missing capturedAt`);
-    continue;
-  }
-
-  const ageDays = Math.floor((now - capturedAt) / (24 * 60 * 60 * 1000));
-  if (now - capturedAt > maxAgeMs) {
-    failed = true;
-    rows.push(`FAIL  ${slug.padEnd(12)} ${sourceFile.padEnd(34)} ${ageDays}d old (max ${maxAgeDays}d)`);
-    continue;
-  }
-
-  rows.push(`OK    ${slug.padEnd(12)} ${sourceFile.padEnd(34)} ${ageDays}d old`);
+function row(state, file, detail) {
+  rows.push(`${state.padEnd(9)} ${file.padEnd(34)} ${detail}`);
 }
 
-console.log(`Screenshot freshness gate (maxAgeDays=${maxAgeDays}):`);
-for (const row of rows) console.log(`  ${row}`);
+function failUnknown(detail) {
+  unknown = true;
+  failed = true;
+  for (const file of expectedFiles) row("UNKNOWN", file, detail);
+}
+
+let provenance;
+try {
+  provenance = JSON.parse(await readFile(PROVENANCE_PATH, "utf8"));
+} catch (error) {
+  failUnknown(`capture provenance unavailable (${error.code ?? "invalid JSON"})`);
+}
+
+if (provenance) {
+  if (provenance.schema_version !== 1 || provenance.profile !== "landing") {
+    failUnknown("unsupported capture-provenance schema/profile");
+  } else if (!Array.isArray(provenance.images)) {
+    failUnknown("capture provenance has no images array");
+  } else {
+    const mapping = provenance.build_mapping;
+    if (!mapping || !["matched", "not_a_shipped_build", "unknown"].includes(mapping.status)) {
+      failUnknown("capture provenance has invalid build_mapping status");
+    } else if (mapping.status === "unknown") {
+      failUnknown(`TestFlight mapping unresolved${mapping.reason ? `: ${mapping.reason}` : ""}`);
+    } else if (mapping.status === "not_a_shipped_build") {
+      failed = true;
+      for (const file of expectedFiles) row("NOT_FRESH", file, "capture commit is not a shipped TestFlight build");
+    } else if (provenance.capture_tree_dirty !== false) {
+      failed = true;
+      for (const file of expectedFiles) row("NOT_FRESH", file, "capture tree was dirty or could not be determined");
+    } else {
+      const images = new Map(provenance.images.map((image) => [image.file, image]));
+      if (provenance.image_count !== provenance.images.length) {
+        failed = true;
+        row("FAIL", "provenance", "image_count does not equal images array length");
+      }
+
+      for (const file of expectedFiles) {
+        const image = images.get(file);
+        if (!image || typeof image.sha256 !== "string" || !/^[a-f0-9]{64}$/i.test(image.sha256)) {
+          failed = true;
+          row("FAIL", file, "missing valid producer sha256");
+          continue;
+        }
+
+        try {
+          const actual = createHash("sha256").update(await readFile(join(MASTERS_DIR, file))).digest("hex");
+          if (actual !== image.sha256.toLowerCase()) {
+            failed = true;
+            row("FAIL", file, "PNG bytes do not match capture provenance");
+          } else {
+            row("FRESH", file, `matched TestFlight build ${mapping.build?.build_number ?? "(unnumbered)"}`);
+          }
+        } catch (error) {
+          failed = true;
+          row("FAIL", file, `cannot hash master (${error.code ?? "read error"})`);
+        }
+      }
+    }
+  }
+}
+
+console.log("Screenshot capture-provenance gate:");
+for (const value of rows) console.log(`  ${value}`);
 
 if (failed) {
-  console.error(
-    "\nFAIL: one or more gated screenshots are missing a manifest entry, unverified, or stale.\n" +
-      "See public/screens/MANIFEST.md for how the capture crew backfills a real entry (gy-5xmxm)."
-  );
+  const verdict = unknown ? "UNKNOWN" : "NOT_FRESH";
+  console.error(`\n${verdict}: screenshot freshness did not pass. See the producer contract and capture-provenance.json.`);
   process.exit(1);
 }
 
-console.log("\nOK: all gated screenshots verified and fresh.");
+console.log("\nOK: every gated screenshot is byte-bound to a clean, matched TestFlight capture.");

@@ -182,32 +182,24 @@ jobs:
           fi
           echo "OK: console-check.mjs correctly failed under a seeded-dark localStorage."
 
-      - name: Negative control — check-screenshot-freshness.mjs must FAIL on a stale/missing manifest entry
+      - name: Negative control — check-screenshot-freshness.mjs must FAIL UNKNOWN without producer provenance
         run: |
           set -e
           FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/public/screens"
+          mkdir -p "$FIX/scripts" "$FIX/public/screens/real"
           cp scripts/check-screenshot-freshness.mjs "$FIX/scripts/"
           cp scripts/screens-map.mjs "$FIX/scripts/"
-          # One entry present-but-stale (400d old, past the 21d default), the
-          # rest of the SCREENS set entirely missing from the manifest.
-          cat > "$FIX/public/screens/manifest.json" <<'JSON'
-          {
-            "maxAgeDays": 21,
-            "entries": {
-              "hero-01-dashboard-clean.png": {
-                "capturedAt": "2025-07-01T00:00:00+05:30",
-                "verified": true
-              }
-            }
-          }
-          JSON
           cd "$FIX"
-          if node scripts/check-screenshot-freshness.mjs; then
-            echo "::error::check-screenshot-freshness.mjs PASSED on a stale/missing manifest — the staleness gate (gy-a73px.15) is not wired."
+          if OUTPUT="$(node scripts/check-screenshot-freshness.mjs 2>&1)"; then
+            echo "::error::check-screenshot-freshness.mjs PASSED without capture-provenance.json — the consumer gate is fail-open."
             exit 1
           fi
-          echo "OK: check-screenshot-freshness.mjs correctly failed on a stale/missing manifest."
+          if ! printf '%s' "$OUTPUT" | grep -q "UNKNOWN"; then
+            echo "::error::missing provenance did not render UNKNOWN; it must not be reported as fresh or stale."
+            echo "$OUTPUT"
+            exit 1
+          fi
+          echo "OK: check-screenshot-freshness.mjs correctly failed UNKNOWN without producer provenance."
 
       - name: Photoreal-device gate self-test
         run: node scripts/check-photoreal-device.selftest.mjs
