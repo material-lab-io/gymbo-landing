@@ -66,7 +66,7 @@ for p in privacy terms; do
   [ "$c" = "200" ] && log "OK   /$p 200" || fail "/$p HTTP $c"
 done
 
-# --- 4. product-contract.json consistency (gy-csrt8.1, G4 AC2) ---
+# --- 4. product-contract.json consistency (gy-csrt8.1, gy-wwr2e.31) ---
 # Deterministic string/JSON match only, against the VENDORED contract file (no
 # live-fetch here — that's assert-contract-fresh.sh's job, run as a separate CI
 # step). Contract drift between gymbo-landing and Gymbo-v1 fails loudly there.
@@ -81,22 +81,54 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
   grep -qF "$ANNUAL_DISPLAY" "$HOME_FILE" && log "OK   contract: annual price display ($ANNUAL_DISPLAY) present" || fail "contract: annual price display ($ANNUAL_DISPLAY) missing from rendered site"
   grep -qF "${SAVINGS}%" "$HOME_FILE" && log "OK   contract: annual savings (${SAVINGS}%) present" || fail "contract: annual savings (${SAVINGS}%) missing from rendered site"
 
-  # Anthropic sub-processor disclosure (gy-lucuj) — hard gate (gy-ps60p AC2).
+  # Every currently canonical sub-processor must be named on the rendered
+  # privacy notice and use the contract's processing-region fact.  Keep this
+  # deterministic: product-contract.json intentionally uses plain strings and
+  # lists, rather than a schema library.  The provider extension will add the
+  # richer retention/contract-state checks; do not infer those absent fields.
+  PRIVACY_FILE="$(mktemp)"
+  curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
+  if [ ! -s "$PRIVACY_FILE" ]; then
+    fail "contract: could not fetch /privacy for disclosure comparison"
+  else
+    while IFS=$'\t' read -r NAME REGION; do
+      [ -n "$NAME" ] || continue
+      grep -qiF "$NAME" "$PRIVACY_FILE" \
+        && log "OK   contract: /privacy names $NAME" \
+        || fail "contract: /privacy omits provider $NAME"
+
+      case "$REGION" in
+        US) RENDERED_REGION="United States" ;;
+        EU) RENDERED_REGION="European Union" ;;
+        *) RENDERED_REGION="$REGION" ;;
+      esac
+      # A page-level region search is vacuous: Anthropic and Groq both currently
+      # mention the United States.  Bind the region to the provider's own
+      # rendered disclosure block instead.  2,000 characters accommodates the
+      # prose/list markup without permitting a match in the next provider block.
+      if PROVIDER_NAME="$NAME" PROVIDER_REGION="$RENDERED_REGION" \
+        perl -0ne 'exit(index(lc($_), lc($ENV{PROVIDER_NAME})) >= 0 && /\Q$ENV{PROVIDER_NAME}\E.{0,2000}\Q$ENV{PROVIDER_REGION}\E/is ? 0 : 1)' "$PRIVACY_FILE"; then
+        log "OK   contract: /privacy names $NAME processing region ($RENDERED_REGION)"
+      else
+        fail "contract: /privacy omits $NAME processing region ($RENDERED_REGION)"
+      fi
+    done < <(jq -r '.sub_processors[] | [.name, .region] | @tsv' "$CONTRACT")
+  fi
+
+  # Anthropic's data-category assertion — hard gate (gy-lucuj / gy-ps60p AC2).
   # gy-lucuj's copy fix landed 2026-08-12 (PR #70); this now fails deploys instead
   # of just warning.
   ANTHROPIC_ITEM="$(jq -r '.sub_processors[] | select(.name=="Anthropic") | .data_sent[] | select(. == "today'"'"'s session client names")' "$CONTRACT")"
   if [ -n "$ANTHROPIC_ITEM" ]; then
-    PRIVACY_FILE="$(mktemp)"
-    curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
     if grep -qiE "today(&#x27;|&#39;|'|’)s session client names" "$PRIVACY_FILE"; then
       log "OK   contract: Anthropic disclosure includes 'today's session client names'"
     else
       fail "contract: /privacy does not disclose 'today's session client names' (gy-lucuj)"
     fi
-    rm -f "$PRIVACY_FILE"
   fi
+  rm -f "$PRIVACY_FILE"
 else
-  log "WARN product-contract.json or jq unavailable — skipping contract assertions"
+  fail "product-contract.json or jq unavailable — refusing to skip contract assertions"
 fi
 
 echo "=== getgymbo smoke ($URL) ==="

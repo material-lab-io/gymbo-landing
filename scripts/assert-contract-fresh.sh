@@ -17,8 +17,8 @@ if [ ! -f "$VENDORED" ]; then
 fi
 
 if [ -z "${GYMBO_V1_PAT:-}" ]; then
-  echo "WARN: GYMBO_V1_PAT not set — skipping drift check this run"
-  exit 0
+  echo "FAIL: GYMBO_V1_PAT not set — refusing to skip upstream contract freshness"
+  exit 1
 fi
 
 UPSTREAM_FILE="$(mktemp)"
@@ -28,8 +28,8 @@ HTTP_CODE="$(curl -sL --max-time 15 \
   -H "Accept: application/vnd.github.raw+json" \
   -o "$UPSTREAM_FILE" -w '%{http_code}' "$API_URL" 2>/dev/null)"
 if [ "$HTTP_CODE" != "200" ]; then
-  echo "WARN: could not fetch upstream contract (HTTP $HTTP_CODE) — skipping drift check this run"
-  exit 0
+  echo "FAIL: could not fetch upstream contract (HTTP $HTTP_CODE) — refusing to skip drift check"
+  exit 1
 fi
 
 if ! diff -q "$VENDORED" "$UPSTREAM_FILE" >/dev/null 2>&1; then

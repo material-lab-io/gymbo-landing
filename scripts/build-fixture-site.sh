@@ -10,7 +10,7 @@
 #
 # Usage: build-fixture-site.sh <outdir> <mode>
 # Modes: good | no-title | missing-pricing | robots-disallow-claudebot |
-#        js-error | dark-theme-leak
+#        js-error | dark-theme-leak | missing-privacy-provider
 set -euo pipefail
 
 OUT="${1:?usage: build-fixture-site.sh <outdir> <mode>}"
@@ -56,6 +56,17 @@ HTML
 # them fine on GET, content-type doesn't matter to a curl/grep-based check.
 cp "$OUT/index.html" "$OUT/privacy"
 cp "$OUT/index.html" "$OUT/terms"
+
+cat >> "$OUT/privacy" <<'HTML'
+<section>
+  <p>Anthropic processes data in the United States. Today's session client names may be included.</p>
+  <p>Groq processes voice input in the United States.</p>
+  <p>PostHog processes consented product analytics in the European Union.</p>
+</section>
+HTML
+if [ "$MODE" = "missing-privacy-provider" ]; then
+  sed -i '/Groq processes/d' "$OUT/privacy"
+fi
 
 cat > "$OUT/robots.txt" <<ROBOTS
 User-agent: *
