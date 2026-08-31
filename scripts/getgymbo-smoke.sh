@@ -131,6 +131,22 @@ else
   fail "product-contract.json or jq unavailable — refusing to skip contract assertions"
 fi
 
+# Current Analytics.swift does not initialise PostHog or make a PostHog request
+# unless analytics consent is on.  The old notice claimed the opposite (a launch
+# configuration call while off), which turns an absence of collection into a
+# specific false disclosure.  Keep this separate from the manifest until coach
+# adds collection-condition fields to the canonical contract.
+PRIVACY_FILE="$(mktemp)"
+curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
+if [ ! -s "$PRIVACY_FILE" ]; then
+  fail "privacy: could not fetch /privacy for PostHog consent assertion"
+elif grep -qiE 'contact PostHog.{0,240}at launch' "$PRIVACY_FILE"; then
+  fail "privacy: says PostHog is contacted at launch while analytics is off"
+else
+  log "OK   privacy: no PostHog launch contact while analytics is off"
+fi
+rm -f "$PRIVACY_FILE"
+
 echo "=== getgymbo smoke ($URL) ==="
 echo "$OUT"
 if [ "$FAIL" = "1" ]; then echo "RESULT: FAIL (gate would block deploy)"; exit 1; else echo "RESULT: PASS"; exit 0; fi

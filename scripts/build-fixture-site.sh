@@ -10,7 +10,8 @@
 #
 # Usage: build-fixture-site.sh <outdir> <mode>
 # Modes: good | no-title | missing-pricing | robots-disallow-claudebot |
-#        js-error | dark-theme-leak | missing-privacy-provider
+#        js-error | dark-theme-leak | missing-privacy-provider |
+#        privacy-posthog-off-contact
 set -euo pipefail
 
 OUT="${1:?usage: build-fixture-site.sh <outdir> <mode>}"
@@ -66,6 +67,11 @@ cat >> "$OUT/privacy" <<'HTML'
 HTML
 if [ "$MODE" = "missing-privacy-provider" ]; then
   sed -i '/Groq processes/d' "$OUT/privacy"
+fi
+if [ "$MODE" = "privacy-posthog-off-contact" ]; then
+  cat >> "$OUT/privacy" <<'HTML'
+<p>When analytics is off, the app does still briefly contact PostHog at launch.</p>
+HTML
 fi
 
 cat > "$OUT/robots.txt" <<ROBOTS

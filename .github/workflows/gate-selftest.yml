@@ -152,6 +152,19 @@ jobs:
           fi
           echo "OK: getgymbo-smoke.sh correctly failed when /privacy omitted a canonical provider."
 
+      - name: Negative control — getgymbo-smoke.sh must FAIL on obsolete PostHog-off launch contact copy
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" privacy-posthog-off-contact
+          python3 -m http.server 8914 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914; then
+            echo "::error::getgymbo-smoke.sh PASSED with obsolete PostHog-off launch-contact copy."
+            exit 1
+          fi
+          echo "OK: getgymbo-smoke.sh correctly failed obsolete PostHog-off launch-contact copy."
+
       - name: Negative control — theme invariant must FAIL if dark-mode leaks back in (data-theme, static)
         run: |
           set -e
