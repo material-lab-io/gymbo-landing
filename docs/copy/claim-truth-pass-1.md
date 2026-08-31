@@ -26,11 +26,13 @@ marquee it feeds. Five labels, five verdicts (AC2):
 |---|---|---|
 | `Brand theming` | **KEEP as-is** | Shipped: trainer-configurable accent colour (`ProfileSettingsView.swift`, "Accent color" control) and custom brand logo (`CoachCardSheetData.brandLogoUrl`, gy-lrffu/GYM-644) render on the public profile card and exported statements. |
 | `Your own URL` | **KEEP as-is** | Shipped: personalised public-profile slug, `/t/slug` (`CoachCardSheetData.swift` — "gy-jx67w: public-profile slug — drives the QR (/t/slug)"), live route `app/(public)/t/[slug]/page.tsx`. |
-| `Booking link` | **UNKNOWN — escalate to pm** | Could not find a booking flow reachable from the shared link. The public profile route (`app/(public)/t/[slug]/page.tsx`) renders trainer name, brand, client/punch counts and contact only — no booking or scheduling surface, no "booking" naming anywhere in that route or its models. Searched the iOS app tree for a client-facing booking feature and found only trainer-side WhatsApp message templates (`ClassMessageComposer.swift`: `bookingConfirmation`, `rebooking`) — the trainer messages the client, the client does not book through a link. Per AC4: an honest UNKNOWN, not a guess. Do not ship a replacement string for this one until pm rules; leave the chip unchanged in this pass. |
-| `Fitness reports` | **UNKNOWN — escalate to pm** | No "Report" type, view, or route exists anywhere in the iOS app or the public profile page (grepped both trees, zero hits). Nearest adjacent features are workout-PDF export (`WorkoutPDF.swift`) and a "session recap" WhatsApp template (`BookedSlotDetailSheet.swift`) — neither is a client-facing "report." Per AC4: UNKNOWN, not a guess. Leave the chip unchanged in this pass. |
-| `Branded client app` | **REMOVE** | No installable client-facing app exists anywhere in the repo — only the trainer's own Gymbo iOS app. The public profile is a server-rendered web page (`app/(public)/t/[slug]/page.tsx`), not an app clients install. This directly contradicts the page's own live FAQ (`src/App.tsx:134`): *"Do my clients need to download anything? No. Gymbo is for you, the trainer. Your clients just train. You log it."* This is the item pm's brief called "the sharp one." I looked for evidence the trainer-only model was formally reversed and did not find one: `gy-mdqxp` (2026-08-13, founder-directed) used "Custom-branded client app" as one of the touchpoints to keep, but that predates and reads as loose phrasing for "custom branded client content" — exactly the ambiguity this audit is catching, not a ruling that clients now get an app. Flagging the tension here rather than treating it as settled either way; proceeding with REMOVE per the bead's own default, since I found ambiguity, not a reversal. |
+| `Booking link` | **DEFERRED — pending product shipped-status, pm chasing** | pm's 2026-08-31 ruling: Kaushik's verbatim quote in `gy-mdqxp` item 4 names "shareable booking link" as a touchpoint to keep, so this is founder-endorsed, not a REMOVE candidate. What's still unsettled is not whether to talk about it, but *which group* it belongs in — `gy-mdqxp` item 3 rules the strip groups by shipped-readiness (shipped items in the top row(s), not-yet-shipped below, no "coming soon" badges). That's a shipped-status question that lives in the product repo; I could not establish it from code (see my original search below), and per pm's ruling I'm not the one chasing it — pm is taking it to the product rig directly. Chip stays unchanged in pass 1. |
+| `Fitness reports` | **DEFERRED — pending product shipped-status, pm chasing** | Same ruling and same reason as `Booking link` — Kaushik's `gy-mdqxp` item 4 quote also names "fitness reports" explicitly, so this is founder-endorsed content, not a REMOVE. Grouping (shipped vs. not-yet-shipped row) is the open question, owned by pm. Chip stays unchanged in pass 1. |
+| `Branded client app` | **RE-WORD → "Custom-branded client content"** | pm's 2026-08-31 ruling, reading `gy-mdqxp` item 4 directly: Kaushik's verbatim quote is *"...shareable booking link, fitness reports, and custom branded client **content**. Brand themes are fine."* — content, not app. The "Branded client app" phrasing on the live chip is a downstream paraphrase that drifted one word from the founder's own text; it was never a ruling that clients get an app. My original REMOVE verdict was right in substance (no client-facing app exists, and the phrase as-shipped does contradict "clients download nothing") but pm's re-word is the better fix: it restores Kaushik's own phrase instead of deleting a touchpoint he explicitly asked to be talked about. When a bead's prose summary and its quoted founder text disagree, the quote wins. |
 
-**Exact change**, `MARQUEE_CHIPS` array (`src/App.tsx` ~line 620):
+**Exact change**, `MARQUEE_CHIPS` array (`src/App.tsx` ~line 620) — only the `Branded client app`
+entry is renamed; `Booking link` and `Fitness reports` are untouched (deferred, not decided
+here), matching the array's current order:
 
 Current:
 ```
@@ -46,8 +48,7 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
 ];
 ```
 
-Replacement (only the `Branded client app` entry removed; the two UNKNOWN entries are
-untouched pending pm's ruling, not silently dropped):
+Replacement:
 ```
 const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "QR profile", icon: QrCode },
@@ -57,8 +58,13 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your own URL", icon: Link },
   { name: "Booking link", icon: CalendarCheck },
   { name: "Fitness reports", icon: BarChart3 },
+  { name: "Custom-branded client content", icon: Smartphone },
 ];
 ```
+
+The `Smartphone` icon is left as-is — swapping it is a component/design call (icon-to-label
+fit), not a copy call; flagging for landing/designer that "Smartphone" may now read oddly next
+to "content" rather than "app," but not proposing an icon change myself (AC3 scope).
 
 ### 2. Hero overclaim (audit rank 3, risk HIGH)
 
@@ -149,6 +155,30 @@ is the correct and expected output. Also not introducing "waitlist" anywhere in 
 elsewhere in this spec, per pm's separate note that "waitlist" risks a fabricated-demand claim
 (see gm-7pd for the funnel evidence behind that instruction).
 
+### 6. Synthetic-data disclosure (register row 3, sourced to gm-zag)
+
+Location: `src/App.tsx`, "See Gymbo in action" gallery section (~line 383), directly under the
+`<h2>` and before the gallery controls (~line 386).
+
+**Background:** register row 3 (public testimonial/screenshot provenance, HIGH) was out of my
+scope in the first version of this spec, flagged in Part C as needing its own bead. `gm-zag`
+(researcher, closed 2026-08-31 while I was working) answered the screenshot half outright:
+**SYNTHETIC, high confidence.** The six gallery images show the real Gymbo app UI, but the
+trainer identity, client names, balances, and history come from a deterministic capture fixture
+(`scripts/seed-priya.sh`'s "Priya Sharma" roster), not a live account — full commit and script
+evidence on `gm-zag`. The live gallery carries no demo-data disclosure today; the four separate
+animated pillar images elsewhere on the page do already say "— demo" in their accessible labels,
+so this is a real, narrow gap, not a page-wide pattern.
+
+This is a HIGH register row with a settled, cheap, honest fix — pm's ruling is that it ships in
+pass 1 rather than waiting for its own bead. The testimonial half (the attributed "S Sarfaraz"
+quote) is explicitly NOT part of this row or this spec — pm is carrying that to the founder
+directly; not investigated, not drafted, not filed here.
+
+| Location | Exact current string | Exact new string | Reason |
+|---|---|---|---|
+| New line, gallery section, under the `<h2>` | *(does not exist today)* | `Screens show synthetic demo data.` | `gm-zag`'s proposed disclosure string, high-confidence sourced to the capture pipeline (`scripts/capture-appstore-screenshots.sh` + `scripts/seed-priya.sh`, both cited on that bead). Ships as-is per pm's ruling — substance is settled; wording is mine to gut-check on the voice pass this feeds into `gm-111`, which flagged this exact string as "honest and necessary, but a flat systems phrase on a marketing page" worth a second look on tone, not substance. |
+
 ---
 
 ## Part B — flagged, held out of this pass (audit MEDIUM, register row 4)
@@ -165,17 +195,18 @@ Per gm-mva's instruction: list, do not fix, so the first pass stays small and la
 
 ## Part C — out of scope, not decided here
 
-- **Public testimonial/screenshot provenance** (register row 3, risk HIGH — "S Sarfaraz"
-  testimonial + gallery screenshots showing a client name and ₹ amount): not one of the four
-  claims named in gm-mva's brief and not addressed in this pass. This is a HIGH-severity register
-  row; flagging its absence from this pass explicitly rather than silently dropping it, per pm to
-  scope as its own bead (consent/release verification is not a copy-only fix).
+- **Public testimonial provenance** (the attributed "S Sarfaraz" quote specifically — the
+  screenshot half of register row 3 is now resolved, see item 6 above): not mine, not a bead,
+  not to be investigated or drafted by content. pm is carrying it to the founder as a single
+  sentence. Recorded here only so the record shows this half of register row 3 was seen and
+  deliberately left alone, not missed.
 - **Named-competitor comparison page** (register row, HIGH/founder-owned): explicitly routed to
   gy-u9goi by the audit itself. Not touched.
 
 ## Target metric
 
-Zero of the four HIGH-risk items from gy-gim46 named in gm-mva's brief remain live after landing
-ships this spec, with two labels (`Booking link`, `Fitness reports`) held at UNKNOWN pending pm's
-ruling rather than guessed, and the status-language discrepancy (item 5) left open for a founder
-call rather than silently resolved.
+Zero of the four original HIGH-risk items from gy-gim46 named in gm-mva's brief remain live after
+landing ships this spec. `Booking link` and `Fitness reports` are DEFERRED pending product
+shipped-status (pm chasing, not a gap in this spec). The status-language discrepancy (item 5) is
+left open for a founder call rather than silently resolved. The synthetic-data disclosure (item
+6, register row 3's screenshot half) ships in this pass.
