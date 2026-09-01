@@ -44,15 +44,14 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>AI features and the providers behind them</h2>
-          <p>Some Gymbo features are powered by specialist AI providers. When you use these features, a limited amount of your data is sent to the provider so they can return a result. We only send what the feature needs — not your whole client list. Here is exactly who we use, for what, and what we send them.</p>
+          <p>Some Gymbo features are powered by specialist AI providers. When you use these features, data needed to provide the feature is sent to the provider. Here is who we use, for what, and the data involved.</p>
 
           <h3>AI assistant (chat) — Anthropic (Claude)</h3>
           <ul>
             <li><strong>What it does:</strong> answers your questions about your business inside the app.</li>
-            <li><strong>What we send:</strong> your typed question, plus a fixed context snippet attached to every question you ask the assistant — a short summary of your top few clients (their name and class counts, ordered by outstanding balance) and today's session client names — everyone on today's schedule, however many that is — so the assistant can answer usefully. This snippet is the same on every question; it isn't tailored to what you actually asked. We do <strong>not</strong> send your full roster.</li>
-            <li><strong>Per-client control:</strong> any client you mark as opted out of AI is <strong>never</strong> included in what we send.</li>
-            <li><strong>Where it's processed:</strong> on Anthropic's infrastructure, located outside India, in the United States.</li>
-            <li><strong>Retention:</strong> your data is processed to answer your question and is handled under Anthropic's commercial terms. We are putting a formal data-processing agreement in place with Anthropic; once it is finalised we will update this notice with the specific retention terms.</li>
+            <li><strong>What we send:</strong> your typed question, recent conversation history, and current business context such as trainer details, client counts and balances, schedules, and business metrics. Depending on your question, the assistant can use tools that return relevant client records; that can include the active client roster.</li>
+            <li><strong>Per-client control:</strong> marking a client as opted out excludes them from automatic context and tool lookups. Text you enter yourself, including a question or conversation history, may still refer to that client.</li>
+            <li><strong>Where it's processed:</strong> Anthropic may process commercial API data in the United States, Europe, Asia, and Australia. Its standard storage location is the United States unless an account is configured otherwise.</li>
           </ul>
 
           <h3>Voice input — Groq</h3>
@@ -60,8 +59,7 @@ export function Privacy() {
             <li><strong>What it does:</strong> turns what you speak into text (speech-to-text) so you can add notes and fill fields by voice instead of typing.</li>
             <li><strong>What we send:</strong> the microphone audio you record for that action, which is converted to text.</li>
             <li><strong>A note on sensitive data:</strong> voice notes can sometimes include health-related details about a client. Please avoid dictating information you would not want processed by a third-party provider.</li>
-            <li><strong>Where it's processed:</strong> on Groq's infrastructure, located outside India, in the United States.</li>
-            <li><strong>Retention:</strong> Groq has signed a zero-data-retention agreement with us — your audio is processed to produce the transcription and is not retained or used to train models.</li>
+            <li><strong>Where it's processed:</strong> Groq's provider documentation describes United States storage. We do not state an exclusive processing location or a retention commitment here because we do not have an account-specific provider record for either claim.</li>
           </ul>
 
           <h3>The rest of our infrastructure</h3>
