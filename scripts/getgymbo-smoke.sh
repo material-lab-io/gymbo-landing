@@ -97,6 +97,17 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
         && log "OK   contract: /privacy names $NAME" \
         || fail "contract: /privacy omits provider $NAME"
 
+      # FAIL CLOSED, deliberately and narrowly: Gymbo-v1's legacy Anthropic
+      # region=US field cannot represent compliance's approved multi-region
+      # processing plus US storage fact.  Coach owns the canonical split-field
+      # extension on gy-wwr2e.31.  Do not remove this red: it is the visible
+      # accountability signal until location.processing_locations and
+      # location.storage_location replace the legacy field.
+      if [ "$NAME" = "Anthropic" ] && [ "$REGION" = "US" ]; then
+        fail "contract: Anthropic legacy region=US is unapproved; compliance approves multi-region processing with US storage, and Coach must supply canonical split location fields on gy-wwr2e.31"
+        continue
+      fi
+
       case "$REGION" in
         US) RENDERED_REGION="United States" ;;
         EU) RENDERED_REGION="European Union" ;;

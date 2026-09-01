@@ -60,7 +60,7 @@ cp "$OUT/index.html" "$OUT/terms"
 
 cat >> "$OUT/privacy" <<'HTML'
 <section>
-  <p>Anthropic processes data in the United States. Today's session client names may be included.</p>
+  <p>Anthropic processes data in Test Region. Today's session client names may be included.</p>
   <p>Groq processes voice input in the United States.</p>
   <p>PostHog processes consented product analytics in the European Union.</p>
 </section>
@@ -68,6 +68,24 @@ HTML
 if [ "$MODE" = "missing-privacy-provider" ]; then
   sed -i '/Groq processes/d' "$OUT/privacy"
 fi
+
+# The fixture has its own deterministic contract so it can prove the good
+# baseline independently of the production manifest's intentionally-red
+# Anthropic legacy location field.
+cat > "$OUT/product-contract.json" <<'JSON'
+{
+  "pricing": {
+    "monthly_inr": "399",
+    "annual_inr_display": "2,999",
+    "annual_savings_percent": "37"
+  },
+  "sub_processors": [
+    { "name": "Anthropic", "region": "Test Region", "data_sent": ["today's session client names"] },
+    { "name": "Groq", "region": "US", "data_sent": ["voice/mic audio"] },
+    { "name": "PostHog", "region": "EU", "data_sent": ["trainer name"] }
+  ]
+}
+JSON
 if [ "$MODE" = "privacy-posthog-off-contact" ]; then
   cat >> "$OUT/privacy" <<'HTML'
 <p>When analytics is off, the app does still briefly contact PostHog at launch.</p>

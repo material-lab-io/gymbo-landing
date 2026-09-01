@@ -77,7 +77,7 @@ jobs:
           SRV=$!
           sleep 1
           trap 'kill $SRV 2>/dev/null || true' EXIT
-          if ! CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8901; then
+          if ! CONTRACT="$FIX/product-contract.json" bash scripts/getgymbo-smoke.sh http://127.0.0.1:8901; then
             echo "::error::getgymbo-smoke.sh FAILED on the well-formed baseline fixture — a fixture bug, not a real regression. Fix the fixture before trusting any negative control below."
             exit 1
           fi
@@ -146,8 +146,14 @@ jobs:
           bash scripts/build-fixture-site.sh "$FIX" missing-privacy-provider
           python3 -m http.server 8909 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if bash scripts/getgymbo-smoke.sh http://127.0.0.1:8909; then
+          OUTPUT="$(CONTRACT="$FIX/product-contract.json" bash scripts/getgymbo-smoke.sh http://127.0.0.1:8909 2>&1)" && STATUS=0 || STATUS=$?
+          if [ "$STATUS" -eq 0 ]; then
             echo "::error::getgymbo-smoke.sh PASSED when /privacy omitted Groq — disclosure comparison is not wired."
+            exit 1
+          fi
+          printf '%s\n' "$OUTPUT"
+          if ! grep -qF 'contract: /privacy omits provider Groq' <<<"$OUTPUT"; then
+            echo "::error::Missing-provider fixture did not reach the Groq provider assertion."
             exit 1
           fi
           echo "OK: getgymbo-smoke.sh correctly failed when /privacy omitted a canonical provider."
@@ -159,11 +165,36 @@ jobs:
           bash scripts/build-fixture-site.sh "$FIX" privacy-posthog-off-contact
           python3 -m http.server 8914 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914; then
+          OUTPUT="$(CONTRACT="$FIX/product-contract.json" bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914 2>&1)" && STATUS=0 || STATUS=$?
+          if [ "$STATUS" -eq 0 ]; then
             echo "::error::getgymbo-smoke.sh PASSED with obsolete PostHog-off launch-contact copy."
             exit 1
           fi
+          printf '%s\n' "$OUTPUT"
+          if ! grep -qF 'privacy: says PostHog is contacted at launch while analytics is off' <<<"$OUTPUT"; then
+            echo "::error::PostHog-off fixture did not reach the obsolete-copy assertion."
+            exit 1
+          fi
           echo "OK: getgymbo-smoke.sh correctly failed obsolete PostHog-off launch-contact copy."
+
+      - name: Negative control — legacy Anthropic region field must remain explicitly red
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" good
+          python3 -m http.server 8915 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          OUTPUT="$(bash scripts/getgymbo-smoke.sh http://127.0.0.1:8915 2>&1)" && STATUS=0 || STATUS=$?
+          if [ "$STATUS" -eq 0 ]; then
+            echo "::error::Legacy Anthropic region=US passed — the unresolved compliance field is silent again."
+            exit 1
+          fi
+          printf '%s\n' "$OUTPUT"
+          if ! grep -qF 'Anthropic legacy region=US is unapproved; compliance approves multi-region processing with US storage, and Coach must supply canonical split location fields on gy-wwr2e.31' <<<"$OUTPUT"; then
+            echo "::error::Legacy Anthropic red did not identify its source, approved fact boundary, and owner."
+            exit 1
+          fi
+          echo "OK: legacy Anthropic field stays attributable and fail-closed."
 
       - name: Negative control — theme invariant must FAIL if dark-mode leaks back in (data-theme, static)
         run: |
