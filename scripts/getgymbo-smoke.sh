@@ -2,7 +2,9 @@
 # Gymbo — getgymbo.com build-smoke gate + robots.txt regression check (gy-kefk3).
 # Two uses:
 #   1) PRE-DEPLOY GATE: getgymbo-smoke.sh <preview-or-prod-url>  -> exit 1 fails the deploy
-#   2) SCHEDULED REGRESSION: run on cron against prod; wrapper mails marketer on non-zero exit
+#   2) SCHEDULED REGRESSION: run on cron against prod; a non-zero exit is recorded
+#      in the workflow run. Alert delivery is owned by the external async-watchdog
+#      path (gy-p7edn), not by this script.
 # Dependency-light (curl only). Console-error check = landing-CI add (playwright); see note.
 set -uo pipefail
 
