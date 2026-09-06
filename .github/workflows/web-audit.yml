@@ -34,10 +34,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # NO `cache: npm`, deliberately, and measured rather than assumed.
+      # On this self-hosted gt2 fleet actions/setup-node's npm cache step costs a
+      # MEDIAN 6m37s (n=18 recent runs; 15 over 60s; worst 16m42s; 135.8 minutes
+      # of runner time in total) while `npm ci` itself completes in ~11s. The
+      # runners are persistent, so ~/.npm is already warm on disk and the Actions
+      # cache round-trip buys nothing it does not first spend. A control job with
+      # no cache (forge-tokens.yml) spends 0s on this step.
+      # Fleet-wide defect filed separately; this job declines to pay it.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - run: npm ci
 
