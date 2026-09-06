@@ -1,0 +1,77 @@
+name: Web Audit
+
+# The four-dimension web audit for getgymbo.com (gy-ma11q): axe accessibility,
+# WCAG 2.2 touch targets, scroll integrity, and a performance budget.
+#
+# 🔴 DELIBERATELY ITS OWN WORKFLOW, NOT A STEP INSIDE deploy.yml.
+# deploy.yml is a single sequential job whose first step is the screenshot
+# staleness gate, so every check living in it also decides whether the site can
+# be published at all — that is the defect gy-7anl3 is filed on, and today it has
+# every open PR red on a marketing-art check. Adding a fifth gate to that job
+# would deepen the same coupling. An audit failure should say "this change hurts
+# accessibility", never "getgymbo.com may not be deployed".
+#
+# This is NOT a required check on main. Making it one is a deliberate protection
+# change with the before/after contexts recorded, and it is pm's call — see
+# gy-7anl3 AC4. Landing it non-required first also lets it prove it can pass and
+# can fail before it is given teeth.
+#
+# Runners: [self-hosted, gt2] per the standing Kaushik rule. Never *-latest.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: web-audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # --with-deps is deliberately omitted: it shells out to apt-get and needs
+      # root, which a self-hosted runner does not grant. The gt2 runners carry
+      # the Playwright system libraries and a warm ~/.cache/ms-playwright.
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - run: npm run build
+
+      # Per-run ephemeral port (gy-cjdtw): concurrent jobs on the shared gt2 host
+      # must never race for a fixed :4173.
+      - name: Audit — a11y, touch targets, scroll integrity
+        run: |
+          # Same freeport idiom deploy.yml already uses (gy-cjdtw) rather than a
+          # second implementation of it.
+          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
+          export PW_PORT=$(freeport)
+          npx playwright test tests/audit.spec.ts --project=desktop --project=mobile
+
+      - name: Audit — performance budget
+        run: |
+          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
+          export PW_PORT=$(freeport)
+          npx playwright test tests/audit-perf.spec.ts --project=desktop
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-audit-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+          if-no-files-found: warn
