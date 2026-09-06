@@ -84,9 +84,17 @@ jobs:
           # unreadable change set, so neither half can silently degrade to
           # "this change touched nothing" — which would downgrade every stale
           # master to a warning and re-open the hole this gate exists to close.
+          # NOTE: no --depth flag. checkout above already uses fetch-depth: 0,
+          # so the history is complete. `git fetch --depth=0` is not "no limit",
+          # it is an ERROR ("fatal: depth 0 is not a positive number") — it
+          # failed this step on run 34039827259 and skipped the nine gates
+          # behind it, which is the exact pathology this bead is about.
+          # Diff against FETCH_HEAD rather than origin/<base>: on a
+          # pull_request checkout the remote-tracking ref is not guaranteed to
+          # exist, and a missing ref would fail here rather than mis-report.
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch --no-tags --depth=0 origin "${{ github.base_ref }}"
-            git diff --name-only "origin/${{ github.base_ref }}...HEAD" > /tmp/changed-files.txt
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            git diff --name-only FETCH_HEAD...HEAD > /tmp/changed-files.txt
           else
             git diff --name-only HEAD^ HEAD > /tmp/changed-files.txt
           fi
