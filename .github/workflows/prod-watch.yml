@@ -23,10 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No `cache: npm`: on the persistent gt2 runners this step cost a median
+      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
+      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
+      # already warm on local disk, so the Actions cache was restoring a cache
+      # on top of a cache over the network. See gy-2vvun. Do not re-add.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - run: npm ci
 
