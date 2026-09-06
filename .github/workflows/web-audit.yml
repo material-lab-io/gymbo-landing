@@ -41,6 +41,15 @@ jobs:
       # runners are persistent, so ~/.npm is already warm on disk and the Actions
       # cache round-trip buys nothing it does not first spend. A control job with
       # no cache (forge-tokens.yml) spends 0s on this step.
+      # MEASURED AFTER THE FACT, run 34011955222 vs 34010364422, same workflow,
+      # same branch, cache the only difference:
+      #                     with cache      without
+      #   setup-node          12m18s          0s
+      #   npm ci                 11s          7s   <- FASTER without
+      #   whole job           17m34s      4m33s
+      # npm ci did not degrade; it improved. ~/.npm is already warm on these
+      # persistent runners, so the Actions cache was restoring a cache on top of
+      # a cache. Pure cost, no upside. Do not re-add it here.
       # Fleet-wide defect filed separately; this job declines to pay it.
       - uses: actions/setup-node@v4
         with:
