@@ -182,32 +182,121 @@ jobs:
           fi
           echo "OK: console-check.mjs correctly failed under a seeded-dark localStorage."
 
-      - name: Negative control — check-screenshot-freshness.mjs must FAIL on a stale/missing manifest entry
+      # ── Screenshot gate: the gy-7anl3 SPLIT, proved in both directions ──────
+      # The gate stopped being one verdict on 2026-09-06. AC3 of gy-7anl3 asks
+      # for a named control showing, in the same run: with masters stale, the
+      # screenshot PUBLISH refused, the site deploy NOT blocked, and the
+      # staleness still reported somewhere a human sees — and with masters
+      # fresh, all three clean. These six steps are that control.
+      #
+      # The fixture builds a manifest from the real SCREENS map, so adding a
+      # screenshot to the site cannot silently fall outside these controls.
+      - name: Build screenshot-gate fixtures (real SCREENS map, controlled ages)
         run: |
-          set -e
-          FIX=$(mktemp -d)
-          mkdir -p "$FIX/scripts" "$FIX/public/screens"
-          cp scripts/check-screenshot-freshness.mjs "$FIX/scripts/"
-          cp scripts/screens-map.mjs "$FIX/scripts/"
-          # One entry present-but-stale (400d old, past the 21d default), the
-          # rest of the SCREENS set entirely missing from the manifest.
-          cat > "$FIX/public/screens/manifest.json" <<'JSON'
-          {
-            "maxAgeDays": 21,
-            "entries": {
-              "hero-01-dashboard-clean.png": {
-                "capturedAt": "2025-07-01T00:00:00+05:30",
-                "verified": true
-              }
-            }
-          }
-          JSON
+          set -euo pipefail
+          FIX=$RUNNER_TEMP/screenshot-gate-fixture
+          rm -rf "$FIX"; mkdir -p "$FIX/scripts" "$FIX/public/screens"
+          cp scripts/check-screenshot-freshness.mjs scripts/screens-map.mjs "$FIX/scripts/"
+          node -e '
+            const fs = require("node:fs");
+            const path = require("node:path");
+            const fix = process.env.RUNNER_TEMP + "/screenshot-gate-fixture";
+            import("./scripts/screens-map.mjs").then(({ SCREENS }) => {
+              const files = Object.values(SCREENS);
+              const at = (d) => new Date(Date.now() - d * 86400e3).toISOString();
+              const build = (days) => ({ maxAgeDays: 21, entries:
+                Object.fromEntries(files.map((f) => [f, { capturedAt: at(days), verified: true }])) });
+              fs.writeFileSync(path.join(fix, "stale.json"), JSON.stringify(build(400), null, 2));
+              fs.writeFileSync(path.join(fix, "fresh.json"), JSON.stringify(build(2), null, 2));
+              fs.writeFileSync(path.join(fix, "one-stale.txt"), "public/screens/" + files[0] + "\n");
+              fs.writeFileSync(path.join(fix, "unrelated.txt"), "src/pages/privacy.astro\n");
+              console.log("fixtures built for " + files.length + " gated screenshot(s)");
+            });
+          '
+          echo "FIX=$FIX" >> "$GITHUB_ENV"
+
+      - name: Negative control — publish of a STALE master must be REFUSED
+        run: |
+          set -euo pipefail
+          cp "$FIX/stale.json" "$FIX/public/screens/manifest.json"
           cd "$FIX"
-          if node scripts/check-screenshot-freshness.mjs; then
-            echo "::error::check-screenshot-freshness.mjs PASSED on a stale/missing manifest — the staleness gate (gy-a73px.15) is not wired."
+          if node scripts/check-screenshot-freshness.mjs --changed "$FIX/one-stale.txt"; then
+            echo "::error::The gate PASSED a change that publishes a 400d-old master. gy-7anl3's blocking half is gone — stale art can now be shipped as new."
             exit 1
           fi
-          echo "OK: check-screenshot-freshness.mjs correctly failed on a stale/missing manifest."
+          echo "OK: publishing a stale master is refused."
+
+      - name: Negative control — a manifest EDIT must also count as publishing
+        run: |
+          set -euo pipefail
+          cd "$FIX"
+          printf 'public/screens/manifest.json\n' > "$FIX/manifest-edit.txt"
+          if node scripts/check-screenshot-freshness.mjs --changed "$FIX/manifest-edit.txt"; then
+            echo "::error::The gate PASSED a manifest.json edit with stale entries — an author could restate a stale capture as current."
+            exit 1
+          fi
+          echo "OK: a manifest edit is treated as publishing every entry."
+
+      - name: Negative control — an UNREADABLE change set must not read as clean
+        run: |
+          set -euo pipefail
+          cd "$FIX"
+          if node scripts/check-screenshot-freshness.mjs --changed "$FIX/does-not-exist.txt"; then
+            echo "::error::The gate PASSED with an unreadable change set — a could-not-look is rendering as a look-that-passed, which downgrades every stale master to a warning."
+            exit 1
+          fi
+          echo "OK: an unreadable change set is a could-not-look, not a pass."
+
+      - name: Negative control — --strict must still block EVERYTHING stale
+        run: |
+          set -euo pipefail
+          cd "$FIX"
+          if node scripts/check-screenshot-freshness.mjs --strict; then
+            echo "::error::--strict PASSED on 400d-old masters. The escape hatch that restores the pre-gy-7anl3 behaviour does not work, so the split cannot be revoked in one word as documented."
+            exit 1
+          fi
+          echo "OK: --strict still blocks on age alone."
+
+      - name: Control — stale but UNTOUCHED must NOT block, and must still be LOUD
+        run: |
+          set -euo pipefail
+          cd "$FIX"
+          SUMMARY=$RUNNER_TEMP/gate-summary.md
+          : > "$SUMMARY"
+          # This is the deploy-not-blocked half of gy-7anl3 AC3. Asserting the
+          # exit code alone would let the alarm be deleted silently, which is
+          # exactly the 08-12 fail-open — so the annotation and the summary are
+          # asserted too.
+          if ! GITHUB_STEP_SUMMARY="$SUMMARY" node scripts/check-screenshot-freshness.mjs \
+               --changed "$FIX/unrelated.txt" > "$RUNNER_TEMP/gate-out.txt" 2>&1; then
+            cat "$RUNNER_TEMP/gate-out.txt"
+            echo "::error::The gate BLOCKED a change that touches no gated screenshot. gy-7anl3 has regressed: marketing art is again holding the whole public site, including emergency legal copy."
+            exit 1
+          fi
+          grep -q '^::warning file=public/screens/' "$RUNNER_TEMP/gate-out.txt" || {
+            cat "$RUNNER_TEMP/gate-out.txt"
+            echo "::error::Stale masters shipped with NO ::warning annotation. Moving the gate deleted the alarm — that is the 08-12 fail-open repeating."; exit 1; }
+          grep -q 'stale master' "$SUMMARY" || {
+            cat "$SUMMARY"
+            echo "::error::Stale masters shipped with nothing in the job summary. AC2 requires the staleness to reach somewhere a human triaging the deploy is standing."; exit 1; }
+          echo "OK: deploy not blocked, and the staleness is reported in BOTH the annotation and the job summary."
+
+      - name: Control — with masters FRESH, all three are clean
+        run: |
+          set -euo pipefail
+          cp "$FIX/fresh.json" "$FIX/public/screens/manifest.json"
+          cd "$FIX"
+          SUMMARY=$RUNNER_TEMP/gate-summary-fresh.md
+          : > "$SUMMARY"
+          GITHUB_STEP_SUMMARY="$SUMMARY" node scripts/check-screenshot-freshness.mjs \
+            --changed "$FIX/one-stale.txt" > "$RUNNER_TEMP/gate-fresh.txt" 2>&1
+          if grep -q '^::warning file=public/screens/' "$RUNNER_TEMP/gate-fresh.txt"; then
+            cat "$RUNNER_TEMP/gate-fresh.txt"
+            echo "::error::Fresh masters produced a staleness warning — the gate cries wolf, and an alarm that fires when nothing is wrong stops being read."
+            exit 1
+          fi
+          node scripts/check-screenshot-freshness.mjs --strict > /dev/null
+          echo "OK: fresh masters — publish allowed, deploy allowed, no false alarm, and --strict agrees."
 
       - name: Photoreal-device gate self-test
         run: node scripts/check-photoreal-device.selftest.mjs
