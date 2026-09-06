@@ -2,9 +2,26 @@
 # Gymbo — getgymbo.com build-smoke gate + robots.txt regression check (gy-kefk3).
 # Two uses:
 #   1) PRE-DEPLOY GATE: getgymbo-smoke.sh <preview-or-prod-url>  -> exit 1 fails the deploy
-#   2) SCHEDULED REGRESSION: run on cron against prod; a non-zero exit is recorded
-#      in the workflow run. Alert delivery is owned by the external async-watchdog
-#      path (gy-p7edn), not by this script.
+#   2) SCHEDULED REGRESSION: prod-watch.yml runs this hourly against prod.
+#      THIS SCRIPT NOTIFIES NOBODY, and as of 2026-09-06 NOTHING ELSE DOES
+#      EITHER. It exits non-zero and stops there; no step in prod-watch.yml
+#      mails, nudges or pages on that exit. The header used to claim "wrapper
+#      mails marketer on non-zero exit" — never true, and it bought a belief:
+#      downstream readers took "getgymbo.com is watched" off this comment when
+#      only the looking worked and never the telling (gy-p7edn AC4). Do not
+#      restore it, and do not replace it with a claim that async-watchdog
+#      "owns" delivery until that is measured — see below.
+#      Delivery is EXTERNAL BY DESIGN, not by oversight: an in-job notify step
+#      cannot fire when the job dies in "Set up job" before any step runs
+#      (observed: run 32181463828, 2026-08-18T20:17:51Z, event=schedule,
+#      conclusion=FAILURE). The intended watcher is async-watchdog in the
+#      gascity-pilot gymbo-crew pack, mailing the gymbo/gymbo-crew.watchdog
+#      seat. It is MERGED (gascity-pilot#26) and NOT RUNNING: the live pack
+#      loads from a working copy parked on another branch, whose order still
+#      reads GYMBO_REPO=material-lab-io/Gymbo-v1 with no surfaces list, so this
+#      repo is watched by nothing. Verified 2026-09-06.
+#      Until gy-p7edn quotes an alert actually RECEIVED, assume a red here
+#      reaches nobody. Present is not fired, and fired is not received.
 # Dependency-light (curl only). Console-error check = landing-CI add (playwright); see note.
 set -uo pipefail
 
