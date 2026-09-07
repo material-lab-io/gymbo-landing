@@ -44,9 +44,25 @@ export function WaitlistForm() {
 
   const field =
     "w-full rounded-xl px-5 h-12 text-[14px] outline-none transition-colors";
+  // gy-lgaz6 — WCAG 1.4.11 (non-text UI boundary, 3:1). This form renders on the
+  // charcoal CTA section (App.tsx / CompareWellnessZ.tsx, background F.charcoal
+  // #0a0a0a), so the white IS correct here — it is the CONTRAST that was not.
+  // Measured before: fill rgba(255,255,255,0.04) -> #141414, border
+  // rgba(255,255,255,0.10) -> #2c2c2c, giving 1.32:1 against the fill and 1.24:1
+  // against the section. Both fail 3:1, and the fill is 1.06:1 against the
+  // section, so nothing delineated the control at all.
+  // Fixed with SOLID Forge tokens rather than a higher alpha: reaching 3:1 by
+  // alpha needs ~0.33, which is both a visible redesign and an invented alpha
+  // step — and inventing sanctioned alpha steps is a Forge decision, not this
+  // file's (gy-vfrha AC4).
+  //   background -> --g-color-neutral-dark-1 (#141414), byte-identical to what
+  //                 rgba(255,255,255,0.04) already composited to on #0a0a0a.
+  //   border     -> --g-color-grey-placeholder-dark (#808080), 4.66:1 vs the
+  //                 fill and 5.01:1 vs the section. It is the QUIETEST Forge
+  //                 token that conforms, so the subtle look survives.
   const fieldStyle = {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.10)",
+    background: "var(--g-color-neutral-dark-1)",
+    border: "1px solid var(--g-color-grey-placeholder-dark)",
     color: F.white,
     fontFamily: "var(--font-sans)",
   } as const;
@@ -89,7 +105,7 @@ export function WaitlistForm() {
         {status !== "loading" && <ArrowRight size={16} aria-hidden="true" />}
       </button>
       {status === "error" && (
-        <span className="text-[13px]" style={{ color: "rgba(255,255,255,0.72)", fontFamily: "var(--font-sans)" }}>
+        <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
           Couldn't add you just now — please try again, or{" "}
           <a
             href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`}
