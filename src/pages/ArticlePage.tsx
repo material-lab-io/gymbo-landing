@@ -50,7 +50,7 @@ export function ArticlePage({
             the sub-line, so a reader learns the sequence before they click. Chosen
             only if the founder wants the trial to keep leading. The label still
             links to /#cta (the waitlist), which is why the sub-line has to carry
-            the access gate — otherwise the button still does not do what it says. */
+            the access gate — otherwise the button still does not do what it says. */}
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Try Gymbo free for 7 days →
