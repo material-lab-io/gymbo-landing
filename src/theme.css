@@ -20,7 +20,7 @@
   --muted-foreground: var(--g-text-muted);
   --accent: var(--g-primary-cta-fill);
   --accent-foreground: var(--g-text-on-primary-cta);
-  --border: rgba(255, 255, 255, 0.08);
+  --border: var(--g-border);
   --ring: var(--g-focus-ring);
   --radius: 0.625rem;
   /* fonts: Forge — Merriweather (display) + Open Sans (body) */
@@ -42,7 +42,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Scrollbar styling for dark theme */
+  /* Thin scrollbar. The thumb MUST stay a visible, token-based colour: this
+     block previously read "Scrollbar styling for dark theme" and painted the
+     thumb rgba(255,255,255,0.1) — white at 10% over #fafaf7, which computes to
+     1.00:1 against the page (1.01:1 on hover). Because ::-webkit-scrollbar
+     REPLACES the browser's own visible scrollbar, that shipped a 6px track with
+     a mathematically invisible thumb on a site the founder ruled LIGHT ONLY
+     (gy-uesmd). Same shape as gy-3zrch on iOS: a colour carried over from the
+     other theme, landing at ~1:1. WCAG 1.4.11 wants 3:1 for non-text UI;
+     --g-text-muted gives 7.13:1 and --g-border 16.64:1 on hover. */
   ::-webkit-scrollbar {
     width: 6px;
   }
@@ -50,10 +58,10 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--g-text-muted);
     border-radius: 3px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--g-border);
   }
 }
