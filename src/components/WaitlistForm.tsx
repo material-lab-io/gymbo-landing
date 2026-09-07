@@ -43,7 +43,7 @@ export function WaitlistForm() {
   }
 
   const field =
-    "w-full rounded-xl px-5 h-12 text-[14px] outline-none transition-colors";
+    "w-full rounded-xl px-5 h-12 text-[14px] outline-none transition-colors gy-focus-ring-dark";
   // gy-lgaz6 — WCAG 1.4.11 (non-text UI boundary, 3:1). This form renders on the
   // charcoal CTA section (App.tsx / CompareWellnessZ.tsx, background F.charcoal
   // #0a0a0a), so the white IS correct here — it is the CONTRAST that was not.
@@ -93,7 +93,7 @@ export function WaitlistForm() {
       <button
         type="submit"
         disabled={status === "loading"}
-        className="inline-flex items-center justify-center gap-2.5 px-8 h-12 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:outline-none"
+        className="inline-flex items-center justify-center gap-2.5 px-8 h-12 rounded-xl text-[14px] transition-all hover:opacity-90 active:scale-[0.97] disabled:opacity-60 gy-focus-ring-on-cta"
         style={{
           background: "var(--accent)",
           color: "var(--accent-foreground)",
