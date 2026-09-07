@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "test:update": "playwright test --update-snapshots"
+    "test:update": "playwright test --update-snapshots",
+    "test:audit": "playwright test tests/audit.spec.ts",
+    "test:audit:perf": "playwright test tests/audit-perf.spec.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
@@ -19,11 +21,13 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "axe-core": "^4.13.0",
     "playwright": "^1.58.2",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.7.2",
