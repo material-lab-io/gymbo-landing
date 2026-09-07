@@ -578,6 +578,19 @@ export default function App() {
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
               <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
+              {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
+                  18-page content estate that had ZERO inbound links from the reachable
+                  site: sitemap.xml carries 22 URLs and the rendered homepage linked only
+                  /compare, /privacy and /terms, so 18 pages were crawlable from the
+                  sitemap alone and unreachable by a human. The estate is densely
+                  interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is one
+                  disconnected component rather than 18 loose orphans — which is why three
+                  hub links restore all 22. Measured: /blog/ alone also reconnects all 22,
+                  but leaves the guides 3-5 clicks deep behind our thinnest page (92 words);
+                  these three cap the deepest page at 3 and put 18 of 22 within 2. */}
+              <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
+              <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
+              <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
               <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
               <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
