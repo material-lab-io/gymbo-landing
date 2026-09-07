@@ -15,13 +15,32 @@ on:
 # Serializes every run of THIS workflow on the gt2 host (gy-5e9u6) so two main
 # deploys never race the actual `wrangler pages deploy`. cancel-in-progress is
 # deliberately false — queue runs, never cancel an in-flight main deploy.
+#
+# 🔴 THE GROUP IS KEYED PER-REF (gy-vewd8). It used to be the constant
+# "gymbo-landing-deploy", which made it REPO-WIDE: every branch competed in one
+# queue. cancel-in-progress:false protects a RUNNING run, but GitHub keeps only
+# the newest PENDING run per group and cancels the rest — across branches. So a
+# push on any branch silently cancelled another PR's `deploy`, which is the SOLE
+# required context on main. A cancelled required check is worse than a red: it
+# has no failing step to read, it is ABSENT from the PR's check rollup rather
+# than failing in it, and nothing ever re-runs it. Measured 2026-09-06: PR #109's
+# run 34012197921 (head 38966ecd) was created 04:42:50Z and cancelled 04:45:10Z
+# with ZERO JOBS — evicted while pending by a run created 04:45:09Z on an
+# unrelated branch. Last 60 Deploy runs: 33 success, 16 failure, 11 CANCELLED;
+# 8 cancellations across 5 branches in one 34-minute window on 08-31.
+# Per-ref preserves the invariant this group was written for exactly: main is
+# still serialized against itself, and a PR run publishes nothing anyway (the
+# deploy step below is `if: github.ref == 'refs/heads/main'`).
+# Do NOT re-flatten this to a constant, and do NOT "fix" a queue wait by setting
+# cancel-in-progress — the main-deploy race (gy-5e9u6) is real.
+#
 # NOTE (gy-cjdtw): this does NOT prevent the smoke-gate port race, because that
 # collision was cross-workflow (a deploy's Playwright preview vs a concurrent
 # refresh-visual-baselines run, both on a fixed :4173). The gate below now binds
 # per-run FREE ports for both the Pages emulator and the preview, which removes
 # the race regardless of concurrency.
 concurrency:
-  group: gymbo-landing-deploy
+  group: gymbo-landing-deploy-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
