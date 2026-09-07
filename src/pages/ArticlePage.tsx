@@ -45,11 +45,21 @@ export function ArticlePage({
 
         <div className="article-prose mt-8" style={{ color: F.inkMuted, fontFamily: SANS, fontSize: "15.5px", lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />
 
+        {/* gy-a9fkv VARIANT A — request-access primary (pm's interim default).
+            This one CTA renders on all 16 content pages. It linked to /#cta (the
+            waitlist) while promising a 7-day trial, so the label already did not
+            describe what the button does. The trial is REAL — P7D intro offer live
+            in ASC on both products, 175/175 territories (gy-8af60) — but the app is
+            404 on the App Store in both IN and US storefronts, so a visitor cannot
+            start it. Sequencing, not a false claim: the trial is what you get AFTER
+            admission. Wording is landing-drafted against voice guide v9's ratified
+            "private alpha" + "Request access"; content owns the final string and it
+            is a one-line swap. */
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
-            Try Gymbo free for 7 days →
+            Request access →
           </a>
-          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Billed via the App Store</span>
+          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Gymbo is in private alpha. Your 7-day free trial starts once you are in. Billed via the App Store.</span>
         </div>
 
         {post.faq.length > 0 && (
