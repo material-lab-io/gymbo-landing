@@ -15,20 +15,45 @@ on:
 # Serializes every run of THIS workflow on the gt2 host (gy-5e9u6) so two main
 # deploys never race the actual `wrangler pages deploy`. cancel-in-progress is
 # deliberately false — queue runs, never cancel an in-flight main deploy.
+#
+# 🔴 THE GROUP IS KEYED PER-REF (gy-vewd8). It used to be the constant
+# "gymbo-landing-deploy", which made it REPO-WIDE: every branch competed in one
+# queue. cancel-in-progress:false protects a RUNNING run, but GitHub keeps only
+# the newest PENDING run per group and cancels the rest — across branches. So a
+# push on any branch silently cancelled another PR's `deploy`, which is the SOLE
+# required context on main. A cancelled required check is worse than a red: it
+# has no failing step to read, it is ABSENT from the PR's check rollup rather
+# than failing in it, and nothing ever re-runs it. Measured 2026-09-06: PR #109's
+# run 34012197921 (head 38966ecd) was created 04:42:50Z and cancelled 04:45:10Z
+# with ZERO JOBS — evicted while pending by a run created 04:45:09Z on an
+# unrelated branch. Last 60 Deploy runs: 33 success, 16 failure, 11 CANCELLED;
+# 8 cancellations across 5 branches in one 34-minute window on 08-31.
+# Per-ref preserves the invariant this group was written for exactly: main is
+# still serialized against itself, and a PR run publishes nothing anyway (the
+# deploy step below is `if: github.ref == 'refs/heads/main'`).
+# Do NOT re-flatten this to a constant, and do NOT "fix" a queue wait by setting
+# cancel-in-progress — the main-deploy race (gy-5e9u6) is real.
+#
 # NOTE (gy-cjdtw): this does NOT prevent the smoke-gate port race, because that
 # collision was cross-workflow (a deploy's Playwright preview vs a concurrent
 # refresh-visual-baselines run, both on a fixed :4173). The gate below now binds
 # per-run FREE ports for both the Pages emulator and the preview, which removes
 # the race regardless of concurrency.
 concurrency:
-  group: gymbo-landing-deploy
+  group: gymbo-landing-deploy-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: [self-hosted, gt2]
     steps:
+      # fetch-depth: 0 (gy-7anl3) — the screenshot gate needs to know which
+      # artifacts THIS change touches, and a depth-1 clone cannot answer that.
+      # The gate exits 1 rather than guessing, so a shallow clone here would
+      # block every deploy instead of silently downgrading. Small repo; cheap.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Approved self-hosted runner guard
         run: node scripts/check-workflow-runners.mjs
@@ -40,16 +65,63 @@ jobs:
 
       - run: npm ci
 
-      # Screenshot staleness gate (gy-a73px.15): every screenshot actually
-      # rendered on the site must have a manifest entry in
-      # public/screens/manifest.json that is verified and not older than
-      # maxAgeDays — see public/screens/MANIFEST.md. Runs before the build
-      # so a stale/missing manifest fails fast, before the full build +
-      # smoke gate. Mechanical, fail-closed replacement for a human noticing
-      # stale screenshots on the live site (happened twice: 2026-08-06,
-      # 2026-08-08).
+      # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
+      #
+      # WHAT IT GATES — and ONLY this: the marketing screenshot masters under
+      # public/screens/ that the gallery composites, i.e. the SCREENS map in
+      # scripts/screens-map.mjs. Not the site's code, copy, routes, legal or
+      # privacy pages, or any other asset.
+      #
+      # gy-7anl3: this step lives in `deploy`, which is the SOLE required check
+      # on main, so until 2026-09-06 a question about marketing art also decided
+      # whether ANY change could reach a live public site — including an
+      # emergency legal or privacy correction. On 2026-09-06 that pinned
+      # getgymbo.com to the 2026-08-31 build with no path to publish, because
+      # the staleness input is WALL CLOCK: monotonic, so no re-run can ever go
+      # green (gy-fs7pe).
+      #
+      # It now blocks on what the AUTHOR can act on and warns on what they
+      # cannot:
+      #   BLOCKS  integrity — missing manifest entry, unverified, invalid
+      #           capturedAt. Deterministic, a property of the change.
+      #   BLOCKS  a stale master THIS CHANGE PUBLISHES (touches the PNG, or
+      #           edits manifest.json). You may not ship or re-ship stale art.
+      #   WARNS   a master that was already live and has merely aged. Annotation
+      #           + job summary on every run — moving a gate must not delete an
+      #           alarm, and this one was already silently fail-open 08-12 to
+      #           08-19 (see public/screens/MANIFEST.md).
+      #
+      # Do NOT re-flatten this by raising maxAgeDays, adding a bypass flag, or
+      # backfilling manifest entries — pm ruled all three out. The staleness is
+      # REAL; recapture is gy-iit8q. If the split ever needs revoking, the
+      # script still has --strict, which restores the old block-on-everything
+      # behaviour in one word.
+      - name: Compute the change set the screenshot gate reasons about
+        run: |
+          set -euo pipefail
+          # Fails the step if git cannot answer. The gate itself exits 1 on an
+          # unreadable change set, so neither half can silently degrade to
+          # "this change touched nothing" — which would downgrade every stale
+          # master to a warning and re-open the hole this gate exists to close.
+          # NOTE: no --depth flag. checkout above already uses fetch-depth: 0,
+          # so the history is complete. `git fetch --depth=0` is not "no limit",
+          # it is an ERROR ("fatal: depth 0 is not a positive number") — it
+          # failed this step on run 34039827259 and skipped the nine gates
+          # behind it, which is the exact pathology this bead is about.
+          # Diff against FETCH_HEAD rather than origin/<base>: on a
+          # pull_request checkout the remote-tracking ref is not guaranteed to
+          # exist, and a missing ref would fail here rather than mis-report.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            git diff --name-only FETCH_HEAD...HEAD > /tmp/changed-files.txt
+          else
+            git diff --name-only HEAD^ HEAD > /tmp/changed-files.txt
+          fi
+          echo "change set ($(wc -l < /tmp/changed-files.txt) path(s)):"
+          sed 's/^/  /' /tmp/changed-files.txt
+
       - name: Screenshot staleness gate
-        run: node scripts/check-screenshot-freshness.mjs
+        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt
 
       # Photoreal-device gate (gy-dyu6r.9): exact corrected hero identity, all
       # four demo/poster pairs, measured gallery mask geometry, and approved
