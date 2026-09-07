@@ -45,11 +45,17 @@ export function ArticlePage({
 
         <div className="article-prose mt-8" style={{ color: F.inkMuted, fontFamily: SANS, fontSize: "15.5px", lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />
 
+        {/* gy-a9fkv VARIANT B — trial primary. Same finding as variant A, opposite
+            emphasis: the trial keeps the headline and the access gate is stated in
+            the sub-line, so a reader learns the sequence before they click. Chosen
+            only if the founder wants the trial to keep leading. The label still
+            links to /#cta (the waitlist), which is why the sub-line has to carry
+            the access gate — otherwise the button still does not do what it says. */
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Try Gymbo free for 7 days →
           </a>
-          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Billed via the App Store</span>
+          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Gymbo is in private alpha. Request access to start your trial. Billed via the App Store.</span>
         </div>
 
         {post.faq.length > 0 && (
