@@ -171,7 +171,7 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
   );
 }
 
-export function PrimaryCTA({ dark, size = "md", className = "", children = "Join the waitlist" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
+export function PrimaryCTA({ dark, size = "md", className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
   return (
     <button
       onClick={() => scrollToId("cta")}

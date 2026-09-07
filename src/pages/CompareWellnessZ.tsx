@@ -342,7 +342,7 @@ export function CompareWellnessZ() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>In beta</Eyebrow>
