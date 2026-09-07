@@ -47,9 +47,9 @@ export function ArticlePage({
 
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
-            Try Gymbo free for a month →
+            Try Gymbo free for 7 days →
           </a>
-          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>No card · sign in with your phone</span>
+          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Billed via the App Store</span>
         </div>
 
         {post.faq.length > 0 && (
