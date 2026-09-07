@@ -89,7 +89,7 @@ export function CompareWellnessZ() {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
+        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo, home">
           <img
             src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
