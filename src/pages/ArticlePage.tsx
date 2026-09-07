@@ -54,7 +54,7 @@ export function ArticlePage({
             start it. Sequencing, not a false claim: the trial is what you get AFTER
             admission. Wording is landing-drafted against voice guide v9's ratified
             "private alpha" + "Request access"; content owns the final string and it
-            is a one-line swap. */
+            is a one-line swap. */}
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Request access →
