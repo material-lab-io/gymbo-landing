@@ -625,7 +625,7 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your own URL", icon: Link },
   { name: "Booking link", icon: CalendarCheck },
   { name: "Fitness reports", icon: BarChart3 },
-  { name: "Branded client app", icon: Smartphone },
+  { name: "Custom branded client content", icon: Smartphone },
 ];
 
 function BrandMarquee() {
