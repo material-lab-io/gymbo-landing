@@ -360,7 +360,7 @@ export default function App() {
                         clip={demoClip(p.demoId)}
                         poster={demoPoster(p.demoId)}
                         theme={dark ? "dark" : "light"}
-                        label={`${p.title} — demo`}
+                        label={`${p.title}: demo`}
                         maxWidth={360}
                       />
                     </div>
