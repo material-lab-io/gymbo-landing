@@ -2,7 +2,30 @@
 # Gymbo — getgymbo.com build-smoke gate + robots.txt regression check (gy-kefk3).
 # Two uses:
 #   1) PRE-DEPLOY GATE: getgymbo-smoke.sh <preview-or-prod-url>  -> exit 1 fails the deploy
-#   2) SCHEDULED REGRESSION: run on cron against prod; wrapper mails marketer on non-zero exit
+#   2) SCHEDULED REGRESSION: .github/workflows/prod-watch.yml runs this hourly
+#      (cron "0 * * * *") against https://getgymbo.com.
+#
+# WHO IS TOLD WHEN THIS EXITS NON-ZERO (gy-p7edn). Read this before adding a
+# notify step, and do not restate it as a capability this file has:
+#   * NOTHING IN THIS REPO NOTIFIES ANYONE. Not this script, not prod-watch.yml.
+#     A previous version of this header claimed "wrapper mails marketer on
+#     non-zero exit". That was false for the whole life of the file and it was
+#     load-bearing: everyone downstream read it as proof getgymbo.com was
+#     watched. Corrected here rather than implemented here -- see below for why.
+#   * The alert path is EXTERNAL to this workflow, by design. It is the Gas City
+#     `async-watchdog` cron order (custom-packs/gymbo-crew/, checks 6 and 7),
+#     which reads this workflow's run CONCLUSIONS from outside and sends durable
+#     `gc mail` to the gymbo/gymbo-crew.watchdog SEAT.
+#   * It MUST be external. Run 32181463828 (2026-08-18T20:17:51Z, event=schedule)
+#     died inside "Set up job" before any step ran. An `if: failure()` step in
+#     this job could not have fired -- the job never started. A watcher that
+#     lives inside the thing it watches cannot report the thing failing to start.
+#   * check7 additionally alarms on the ABSENCE of an expected scheduled run,
+#     because a run that was never SCHEDULED produces no run object at all, and
+#     "no red" is then indistinguishable from "no run".
+#   * workflow_dispatch runs are deliberately EXCLUDED from check6, so a manual
+#     negative control against a broken verify_url does not page anyone. That
+#     also means a manual dispatch is NOT a test of the alert path.
 # Dependency-light (curl only). Console-error check = landing-CI add (playwright); see note.
 set -uo pipefail
 
