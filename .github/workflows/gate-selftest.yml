@@ -298,6 +298,44 @@ jobs:
           node scripts/check-screenshot-freshness.mjs --strict > /dev/null
           echo "OK: fresh masters — publish allowed, deploy allowed, no false alarm, and --strict agrees."
 
+      - name: External-watch contract gate (positive control on the real tree)
+        run: node scripts/check-external-watch-contract.mjs
+
+      - name: Negative control — external-watch contract must FAIL on a renamed workflow
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          sed 's/^name: Prod Watch/name: Production Watch/' .github/workflows/prod-watch.yml > "$FIX/wf/prod-watch.yml"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED on a renamed Prod Watch — async-watchdog addresses that surface by display name, so a rename silently unwatches getgymbo.com."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected a renamed workflow."
+
+      - name: Negative control — external-watch contract must FAIL on a changed cron
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          sed 's|cron: "0 \* \* \* \*"|cron: "0 */6 * * *"|' .github/workflows/prod-watch.yml > "$FIX/wf/prod-watch.yml"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED on a six-hourly cron — the external heartbeat tolerates 150 min because this surface is HOURLY; a slower cron makes it page every run, and a muted heartbeat is the fail-open gy-p7edn exists to close."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected a changed cron."
+
+      - name: Negative control — external-watch contract must FAIL when the workflow is gone
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED with prod-watch.yml absent — a deleted scheduled probe must not read as healthy."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected an absent prod-watch.yml."
+
       - name: Photoreal-device gate self-test
         run: node scripts/check-photoreal-device.selftest.mjs
 
