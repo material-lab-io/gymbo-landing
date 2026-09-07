@@ -29,7 +29,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we use it</h2>
-          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you joined the waitlist, we use your email to let you know when it's your turn and share launch updates.</p>
+          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you requested access to our private alpha, we use your email to notify you when access opens and to share launch updates.</p>
         </section>
 
         <section className="flex flex-col gap-3">
