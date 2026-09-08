@@ -304,12 +304,12 @@ export function CompareWellnessZ() {
                 Moving your clients over is straightforward: Gymbo supports bulk client import, so you can bring your roster in rather than re-typing it. Your sessions and payments start fresh in a structure built for training.
               </p>
             </Reveal>
-            {/* Structural social-proof slot — Gymbo is in beta; a real switcher
+            {/* Structural social-proof slot — Gymbo is in private alpha; a real switcher
                 quote goes here post-launch. Do NOT fabricate a testimonial. */}
             <Reveal>
               <div className="mt-8 rounded-[var(--g-radius-xl)] p-6 text-center" style={{ background: F.beigeCard, border: "1px dashed var(--c-line)" }}>
                 <p className="text-[14px] md:text-[15px]" style={{ color: F.inkLabel, fontFamily: SANS, lineHeight: 1.6 }}>
-                  Gymbo is in beta. Real trainer stories will appear here as trainers come on board.
+                  Gymbo is in private alpha. Real trainer stories will appear here as trainers come on board.
                 </p>
               </div>
             </Reveal>
@@ -345,7 +345,7 @@ export function CompareWellnessZ() {
         <section id="cta" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>In beta</Eyebrow>
+              <Eyebrow dark>Private alpha</Eyebrow>
               <h2 className="text-[clamp(28px,4.5vw,46px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "18ch" }}>
                 Built for trainers. Try it free.
               </h2>
