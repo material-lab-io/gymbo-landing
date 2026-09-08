@@ -48,7 +48,15 @@ function json(body: unknown, status = 200): Response {
   })
 }
 
-interface Row { id: number; name: string | null; email: string; created_at: string }
+// gy-ds3fn (coach, same table, same day): email becomes NULLABLE and phone is added,
+// with a CHECK that at least one is present. So a row may legitimately have NO EMAIL.
+interface Row {
+  id: number
+  name: string | null
+  email: string | null
+  phone?: string | null
+  created_at: string
+}
 
 async function db(path: string, init: RequestInit = {}): Promise<Response> {
   const url = Deno.env.get("SUPABASE_URL")
@@ -144,11 +152,17 @@ you are receiving this because you requested access at <a href="https://getgymbo
 </table></td></tr></table></body></html>`
 }
 
+// A phone-only signup is still a lead the team MUST see. Rendering r.email directly
+// would print "null" in the alert for exactly the signups gy-ds3fn exists to capture.
+function contactOf(r: Row): string {
+  return r.email ?? r.phone ?? "(no contact on row)"
+}
+
 function rowsTable(rows: Row[]): string {
   return rows.map((r) =>
     `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;font-family:monospace;font-size:13px;">${r.id}</td>` +
     `<td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;">${esc(r.name ?? "")}</td>` +
-    `<td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;">${esc(r.email)}</td>` +
+    `<td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:13px;">${esc(contactOf(r))}</td>` +
     `<td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:12px;color:#666;">${esc(r.created_at)}</td></tr>`
   ).join("")
 }
@@ -192,7 +206,9 @@ async function inDigestMode(): Promise<boolean> {
 }
 
 async function unalerted(): Promise<Row[]> {
-  const res = await db("waitlist?select=id,name,email,created_at&team_alerted_at=is.null&order=created_at.asc")
+  // select=* deliberately: naming `phone` would 400 until gy-ds3fn lands, and naming
+  // only the old columns would silently drop it afterwards. * is correct in both worlds.
+  const res = await db("waitlist?select=*&team_alerted_at=is.null&order=created_at.asc")
   if (!res.ok) throw new Error(`select_failed_${res.status}`)
   return await res.json() as Row[]
 }
@@ -222,20 +238,44 @@ Deno.serve(async (req: Request) => {
     return json({ error: "unauthorized" }, 401)
   }
 
-  let body: { mode?: string; name?: string; email?: string }
+  let body: { mode?: string; name?: string; email?: string; phone?: string }
   try { body = await req.json() } catch { return json({ error: "bad_json" }, 400) }
   const mode = body.mode ?? "signup"
 
   try {
     if (mode === "signup") {
       const email = String(body.email ?? "").trim()
-      if (!email.includes("@")) return json({ error: "valid email required" }, 400)
+      const phone = String(body.phone ?? "").trim()
+      // gy-ds3fn makes email optional and phone the priority field, so "no email" is a
+      // VALID signup, not a bad request. Reject only a row with neither, mirroring the
+      // CHECK constraint coach is adding.
+      if (!email && !phone) return json({ error: "phone or email required" }, 400)
       const name = String(body.name ?? "").trim()
 
+      // === ANSWERING COACH'S OPEN CROSS-BEAD QUESTION ON gy-ds3fn ===
+      // "A phone-only row has no email to send that confirmation to ... a placeholder
+      // email? a distinct pending-confirmation state? SMS instead?"
+      // ANSWER: NONE OF THOSE. A phone-only signup gets NO confirmation email, because
+      // there is no address to send one to. We do NOT mint a placeholder address --
+      // that fabricates a contact record and would bounce forever. We do NOT invent a
+      // pending state nobody reads. SMS is a different channel on a different lane and
+      // is explicitly out of scope here.
+      // What protects that person instead is the TEAM ALERT below, which fires for
+      // phone-only rows too. Damini's outreach is by phone anyway, so the lead is
+      // still contacted -- by a human, on the channel they gave us.
+      //
+      // 🔴 CONSEQUENCE FOR THE FORM, AND IT IS NOT MINE TO FIX HERE: WaitlistForm's
+      // success text says "we'll email you when your access is ready". For a
+      // phone-only signup THAT PROMISE IS FALSE the moment gy-ds3fn ships. That is the
+      // same claim-truth defect class as gy-a9fkv, and it must be fixed in the same
+      // change that starts accepting phone-only submissions -- not after.
+      //
       // AC1 IS ALWAYS INDIVIDUAL AND IMMEDIATE. pm was explicit: the threshold governs
       // the TEAM alert only. You cannot batch a confirmation addressed to different
       // people, so "group into a single email" must never leak into this send.
-      const conf = await sendMail([email], "your gymbo access request", confirmationHtml(name))
+      const conf = email
+        ? await sendMail([email], "your gymbo access request", confirmationHtml(name))
+        : { ok: true as const, status: 0, id: undefined, skipped: "no_email_phone_only" }
 
       // The team half. Over threshold we send nothing now and leave the row unmarked;
       // the sweep groups it. That is how a signup lands in exactly ONE notification.
@@ -243,10 +283,10 @@ Deno.serve(async (req: Request) => {
       let team: Awaited<ReturnType<typeof sendMail>> | null = null
       let alerted = 0
       if (!digest) {
-        const lookup = await db(
-          `waitlist?select=id,name,email,created_at&email=eq.${encodeURIComponent(email)}` +
-          `&order=created_at.desc&limit=1`,
-        )
+        const match = email
+          ? `email=eq.${encodeURIComponent(email)}`
+          : `phone=eq.${encodeURIComponent(phone)}`
+        const lookup = await db(`waitlist?select=*&${match}&order=created_at.desc&limit=1`)
         const found = lookup.ok ? await lookup.json() as Row[] : []
         if (found.length > 0) {
           team = await sendMail(TEAM, `gymbo waitlist: ${found[0].email}`, teamHtml(found, false))
@@ -257,7 +297,9 @@ Deno.serve(async (req: Request) => {
       // rolls back a signup, and waitlist.js ignores this response entirely.
       return json({
         ok: true, mode: "signup", digest_mode: digest,
-        confirmation: { sent: conf.ok, status: conf.status, id: conf.ok ? conf.id : undefined },
+        confirmation: "skipped" in conf
+          ? { sent: false, skipped: conf.skipped }
+          : { sent: conf.ok, status: conf.status, id: conf.ok ? conf.id : undefined },
         team_alert: team ? { sent: team.ok, status: team.status } : { deferred_to_digest: digest },
         alerted,
       }, conf.ok ? 200 : 502)
