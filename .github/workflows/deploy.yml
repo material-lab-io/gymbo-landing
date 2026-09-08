@@ -69,6 +69,27 @@ jobs:
 
       - run: npm ci
 
+      # Fast typecheck, deliberately the FIRST thing after install (gy-nqryp).
+      #
+      # WHY IT EXISTS: three times on 2026-09-07 a malformed JSX block comment
+      # (an unclosed `{/*`) reached CI and killed this job at `npm run build`.
+      # `tsc` is the third command inside that build, behind optimize-gallery
+      # and after every gate below, so a one-character syntax error was costing
+      # a full runner slot on a saturated 3-runner pool to report something
+      # `tsc` answers in ~1.4s.
+      #
+      # WHY A STEP AND NOT A SEPARATE JOB: a job would claim a SECOND runner
+      # slot on every push, which is the same resource gy-2vvun just spent
+      # 17 hrs/week reclaiming. A step costs seconds and no extra slot, and
+      # still satisfies "fails before the expensive gates".
+      #
+      # It runs the SAME `tsc -b` the build runs, so it cannot drift from what
+      # the build enforces. Locally: `npm run typecheck` (~1.4s) before any
+      # push touching src/**, and read the exit code DIRECTLY, never through a
+      # pipe — `| tail` reports tail's status and a failed build reads green.
+      - name: Typecheck (fails fast, before the expensive gates)
+        run: npm run typecheck
+
       # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
       #
       # WHAT IT GATES — and ONLY this: the marketing screenshot masters under

@@ -11,14 +11,16 @@
     "test:ui": "playwright test --ui",
     "test:update": "playwright test --update-snapshots",
     "test:audit": "playwright test tests/audit.spec.ts",
-    "test:audit:perf": "playwright test tests/audit-perf.spec.ts"
+    "test:audit:perf": "playwright test tests/audit-perf.spec.ts",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.98.0",
     "lucide-react": "^1.11.0",
     "marked": "^18.0.5",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
