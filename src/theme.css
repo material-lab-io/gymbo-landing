@@ -65,3 +65,43 @@
     background: var(--g-border);
   }
 }
+
+/* gy-i665e — WCAG 2.4.11 (Focus Appearance) / 1.4.11 on the DARK CTA section.
+   The waitlist form is the site's only conversion control and all three of its
+   controls shipped with NO usable keyboard-focus indicator: both <input>s carry
+   Tailwind's `outline-none` (outline: 2px solid TRANSPARENT) with nothing
+   compensating, and the submit button's ring was `var(--accent)` — the button's
+   OWN background — so it composited to ~1.00:1 against the fill it sat on.
+
+   WHY NOT --g-focus-ring: Forge's semantic focus token resolves to
+   --g-color-brand-amber-text-light (#92400e). That is a LIGHT-mode token, and
+   this form renders on the charcoal CTA section (#0a0a0a): #92400e measures
+   2.75:1 there, BELOW the 3:1 requirement. Using the design system's own focus
+   token here would have produced confident non-compliance — the exact shape of
+   playbook rule 114. Forge has no dark focus-ring semantic; that gap is
+   designer's to close, not this file's, so these rules compose EXISTING Forge
+   primitives and invent no token.
+
+   Resolved values, not class names:
+     section #0a0a0a  ·  input fill #141414  ·  submit fill #f59e0b (--accent)
+     bone     --g-color-neutral-dark-fg  #f0f0eb
+     charcoal --g-color-neutral-dark-0   #0a0a0a
+
+   INPUTS — single bone ring, offset so it sits on the section:
+     bone vs input fill #141414 = 16.1:1   bone vs section #0a0a0a = 17.3:1
+   SUBMIT — dual ring, because NO single colour clears 3:1 against BOTH an
+   amber fill and a near-black section (the admissible band is empty: a colour
+   light enough to clear the section is too light to clear the amber, and vice
+   versa). So each ring answers one adjacency:
+     inner charcoal vs submit fill #f59e0b = 9.22:1  (adjacent to the fill)
+     outer bone     vs section    #0a0a0a  = 17.3:1  (adjacent to the section) */
+.gy-focus-ring-dark:focus-visible {
+  outline: 2px solid var(--g-color-neutral-dark-fg);
+  outline-offset: 2px;
+}
+.gy-focus-ring-on-cta:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--g-color-neutral-dark-0),
+    0 0 0 4px var(--g-color-neutral-dark-fg);
+}

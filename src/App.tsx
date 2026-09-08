@@ -284,7 +284,7 @@ export default function App() {
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
             <div className="max-w-[600px] lg:w-[46%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>In beta</Eyebrow>
+                <Eyebrow>Private alpha</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
@@ -360,7 +360,7 @@ export default function App() {
                         clip={demoClip(p.demoId)}
                         poster={demoPoster(p.demoId)}
                         theme={dark ? "dark" : "light"}
-                        label={`${p.title} — demo`}
+                        label={`${p.title}: demo`}
                         maxWidth={360}
                       />
                     </div>
@@ -542,21 +542,21 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" data-testid="footer-cta-section" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>In beta</Eyebrow>
+              <Eyebrow dark>Private alpha</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn.
+                Request access and we'll email you when you're in.
               </p>
             </Reveal>
 
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
               <WaitlistForm />
-              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: "rgba(240,240,235,0.06)", color: F.bone, border: "1px solid rgba(240,240,235,0.12)", fontFamily: SANS }}>
+              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: "var(--g-color-neutral-dark-1)", color: F.bone, border: "1px solid var(--g-color-grey-placeholder-dark)", fontFamily: SANS }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
                 </svg>
@@ -578,6 +578,19 @@ export default function App() {
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
               <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
+              {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
+                  18-page content estate that had ZERO inbound links from the reachable
+                  site: sitemap.xml carries 22 URLs and the rendered homepage linked only
+                  /compare, /privacy and /terms, so 18 pages were crawlable from the
+                  sitemap alone and unreachable by a human. The estate is densely
+                  interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is one
+                  disconnected component rather than 18 loose orphans — which is why three
+                  hub links restore all 22. Measured: /blog/ alone also reconnects all 22,
+                  but leaves the guides 3-5 clicks deep behind our thinnest page (92 words);
+                  these three cap the deepest page at 3 and put 18 of 22 within 2. */}
+              <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
+              <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
+              <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
               <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
               <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
@@ -625,7 +638,7 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your own URL", icon: Link },
   { name: "Booking link", icon: CalendarCheck },
   { name: "Fitness reports", icon: BarChart3 },
-  { name: "Branded client app", icon: Smartphone },
+  { name: "Custom branded client content", icon: Smartphone },
 ];
 
 function BrandMarquee() {
