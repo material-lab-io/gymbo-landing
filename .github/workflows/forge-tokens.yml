@@ -1,0 +1,57 @@
+name: Forge Tokens
+
+# Static token-drift gate for getgymbo.com (scripts/check-forge-tokens.mjs).
+#
+# Fails when a colour literal outside src/forge/ exactly duplicates an existing
+# Forge token — i.e. when the design system has been copied rather than used.
+# See the script header for why the rule is deliberately narrow and what it does
+# NOT cover (rgba alpha variants).
+#
+# Its own workflow, not a step in deploy.yml: that job is a single sequential
+# chain whose first step is the screenshot staleness gate, so anything added to
+# it also decides whether the site may be published (gy-7anl3). A token-drift
+# failure should say "this copies the design system", never "getgymbo.com may
+# not be deployed".
+#
+# No build, no browser — node only, so it is cheap enough to run on every push.
+# Runners: [self-hosted, gt2] per the standing rule. Never *-latest.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  forge-tokens:
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Token drift
+        run: node scripts/check-forge-tokens.mjs
+
+      # The gate must be shown capable of FAILING, in the same run that reports
+      # it passing. A guard nobody has watched fail is indistinguishable from one
+      # that cannot fail — which is the shape this repo already guards against in
+      # gate-selftest.yml, and the reason that file exists.
+      - name: Negative control — the gate must reject reintroduced drift
+        run: |
+          cp src/App.tsx /tmp/App.selftest.bak
+          # Substitute a token's exact value back in as a raw literal.
+          sed -i '0,/color: F.bone/s//color: "#f0f0eb"/' src/App.tsx
+          if node scripts/check-forge-tokens.mjs > /tmp/selftest.log 2>&1; then
+            cp /tmp/App.selftest.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the token gate passed a file with a known duplicate literal. The gate is not working; do not trust its green."
+            cat /tmp/selftest.log
+            exit 1
+          fi
+          cp /tmp/App.selftest.bak src/App.tsx
+          echo "OK  gate correctly rejected reintroduced drift"
+          # And prove the restore worked, so a broken restore cannot leave the
+          # tree dirty and silently pass the next step.
+          node scripts/check-forge-tokens.mjs

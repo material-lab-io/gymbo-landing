@@ -1,10 +1,35 @@
-import { marked } from "marked";
+import { marked, Renderer } from "marked";
 import { Plus } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { F, SERIF, SANS, SHADOW } from "../forge-ui";
 import type { Post } from "../content/blog/posts";
 
 marked.setOptions({ gfm: true });
+
+/* gy-ma11q — keyboard access to wide tables.
+   Guide/research bodies are markdown rendered to HTML and injected with
+   dangerouslySetInnerHTML, so there is no JSX to hang attributes on: the wrapper has to
+   come from the renderer. A horizontally scrollable region that contains no focusable
+   element cannot be scrolled by keyboard or switch at all — the off-screen columns are
+   simply unreachable (axe scrollable-region-focusable, WCAG-AA). Measured live on
+   2026-09-06: 6 guide/research routes failed on exactly this.
+   tabindex="0" makes the region scrollable by keyboard; role="region" + aria-label give it
+   a name so it is announced rather than being an unlabelled tab stop. This is the single
+   choke point for every markdown table on the site — ArticlePage is the only place marked
+   runs and the only user of .article-prose.
+
+   Implementation note, learned the hard way: do NOT `bind()` the default renderer here.
+   marked attaches `parser` to the renderer instance it actually uses, and a bound copy of a
+   bare `new Renderer()` has no parser — the build dies inside tablecell. Calling
+   `Renderer.prototype.table` with `this` keeps the live renderer (and its parser) intact. */
+marked.use({
+  renderer: {
+    table(this: Renderer, token: Parameters<Renderer["table"]>[0]) {
+      const table = Renderer.prototype.table.call(this, token);
+      return `<div class="table-scroll" tabindex="0" role="region" aria-label="Table — scroll horizontally to see all columns">${table}</div>`;
+    },
+  },
+});
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);
