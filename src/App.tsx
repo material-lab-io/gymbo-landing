@@ -550,7 +550,7 @@ export default function App() {
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn.
+                Request access and we'll email you when you're in.
               </p>
             </Reveal>
 

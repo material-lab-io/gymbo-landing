@@ -350,7 +350,7 @@ export function CompareWellnessZ() {
                 Built for trainers. Try it free.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn. Free for your first 7 days.
+                Request access and we'll email you when you're in. Free for your first 7 days.
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
