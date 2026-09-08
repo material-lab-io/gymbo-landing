@@ -306,12 +306,26 @@ Deno.serve(async (req: Request) => {
       }
       // AC5 / AC2 point 4: the row is the asset. This function NEVER deletes or
       // rolls back a signup, and waitlist.js ignores this response entirely.
+      // 🔴 `ok` MUST track what actually happened. The first AC6 run returned
+      // ok:true alongside HTTP 502 and sent:false -- a caller reading `ok` would
+      // have concluded success while the confirmation had been REJECTED by Resend.
+      // That is a fail-open field inside the very response meant to report failure,
+      // and only forcing a real provider error exposed it. Found by running the
+      // negative control, not by reading the code.
+      const confOk = "skipped" in conf ? true : conf.ok
+      const teamOk = team ? team.ok : true
       return json({
-        ok: true, mode: "signup", digest_mode: digest,
+        ok: confOk && teamOk, mode: "signup", digest_mode: digest,
         confirmation: "skipped" in conf
           ? { sent: false, skipped: conf.skipped }
           : { sent: conf.ok, status: conf.status, id: conf.ok ? conf.id : undefined },
-        team_alert: team ? { sent: team.ok, status: team.status } : { deferred_to_digest: digest },
+        // Be explicit about WHY no team alert went out. "deferred_to_digest:false"
+        // was ambiguous -- it read as a state rather than a reason.
+        team_alert: team
+          ? { sent: team.ok, status: team.status }
+          : digest
+            ? { sent: false, reason: "deferred_to_digest" }
+            : { sent: false, reason: "no_matching_row" },
         alerted,
       }, conf.ok ? 200 : 502)
     }
