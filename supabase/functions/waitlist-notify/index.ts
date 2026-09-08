@@ -35,11 +35,22 @@ const FLAP_WINDOW_DAYS = 3
 const TEAM = (Deno.env.get("WAITLIST_ALERT_TO") ?? "kaushik@materiallab.io,damini@materiallab.io")
   .split(",").map((s) => s.trim()).filter(Boolean)
 
-// A2 (Kaushik, 2026-09-08): getgymbo.com is the intended sending domain -- a stranger
-// must trust this mail, and materiallab.io undercuts that. It is NOT yet verified on
-// Resend (resend._domainkey.getgymbo.com is ABSENT; mail.materiallab.io is PRESENT), so
-// the whole path is proved on the verified domain and this ONE VALUE flips when the DNS
-// lands. That is a config change, not rework.
+// FROM-ADDRESS IS SETTLED: no-reply@mail.materiallab.io, display name Gymbo.
+// Founder ruling 2026-09-08, and it REVERSED an earlier lean toward sending from
+// getgymbo.com -- Kaushik: "keep the umbrella, all gymbo mail from materiallab".
+// There is NO pending flip and nothing waiting on DNS; do not re-open this as though
+// it were provisional.
+//
+// It is also the CONSISTENT choice rather than merely the convenient one: every other
+// Gymbo Edge Function already hardcodes this exact sender, and trainers already
+// receive reminder and digest mail from it, so a waitlist confirmation now matches
+// what the product already sends.
+//
+// AND IT AVOIDS AN SPF HAZARD RATHER THAN NAVIGATING ONE: getgymbo.com carries
+// Cloudflare Email Routing MX plus an SPF include for INBOUND. Adding a second sender
+// would have required MERGING that include rather than replacing it, on a domain whose
+// inbound is already partly broken (gy-vhxsd: grievance@ bounces 550). Sending under
+// the verified umbrella sidesteps that class of silent failure entirely.
 const FROM = Deno.env.get("RESEND_FROM_EMAIL") ?? "no-reply@mail.materiallab.io"
 
 function json(body: unknown, status = 200): Response {
