@@ -28,10 +28,20 @@ export function CTAButton({
           fontWeight: 600,
           fontFamily: "var(--font-sans)",
         }
-      : {
-          background: "rgba(255,255,255,0.04)",
-          color: "rgba(255,255,255,0.75)",
-          border: "1px solid rgba(255,255,255,0.08)",
+      : // gy-lgaz6 — this variant had the same construction as the waitlist
+        // field: on charcoal (#0a0a0a) its border composited to 1.23:1 against
+        // its own fill, versus the 3:1 WCAG 1.4.11 needs for a control boundary.
+        //
+        // It has ZERO call sites today, which is exactly why it is fixed rather
+        // than left: gy-vfrha named the dead `--border: rgba(255,255,255,0.08)`
+        // as "a trap for the first person to use it", and an unused component in
+        // ui/ that fails AA the moment somebody reaches for it is the same trap
+        // with a nicer name. NOT deleted — removing a design-system primitive is
+        // designer's call, not this file's.
+        {
+          background: "var(--g-color-neutral-dark-1)",
+          color: "var(--g-color-grey-muted-fg-dark)",
+          border: "1px solid var(--g-color-grey-placeholder-dark)",
           fontWeight: 400,
           fontFamily: "var(--font-sans)",
         };
