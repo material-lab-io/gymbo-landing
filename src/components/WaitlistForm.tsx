@@ -2,21 +2,31 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
 
-type Status = "idle" | "loading" | "done" | "error";
+type Status = "idle" | "loading" | "done" | "error" | "needs-contact";
 
 export function WaitlistForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // gy-ds3fn: EITHER identity is enough, but not neither. This mirrors the
+    // table's CHECK waitlist_phone_or_email_required rather than being stricter
+    // than it — the whole point of this change is that the form stopped being
+    // the narrowest link in the chain. Neither field carries `required`, so the
+    // browser cannot enforce "email or phone" for us; this does.
+    if (!email.trim() && !phone.trim()) {
+      setStatus("needs-contact");
+      return;
+    }
     setStatus("loading");
     try {
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, email, phone }),
       });
       if (!res.ok) throw new Error("bad status");
       // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).
@@ -32,12 +42,19 @@ export function WaitlistForm() {
   }
 
   if (status === "done") {
+    // gy-ds3fn / pm ruling: CHANNEL-NEUTRAL on purpose. The previous line said
+    // "we'll email you", which became false the moment this form could accept a
+    // phone-only signup — so the field and this line had to ship together, never
+    // one then the other. It deliberately does NOT promise a text either: our SMS
+    // delivery is unproven (gy-odma3, sms_delivery_log silent for 22.9 days on
+    // prod), and swapping one lie for another is not a fix. It also survives the
+    // next change to the field set without needing a re-edit.
     return (
       <p
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        Request received. We'll email you when your access is ready.
+        You're on the list — we'll be in touch when your access is ready.
       </p>
     );
   }
@@ -80,13 +97,31 @@ export function WaitlistForm() {
         style={fieldStyle}
       />
       <input
+        type="tel"
+        name="phone"
+        autoComplete="tel"
+        inputMode="tel"
+        aria-label="Your phone number"
+        placeholder="Your phone number"
+        value={phone}
+        onChange={(e) => {
+          setPhone(e.target.value);
+          if (status === "needs-contact") setStatus("idle");
+        }}
+        className={field}
+        style={fieldStyle}
+      />
+      <input
         type="email"
         name="email"
         autoComplete="email"
-        required
-        placeholder="Your email"
+        aria-label="Your email"
+        placeholder="Your email (optional if you gave a number)"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          if (status === "needs-contact") setStatus("idle");
+        }}
         className={field}
         style={fieldStyle}
       />
@@ -104,11 +139,20 @@ export function WaitlistForm() {
         {status === "loading" ? "Sending…" : "Request access"}
         {status !== "loading" && <ArrowRight size={16} aria-hidden="true" />}
       </button>
+      {status === "needs-contact" && (
+        <span
+          role="alert"
+          className="text-[13px]"
+          style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}
+        >
+          Add a phone number or an email so we can reach you.
+        </span>
+      )}
       {status === "error" && (
         <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
           Couldn't add you just now — please try again, or{" "}
           <a
-            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nemail: ${email}`)}`}
+            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nphone: ${phone}\nemail: ${email}`)}`}
             className="underline"
             style={{ color: F.white }}
           >
