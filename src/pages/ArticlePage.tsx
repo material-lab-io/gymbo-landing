@@ -77,9 +77,14 @@ export function ArticlePage({
             in ASC on both products, 175/175 territories (gy-8af60) — but the app is
             404 on the App Store in both IN and US storefronts, so a visitor cannot
             start it. Sequencing, not a false claim: the trial is what you get AFTER
-            admission. Wording is landing-drafted against voice guide v9's ratified
-            "private alpha" + "Request access"; content owns the final string and it
-            is a one-line swap. */}
+            admission. PROVENANCE OF THE TWO PHRASES DIFFERS AND THE DIFFERENCE
+            MATTERS: "Gymbo is in private alpha" IS voice-guide canon (v9 section 7,
+            founder ruling gy-2f2ak.4). "Request access" IS NOT — it is ratified by
+            BEAD RULING ONLY (gy-wymhs, extended by gy-a9fkv and gy-tjqwg). The v10
+            proposal that would make it guide canon, Gymbo-v1 PR #983, is still OPEN
+            and deliberately does not block this change. So do not cite this file as
+            evidence that "Request access" is guide canon. If #983 lands differently,
+            this is a two-string revert. */}
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Request access →
