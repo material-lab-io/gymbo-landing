@@ -22,7 +22,7 @@ Gymbo is built for the independent personal trainer — not a gym chain, and not
 
 ## Links
 
-- [Home](https://getgymbo.com/): product overview, features, and the waitlist
+- [Home](https://getgymbo.com/): product overview, features, and how to request access
 - [Pricing](https://getgymbo.com/pricing.md): plans, free trial, and what's included
 - [Gymbo vs WellnessZ](https://getgymbo.com/compare/gymbo-vs-wellnessz/): how Gymbo compares to a nutrition-first alternative
 
