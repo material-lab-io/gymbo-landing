@@ -37,7 +37,7 @@ export function WaitlistForm() {
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        You're on the list — we'll email you when it's your turn.
+        Request received. We'll email you when your access is ready.
       </p>
     );
   }
@@ -101,7 +101,7 @@ export function WaitlistForm() {
           fontFamily: "var(--font-sans)",
         }}
       >
-        {status === "loading" ? "Joining…" : "Join the waitlist"}
+        {status === "loading" ? "Sending…" : "Request access"}
         {status !== "loading" && <ArrowRight size={16} aria-hidden="true" />}
       </button>
       {status === "error" && (

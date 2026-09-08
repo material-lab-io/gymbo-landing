@@ -342,7 +342,7 @@ export function CompareWellnessZ() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>Private alpha</Eyebrow>
@@ -350,7 +350,7 @@ export function CompareWellnessZ() {
                 Built for trainers. Try it free.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn. Free for your first 7 days.
+                Request access and we'll email you when you're in. Free for your first 7 days.
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">

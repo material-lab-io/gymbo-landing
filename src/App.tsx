@@ -542,7 +542,7 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" data-testid="footer-cta-section" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>Private alpha</Eyebrow>
@@ -550,7 +550,7 @@ export default function App() {
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn.
+                Request access and we'll email you when you're in.
               </p>
             </Reveal>
 
