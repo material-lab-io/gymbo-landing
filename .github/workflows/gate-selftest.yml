@@ -13,34 +13,41 @@ name: Gate Self-Test (negative controls)
 # control here, that is incomplete work and must be called out in the PR
 # description (AC4).
 
+# gy-707yq: the pull_request trigger used to carry
+#   paths: ["scripts/**", ".github/workflows/**"]
+# GitHub creates NO check context for a workflow that does not run, so on any PR
+# touching neither path this workflow was ABSENT — not red. An absent required
+# check reads "Expected — waiting for status to be reported" and blocks forever
+# with nothing to investigate, so it could never safely be made required. It was
+# absent on all 8 open PRs on 2026-09-08. The filter is removed rather than
+# narrowed: re-adding one at any layer reproduces the same silent absence.
 on:
   pull_request:
-    paths:
-      - "scripts/**"
-      - ".github/workflows/**"
   schedule:
     - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
   workflow_dispatch:
 
 jobs:
-  negative-controls:
+  # gy-707yq: THE REQUIRED-CHECK CANDIDATE. Split out of negative-controls so it
+  # runs on EVERY pull_request in seconds. It needs no npm and no Playwright —
+  # check-workflow-runners.mjs imports only node builtins, which is why the guard
+  # already ran BEFORE setup-node in the old job.
+  #
+  # It is deliberately NOT `if:`-skipped on unrelated PRs. A skipped required check
+  # reports SUCCESS, so a path-gated required check fails OPEN — the same defect
+  # class this workflow exists to catch. This job always EXECUTES and always posts
+  # a real conclusion.
+  #
+  # The self-hosted-runners rule is a standing Kaushik cost directive; a guard that
+  # cannot block is not a guard.
+  runner-policy:
+    name: Runner policy (self-hosted only)
     runs-on: [self-hosted, gt2]
     steps:
       - uses: actions/checkout@v4
 
       - name: Approved self-hosted runner guard
         run: node scripts/check-workflow-runners.mjs
-
-      # No `cache: npm`: on the persistent gt2 runners this step cost a median
-      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
-      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
-      # already warm on local disk, so the Actions cache was restoring a cache
-      # on top of a cache over the network. See gy-2vvun. Do not re-add.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - run: npm ci
 
       - name: Negative control — runner guard must FAIL on GitHub-hosted labels
         run: |
@@ -63,6 +70,53 @@ jobs:
             exit 1
           fi
           echo "OK: runner guard correctly rejected windows-latest."
+
+
+  # Decides whether the EXPENSIVE suite below needs to run. Kept out of
+  # runner-policy so that job stays dependency-free and fast.
+  scope:
+    runs-on: [self-hosted, gt2]
+    outputs:
+      run_full: ${{ steps.f.outputs.run_full }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: f
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "run_full=true" >> "$GITHUB_OUTPUT"
+            echo "non-PR event (${{ github.event_name }}): running the full suite."
+            exit 0
+          fi
+          BASE="${{ github.event.pull_request.base.sha }}"
+          if git diff --name-only "$BASE"...HEAD | grep -qE '^(scripts/|[.]github/workflows/)'; then
+            echo "run_full=true"  >> "$GITHUB_OUTPUT"
+            echo "PR touches scripts/ or .github/workflows/: running the full suite."
+          else
+            echo "run_full=false" >> "$GITHUB_OUTPUT"
+            echo "PR touches neither scripts/ nor .github/workflows/: the expensive suite is genuinely a no-op here."
+            echo "Runner policy still ran and still gates this PR — see the runner-policy job."
+          fi
+
+  negative-controls:
+    needs: scope
+    if: needs.scope.outputs.run_full == 'true'
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `cache: npm`: on the persistent gt2 runners this step cost a median
+      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
+      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
+      # already warm on local disk, so the Actions cache was restoring a cache
+      # on top of a cache over the network. See gy-2vvun. Do not re-add.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
 
       # --with-deps dropped deliberately: it shells out to apt-get and needs
       # root, which a self-hosted runner does not grant. The gt2 runners
