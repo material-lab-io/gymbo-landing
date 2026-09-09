@@ -27,6 +27,12 @@ label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
 input,select,textarea{width:100%;padding:12px;border-radius:8px;
   border:1px solid var(--line);background:var(--bg);color:var(--fg);
   font:inherit;font-size:14px}
+/* Caught on the LIVE page by screenshot, not by any test: the longest option
+   ("It shows me and I did not agree to this use") ran underneath the native
+   chevron and was clipped mid-word. A takedown form whose REASON field cannot be
+   read is a bad place to save 24px. Tests asserted the select existed and every
+   one of them passed while it was unreadable. */
+select{padding-right:36px}
 textarea{min-height:96px}
 button{margin-top:20px;width:100%;min-height:48px;border:0;border-radius:9999px;
   background:var(--cta);color:var(--cta-ink);font:inherit;font-weight:700;font-size:16px}
