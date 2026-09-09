@@ -91,7 +91,21 @@ const server = createServer((req, res) => {
   }
   if (p === "/rest/v1/workout_assignments") return json(res, [{ workout_id: WORKOUT_ID }]);
   if (p === "/rest/v1/workouts") return json(res, [{ name: "Push day", notes: "Warm up first." }]);
-  if (p === "/rest/v1/workout_blocks") return json(res, blocks);
+  if (p === "/rest/v1/workout_blocks") {
+    // 🔴 THE FILTERS ARE HONOURED, and that is not pedantry — gy-nm6ii added a
+    // SCOPED lookup (id + workout_id) to answer "is this block in this workout?".
+    // A mock that ignores filters and returns every row answers "2 rows" to a
+    // single-id query, which is nothing PostgREST would ever say. The stand-in
+    // has to behave like the thing it stands in for or the journey is measuring
+    // the mock, not the feature.
+    const eq = (k) => (u.searchParams.get(k) || "").replace(/^eq\./, "");
+    const wantId = u.searchParams.has("id") ? eq("id") : null;
+    const wantWorkout = u.searchParams.has("workout_id") ? eq("workout_id") : null;
+    let rows = blocks;
+    if (wantId) rows = rows.filter((b) => b.id === wantId);
+    if (wantWorkout) rows = wantWorkout === WORKOUT_ID ? rows : [];
+    return json(res, rows);
+  }
   if (p === "/rest/v1/exercise_media") return json(res, media);
   if (p === "/rest/v1/workout_share_block_completions") {
     if (req.method === "POST") {
