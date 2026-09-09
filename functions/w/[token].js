@@ -28,7 +28,8 @@
 // works on our machines and nowhere else.
 import { esc } from "../m/_shared.js";
 import { supabaseUrl, svcHeaders } from "../m/_shared.js";
-import { resolveToken, loadWorkout, prescription, mediaFor, attributionHtml, TOKEN_RE } from "./_workout.js";
+import { resolveToken, loadWorkout, prescription, mediaFor, attributionHtml, TOKEN_RE,
+         blockBelongsToLink } from "./_workout.js";
 
 const CSS = `
 :root{--bg:#fafaf7;--card:#eaeae5;--fg:#1a1a1a;--muted:#555555;--brand:#92400e;
@@ -85,6 +86,17 @@ const refusal = () =>
 <h1>This link is not available</h1>
 <p class="sub">It may have expired or been replaced. Ask your trainer to send you a new one.</p>
 </div>`, 404);
+
+// A write we could not confirm must not be answered with the same cheerful
+// redirect as one that worked. The client taps, the page reloads, the tick is
+// not there, and the only honest thing we can say is that it did not save.
+// Silence here is the shape of gy-t9mm8's own anti-goal: a no-op that looks
+// like a success.
+const notSaved = () =>
+  shell("Not saved", `<div class="state">
+<h1>That did not save</h1>
+<p class="sub">Nothing was recorded. Please tap again — and if it keeps happening, tell your trainer.</p>
+</div>`, 503);
 
 export async function onRequestGet({ env, params }) {
   if (!env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -157,22 +169,41 @@ export async function onRequestPost(context) {
   if (!form) return refusal();
 
   if (form.get("finish")) {
-    await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_links?id=eq.${r.link.id}`, {
+    const res = await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_links?id=eq.${r.link.id}`, {
       method: "PATCH",
       headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
       body: JSON.stringify({ completed_at: new Date().toISOString() }),
-    }).catch(() => {});
+    }).catch(() => null);
+    if (!res || !res.ok) {
+      console.error("[w] finish write failed:", res ? res.status : "network");
+      return notSaved();
+    }
   } else {
     const block = String(form.get("block") || "");
-    if (/^[0-9a-f-]{36}$/i.test(block)) {
-      // A repeat tap is the same event, not a second one — the unique index says
-      // so and a 409 here is success. The client is on a phone; double-taps are
-      // guaranteed, and an error toast for one would be our bug, not theirs.
-      await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_block_completions`, {
-        method: "POST",
-        headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
-        body: JSON.stringify({ share_link_id: r.link.id, block_id: block }),
-      }).catch(() => {});
+    if (!/^[0-9a-f-]{36}$/i.test(block)) return refusal();
+
+    // 🔴 gy-nm6ii AC3. A token is scoped to ONE workout, so a block that is not
+    // in that workout is refused here and, authoritatively, by the database.
+    if (!(await blockBelongsToLink(env, r.link, block))) {
+      console.error("[w] block outside this link's workout, refused:", block);
+      return refusal();
+    }
+
+    const res = await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_block_completions`, {
+      method: "POST",
+      headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
+      body: JSON.stringify({ share_link_id: r.link.id, block_id: block }),
+    }).catch(() => null);
+
+    // A repeat tap is the same event, not a second one — the unique index says
+    // so and a 409 here is success. The client is on a phone; double-taps are
+    // guaranteed, and an error toast for one would be our bug, not theirs.
+    // Anything else IS a failure and is no longer swallowed: the old
+    // `.catch(() => {})` redirected to a page where the tick had not happened
+    // and nothing anywhere said so.
+    if (!res || (!res.ok && res.status !== 409)) {
+      console.error("[w] tick write failed:", res ? res.status : "network");
+      return notSaved();
     }
   }
 

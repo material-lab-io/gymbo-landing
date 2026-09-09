@@ -195,3 +195,80 @@ test("FAIL-CLOSED: with no service_role key configured, nothing is served", asyn
   const { status } = await get({}, TOKEN, {});
   assert.equal(status, 404);
 });
+
+// ---------------------------------------------------------------------------
+// gy-nm6ii — the scoping and the honest-write rules.
+//
+// 🔴 These cover a defect that was LIVE in the code above: POST accepted any
+// well-formed uuid as a block id and wrote it against the resolved link, and it
+// swallowed the write result entirely. So a token for workout A could mark a
+// block of workout B, and a write that failed still answered with the same 303
+// as one that worked. Both are now refusals with their own response.
+
+// A stub that answers the SCOPED block lookup (id + workout_id + is_deleted)
+// separately from the page's list query, so "is this block in this workout?" can
+// be made false on its own.
+function stubScope({ inScope = true, writeStatus = 201 } = {}) {
+  const writes = [];
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    if (u.includes("workout_share_links?token=")) return new Response(JSON.stringify([LINK]), { status: 200 });
+    if (u.includes("workout_assignments?id="))
+      return new Response(JSON.stringify([{ workout_id: "ffffffff-1111-2222-3333-444444444444" }]), { status: 200 });
+    // the scoped lookup blockBelongsToLink performs
+    if (u.includes("workout_blocks?id="))
+      return new Response(JSON.stringify(inScope ? [{ id: BLOCK.id }] : []), { status: 200 });
+    if (init?.method === "POST" || init?.method === "PATCH") {
+      writes.push(u);
+      return new Response(null, { status: writeStatus });
+    }
+    return new Response("[]", { status: 200 });
+  };
+  return writes;
+}
+
+const post = async (body) => {
+  const { onRequestPost } = await import(MOD);
+  return onRequestPost({ env: ENV, request: { formData: async () => new Map(body) }, params: { token: TOKEN } });
+};
+
+test("AC3 NEG: a block from ANOTHER workout is refused, and nothing is written", async () => {
+  const writes = stubScope({ inScope: false });
+  const res = await post([["block", "99999999-1111-2222-3333-444444444444"]]);
+  assert.equal(res.status, 404, "a token for one workout must not mark another workout's exercise");
+  assert.equal(writes.length, 0, "the refusal must happen BEFORE the write, not be cleaned up after it");
+});
+
+test("AC3 POSITIVE CONTROL: a block inside this workout still ticks", async () => {
+  // Without this, the refusal above is equally explained by "no tick ever works".
+  const writes = stubScope({ inScope: true });
+  const res = await post([["block", BLOCK.id]]);
+  assert.equal(res.status, 303);
+  assert.equal(writes.length, 1);
+});
+
+test("a double-tap (409 from the unique index) is still success, not an error", async () => {
+  stubScope({ inScope: true, writeStatus: 409 });
+  const res = await post([["block", BLOCK.id]]);
+  assert.equal(res.status, 303, "a repeat tap is the same event; an error toast for one would be our bug");
+});
+
+test("🔴 a write that FAILS is not answered with the same redirect as one that worked", async () => {
+  stubScope({ inScope: true, writeStatus: 500 });
+  const res = await post([["block", BLOCK.id]]);
+  assert.equal(res.status, 503);
+  assert.match(await res.text(), /did not save/i, "the client must be told the tick was not recorded");
+});
+
+test("a failed 'I finished this workout' is not reported as finished", async () => {
+  stubScope({ inScope: true, writeStatus: 500 });
+  const res = await post([["finish", "1"]]);
+  assert.equal(res.status, 503);
+});
+
+test("a malformed block id is refused without touching the database", async () => {
+  const writes = stubScope({ inScope: true });
+  const res = await post([["block", "not-a-uuid"]]);
+  assert.equal(res.status, 404);
+  assert.equal(writes.length, 0);
+});

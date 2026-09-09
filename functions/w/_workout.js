@@ -31,6 +31,27 @@ export async function resolveToken(env, token) {
   return { ok: true, link };
 }
 
+// 🔴 gy-nm6ii AC3 — does this link actually cover this exercise?
+//
+// The page posts a block id back, and until this existed nothing checked that
+// the id belonged to the workout the token shares: any well-formed uuid was
+// written against the resolved link, so a token for workout A could mark a block
+// of workout B. The database now refuses that outright (the
+// trg_workout_share_completion_scope trigger), and this is the same rule at the
+// edge so the visitor gets an honest refusal instead of a redirect to a page
+// where their tap silently did nothing.
+//
+// FAIL-CLOSED: an upstream that answers null gives `false`. A tick that cannot
+// be shown to be in scope is not written.
+export async function blockBelongsToLink(env, link, blockId) {
+  const asg = await q(env, `workout_assignments?id=eq.${link.assignment_id}&select=workout_id`);
+  const workoutId = asg?.[0]?.workout_id;
+  if (!workoutId) return false;
+  const rows = await q(env, `workout_blocks?id=eq.${encodeURIComponent(blockId)}` +
+    `&workout_id=eq.${workoutId}&is_deleted=eq.false&select=id`);
+  return Array.isArray(rows) && rows.length === 1;
+}
+
 export async function loadWorkout(env, link) {
   const asg = await q(env, `workout_assignments?id=eq.${link.assignment_id}&select=workout_id`);
   const workoutId = asg?.[0]?.workout_id;
