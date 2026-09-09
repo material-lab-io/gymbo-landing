@@ -89,7 +89,7 @@ Strip it back, and running a training business is four jobs running at once:
 3. **Payments & balances**: what's been paid, what's been used, what's left, what's owed. This is where money quietly leaks.
 4. **Programming**: what each client is actually doing, and whether it's working.
 
-The free stack handles each of these *separately* and informally. The moment they need to talk to each other, "she paid for 12, she's done 9, so 3 left, and her renewal is due," and you become the integration layer. That's the work that doesn't scale.
+The free stack handles each of these *separately* and informally. The moment they need to talk to each other ("she paid for 12, she's done 9, so 3 left, and her renewal is due"), you become the integration layer. That's the work that doesn't scale.
 
 ## where the money actually leaks
 
@@ -116,7 +116,7 @@ What actually works is a system that keeps the **one-tap simplicity** of the fre
 - **Phone sign-in, no email/password**: less friction to start, for you and for adopting the habit.
 - **A price that fits your income**: software for an Indian trainer shouldn't cost what a Western coaching seat costs.
 
-The goal isn't more features. It's the same simple daily action, log the session, with the reconciliation done for you.
+The goal isn't more features. It's the same simple daily action (log the session) with the reconciliation done for you.
 
 ## what a structured day looks like
 
@@ -186,7 +186,7 @@ When trainers do look for software, the field splits into three groups:
 
 1. **India-native tools** built for the local market (UPI, INR, GST, WhatsApp): **Gymbo**, **Akton**, **WellnessZ**.
 2. **Global coaching platforms** built for Western economics (USD, no UPI/GST): **Trainerize**, **TrueCoach**.
-3. **Gym-management suites** built for facilities, not solo trainers (Mindbody, Glofox, and, in India, Akton leans this way).
+3. **Gym-management suites** built for facilities, not solo trainers (Mindbody, Glofox, and in India, Akton leans this way).
 
 The honest truth is that these tools are built for **different people**. The right pick depends entirely on what kind of business you run.
 

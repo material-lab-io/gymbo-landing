@@ -141,7 +141,7 @@ const trainerize: Post = {
 | The main job | Log a session in one tap; track payments & balances | Online coaching, programming & client engagement |
 | Entry price | **₹399/mo** (₹250/mo annual) | $9/mo (~₹750), caps at **2 clients** |
 | Price for a real 5–20 client roster | **₹399/mo flat, no client caps** | **$23+/mo (~₹1,900+)** on Pro, before add-ons |
-| Pricing model | One flat price, your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
+| Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing |
 | GST-ready invoices | ✅ | ❌ |
 | WhatsApp | ✅ Reminders & sharing | ❌ |
@@ -247,7 +247,7 @@ Both are made in India, for India. The real question isn't features or price. It
 
 If you run a gym or a studio, Akton is built for exactly that, and it does a lot well:
 
-- **Facility operations.** QR-code attendance, live crowd and occupancy monitoring, membership lifecycles, and automated renewals, a real operations stack for a physical space.
+- **Facility operations.** QR-code attendance, live crowd and occupancy monitoring, membership lifecycles, and automated renewals: a real operations stack for a physical space.
 - **Multi-branch and staff.** Manage members across branches and handle staff attendance and trainer payouts from one place.
 - **Lead management.** A pipeline to convert walk-ins and enquiries into members.
 - **A member-facing app.** Branded app with streaks, leaderboards, and progress, useful for gyms that want community and retention.
@@ -288,14 +288,14 @@ Gymbo strips it down to the one-person business:
 
 **Choose Gymbo if:**
 - You're an independent trainer and the business is *you*.
-- You work out of homes, parks, or a shared gym, no facility to manage.
+- You work out of homes, parks, or a shared gym, with no facility to manage.
 - You want one-tap session logging, clean payment tracking, and a tool you can run from your iPhone in seconds.
 
 ## on price, honestly
 
 Yes, Akton starts cheaper (from ₹89/mo). But it's pricing a gym's operating system, with unlimited members, for a facility. You'd be paying for a cockpit and using a corner of it.
 
-Gymbo is one flat plan from ₹250/mo (₹399/mo billed monthly) for a tool built to do one job, run your one-person training business, well. That's less than the cost of a single recovered no-show. The question isn't which number is smaller; it's which tool fits the business you actually run.`,
+Gymbo is one flat plan from ₹250/mo (₹399/mo billed monthly) for a tool built to do one job (run your one-person training business) well. That's less than the cost of a single recovered no-show. The question isn't which number is smaller; it's which tool fits the business you actually run.`,
 };
 
 export const ALTERNATIVES: Post[] = [truecoach, trainerize, akton];
