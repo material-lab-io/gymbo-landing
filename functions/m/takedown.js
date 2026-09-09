@@ -10,7 +10,7 @@
 // It is linked from the footer of every media page, including the unavailable
 // ones -- that is where someone checking whether their earlier request took
 // effect will land.
-import { SUPABASE_URL, svcHeaders, esc } from "./_shared.js";
+import { supabaseUrl, svcHeaders, esc } from "./_shared.js";
 
 const CSS = `
 :root{--bg:#fafaf7;--card:#eaeae5;--fg:#1a1a1a;--muted:#555555;--brand:#92400e;
@@ -27,6 +27,12 @@ label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
 input,select,textarea{width:100%;padding:12px;border-radius:8px;
   border:1px solid var(--line);background:var(--bg);color:var(--fg);
   font:inherit;font-size:14px}
+/* Caught on the LIVE page by screenshot, not by any test: the longest option
+   ("It shows me and I did not agree to this use") ran underneath the native
+   chevron and was clipped mid-word. A takedown form whose REASON field cannot be
+   read is a bad place to save 24px. Tests asserted the select existed and every
+   one of them passed while it was unreadable. */
+select{padding-right:36px}
 textarea{min-height:96px}
 button{margin-top:20px;width:100%;min-height:48px;border:0;border-radius:9999px;
   background:var(--cta);color:var(--cta-ink);font:inherit;font-weight:700;font-size:16px}
@@ -134,7 +140,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
   }
 
   const ref = caseRef();
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/media_takedown_cases`, {
+  const res = await fetch(`${supabaseUrl(env)}/rest/v1/media_takedown_cases`, {
     method: "POST",
     headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
     body: JSON.stringify({ case_ref: ref, ...fields }),

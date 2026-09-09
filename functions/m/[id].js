@@ -15,7 +15,7 @@
 // cannot be rewritten. Every id served here must therefore be stable forever,
 // which is why the importer UPSERTs on the natural key instead of
 // delete-then-insert (ratified by pm). Treat this URL shape as an external API.
-import { SUPABASE_URL, MEDIA_FIELDS, svcHeaders, esc, attributionIsComplete, signObject } from "./_shared.js";
+import { supabaseUrl, MEDIA_FIELDS, svcHeaders, esc, attributionIsComplete, signObject } from "./_shared.js";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -111,7 +111,7 @@ export async function onRequestGet(context) {
   let m;
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/exercise_media?id=eq.${id}&select=${MEDIA_FIELDS}`,
+      `${supabaseUrl(env)}/rest/v1/exercise_media?id=eq.${id}&select=${MEDIA_FIELDS}`,
       { headers: svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY) },
     );
     if (!res.ok) return unavailable("This video cannot be shown right now.");

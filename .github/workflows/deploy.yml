@@ -81,8 +81,8 @@ jobs:
         # positive control and exits 2 if it cannot read forge.css at all —
         # a zero it cannot substantiate is a failure, not a pass.
 
-      - name: "gy-a2xps.9: media page renders attribution and fails closed"
-        run: node --test tests/media-page.test.mjs
+      - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
+        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
         # stored fields, and REFUSES to render media when provenance is missing
         # or the asset is withdrawn — a CC-BY-SA clip published without its
@@ -206,6 +206,21 @@ jobs:
       # emulator — a PR that changes rendering with no snapshot update fails
       # here. Non-zero exit fails the job → the deploy step below is skipped.
       # Blocks bad builds from going live.
+      # gy-t9mm8 AC5 — the ONE client journey, in a real browser, against the
+      # Cloudflare Pages EMULATOR (functions/ do not run under `vite preview`).
+      # Runs after Chromium is installed and before the deploy, so a broken
+      # client page stops the release rather than being found by a client.
+      - name: "gy-t9mm8: client workout journey (real browser, no login)"
+        run: ./scripts/run-client-journey.sh
+        # Opens the link in a FRESH context with no storage — "no login required"
+        # is only proven from a device that has never seen Gymbo. Asserts the
+        # video actually DECODED A FRAME (currentTime > 0, not merely present in
+        # the DOM), and asserts the tick-off AFTER A RELOAD so it can only pass
+        # if the write really happened.
+        # Mutation-tested 2026-09-09: a mock that returns 201 but drops the write
+        # FAILS this journey (the exact "test passes without the feature" defect
+        # the bead names as its anti-goal); 404ing the video bytes also fails it.
+
       - name: Pre-deploy smoke gate
         run: |
           # gy-cjdtw: per-run free ports so concurrent jobs on the shared
