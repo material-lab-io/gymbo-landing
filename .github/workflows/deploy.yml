@@ -69,6 +69,27 @@ jobs:
 
       - run: npm ci
 
+      # gy-a2xps.9 — the public media surface. Both steps are STATIC (no network,
+      # no database, no browser), so they run before the build and fail in
+      # seconds rather than after it.
+      - name: "gy-a2xps.9: Forge token drift on the media pages"
+        run: node scripts/check-forge-token-drift.mjs
+        # functions/m/*.js inline their design tokens because a Pages Function
+        # cannot import the hashed Vite bundle. That second copy is CHECKED here
+        # against src/forge/forge.css, so drift is a red test rather than a public
+        # page that quietly stops looking like Gymbo. The script carries its own
+        # positive control and exits 2 if it cannot read forge.css at all —
+        # a zero it cannot substantiate is a failure, not a pass.
+
+      - name: "gy-a2xps.9: media page renders attribution and fails closed"
+        run: node --test tests/media-page.test.mjs
+        # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
+        # stored fields, and REFUSES to render media when provenance is missing
+        # or the asset is withdrawn — a CC-BY-SA clip published without its
+        # credit is a licence breach, so fail-closed is the load-bearing case.
+        # Mutation-tested 2026-09-09: forcing attributionIsComplete() true turns
+        # 2 red, removing the availability check turns 1 red, restoring is green.
+
       # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
       #
       # WHAT IT GATES — and ONLY this: the marketing screenshot masters under
@@ -135,6 +156,19 @@ jobs:
         run: node scripts/check-photoreal-device.mjs
 
       - run: npm run build
+
+      # gy-a2xps.9 — runs AFTER the build because it scans the built bundle, and
+      # BEFORE the deploy because its whole job is to stop one.
+      - name: "gy-a2xps.9: no server credential in the built bundle"
+        run: node scripts/check-no-service-key-in-bundle.mjs
+        # The public media page reads exercise_media with the service_role key,
+        # which bypasses RLS on every table. That is safe ONLY because the key
+        # lives in a Pages Function and is never bundled — an invariant that is
+        # invisible in review and catastrophic to lose (rotate-everything, not
+        # fix-forward). Leads with a positive control and exits 2 if it cannot
+        # find a known string in dist/, because an empty or unbuilt dist reports
+        # the same reassuring zero as a clean one.
+        # Mutation-tested 2026-09-09: planting the var name in dist/ exits 1.
 
       - name: Photoreal-device gate (built output)
         run: node scripts/check-photoreal-device.mjs --dist
