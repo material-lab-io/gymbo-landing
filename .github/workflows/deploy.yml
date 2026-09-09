@@ -251,6 +251,25 @@ jobs:
           bash scripts/getgymbo-smoke.sh "$BASE" || RC=1
           node scripts/console-check.mjs "$BASE" || RC=1
 
+          # gy-9ggf3 — every choice on the takedown form must be READABLE, not
+          # merely present. The Reason <select> clipped its longest option ("It
+          # shows me and I did not agree to this use" — the one an actual
+          # rightsholder picks) while every DOM assertion passed: the option was
+          # in the markup and the select existed, and a natively-clipped select
+          # reports scrollWidth === clientWidth, so the browser does not tell you
+          # either. This measures the text in the control's own font against the
+          # padded box.
+          #
+          # 390 is the iPhone-class width the defect was found at; 320 is the
+          # narrowest phone still in real use, and a control that fits at 390 can
+          # still clip at 320 — checking one width would rebuild the same blind
+          # spot one size down.
+          #
+          # The script exits 2 (not 0) if it finds nothing to measure, so a page
+          # that changes shape underneath it fails rather than passing silently.
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 390 || RC=1
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 320 || RC=1
+
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
           # baselines are refreshed. Blocking production on it is what wedged
