@@ -27,15 +27,16 @@
 // tap-to-complete that silently depends on a JS bundle is the kind of thing that
 // works on our machines and nowhere else.
 import { esc } from "../m/_shared.js";
+import { rootVars } from "../_forge.js";
 import { supabaseUrl, svcHeaders } from "../m/_shared.js";
 import { resolveToken, loadWorkout, prescription, mediaFor, attributionHtml, TOKEN_RE,
          blockBelongsToLink } from "./_workout.js";
 
 const CSS = `
-:root{--bg:#fafaf7;--card:#eaeae5;--fg:#1a1a1a;--muted:#555555;--brand:#92400e;
-  --line:#dcdcd9;--cta:#f59e0b;--cta-ink:#0a0a0a;--done:#15803d}
-@media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--card:#141414;--fg:#f0f0eb;
-  --muted:#b8b8b8;--brand:#fbbf24;--line:#2c2c2e;--cta:#fbbf24;--cta-ink:#0a0a0a;--done:#4ade80}}
+:root{${rootVars(["brand-amber-500", "brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg", "status-green-fill-dark", "status-green-text"])}--bg:var(--g-color-neutral-light-0);--card:var(--g-color-neutral-light-1);--fg:var(--g-color-neutral-light-fg);--muted:var(--g-color-grey-muted-fg-light);--brand:var(--g-color-brand-amber-text-light);
+  --line:var(--g-color-neutral-light-3);--cta:var(--g-color-brand-amber-500);--cta-ink:var(--g-color-neutral-dark-0);--done:var(--g-color-status-green-text)}
+@media (prefers-color-scheme:dark){:root{--bg:var(--g-color-neutral-dark-0);--card:var(--g-color-neutral-dark-1);--fg:var(--g-color-neutral-dark-fg);
+  --muted:var(--g-color-grey-muted-fg-dark);--brand:var(--g-color-brand-marigold-500);--line:var(--g-color-neutral-dark-3);--cta:var(--g-color-brand-marigold-500);--cta-ink:var(--g-color-neutral-dark-0);--done:var(--g-color-status-green-fill-dark)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);
   font-family:'Open Sans',system-ui,sans-serif;font-size:14px;line-height:1.55}
