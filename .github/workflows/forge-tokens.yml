@@ -35,6 +35,38 @@ jobs:
       - name: Token drift
         run: node scripts/check-forge-tokens.mjs
 
+      # gy-aczn1: functions/_forge.js is GENERATED from src/forge/forge.css, because
+      # the Pages Functions run in a Worker and cannot import the site's CSS. A
+      # generated copy is only safe while something proves it is still a copy —
+      # otherwise it is just a second hand-written palette with a comment claiming
+      # otherwise. This regenerates and diffs.
+      - name: Generated Functions palette is in sync with forge.css
+        run: node scripts/gen-functions-forge-tokens.mjs --check
+
+      # 🔴 SECOND NEGATIVE CONTROL, for the SECOND scan root. The one below seeds
+      # src/App.tsx and proves the gate rejects drift in src/. It said nothing
+      # about functions/, which is exactly how functions/ came to hold 48 exact
+      # duplicates under a green check (gy-aczn1) — the gate scanned src/ and only
+      # .css/.tsx/.ts, so it was blind by directory AND by extension.
+      # A control that only exercises one scan root cannot detect the loss of the
+      # other, so both roots get one.
+      - name: Negative control — the gate must reject drift in functions/ too
+        run: |
+          cp 'functions/w/[token].js' /tmp/w.selftest.bak
+          # Real code, NOT a comment: the gate deliberately blanks comments so it
+          # cannot flag its own documentation, and a commented probe would be
+          # ignored for that reason rather than for the reason under test.
+          sed -i '0,/\*{box-sizing:border-box}/s//*{box-sizing:border-box}\n.forge-selftest{color:#fbbf24}/' 'functions/w/[token].js'
+          if node scripts/check-forge-tokens.mjs > /tmp/selftest-fn.log 2>&1; then
+            cp /tmp/w.selftest.bak 'functions/w/[token].js'
+            echo "::error::NEGATIVE CONTROL FAILED — the token gate passed a Pages Function containing a known duplicate literal. functions/ is not being scanned; do not trust its green."
+            cat /tmp/selftest-fn.log
+            exit 1
+          fi
+          cp /tmp/w.selftest.bak 'functions/w/[token].js'
+          echo "OK  gate correctly rejected drift inside functions/"
+          node scripts/check-forge-tokens.mjs
+
       # The gate must be shown capable of FAILING, in the same run that reports
       # it passing. A guard nobody has watched fail is indistinguishable from one
       # that cannot fail — which is the shape this repo already guards against in

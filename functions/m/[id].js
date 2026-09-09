@@ -16,6 +16,7 @@
 // which is why the importer UPSERTs on the natural key instead of
 // delete-then-insert (ratified by pm). Treat this URL shape as an external API.
 import { supabaseUrl, MEDIA_FIELDS, svcHeaders, esc, attributionIsComplete, signObject } from "./_shared.js";
+import { rootVars } from "../_forge.js";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,13 +28,13 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // if any value here stops matching. Drift becomes a red test rather than a page
 // that slowly stops looking like Gymbo.
 const CSS = `
-:root{
-  --bg:#fafaf7; --card:#eaeae5; --fg:#1a1a1a; --muted:#555555; --brand:#92400e;
-  --alert:#b80f34; --line:#dcdcd9;
+:root{${rootVars(["brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg", "status-destructive-dark", "status-destructive-light"])}
+  --bg:var(--g-color-neutral-light-0); --card:var(--g-color-neutral-light-1); --fg:var(--g-color-neutral-light-fg); --muted:var(--g-color-grey-muted-fg-light); --brand:var(--g-color-brand-amber-text-light);
+  --alert:var(--g-color-status-destructive-light); --line:var(--g-color-neutral-light-3);
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#0a0a0a; --card:#141414; --fg:#f0f0eb; --muted:#b8b8b8; --brand:#fbbf24;
-  --alert:#ff6961; --line:#2c2c2e;
+  --bg:var(--g-color-neutral-dark-0); --card:var(--g-color-neutral-dark-1); --fg:var(--g-color-neutral-dark-fg); --muted:var(--g-color-grey-muted-fg-dark); --brand:var(--g-color-brand-marigold-500);
+  --alert:var(--g-color-status-destructive-dark); --line:var(--g-color-neutral-dark-3);
 }}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);

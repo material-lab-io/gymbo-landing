@@ -36,8 +36,23 @@ import { join, relative } from 'node:path';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const SSOT = join(ROOT, 'src/forge');
-const SCAN = join(ROOT, 'src');
-const EXT = /\.(css|tsx|ts)$/;
+// 🔴 functions/ JOINED THIS LIST IN gy-aczn1, AND THE OMISSION WAS NOT COSMETIC.
+// The three Cloudflare Pages Functions serve PUBLIC pages — /w/<token>, /m/<id>,
+// /m/takedown — and this gate scanned src/ and only .css/.tsx/.ts, so it was
+// blind to them twice over: wrong directory, wrong extension. Measured
+// 2026-09-09: 48 hex literals in functions/ each EXACTLY equal to an existing
+// token, while this gate reported green. A green here meant "src/ has no
+// duplicates", never "the site has no duplicates".
+// Proven as a differential, not read off the source: the same literal (#fbbf24)
+// seeded in src/theme.css exited 1 and named the token; seeded in
+// functions/w/[token].js it exited 0.
+const SCAN = [join(ROOT, 'src'), join(ROOT, 'functions')];
+// functions/_forge.js is GENERATED from src/forge/forge.css and is exempt for the
+// same reason src/forge/ is: it IS the palette, not a copy that drifted from it.
+// Its own drift is caught by `gen-functions-forge-tokens.mjs --check` in CI, so
+// exempting it here does not create an unwatched hole.
+const GENERATED = join(ROOT, 'functions/_forge.js');
+const EXT = /\.(css|tsx|ts|js)$/;
 
 function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
@@ -94,8 +109,9 @@ function blankComments(src) {
 const errors = [];
 const advisory = [];
 
-for (const f of walk(SCAN)) {
+for (const f of SCAN.flatMap((d) => walk(d))) {
   if (f.startsWith(SSOT)) continue; // the SSOT is allowed to contain literals
+  if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
   lines.forEach((line, i) => {

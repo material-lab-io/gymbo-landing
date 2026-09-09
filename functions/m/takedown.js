@@ -11,12 +11,13 @@
 // ones -- that is where someone checking whether their earlier request took
 // effect will land.
 import { supabaseUrl, svcHeaders, esc } from "./_shared.js";
+import { rootVars } from "../_forge.js";
 
 const CSS = `
-:root{--bg:#fafaf7;--card:#eaeae5;--fg:#1a1a1a;--muted:#555555;--brand:#92400e;
-  --line:#dcdcd9;--cta:#f59e0b;--cta-ink:#0a0a0a}
-@media (prefers-color-scheme:dark){:root{--bg:#0a0a0a;--card:#141414;--fg:#f0f0eb;
-  --muted:#b8b8b8;--brand:#fbbf24;--line:#2c2c2e;--cta:#fbbf24;--cta-ink:#0a0a0a}}
+:root{${rootVars(["brand-amber-500", "brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg"])}--bg:var(--g-color-neutral-light-0);--card:var(--g-color-neutral-light-1);--fg:var(--g-color-neutral-light-fg);--muted:var(--g-color-grey-muted-fg-light);--brand:var(--g-color-brand-amber-text-light);
+  --line:var(--g-color-neutral-light-3);--cta:var(--g-color-brand-amber-500);--cta-ink:var(--g-color-neutral-dark-0)}
+@media (prefers-color-scheme:dark){:root{--bg:var(--g-color-neutral-dark-0);--card:var(--g-color-neutral-dark-1);--fg:var(--g-color-neutral-dark-fg);
+  --muted:var(--g-color-grey-muted-fg-dark);--brand:var(--g-color-brand-marigold-500);--line:var(--g-color-neutral-dark-3);--cta:var(--g-color-brand-marigold-500);--cta-ink:var(--g-color-neutral-dark-0)}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);
   font-family:'Open Sans',system-ui,sans-serif;font-size:14px;line-height:1.55}
