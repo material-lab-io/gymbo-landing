@@ -66,17 +66,45 @@ export async function loadWorkout(env, link) {
   if (!wo?.[0] || !blocks) return null;
 
   // One media row per exercise, only where we can actually serve bytes.
+  //
+  // 🔴 THE ORDER IS LOAD-BEARING AND IT WAS MISSING (gy-16f0e). Without `order=`,
+  // PostgREST returns rows in whatever order the heap hands back, and that can
+  // change after any UPDATE or vacuum. 17 of 37 exercises in the live corpus have
+  // 2-5 clips, so two clients opening the SAME link could be shown DIFFERENT
+  // videos, and one client reloading could get a different one than before.
+  // Nothing errored and no test failed, because every fixture has one clip per
+  // exercise.
+  //
+  // THE TIE-BREAK ON `id` IS NOT DECORATION: ordering by byte_size alone is not a
+  // TOTAL order — two clips of equal size would still race. A partial order is
+  // just nondeterminism with extra steps.
+  //
+  // nullslast because byte_size is nullable: rows that predate the size backfill
+  // must not sort to the front and win by being unmeasured.
+  //
+  // WHICH clip wins is a PRODUCT DECISION and is NOT settled — options and the
+  // measured corpus are on gy-16f0e, and pm is taking them to Kaushik. Smallest
+  // is the provisional rule because it is deterministic, needs no human, and
+  // pushes the same direction as the 720p rendition work (gy-h8a7o). When the
+  // ruling lands, ONLY THE NEXT LINE CHANGES.
+  const CLIP_ORDER = "byte_size.asc.nullslast,id.asc"; // provisional — see gy-16f0e
   const ids = [...new Set(blocks.map((b) => b.exercise_id).filter(Boolean))];
   let media = [];
   if (ids.length) {
     media = await q(env, `exercise_media?exercise_id=in.(${ids.join(",")})` +
-      `&availability=eq.available&select=id,exercise_id,source,asset_kind,availability,author,` +
+      `&availability=eq.available&order=${CLIP_ORDER}` +
+      `&select=id,exercise_id,source,asset_kind,availability,author,byte_size,` +
       `source_url,licence_id,licence_name,licence_url,object_path,is_derivative,modification_note`) || [];
   }
   const byExercise = new Map();
   for (const m of media) {
     // Prefer motion over a still: the whole reason this page exists is that a
     // PDF cannot show movement.
+    //
+    // Within one asset_kind the FIRST row wins, and the query's order is what
+    // makes "first" mean something. Upgrading still -> motion is the only
+    // replacement allowed; a later motion clip must NOT displace an earlier one,
+    // or the ordering above would be decided by iteration instead.
     const cur = byExercise.get(m.exercise_id);
     if (!cur || (cur.asset_kind === "still" && m.asset_kind !== "still")) byExercise.set(m.exercise_id, m);
   }

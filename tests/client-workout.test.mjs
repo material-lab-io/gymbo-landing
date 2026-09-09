@@ -288,3 +288,59 @@ test("🔴 the DPDP notice is present and appears BEFORE the first tap control",
   // completion IS attributable via workout_assignments.client_id.
   assert.doesNotMatch(html, /anonymous/i);
 });
+
+// ---------------------------------------------------------------------------
+// gy-16f0e — WHICH clip the page shows must not depend on the order the database
+// happens to hand rows back in.
+//
+// 🔴 Note this is a DIFFERENT "nondeterministic" from gy-pbce1, which is about a
+// video frame varying between screenshots. This one is about the page choosing a
+// different CLIP for the same link. Same word, different failure.
+
+test("gy-16f0e: the clip query asks for a TOTAL order — a partial one still races", async () => {
+  // Determinism here genuinely lives in the query, not in the page: PostgREST
+  // returns heap order without `order=`, and heap order changes after an UPDATE
+  // or a vacuum. So the query IS the assertion.
+  const urls = [];
+  globalThis.fetch = async (url) => {
+    urls.push(String(url));
+    const u = String(url);
+    if (u.includes("workout_share_links?token=")) return new Response(JSON.stringify([LINK]), { status: 200 });
+    if (u.includes("workout_assignments?id=")) return new Response(JSON.stringify([{ workout_id: "f" }]), { status: 200 });
+    if (u.includes("workouts?id=")) return new Response(JSON.stringify([{ name: "W", notes: null }]), { status: 200 });
+    if (u.includes("workout_blocks?")) return new Response(JSON.stringify([BLOCK]), { status: 200 });
+    if (u.includes("exercise_media?")) return new Response(JSON.stringify([MEDIA_OK]), { status: 200 });
+    if (u.includes("/storage/v1/object/sign/")) return new Response(JSON.stringify({ signedURL: "/x" }), { status: 200 });
+    return new Response("[]", { status: 200 });
+  };
+  const { onRequestGet } = await import(MOD);
+  await onRequestGet({ env: ENV, params: { token: TOKEN } });
+
+  const mediaUrl = urls.find((u) => u.includes("exercise_media?"));
+  assert.ok(mediaUrl, "the page never queried exercise_media");
+  assert.match(mediaUrl, /[?&]order=/, "no order= : PostgREST returns heap order and the clip shown becomes arbitrary");
+  const order = decodeURIComponent(mediaUrl.match(/[?&]order=([^&]+)/)[1]);
+  assert.match(order, /(^|,)id\./,
+    "the order has no tie-break on id, so two clips of equal size still race — a partial order is nondeterminism with extra steps");
+});
+
+test("gy-16f0e: a later motion clip must NOT displace an earlier one", async () => {
+  // The query decides WHICH clip wins; the reducer must respect that and keep the
+  // first. If it overwrote on every motion row, the last row would win and the
+  // ordering above would be decided by iteration instead.
+  const { loadWorkout } = await import("../functions/w/_workout.js");
+  const first  = { ...MEDIA_OK, id: "aaaa", object_path: "wger/first.mp4" };
+  const second = { ...MEDIA_OK, id: "bbbb", object_path: "wger/second.mp4" };
+  globalThis.fetch = async (url) => {
+    const u = String(url);
+    if (u.includes("workout_assignments?id=")) return new Response(JSON.stringify([{ workout_id: "f" }]), { status: 200 });
+    if (u.includes("workouts?id=")) return new Response(JSON.stringify([{ name: "W", notes: null }]), { status: 200 });
+    if (u.includes("workout_blocks?")) return new Response(JSON.stringify([BLOCK]), { status: 200 });
+    if (u.includes("exercise_media?")) return new Response(JSON.stringify([first, second]), { status: 200 });
+    if (u.includes("workout_share_block_completions?")) return new Response("[]", { status: 200 });
+    return new Response("[]", { status: 200 });
+  };
+  const wo = await loadWorkout(ENV, LINK);
+  assert.equal(wo.blocks[0].media.object_path, "wger/first.mp4",
+    "the SECOND clip won — the reducer overwrites, so the query's order decides nothing");
+});
