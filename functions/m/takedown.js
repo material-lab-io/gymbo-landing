@@ -25,15 +25,22 @@ body{margin:0;background:var(--bg);color:var(--fg);
 h1{font-family:Merriweather,Georgia,serif;font-size:20px;margin:0 0 8px}
 .card{background:var(--card);border-radius:20px;padding:16px;margin:16px 0}
 label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
-input,select,textarea{width:100%;padding:12px;border-radius:8px;
+input,textarea{width:100%;padding:12px;border-radius:8px;
   border:1px solid var(--line);background:var(--bg);color:var(--fg);
   font:inherit;font-size:14px}
-/* Caught on the LIVE page by screenshot, not by any test: the longest option
-   ("It shows me and I did not agree to this use") ran underneath the native
-   chevron and was clipped mid-word. A takedown form whose REASON field cannot be
-   read is a bad place to save 24px. Tests asserted the select existed and every
-   one of them passed while it was unreadable. */
-select{padding-right:36px}
+/* gy-9ggf3 — the Reason control is RADIOS, not a <select>, and that is a fix to
+   a defect class rather than to a width. A native select CLIPS its longest option
+   and reports NO overflow (scrollWidth === clientWidth), so the clipping is
+   invisible to every DOM assertion; the previous fix here reserved 36px for the
+   chevron and the longest option still needed 299.4px in a 276px box. Radios
+   WRAP, so no option can be cut at any width, and they are a better mobile
+   control for 4-5 choices anyway. */
+.radio-row{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;
+  min-height:44px;cursor:pointer;line-height:1.4}
+.radio-row input{width:auto;margin:2px 0 0;flex:none;accent-color:var(--g-color-brand-amber-500)}
+fieldset{border:0;padding:0;margin:0 0 4px}
+legend{padding:0;font-size:12px;color:var(--g-color-grey-muted-fg-light)}
+@media (prefers-color-scheme:dark){legend{color:var(--g-color-grey-muted-fg-dark)}}
 textarea{min-height:96px}
 button{margin-top:20px;width:100%;min-height:48px;border:0;border-radius:9999px;
   background:var(--cta);color:var(--cta-ink);font:inherit;font-weight:700;font-size:16px}
@@ -74,21 +81,21 @@ ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
 <input id="requester_name" name="requester_name" required autocomplete="name">
 <label for="requester_email">Your email — we use this only to reach you about this request</label>
 <input id="requester_email" name="requester_email" type="email" required autocomplete="email">
-<label for="requester_role">You are</label>
-<select id="requester_role" name="requester_role">
-<option value="performer">The person shown in the video</option>
-<option value="rightsholder">The rights holder</option>
-<option value="agent">Acting on someone's behalf</option>
-<option value="other">Other</option>
-</select>
-<label for="claim_kind">Reason</label>
-<select id="claim_kind" name="claim_kind">
-<option value="likeness">It shows me and I did not agree to this use</option>
-<option value="copyright">Copyright</option>
-<option value="licence">Licence terms</option>
-<option value="privacy">Privacy</option>
-<option value="other">Other</option>
-</select>
+<fieldset>
+<legend>You are</legend>
+<label class="radio-row"><input type="radio" name="requester_role" value="performer" checked> The person shown in the video</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="rightsholder"> The rights holder</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="agent"> Acting on someone's behalf</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="other"> Other</label>
+</fieldset>
+<fieldset>
+<legend>Reason</legend>
+<label class="radio-row"><input type="radio" name="claim_kind" value="likeness" checked> It shows me and I did not agree to this use</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="copyright"> Copyright</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="licence"> Licence terms</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="privacy"> Privacy</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="other"> Other</label>
+</fieldset>
 <label for="claim_detail">What is the problem?</label>
 <textarea id="claim_detail" name="claim_detail" required></textarea>
 <label for="evidence">Anything that helps us check this — optional</label>
