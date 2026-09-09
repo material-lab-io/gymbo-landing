@@ -272,3 +272,19 @@ test("a malformed block id is refused without touching the database", async () =
   assert.equal(res.status, 404);
   assert.equal(writes.length, 0);
 });
+
+test("🔴 the DPDP notice is present and appears BEFORE the first tap control", async () => {
+  // Compliance's REVISED ruling (gy-rt68e): required, not recommended, because
+  // this is the first time a client is the direct SOURCE of a write to us.
+  // The ordering assertion is the substance — a notice rendered after the
+  // control it describes is not a notice.
+  const { html } = await get({});
+  const notice = html.indexOf("Tapping records that you finished each exercise");
+  const firstTap = html.indexOf("Mark done");
+  assert.notEqual(notice, -1, "the required notice copy is missing from the page");
+  assert.ok(notice < firstTap, "the notice must render above the first tap control, not below it");
+  assert.match(html, /We don't collect your name, email, or phone number on this page\./);
+  // It must not creep back to the word compliance and I both refused: a
+  // completion IS attributable via workout_assignments.client_id.
+  assert.doesNotMatch(html, /anonymous/i);
+});

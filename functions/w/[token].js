@@ -63,6 +63,11 @@ button.tick[data-done="1"]{color:var(--done);border-color:var(--done);font-weigh
   color:var(--done);font-weight:700}
 .state{background:var(--card);border-radius:20px;padding:24px;text-align:center}
 .foot{margin-top:28px;font-size:11px;color:var(--muted);text-align:center}
+/* The DPDP notice. Deliberately NOT 11px muted like .foot: this is a required
+   disclosure that must be read before the first tap, and styling it like
+   small print is how a notice becomes decoration. Card background, normal
+   foreground, full contrast, above the first exercise. */
+.notice{background:var(--card);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:12px}
 `;
 
 const shell = (title, body, status = 200) =>
@@ -146,9 +151,26 @@ ${b.done ? "✓ Done" : "Mark done"}</button>
     : `<form method="POST" class="finish"><input type="hidden" name="finish" value="1">
 <button type="submit">I finished this workout</button></form>`;
 
+  // 🔴 REQUIRED BEFORE THE FIRST TAP — compliance's REVISED ruling, gy-rt68e.
+  //
+  // Their first ruling said no notice was needed; it rested on the completion
+  // being unattributable to a person, which is FALSE — a completion is
+  // attributable via workout_assignments.client_id, and it has to be, because
+  // the trainer seeing who finished is the feature. This is the first time a
+  // client is the DIRECT SOURCE of a write to us, and that moment is exactly
+  // what DPDP's "notice at or before collection" is aimed at, independent of
+  // how little the write contains.
+  //
+  // The copy is VERBATIM as ruled and the wording is load-bearing: it says what
+  // the tap records and why, and it deliberately avoids the word "anonymous",
+  // which would be false. It renders ABOVE the first exercise — a notice after
+  // the control it describes is not a notice.
+  const notice = `<p class="notice">Tapping records that you finished each exercise so your trainer can see your progress. We don't collect your name, email, or phone number on this page.</p>`;
+
   return shell(wo.name || "Your workout", `<h1>${esc(wo.name || "Your workout")}</h1>
 <p class="sub">Shared by your trainer. Nothing to sign in to.</p>
 ${wo.notes ? `<p class="sub">${esc(wo.notes)}</p>` : ""}
+${notice}
 ${parts.join("")}
 ${finish}
 <p class="foot">Powered by Gymbo</p>`);
