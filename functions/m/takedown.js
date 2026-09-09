@@ -10,7 +10,7 @@
 // It is linked from the footer of every media page, including the unavailable
 // ones -- that is where someone checking whether their earlier request took
 // effect will land.
-import { SUPABASE_URL, svcHeaders, esc } from "./_shared.js";
+import { supabaseUrl, svcHeaders, esc } from "./_shared.js";
 
 const CSS = `
 :root{--bg:#fafaf7;--card:#eaeae5;--fg:#1a1a1a;--muted:#555555;--brand:#92400e;
@@ -134,7 +134,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
   }
 
   const ref = caseRef();
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/media_takedown_cases`, {
+  const res = await fetch(`${supabaseUrl(env)}/rest/v1/media_takedown_cases`, {
     method: "POST",
     headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
     body: JSON.stringify({ case_ref: ref, ...fields }),

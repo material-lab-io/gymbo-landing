@@ -12,7 +12,14 @@
 // credential; a leak is rotate-everything, not fix-forward. It is read from the
 // environment binding and used only in fetches originating in this Worker. No
 // value derived from it is ever interpolated into the HTML.
-export const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
+export const SUPABASE_DEFAULT_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
+
+// Overridable ONLY so the end-to-end journey can point at a local stand-in and
+// still exercise the real Worker, the real HTML and a real browser. Without this
+// the e2e would have to stub out the very code it exists to prove, which is the
+// anti-goal: a test that passes without the feature working. Production sets no
+// SUPABASE_URL and gets the constant above.
+export const supabaseUrl = (env) => (env && env.SUPABASE_URL) || SUPABASE_DEFAULT_URL;
 
 // Only these columns ever leave the database for the public page. A whitelist
 // rather than `select=*` so that a column added later -- an operator note, an
@@ -81,8 +88,9 @@ export const SIGNED_URL_TTL_SECONDS = 120;
 
 export async function signObject(env, objectPath) {
   const bucket = env.MEDIA_BUCKET || "exercise-media";
+  const base = supabaseUrl(env);
   const res = await fetch(
-    `${SUPABASE_URL}/storage/v1/object/sign/${bucket}/${objectPath}`,
+    `${base}/storage/v1/object/sign/${bucket}/${objectPath}`,
     {
       method: "POST",
       headers: svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY),
@@ -91,5 +99,5 @@ export async function signObject(env, objectPath) {
   );
   if (!res.ok) return null;
   const body = await res.json().catch(() => null);
-  return body?.signedURL ? `${SUPABASE_URL}/storage/v1${body.signedURL}` : null;
+  return body?.signedURL ? `${base}/storage/v1${body.signedURL}` : null;
 }
