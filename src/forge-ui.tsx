@@ -26,18 +26,20 @@ export const F = {
   inkLabel: "var(--c-ink-label)",
   inkAnchor: "var(--c-ink-anchor)",
   amber: "var(--c-brand)",
-  marigold: "#fbbf24",
+  marigold: "var(--g-color-brand-marigold-500)",
   amberText: "var(--c-brand-text)",
-  onCta: "#1a1a1a",
-  charcoal: "#0a0a0a",
-  charcoalCard: "#141414",
-  charcoalCard2: "#1c1c1e",
-  bone: "#f0f0eb",
-  boneMuted: "#b8b8b8",
-  boneLabel: "#a0a0a0",
-  green: "#15803d",
-  red: "#b80f34",
-  white: "#ffffff",
+  onCta: "var(--g-color-neutral-light-fg)",
+  charcoal: "var(--g-color-neutral-dark-0)",
+  charcoalCard: "var(--g-color-neutral-dark-1)",
+  charcoalCard2: "var(--g-color-neutral-dark-2)",
+  bone: "var(--g-color-neutral-dark-fg)",
+  boneMuted: "var(--g-color-grey-muted-fg-dark)",
+  boneLabel: "var(--g-color-grey-label-dark)",
+  green: "var(--g-color-status-green-text)",
+  red: "var(--g-color-status-destructive-light)",
+  white: "var(--g-color-absolute-white)",
+  // No Forge token for pure black; 0 usages. Kept so the object stays
+  // exhaustive, flagged so nobody reads it as an approved brand value.
   black: "#000000",
 };
 
@@ -118,7 +120,22 @@ const FORGE_CSS = `
         .article-prose ol{list-style:decimal;padding-left:22px;display:flex;flex-direction:column;gap:8px}
         .article-prose blockquote{border-left:3px solid var(--c-brand);padding-left:16px;color:var(--c-ink-muted);font-style:italic}
         .article-prose hr{border:0;border-top:1px solid var(--c-line);margin:28px 0}
-        .article-prose table{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+        /* gy-ma11q: the scroll container is the WRAPPER, not the table. 'display:block;
+           overflow-x:auto' on the <table> itself made the table a scrollable region with no
+           focusable descendant, so a keyboard or switch user could not scroll it at all and
+           simply could not reach the off-screen columns (axe scrollable-region-focusable,
+           WCAG-AA, measured on 6 live guide/research routes 2026-09-06). 'display:block' also
+           drops the table's semantics in some AT. The wrapper carries the overflow AND
+           tabindex=0, which is what makes it keyboard-scrollable. */
+        .article-prose table{width:100%;border-collapse:collapse;font-size:14px}
+        .article-prose .table-scroll{overflow-x:auto}
+        /* A tabbable element must show where focus is (WCAG 2.4.7). Focus-visible only, so
+           mouse users never see a ring on a plain click. */
+        /* UNSCOPED on purpose: .table-scroll is also used outside .article-prose (the
+           /compare at-a-glance table). A tabbable element with no visible focus
+           indicator is itself a WCAG 2.4.7 failure, so scoping this to .article-prose
+           would trade one violation for another. */
+        .table-scroll:focus-visible{outline:2px solid var(--c-brand);outline-offset:3px;border-radius:6px}
         .article-prose th,.article-prose td{border:1px solid var(--c-line);padding:10px 12px;text-align:left;vertical-align:top}
         .article-prose thead th{background:rgba(245,158,11,0.08);font-family:var(--font-serif);color:var(--c-ink)}
         .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
@@ -171,7 +188,7 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
   );
 }
 
-export function PrimaryCTA({ dark, size = "md", className = "", children = "Join the waitlist" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
+export function PrimaryCTA({ dark, size = "md", className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
   return (
     <button
       onClick={() => scrollToId("cta")}
