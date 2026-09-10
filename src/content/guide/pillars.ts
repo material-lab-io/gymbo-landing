@@ -208,7 +208,7 @@ const getOrganized: Post = {
 
 ## disorganization has a specific cost
 
-For an independent trainer, "disorganized" isn't a personality trait, it's leaked money and lost evenings. India's fitness market is growing from ₹16,200 crore in 2024 toward ₹37,700 crore by 2030, roughly 15% a year (Deloitte × Health & Fitness Association, India Fitness Market Report 2025). More clients are coming your way; the trainers who capture that growth are the ones whose systems don't buckle at 20 clients. The ones who stay stuck are drowning in four questions they can't answer instantly: *Who owes me? Who's due for a session? How many sessions does this client have left? Did that payment come in?*
+For an independent trainer, "disorganized" isn't a personality trait. It's leaked money and lost evenings. India's fitness market is growing from ₹16,200 crore in 2024 toward ₹37,700 crore by 2030, roughly 15% a year (Deloitte × Health & Fitness Association, India Fitness Market Report 2025). More clients are coming your way; the trainers who capture that growth are the ones whose systems don't buckle at 20 clients. The ones who stay stuck are drowning in four questions they can't answer instantly: *Who owes me? Who's due for a session? How many sessions does this client have left? Did that payment come in?*
 
 Organization is simply having an instant answer to those four, without opening five apps and your memory.
 
@@ -487,7 +487,7 @@ const upiFaq: Post = {
   title: "how to take payments via upi as a personal trainer",
   dek: "",
   quickAnswer:
-    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting, it's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
+    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting. It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
   date: "2026-07-15",
   metaTitle: "How to Take Payments via UPI as a Personal Trainer | Gymbo",
   metaDescription:
