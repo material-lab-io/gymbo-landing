@@ -141,6 +141,56 @@ jobs:
           fi
           echo "OK: baseline fixture passes cleanly (negative controls below are meaningful)."
 
+      # 🔴 THE DB PROBE MUST BE SHOWN CAPABLE OF FAILING (gy-gcr22).
+      #
+      # This PR's entire purpose is a probe, so a green here that never exercised
+      # the probe's failing path would prove nothing about it -- and merging that
+      # would give us a GREEN MONITOR OVER A DEAD SURFACE, which is exactly how
+      # gy-gcr22 stayed invisible from the day it shipped.
+      #
+      # The sanity step above already proves the PASS path: the good fixture
+      # serves {"db":"ok"} and check 9 accepts it. This proves the FAIL path, and
+      # sets SMOKE_EXPECT_DB=1 because a fixture is not production and the check
+      # is otherwise (correctly) advisory there.
+      - name: Negative control — getgymbo-smoke.sh must FAIL when the DB probe reports unconfigured
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
+          python3 -m http.server 8907 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8907 > /tmp/db-neg.log 2>&1; then
+            echo "::error::getgymbo-smoke.sh PASSED against a site whose DB probe reports 'unconfigured'. The probe is not wired; merging it would install a green monitor over a dead surface."
+            cat /tmp/db-neg.log
+            exit 1
+          fi
+          # And it must fail FOR THE RIGHT REASON, not incidentally. A control
+          # that accepts any failure reports the reassuring one.
+          if ! grep -q 'SUPABASE_SERVICE_ROLE_KEY is NOT BOUND' /tmp/db-neg.log; then
+            echo "::error::The smoke gate failed, but not on the DB probe. It does not discriminate."
+            cat /tmp/db-neg.log
+            exit 1
+          fi
+          echo "OK: the DB probe correctly failed the gate, naming the absent binding."
+
+      # The other side of the same rule: on a target with no database the check
+      # must REPORT rather than fail -- and must not be silently absent either.
+      - name: Negative control — the DB probe is advisory, not silent, off production
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
+          python3 -m http.server 8908 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8908 > /tmp/db-adv.log 2>&1 || {
+            echo "::error::The smoke gate FAILED on a non-production target for a missing database. That is the defect that blocked every deploy on the first attempt at this change."
+            cat /tmp/db-adv.log; exit 1; }
+          if ! grep -q 'INFO /api/health not required for this target' /tmp/db-adv.log; then
+            echo "::error::The DB probe left NO line in the output. An unreported check and a passing one must not look alike."
+            cat /tmp/db-adv.log; exit 1
+          fi
+          echo "OK: off production the DB probe reports without failing, and is visible in the log."
+
       - name: Negative control — getgymbo-smoke.sh must FAIL on missing <title>
         run: |
           set -e
