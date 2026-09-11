@@ -137,6 +137,8 @@ jobs:
       # A control that only exercises one scan root cannot detect the loss of the
       # other, so both roots get one.
       - name: Negative control — the gate must reject drift in functions/ too
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp 'functions/w/[token].js' /tmp/w.selftest.bak
           # Real code, NOT a comment: the gate deliberately blanks comments so it
@@ -149,8 +151,21 @@ jobs:
             cat /tmp/selftest-fn.log
             exit 1
           fi
+          # 🔴 A NON-ZERO EXIT IS NOT PROOF OF A REJECTION. Found 2026-09-11 in run
+          # 34564110037: a ReferenceError crashed this gate at module load, the
+          # `if` below read the non-zero exit as success, and this step printed
+          # "OK gate correctly rejected drift" while the gate had not evaluated a
+          # single file. A control that accepts any failure cannot tell the rule
+          # firing from the instrument breaking. Require the seeded literal to be
+          # NAMED in the output.
+          if ! grep -q 'functions/w/\[token\].js' /tmp/selftest-fn.log; then
+            cp /tmp/w.selftest.bak 'functions/w/[token].js'
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named the seeded literal in functions/w/[token].js. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest-fn.log
+            exit 1
+          fi
           cp /tmp/w.selftest.bak 'functions/w/[token].js'
-          echo "OK  gate correctly rejected drift inside functions/"
+          echo "OK  gate correctly rejected drift inside functions/, naming the file"
           node scripts/check-forge-tokens.mjs
 
       # The gate must be shown capable of FAILING, in the same run that reports
@@ -158,6 +173,8 @@ jobs:
       # that cannot fail — which is the shape this repo already guards against in
       # gate-selftest.yml, and the reason that file exists.
       - name: Negative control — the gate must reject reintroduced drift
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp src/App.tsx /tmp/App.selftest.bak
           # Substitute a token's exact value back in as a raw literal.
@@ -168,8 +185,16 @@ jobs:
             cat /tmp/selftest.log
             exit 1
           fi
+          # Same hardening as the functions/ control above: prove the gate failed
+          # ON THE SEEDED LITERAL, not merely that it failed.
+          if ! grep -q 'src/App.tsx' /tmp/selftest.log; then
+            cp /tmp/App.selftest.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named src/App.tsx. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest.log
+            exit 1
+          fi
           cp /tmp/App.selftest.bak src/App.tsx
-          echo "OK  gate correctly rejected reintroduced drift"
+          echo "OK  gate correctly rejected reintroduced drift, naming the file"
           # And prove the restore worked, so a broken restore cannot leave the
           # tree dirty and silently pass the next step.
           node scripts/check-forge-tokens.mjs

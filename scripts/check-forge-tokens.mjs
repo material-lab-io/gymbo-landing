@@ -61,9 +61,11 @@ import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-prod
 const PRODUCER_DIR = producerDir();
 const producerCss = PRODUCER_DIR ? FILES.map((f) => readAtPin(PRODUCER_DIR, f)) : [];
 const FROM_PRODUCER = producerCss.length > 0 && producerCss.every((c) => c !== null);
-const tokenSources = FROM_PRODUCER
-  ? producerCss
-  : walk(VENDORED).map((f) => readFileSync(f, 'utf8'));
+// Evaluated lazily, below the walk()/EXT declarations — the fallback branch calls
+// walk(), and reading it here crashed with "Cannot access 'EXT' before
+// initialization" the moment a run took that branch.
+const readTokenSources = () =>
+  FROM_PRODUCER ? producerCss : walk(VENDORED).map((f) => readFileSync(f, 'utf8'));
 // 🔴 functions/ JOINED THIS LIST IN gy-aczn1, AND THE OMISSION WAS NOT COSMETIC.
 // The three Cloudflare Pages Functions serve PUBLIC pages — /w/<token>, /m/<id>,
 // /m/takedown — and this gate scanned src/ and only .css/.tsx/.ts, so it was
@@ -99,7 +101,7 @@ const norm = (h) => {
 
 // Build the token table from the SSOT.
 const tokens = new Map(); // normalised hex -> token name
-for (const src of tokenSources) {
+for (const src of readTokenSources()) {
   for (const m of src.matchAll(/(--g-[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
     const k = norm(m[2]);
     if (!tokens.has(k)) tokens.set(k, m[1]);
