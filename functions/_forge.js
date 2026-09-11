@@ -13,6 +13,8 @@ export const FORGE = {
   "--g-color-brand-amber-text-light": "#92400e",
   "--g-color-brand-amber-text-light-hc": "#78350f",
   "--g-color-brand-marigold-text-dark-hc": "#fcd34d",
+  "--g-color-mark-amber": "#ff9800",
+  "--g-color-mark-deep": "#9d3900",
   "--g-color-neutral-dark-0": "#0a0a0a",
   "--g-color-neutral-dark-1": "#141414",
   "--g-color-neutral-dark-2": "#1c1c1e",
@@ -49,7 +51,7 @@ export const FORGE = {
 };
 
 // Emit ONLY the tokens a page actually uses, as :root custom properties.
-// A page pulling all 38 would ship declarations it never reads to a client on
+// A page pulling all 40 would ship declarations it never reads to a client on
 // mobile data, which is the same instinct this whole surface exists to serve.
 //
 // An unknown name THROWS rather than emitting nothing: a silently-missing custom

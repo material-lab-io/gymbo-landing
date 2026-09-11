@@ -1,3 +1,14 @@
+/* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
+ * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.dark.css
+ * Pinned at commit: 2656eb128c3bb8272a69b054d0179917aaaed53e
+ *
+ * Regenerate:  node scripts/sync-forge-tokens.mjs
+ * Verify:      node scripts/sync-forge-tokens.mjs --check
+ *
+ * Edits here are erased by the next sync AND fail CI immediately. Token
+ * changes belong in the producer (Gymbo-v1 design-tokens/), then repin:
+ *   node scripts/sync-forge-tokens.mjs --pin <producer-sha>
+ */
 /**
  * Do not edit directly, this file was auto-generated.
  */
@@ -14,6 +25,8 @@
   --g-text-placeholder: #808080;
   --g-text-placeholder-elevated: #9a9a9a;
   --g-text-brand: #fbbf24; /** DARK-mode brand = marigold */
+  --g-mark-on-dark: #ff9800; /** brand MARK glyph color for use on a DARK ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule — same value in semantic/light.json (ground-named tokens are theme-independent by design). */
+  --g-mark-on-light: #9d3900; /** brand MARK glyph color for use on a LIGHT ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule. Same value in semantic/light.json. */
   --g-text-healthy: #4ade80;
   --g-text-destructive: #ff6961;
   --g-text-system-blue: #409cff;
@@ -27,5 +40,5 @@
   --g-focus-ring: #fbbf24;
   --g-cursor: #007aff;
   --g-text-link: #f0f0eb; /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
-  --g-cta-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** primary CTA = flat fill + this soft neutral shadow, no colored border (§7) */
+  --g-cta-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** 🔴 RETIRED AS THE PRIMARY-CTA BOUNDARY (FORGE §7, amended 2026-09-06; gy-w2luq). The soft-neutral-shadow route CANNOT carry a 1.4.11 boundary: measured 1.36:1 at absolute-maximum stacking against a 3:1 requirement, and reaching 3:1 needs ~3x the token alpha, which renders as the hard grey edge §7 existed to avoid. What ships instead is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose either shadow route for that boundary. This token remains only for any non-boundary decorative use; it is NOT the CTA's accessibility boundary and must not be cited as one. */
 }
