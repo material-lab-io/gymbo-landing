@@ -137,12 +137,15 @@ export function WhatsAppGlyph({ size = 18 }: { size?: number }) {
  * so gy-e9h9y's shape work can decide what happens to it, instead of that
  * decision being spread across two files.
  */
-export function WhatsAppButton({ children }: { children: React.ReactNode }) {
+export function WhatsAppButton({ location, children }: { location: CtaLocation; children: React.ReactNode }) {
   return (
     <a
       href={WHATSAPP}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => trackCta("whatsapp_cta_click", location)}
+      data-cta="whatsapp"
+      data-cta-location={location}
       className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]"
       style={{ background: "var(--g-color-neutral-dark-1)", color: F.bone, border: "1px solid var(--g-color-grey-placeholder-dark)", fontFamily: SANS }}
     >
@@ -261,12 +264,155 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
   );
 }
 
-export function PrimaryCTA({ dark, size = "md", className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
+/** Where a CTA sits. Measured inventory, not a guess — designer's design named
+ * "hero / mid-page / footer" but flagged it as an intended taxonomy they had not
+ * checked against the code. The real placements are these five. */
+export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare";
+
+/**
+ * Fire a CTA click event.
+ *
+ * 🔴 FIRE AND DO NOT WAIT. A click that navigates away can lose an in-flight
+ * beacon, and the tempting fix — preventDefault, send, then navigate — makes the
+ * site's primary conversion hesitate. A CTA that stalls to improve its own
+ * telemetry is a worse CTA. We accept a small undercount instead, and that
+ * undercount must be stated wherever these numbers are quoted.
+ *
+ * Guarded on `umami` existing: #110 scoped the tracker to production hostnames,
+ * so on localhost it is legitimately absent and this must be a no-op, never a
+ * crash inside a click handler.
+ */
+export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click", location: CtaLocation) {
+  if (typeof window !== "undefined" && (window as any).umami) {
+    (window as any).umami.track(event, { location });
+  }
+}
+
+/**
+ * THE SHARED CTA VISUAL (gy-e9h9y AC3).
+ *
+ * This file used to WELD TWO INDEPENDENT AXES together:
+ *   VISUAL:    primary (filled amber + shadow + arrow) | secondary (transparent + 1px border)
+ *   BEHAVIOUR: in-page scroll (<button>)               | navigate off-site (<a href>)
+ * Only two of the four combinations existed, each hardwired: PrimaryCTA was
+ * primary+scroll, SecondaryButton was secondary+link. gy-e9h9y needs the OTHER
+ * diagonal — primary+link for WhatsApp, secondary+scroll for the demoted
+ * waitlist — which is why "add an href prop" and "add one sibling" both felt
+ * wrong: each fixes one cell of a 2x2.
+ *
+ * 🔴 NOT A POLYMORPHIC PrimaryCTA THAT RENDERS <a> OR <button> ON A PROP. That
+ * puts a branch inside a primitive used at every CTA site, and makes the prop
+ * combination (href AND scroll) representable-but-invalid. Thin wrappers over
+ * one shared style cannot express the invalid state.
+ */
+export function ctaVisual(variant: "primary" | "secondary", { dark, size = "md" }: { dark?: boolean; size?: "md" | "lg" } = {}) {
+  // 🔴 The class strings below reproduce the pre-existing PrimaryCTA and
+  // SecondaryButton markup EXACTLY, including class ORDER. Tailwind does not
+  // care about order, but the rendered HTML does: keeping it identical is what
+  // lets the visual-regression baselines and the built-output diff stay
+  // meaningful evidence rather than noise to be waved through.
+  const sizing = size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]";
+  if (variant === "primary") {
+    return {
+      className: `inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sizing}`,
+      style: { background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS } as React.CSSProperties,
+    };
+  }
+  return {
+    className: `inline-flex items-center justify-center gap-2 ${sizing} rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2`,
+    style: {
+      background: "transparent",
+      color: dark ? F.bone : F.ink,
+      border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`,
+      fontFamily: SANS,
+      fontWeight: 500,
+    } as React.CSSProperties,
+  };
+}
+
+/**
+ * PRIMARY + LINK — the WhatsApp conversion (gy-e9h9y).
+ *
+ * 🔴 THIS MUST BE A REAL <a href>, NEVER <button> + window.open, and that is the
+ * single thing in this bead that must not be got wrong. A fake link breaks
+ * cmd/middle-click "open in new tab", right-click "Copy link address", and is
+ * announced as a button rather than a link by screen readers. Making the site's
+ * primary conversion a fake link is a real regression AND an invisible one:
+ * every smoke test we have asserts the LABEL, so all of them would still pass.
+ *
+ * No WhatsApp green (AC4): #25D366 beside our amber reads as third-party chrome
+ * pasted into the page, and "this is the main action here" is a hierarchy
+ * statement that belongs in our own palette. The glyph carries the channel
+ * recognition instead, at zero token cost.
+ */
+export function WhatsAppCTA({ dark, size = "md", location, className = "", children }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children: React.ReactNode }) {
+  const v = ctaVisual("primary", { dark, size });
+  return (
+    <a
+      href={WHATSAPP}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackCta("whatsapp_cta_click", location)}
+      data-cta="whatsapp"
+      data-cta-location={location}
+      className={`${v.className} ${className}`}
+      style={v.style}
+    >
+      <WhatsAppGlyph />
+      {children}
+    </a>
+  );
+}
+
+/**
+ * SECONDARY + SCROLL — the demoted waitlist (gy-e9h9y).
+ *
+ * 🔴 DEMOTION MEANS LOWER VISUAL WEIGHT, NOT LOWER REACHABILITY. This stays a
+ * full-size outline BUTTON with the same h-12 hit target, sitting immediately
+ * beside the primary. It must never become a text link: the waitlist is still
+ * the only capture we own that produces a ROW, and Damini's actual request
+ * (gy-becxi) is to reduce friction on exactly that path — turning it into a text
+ * link would answer her with the opposite.
+ *
+ * No arrow. The ArrowRight on the primary is doing hierarchy work and should not
+ * be duplicated onto the secondary.
+ */
+export function WaitlistCTA({ dark, size = "md", location, className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children?: React.ReactNode }) {
+  const v = ctaVisual("secondary", { dark, size });
   return (
     <button
-      onClick={() => scrollToId("cta")}
-      className={`inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]"} ${className}`}
-      style={{ background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}
+      onClick={() => { trackCta("waitlist_cta_click", location); scrollToId("cta"); }}
+      data-cta="waitlist"
+      data-cta-location={location}
+      className={`${v.className} ${className}`}
+      style={v.style}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * PRIMARY + SCROLL — a lone waitlist CTA.
+ *
+ * Kept, and kept primary, at the three placements where it is the ONLY call to
+ * action (gallery, footer, compare-page hero is a pair and is handled there).
+ * See the commit message for why a lone waitlist CTA was not converted to
+ * WhatsApp: demoting the only on-site capture at a placement where nothing
+ * competes with it would reduce waitlist reachability, which AC8 and Damini's
+ * actual request both forbid.
+ *
+ * `location` is required so no CTA can ship untracked (AC6).
+ */
+export function PrimaryCTA({ dark, size = "md", className = "", location, children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; location: CtaLocation; children?: React.ReactNode }) {
+  const v = ctaVisual("primary", { dark, size });
+  return (
+    <button
+      onClick={() => { trackCta("waitlist_cta_click", location); scrollToId("cta"); }}
+      data-cta="waitlist"
+      data-cta-location={location}
+      className={`${v.className} ${className}`}
+      style={v.style}
     >
       {children}
       <ArrowRight size={16} aria-hidden="true" />
@@ -274,17 +420,14 @@ export function PrimaryCTA({ dark, size = "md", className = "", children = "Requ
   );
 }
 
-export function SecondaryButton({ dark, children }: { dark?: boolean; children: React.ReactNode }) {
-  return (
-    <a
-      href={WHATSAPP}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2"
-      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`, fontFamily: SANS, fontWeight: 500 }}
-    >
-      {children}
-    </a>
-  );
-}
+/* SecondaryButton (secondary + link) was REMOVED by gy-e9h9y.
+ *
+ * Both of its call sites became <WhatsAppCTA> when WhatsApp was promoted to the
+ * primary conversion, leaving it with zero consumers. It is not kept "in case":
+ * an exported primitive that nothing uses but that still looks authoritative is
+ * the same hazard as a hand-kept copy beside a generated one — the next person
+ * reaches for it, and it quietly diverges from the cell that is actually
+ * maintained. The secondary+link combination is still expressible via
+ * ctaVisual("secondary") if a real call site ever appears.
+ */
 

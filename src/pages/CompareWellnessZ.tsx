@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, WHATSAPP_PLAIN, WhatsAppButton } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -143,8 +143,8 @@ export function CompareWellnessZ() {
             </Reveal>
 
             <Reveal className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5">
-              <PrimaryCTA size="lg" />
-              <SecondaryButton>Talk to the founder</SecondaryButton>
+              <WhatsAppCTA size="lg" location="compare">Talk to the founder</WhatsAppCTA>
+              <WaitlistCTA size="lg" location="compare" />
             </Reveal>
           </div>
         </header>
@@ -363,7 +363,7 @@ export function CompareWellnessZ() {
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
               <WaitlistForm />
-              <WhatsAppButton>Talk to the founder</WhatsAppButton>
+              <WhatsAppButton location="compare">Talk to the founder</WhatsAppButton>
             </Reveal>
             <Reveal className="mt-10">
               <a href={`${HOME}#pricing`} className="text-[14px] underline underline-offset-4" style={{ color: F.boneMuted, fontFamily: SANS }}>See full Gymbo pricing →</a>

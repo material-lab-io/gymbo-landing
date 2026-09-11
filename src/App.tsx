@@ -17,7 +17,7 @@ import {
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton, WhatsAppButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton } from "./forge-ui";
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
@@ -298,8 +298,8 @@ export default function App() {
                 <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
               </p>
               <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
-                <PrimaryCTA size="lg" />
-                <SecondaryButton>Talk to us</SecondaryButton>
+                <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
+                <WaitlistCTA size="lg" location="hero" />
               </div>
               {/* Mobile/tablet keeps the approved three-phone composition below
                   the copy, scaled as one coherent image so its screens and device
@@ -422,7 +422,7 @@ export default function App() {
             <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
-              <PrimaryCTA dark size="lg" />
+              <PrimaryCTA dark size="lg" location="gallery" />
             </Reveal>
           </div>
         </section>
@@ -556,7 +556,7 @@ export default function App() {
 
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
               <WaitlistForm />
-              <WhatsAppButton>Talk to the founder</WhatsAppButton>
+              <WhatsAppButton location="cta-section">Talk to the founder</WhatsAppButton>
             </Reveal>
 
           </div>
@@ -607,7 +607,7 @@ export default function App() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)", background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(12px)", WebkitBackdropFilter: "saturate(140%) blur(12px)", borderTop: "1px solid var(--c-line)", transform: showStickyCTA ? "translateY(0)" : "translateY(120%)" }}
       >
-        <PrimaryCTA size="lg" className="w-full" />
+        <PrimaryCTA size="lg" className="w-full" location="footer" />
       </div>
     </div>
   );
