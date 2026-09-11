@@ -1,0 +1,6 @@
+{
+  "repo": "material-lab-io/Gymbo-v1",
+  "path": "design-tokens/dist",
+  "sha": "2656eb128c3bb8272a69b054d0179917aaaed53e",
+  "why": "Forge SSOT is produced in Gymbo-v1 design-tokens/ and vendored here (pm ruling gy-1phkc, 2026-09-11: vendored + pinned sha, not a published package). src/forge/*.css are GENERATED from this commit by scripts/sync-forge-tokens.mjs. Repin with --pin <sha> after a producer token change."
+}

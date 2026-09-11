@@ -90,6 +90,27 @@ jobs:
       - name: Typecheck (fails fast, before the expensive gates)
         run: npm run typecheck
 
+      # gy-a2xps.9 — the public media surface. Both steps are STATIC (no network,
+      # no database, no browser), so they run before the build and fail in
+      # seconds rather than after it.
+      - name: "gy-a2xps.9: Forge token drift on the media pages"
+        run: node scripts/check-forge-token-drift.mjs
+        # functions/m/*.js inline their design tokens because a Pages Function
+        # cannot import the hashed Vite bundle. That second copy is CHECKED here
+        # against src/forge/forge.css, so drift is a red test rather than a public
+        # page that quietly stops looking like Gymbo. The script carries its own
+        # positive control and exits 2 if it cannot read forge.css at all —
+        # a zero it cannot substantiate is a failure, not a pass.
+
+      - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
+        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs
+        # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
+        # stored fields, and REFUSES to render media when provenance is missing
+        # or the asset is withdrawn — a CC-BY-SA clip published without its
+        # credit is a licence breach, so fail-closed is the load-bearing case.
+        # Mutation-tested 2026-09-09: forcing attributionIsComplete() true turns
+        # 2 red, removing the availability check turns 1 red, restoring is green.
+
       # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
       #
       # WHAT IT GATES — and ONLY this: the marketing screenshot masters under
@@ -157,6 +178,19 @@ jobs:
 
       - run: npm run build
 
+      # gy-a2xps.9 — runs AFTER the build because it scans the built bundle, and
+      # BEFORE the deploy because its whole job is to stop one.
+      - name: "gy-a2xps.9: no server credential in the built bundle"
+        run: node scripts/check-no-service-key-in-bundle.mjs
+        # The public media page reads exercise_media with the service_role key,
+        # which bypasses RLS on every table. That is safe ONLY because the key
+        # lives in a Pages Function and is never bundled — an invariant that is
+        # invisible in review and catastrophic to lose (rotate-everything, not
+        # fix-forward). Leads with a positive control and exits 2 if it cannot
+        # find a known string in dist/, because an empty or unbuilt dist reports
+        # the same reassuring zero as a clean one.
+        # Mutation-tested 2026-09-09: planting the var name in dist/ exits 1.
+
       - name: Photoreal-device gate (built output)
         run: node scripts/check-photoreal-device.mjs --dist
 
@@ -193,6 +227,21 @@ jobs:
       # emulator — a PR that changes rendering with no snapshot update fails
       # here. Non-zero exit fails the job → the deploy step below is skipped.
       # Blocks bad builds from going live.
+      # gy-t9mm8 AC5 — the ONE client journey, in a real browser, against the
+      # Cloudflare Pages EMULATOR (functions/ do not run under `vite preview`).
+      # Runs after Chromium is installed and before the deploy, so a broken
+      # client page stops the release rather than being found by a client.
+      - name: "gy-t9mm8: client workout journey (real browser, no login)"
+        run: ./scripts/run-client-journey.sh
+        # Opens the link in a FRESH context with no storage — "no login required"
+        # is only proven from a device that has never seen Gymbo. Asserts the
+        # video actually DECODED A FRAME (currentTime > 0, not merely present in
+        # the DOM), and asserts the tick-off AFTER A RELOAD so it can only pass
+        # if the write really happened.
+        # Mutation-tested 2026-09-09: a mock that returns 201 but drops the write
+        # FAILS this journey (the exact "test passes without the feature" defect
+        # the bead names as its anti-goal); 404ing the video bytes also fails it.
+
       - name: Pre-deploy smoke gate
         run: |
           # gy-cjdtw: per-run free ports so concurrent jobs on the shared
@@ -222,6 +271,25 @@ jobs:
           # page or a console error must never reach production.
           bash scripts/getgymbo-smoke.sh "$BASE" || RC=1
           node scripts/console-check.mjs "$BASE" || RC=1
+
+          # gy-9ggf3 — every choice on the takedown form must be READABLE, not
+          # merely present. The Reason <select> clipped its longest option ("It
+          # shows me and I did not agree to this use" — the one an actual
+          # rightsholder picks) while every DOM assertion passed: the option was
+          # in the markup and the select existed, and a natively-clipped select
+          # reports scrollWidth === clientWidth, so the browser does not tell you
+          # either. This measures the text in the control's own font against the
+          # padded box.
+          #
+          # 390 is the iPhone-class width the defect was found at; 320 is the
+          # narrowest phone still in real use, and a control that fits at 390 can
+          # still clip at 320 — checking one width would rebuild the same blind
+          # spot one size down.
+          #
+          # The script exits 2 (not 0) if it finds nothing to measure, so a page
+          # that changes shape underneath it fails rather than passing silently.
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 390 || RC=1
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 320 || RC=1
 
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the

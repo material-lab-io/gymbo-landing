@@ -1,13 +1,33 @@
+/* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
+ * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.css
+ * Pinned at commit: 2656eb128c3bb8272a69b054d0179917aaaed53e
+ *
+ * Regenerate:  node scripts/sync-forge-tokens.mjs
+ * Verify:      node scripts/sync-forge-tokens.mjs --check
+ *
+ * Edits here are erased by the next sync AND fail CI immediately. Token
+ * changes belong in the producer (Gymbo-v1 design-tokens/), then repin:
+ *   node scripts/sync-forge-tokens.mjs --pin <producer-sha>
+ */
 /**
  * Do not edit directly, this file was auto-generated.
  */
 
 :root {
-  --g-color-brand-amber-500: #f59e0b; /** LIGHT-mode brand fill — FINAL (GYM-592). amber-500. Light CTA treatment (FORGE §7, kaushik 2026-06-16): flat fill + soft NEUTRAL shadow + dark ink, NO colored border — shadow carries the 1.4.11 boundary. */
+  --g-alpha-whisper: 0.04; /** Barely-there wash. Zebra rows, hover tints on large surfaces. DECORATION ONLY — cannot carry a boundary. */
+  --g-alpha-hairline: 0.08; /** Default separator weight — dividers, card hairlines, inactive tracks. DECORATION ONLY. The single most common step (35 of 83 web uses fold here). */
+  --g-alpha-subtle: 0.14; /** Raised/hovered surface tint, selected-chip fill, focus wash. DECORATION ONLY. */
+  --g-alpha-muted: 0.22; /** Strongest decorative tint — pressed states, emphasis fills behind text. DECORATION ONLY; still below any contrast floor. */
+  --g-alpha-veil: 0.6; /** Secondary/tertiary foreground on its own ground. The ONE step permitted on text — and only when the composited result is measured to meet WCAG 1.4.3 (§9). */
+  --g-alpha-surface: 0.7; /** The step at which a TINT stops being decoration and becomes a SURFACE that can carry content. The ONE tint step on which foreground ink may meet WCAG 1.4.3 — and only when the composited result is MEASURED against that specific ground; the alpha alone guarantees nothing. Ruled by Kaushik 2026-09-07 for the bottom-nav active-state CTAs (gy-adwkb), where .black on gBrandFill at this step measures 12.05:1 light / 6.49:1 dark against a 4.5:1 bar, versus 1.67:1 at `muted`. */
+  --g-alpha-scrim: 0.75; /** Modal/sheet backdrop over content. Occlusion, not decoration. */
+  --g-color-brand-amber-500: #f59e0b; /** LIGHT-mode brand fill — FINAL (GYM-592). amber-500. Light CTA treatment (FORGE §7, kaushik 2026-06-16, AMENDED 2026-09-06 GO via mayor 05:31Z, gy-w2luq): flat fill + a 1pt INK OUTLINE RING (Color.gForeground @ alpha 0.478, light mode only) carries the 1.4.11 boundary — NOT a shadow. The original 'soft NEUTRAL shadow' clause is RETIRED: implemented faithfully it measures 1.36:1 at absolute-maximum stacking against a 3:1 requirement (needs ~0.42, ~3x the token, which renders as the hard grey edge the clause existed to avoid) — a measured impossibility, not a tuning gap. The adaptive gShadow token (Color+Theme.swift, 13 consumers) was also checked and measures 1.03:1 dark / 1.20:1 light — incapable in both modes; do not re-propose it for this boundary. Dark mode is unchanged and gets no ring: its fill already passes at 11.86:1. */
   --g-color-brand-marigold-500: #fbbf24; /** DARK-mode brand fill — FINAL (GYM-592). amber-400. (Doubles as brand-as-text on dark, 11.86:1.) */
   --g-color-brand-amber-text-light: #92400e; /** light brand-as-text NORMAL — RATIFIED (GYM-592). amber-800. 6.78:1 on #fafaf7 / 5.87:1 on card — AA ✓. */
   --g-color-brand-amber-text-light-hc: #78350f; /** light brand-as-text HIGH-CONTRAST — GYM-592. amber-900. 8.68:1 on #fafaf7 / 7.52:1 on card — AAA ✓. */
   --g-color-brand-marigold-text-dark-hc: #fcd34d; /** dark brand-as-text HIGH-CONTRAST — GYM-592. amber-300. 13.73:1 on #0A0A0A / 12.78:1 on card — AAA ✓. (NORMAL = marigold-500 #FBBF24.) */
+  --g-color-mark-amber: #ff9800; /** mark glyph color for DARK grounds (gy-c571s). Backs GymboMarkOnDark.imageset (iOS) / gymbo-mark-amber-ff9800.svg (web). */
+  --g-color-mark-deep: #9d3900; /** mark glyph color for LIGHT grounds (gy-c571s). Backs GymboMarkOnBrand.imageset (iOS) / gymbo-mark-darkorange-9d3900.svg (web). */
   --g-color-neutral-dark-0: #0a0a0a; /** page bg / near-black */
   --g-color-neutral-dark-1: #141414; /** card */
   --g-color-neutral-dark-2: #1c1c1e; /** floating card */
@@ -62,24 +82,30 @@
   --g-icon-xxl: 36px;
   --g-icon-nav: 22px; /** documented bottom-nav exception */
   --g-size-button-height: 48px;
-  --g-size-cta-height: 56px;
+  --g-size-cta-height: 56px; /** 🔴 NOT FOR iOS — FOUNDER-RETIRED ON THE APP, 2026-06-14. Kaushik: "48 everywhere, 56 too big" (recorded verbatim at ios/Gymbo/Config/Theme.swift:38, commit 2e481f883, gy-xi58z "ONE button height = 48 (was 56)"). iOS has NO 56pt CTA constant and must not gain one: Theme.buttonHeight = 48 is the single button height, 44 is the HIG floor only. This token is kept ONLY because the WEB side may still consume --g-size-cta-height, and whether 56 also goes from web is Kaushik's call, escalated by pm 2026-09-07 (gy-3p7w8) — NOT deleted silently, because an unexplained disappearance is the same defect class as a wrong value. Sizing an iOS CTA from this token contradicts an explicit founder ruling while appearing to conform to the design system. */
+  --g-tile-sm: 28px; /** compact tile footprint — dense chips / summaries (e.g. GymboPackageBadge .inline; price hidden < 32) */
+  --g-tile-md: 40px; /** standard tile footprint — row leading-icon slot (e.g. GymboPackageBadge .leading). 40pt > largest icon glyph (36) because a tile is a CONTAINER, not a glyph */
+  --g-clearance-bottom-bar: 100px; /** content clearance above the bottom nav bar (nav bar + safe area); every page that scrolls under the bar (= Theme.bottomBarClearance) */
+  --g-clearance-pinned-cta: 96px; /** clearance above a fixed bottom CTA; pages with a pinned CTA (= Theme.pinnedCTAClearance) */
+  --g-clearance-schedule: 198px; /** composed schedule-viewport bottom inset (bar + panel) (= Theme.scheduleViewportBottomInset) */
   --g-font-family-serif: Merriweather, Georgia, serif; /** page headers + client names ONLY */
   --g-font-family-sans: 'Open Sans', system-ui, sans-serif; /** everything else */
   --g-font-weight-regular: 400;
   --g-font-weight-medium: 500;
   --g-font-weight-bold: 700;
-  --g-font-size-micro: 10px;
+  --g-font-size-micro: 11px; /** 11px hard minimum (gy-hhgqi DS2, ratified 2026-06-23). Equals size-section-label (11) but a distinct role (micro = tab labels/footers/cards) — kept separate by design */
   --g-font-size-section-label: 11px;
   --g-font-size-label: 12px;
   --g-font-size-body: 14px;
   --g-font-size-headline: 16px;
   --g-font-size-title: 20px;
   --g-font-size-keypad: 24px;
-  --g-font-size-card-name: 26px;
+  --g-font-size-card-name: 26px; /** carousel-card client/trainee name (Merriweather 26) — HARD CAP, never enlarge a smaller name (kaushik 2026-06-17) */
+  --g-font-size-card-name-list: 20px; /** client/trainee name in LIST rows (Merriweather 20). 16/22/28 drift collapses to this + size-card-name (kaushik 2026-06-17) */
   --g-font-size-amount: 32px;
   --g-font-size-page-header: 36px;
   --g-font-size-hero: 48px;
-  --g-shadow-cta: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** soft NEUTRAL shadow for primary CTA + light status-fill boundary (1.4.11) — flat fill, NO colored border. FORGE §7 (kaushik 2026-06-16). */
+  --g-shadow-cta: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** 🔴 NOT AN ACCESSIBILITY BOUNDARY — this is the raw shadow value only. Its former role as the primary-CTA 1.4.11 boundary is RETIRED (FORGE §7, amended 2026-09-06; gy-w2luq): the soft-neutral-shadow route measures 1.36:1 at absolute-maximum stacking against a 3:1 requirement, which is a measured impossibility rather than a tuning gap. What ships for the primary CTA is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose any shadow route for that boundary. ⚠️ STILL OPEN, NOT RETIRED BY THE ABOVE: the light status-fill boundary (see color.status.warning-light, fill-vs-card 2.95:1) also routes through this token, and the §7 amendment was scoped to the PRIMARY CTA only. Whether the same impossibility applies there is UNMEASURED (designer 2026-09-08, gy-3p7w8). This token neither ratifies nor retires that use — it needs a measurement, and until then do not cite this description either way. Not consumed by iOS: iOS has its own adaptive gShadow. Full ruling lives on the semantic aliases (cta-shadow in semantic/light.json and semantic/dark.json). 🔴 THIS DESCRIPTION CITES §7 RATHER THAN RESTATING IT, DELIBERATELY. The previous text restated §7's content, so when §7 was amended on 2026-09-06 it aged SILENTLY and kept publishing the retired instruction under a founder's name in dist/forge.css while the semantic aliases already said RETIRED. A restatement ages invisibly; a citation ages visibly. Do not replace this with a paraphrase. */
   --g-background: var(--g-color-neutral-light-0);
   --g-card: var(--g-color-neutral-light-1);
   --g-card-floating: var(--g-color-neutral-light-2);
@@ -91,6 +117,8 @@
   --g-text-placeholder: var(--g-color-grey-placeholder-light);
   --g-text-placeholder-elevated: var(--g-color-grey-placeholder-light);
   --g-text-brand: var(--g-color-brand-amber-text-light); /** light brand-as-text (designer proposal, GYM-592) */
+  --g-mark-on-dark: var(--g-color-mark-amber); /** brand MARK glyph color for use on a DARK ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule — pick by the ground the glyph sits on, not by theme file. Same value in semantic/dark.json (ground-named tokens are theme-independent by design). */
+  --g-mark-on-light: var(--g-color-mark-deep); /** brand MARK glyph color for use on a LIGHT ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule. Same value in semantic/dark.json. */
   --g-text-healthy: var(--g-color-status-green-text);
   --g-text-destructive: var(--g-color-status-destructive-light);
   --g-text-system-blue: var(--g-color-system-blue);
@@ -104,5 +132,5 @@
   --g-focus-ring: var(--g-color-brand-amber-text-light);
   --g-cursor: var(--g-color-system-blue);
   --g-text-link: var(--g-color-neutral-light-fg); /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
-  --g-cta-shadow: var(--g-shadow-cta); /** primary CTA = flat fill + this soft neutral shadow, no colored border (§7) */
+  --g-cta-shadow: var(--g-shadow-cta); /** 🔴 RETIRED AS THE PRIMARY-CTA BOUNDARY (FORGE §7, amended 2026-09-06; gy-w2luq). The soft-neutral-shadow route CANNOT carry a 1.4.11 boundary: measured 1.36:1 at absolute-maximum stacking against a 3:1 requirement, and reaching 3:1 needs ~3x the token alpha, which renders as the hard grey edge §7 existed to avoid. What ships instead is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose either shadow route for that boundary. This token remains only for any non-boundary decorative use; it is NOT the CTA's accessibility boundary and must not be cited as one. */
 }

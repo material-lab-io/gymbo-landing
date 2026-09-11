@@ -237,3 +237,46 @@ test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', asy
   expect(subFamily).toContain('Open Sans');
   expect(subFamily).not.toContain('Merriweather');
 });
+
+/**
+ * gy-e9h9y — THE WHATSAPP PRIMARY MUST BE A REAL LINK, NOT A FAKE ONE.
+ *
+ * 🔴 WHY THIS ASSERTS THE TAG NAME. Every other CTA assertion in this file
+ * checks a LABEL. A <button onClick={window.open}> wearing the same amber
+ * styling and the same words passes all of them, while breaking cmd/middle-click
+ * "open in new tab", right-click "copy link address", and screen-reader
+ * announcement — silently, because nothing visible changes.
+ *
+ * 🔴 AND WHY IT ADDRESSES data-cta, NOT a[href*="wa.me"]. The first version of
+ * this test used the href selector and PASSED against a deliberately seeded fake
+ * link, because `.first()` matched a DIFFERENT, still-real anchor further down
+ * the page (the footer contact link). It was asserting "some wa.me anchor
+ * exists" — true both before and after the defect. A control must fire on the
+ * specific element under test, or it is measuring something else and reporting
+ * it as the thing you asked about.
+ *
+ * It deliberately does not assert CTA wording: copy PRs #104/#121 are open and
+ * this shape composes with whichever lands.
+ */
+test('the hero WhatsApp CTA is a real anchor, and the hero waitlist stays a full button (gy-e9h9y)', async ({ page }) => {
+  await page.goto('/');
+
+  const primary = page.locator('[data-cta="whatsapp"][data-cta-location="hero"]');
+  await expect(primary).toHaveCount(1);
+  // The discriminating assertion: a fake link would be a BUTTON here.
+  expect(await primary.evaluate((el) => el.tagName)).toBe('A');
+  await expect(primary).toHaveAttribute('href', /wa\.me/);
+  await expect(primary).toHaveAttribute('target', '_blank');
+  await expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
+
+  // The waitlist demotes in VISUAL WEIGHT ONLY. It must still be a button with a
+  // full hit target — never a text link — because it is the only capture that
+  // produces a row, and reducing its reachability would answer the founder's
+  // friction request with the opposite.
+  const waitlist = page.locator('[data-cta="waitlist"][data-cta-location="hero"]');
+  await expect(waitlist).toHaveCount(1);
+  expect(await waitlist.evaluate((el) => el.tagName)).toBe('BUTTON');
+  const box = await waitlist.boundingBox();
+  expect(box, 'waitlist CTA must render a real box, not inline text').not.toBeNull();
+  expect(box!.height, 'waitlist CTA must keep a full-size hit target, not become a text link').toBeGreaterThanOrEqual(44);
+});

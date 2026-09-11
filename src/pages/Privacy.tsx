@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 25 July 2026"
+        updated="Last updated 9 September 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -20,7 +20,7 @@ export function Privacy() {
           <ul>
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you log, and the payments and balances you record. You enter this information, and you decide what to add.</li>
-            <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and email you submit.</li>
+            <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and the phone number and/or email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com — aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
             <li><strong>Product analytics in the app.</strong> We record how the app is used — screens opened, features used, and errors — with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier, plus, when an action is about a client, the class or payment amount involved — never anything that identifies that client. Your clients' names, phone numbers, contact details, notes, and internal IDs are never sent. You control this under Settings → Privacy; when it is off, we send no usage events and none of your name, phone number, or activity — the app does still briefly contact PostHog's servers at launch to fetch configuration, which shares your device's IP address but no personal or usage data.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
