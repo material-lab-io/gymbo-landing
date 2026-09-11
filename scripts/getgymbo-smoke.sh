@@ -122,6 +122,40 @@ else
   log "WARN product-contract.json or jq unavailable — skipping contract assertions"
 fi
 
+# --- 9. THE SERVER-RENDERED SURFACES CAN ACTUALLY REACH THE DATABASE (gy-gcr22) ---
+#
+# 🔴 READ THIS BEFORE "SIMPLIFYING" IT TO A CHECK ON /w/ OR /m/.
+#
+# /w/<token> and /m/<id> were 100% dead in production from the day they shipped
+# and nothing here noticed, because the Pages production environment had no
+# SUPABASE_SERVICE_ROLE_KEY: every read 401'd and both handlers fell through to
+# their UNIFORM REFUSAL. That refusal is a deliberate privacy property -- an
+# expired-vs-unknown distinction is an oracle for a token guesser -- but it also
+# makes a total outage byte-for-byte identical to a correct refusal.
+#
+# Measured 2026-09-11: a VALID prod-minted token and the string "not-a-token"
+# both returned HTTP 404 at exactly 3884 bytes. Every check we had was a refusal
+# check, and every one of them passed. A control that cannot fail is not a
+# control, so the probe has to ask the question those routes cannot answer.
+ENDPOINT="$URL/api/health"
+HEALTH_FILE="$(mktemp)"
+HCODE="$(curl -sL --compressed --max-time 20 -o "$HEALTH_FILE" -w '%{http_code}' "$ENDPOINT" 2>/dev/null)"
+HBODY="$(tr -d '\n' < "$HEALTH_FILE")"
+if [ "$HCODE" = "200" ] && printf '%s' "$HBODY" | grep -q '"db":"ok"'; then
+  log "OK   /api/health: server-side database read succeeds"
+elif printf '%s' "$HBODY" | grep -q '"db":"unconfigured"'; then
+  fail "/api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/ are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change."
+elif printf '%s' "$HBODY" | grep -q '"db":"rejected"'; then
+  fail "/api/health: PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/ are dead. Not the same as an absent binding."
+elif [ "$HCODE" = "404" ]; then
+  # Distinguishing an un-deployed probe from a failing one matters: "the check is
+  # not there" must never read as "the check passed".
+  fail "/api/health returned 404 — the probe itself is not deployed, so DB reachability is UNKNOWN, not OK."
+else
+  fail "/api/health HTTP $HCODE body=$(printf '%s' "$HBODY" | head -c 200)"
+fi
+rm -f "$HEALTH_FILE"
+
 echo "=== getgymbo smoke ($URL) ==="
 echo "$OUT"
 if [ "$FAIL" = "1" ]; then echo "RESULT: FAIL (gate would block deploy)"; exit 1; else echo "RESULT: PASS"; exit 0; fi

@@ -82,7 +82,7 @@ jobs:
         # a zero it cannot substantiate is a failure, not a pass.
 
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
-        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs
+        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
         # stored fields, and REFUSES to render media when provenance is missing
         # or the asset is withdrawn — a CC-BY-SA clip published without its
