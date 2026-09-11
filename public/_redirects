@@ -2,3 +2,8 @@ https://www.getgymbo.com/* https://getgymbo.com/:splat 301
 
 # Instagram bio short-link → UTM-tagged homepage (so Umami attributes IG traffic)
 /ig https://getgymbo.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio 301
+
+# Referral short-link (gy-ufxgo) — :token is server-minted and opaque, never the raw
+# code a trainer shares. Same shape as /ig above; capture of the resulting UTM params
+# into the waitlist row is gy-0v33y, separate and still in progress.
+/r/:token https://getgymbo.com/?utm_source=referral&utm_medium=referral&utm_campaign=:token 301
