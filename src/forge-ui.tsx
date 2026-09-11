@@ -77,7 +77,80 @@ export const SHADOW = {
 export const SERIF = "var(--font-serif)"; // Merriweather
 export const SANS = "var(--font-sans)"; // Open Sans
 
-export const WHATSAPP = "https://wa.me/918050131733?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo";
+/**
+ * 🔴 THE FOUNDER LINE. +91 80501 31733 is Kaushik's, confirmed by him 2026-09-10.
+ *
+ * DO NOT "fix" the fact that Damini's outreach signature carries a different
+ * number (wa.me/message/XBV6ZBNZOHOBM1). Inbound-from-site and outbound-to-lead
+ * are deliberately different channels; making them match would merge two
+ * conversations that are meant to stay apart.
+ *
+ * Hoisted here by gy-e9h9y AC2 because the bare URL was written out by hand in
+ * three footers (App.tsx, PageShell.tsx, CompareWellnessZ.tsx) plus this
+ * constant — four independent copies of one phone number, which is three
+ * opportunities for it to be changed in only some of them.
+ */
+const WHATSAPP_NUMBER = "918050131733";
+
+/** Bare chat link, no prefilled message. For contact listings (footers). */
+export const WHATSAPP_PLAIN = `https://wa.me/${WHATSAPP_NUMBER}`;
+
+/**
+ * Chat link with the visitor's intent prefilled. For CTAs.
+ *
+ * AC2 asked for "one shape for prefilled text". The honest answer is TWO shapes
+ * over ONE number, and that is deliberate rather than a dodge: the thing that
+ * must never diverge is the NUMBER, and it no longer can. The prefill is a
+ * per-intent choice — a CTA states why the visitor is writing ("I'd like to try
+ * Gymbo"), whereas a footer contact link is used for support and billing too,
+ * and stuffing trial intent into a support message would put words in the
+ * sender's mouth. Collapsing these into one URL would be tidier and wrong.
+ *
+ * The query string is kept byte-identical to the pre-hoist literal (%27 for the
+ * apostrophe, which encodeURIComponent does NOT produce) so this stays a pure
+ * refactor with no change to the rendered href.
+ */
+export const WHATSAPP = `${WHATSAPP_PLAIN}?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo`;
+
+/**
+ * The WhatsApp glyph. Was copy-pasted verbatim into App.tsx and
+ * CompareWellnessZ.tsx (gy-e9h9y AC2).
+ */
+export function WhatsAppGlyph({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+    </svg>
+  );
+}
+
+/**
+ * The dark-surface WhatsApp button used in the closing CTA section.
+ *
+ * This whole <a> — classes, inline style and label — was duplicated BYTE FOR
+ * BYTE in App.tsx and CompareWellnessZ.tsx. gy-e9h9y AC2 described the glyph as
+ * the copy-pasted part; measured, the entire button was.
+ *
+ * 🔴 It is a THIRD visual variant, outside the primary/secondary pair in
+ * forge-ui — a neutral-dark surface rather than either. Hoisting it does not
+ * bless it; it makes the fact that a third variant exists visible in one place
+ * so gy-e9h9y's shape work can decide what happens to it, instead of that
+ * decision being spread across two files.
+ */
+export function WhatsAppButton({ children }: { children: React.ReactNode }) {
+  return (
+    <a
+      href={WHATSAPP}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]"
+      style={{ background: "var(--g-color-neutral-dark-1)", color: F.bone, border: "1px solid var(--g-color-grey-placeholder-dark)", fontFamily: SANS }}
+    >
+      <WhatsAppGlyph />
+      {children}
+    </a>
+  );
+}
 
 /** Smooth-scroll to an in-page anchor by id (used by CTAs + nav). */
 export function scrollToId(id: string) {
