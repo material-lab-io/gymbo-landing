@@ -136,23 +136,62 @@ fi
 # Measured 2026-09-11: a VALID prod-minted token and the string "not-a-token"
 # both returned HTTP 404 at exactly 3884 bytes. Every check we had was a refusal
 # check, and every one of them passed. A control that cannot fail is not a
-# control, so the probe has to ask the question those routes cannot answer.
+# control, so the probe asks the question those routes cannot answer.
+#
+# 🔴 WHEN THIS IS *REQUIRED*, AND WHY IT IS NOT ALWAYS.
+# The first version of this check failed the PRE-DEPLOY gate and the gate
+# self-test fixtures, because both target things that legitimately have no
+# database: deploy.yml runs against a local Pages EMULATOR with no bindings, and
+# the self-test fixtures are a static python http.server. As written it would
+# have BLOCKED EVERY DEPLOY of getgymbo.com until the production binding landed
+# -- turning a prod misconfiguration into a total shipping freeze. A monitoring
+# probe had been wired in as a release gate.
+#
+# So it is required exactly where a database is genuinely expected:
+#   * ALWAYS for production, keyed off the URL itself -- NOT off an env var.
+#     A flag that must be remembered is a flag that gets dropped, and dropping
+#     it here would silently restore the exact blindness this check exists to
+#     end. There is deliberately no way to switch it off for getgymbo.com.
+#   * Otherwise opt-in via SMOKE_EXPECT_DB=1, which the gate self-test sets so
+#     it can prove BOTH directions of this check on fixtures.
+# When it is not required the probe STILL RUNS and STILL REPORTS. It is never
+# silently skipped: an unreported check and a passing one must not look alike.
+DB_REQUIRED=0
+case "$URL" in
+  https://getgymbo.com|https://getgymbo.com/|https://www.getgymbo.com*) DB_REQUIRED=1 ;;
+esac
+[ "${SMOKE_EXPECT_DB:-}" = "1" ] && DB_REQUIRED=1
+
 ENDPOINT="$URL/api/health"
 HEALTH_FILE="$(mktemp)"
 HCODE="$(curl -sL --compressed --max-time 20 -o "$HEALTH_FILE" -w '%{http_code}' "$ENDPOINT" 2>/dev/null)"
 HBODY="$(tr -d '\n' < "$HEALTH_FILE")"
-if [ "$HCODE" = "200" ] && printf '%s' "$HBODY" | grep -q '"db":"ok"'; then
-  log "OK   /api/health: server-side database read succeeds"
-elif printf '%s' "$HBODY" | grep -q '"db":"unconfigured"'; then
-  fail "/api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/ are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change."
-elif printf '%s' "$HBODY" | grep -q '"db":"rejected"'; then
-  fail "/api/health: PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/ are dead. Not the same as an absent binding."
-elif [ "$HCODE" = "404" ]; then
-  # Distinguishing an un-deployed probe from a failing one matters: "the check is
-  # not there" must never read as "the check passed".
-  fail "/api/health returned 404 — the probe itself is not deployed, so DB reachability is UNKNOWN, not OK."
+
+db_verdict() {
+  if [ "$HCODE" = "200" ] && printf '%s' "$HBODY" | grep -q '"db":"ok"'; then
+    echo "OK|server-side database read succeeds"
+  elif printf '%s' "$HBODY" | grep -q '"db":"unconfigured"'; then
+    echo "FAIL|SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/ are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change."
+  elif printf '%s' "$HBODY" | grep -q '"db":"rejected"'; then
+    echo "FAIL|PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/ are dead. Not the same as an absent binding."
+  elif [ "$HCODE" = "404" ]; then
+    # "The check is not there" must never read as "the check passed".
+    echo "FAIL|/api/health returned 404 — the probe itself is not deployed, so DB reachability is UNKNOWN, not OK."
+  else
+    echo "FAIL|/api/health HTTP $HCODE body=$(printf '%s' "$HBODY" | head -c 200)"
+  fi
+}
+DB_RESULT="$(db_verdict)"
+DB_STATE="${DB_RESULT%%|*}"
+DB_MSG="${DB_RESULT#*|}"
+
+if [ "$DB_STATE" = "OK" ]; then
+  log "OK   /api/health: $DB_MSG"
+elif [ "$DB_REQUIRED" = "1" ]; then
+  fail "/api/health: $DB_MSG"
 else
-  fail "/api/health HTTP $HCODE body=$(printf '%s' "$HBODY" | head -c 200)"
+  # Reported, attributable, and explicitly not counted -- not skipped in silence.
+  log "INFO /api/health not required for this target (no database expected here; production always requires it). Observed: $DB_MSG"
 fi
 rm -f "$HEALTH_FILE"
 
