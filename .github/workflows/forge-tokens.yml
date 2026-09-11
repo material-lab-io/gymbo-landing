@@ -32,8 +32,94 @@ jobs:
         with:
           node-version: 22
 
+      # gy-1phkc: the Forge PRODUCER lives in Gymbo-v1. Until this bead, this repo
+      # carried an unsynced hand-kept copy and the drift gate below defined SSOT as
+      # that copy — so a green meant "internally consistent" and could never mean
+      # "matches the design system". It was green while 17 tokens were missing and
+      # --g-font-size-micro was 10px against the ratified 11px floor (gy-hhgqi DS2).
+      #
+      # fetch-depth: 0 is REQUIRED, not tidiness — both gates below read the producer
+      # AT A PINNED SHA via `git show`, and a shallow clone does not contain it. Both
+      # exit 2 ("could not look") rather than passing if it is missing.
+      #
+      # GYMBO_V1_PAT already exists in this repo for render-hero-video.yml; this adds
+      # no new infrastructure, which is part of why pm ruled vendored+pinned over a
+      # published package.
+      - name: Check out the Forge producer (Gymbo-v1)
+        uses: actions/checkout@v4
+        with:
+          repository: material-lab-io/Gymbo-v1
+          token: ${{ secrets.GYMBO_V1_PAT }}
+          path: .forge-producer
+          fetch-depth: 0
+
+      # Does the vendored mirror match the pinned producer commit, byte for byte?
+      - name: Forge sync — src/forge/ matches the pinned producer
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: node scripts/sync-forge-tokens.mjs --check
+
+      # Does the PIN still match the producer's head? Without this, "vendored +
+      # pinned" degrades into the original defect with extra steps: a pin nobody
+      # touches reports green forever while Forge moves. Narrow on purpose — it
+      # fails only when the EMITTED dist files differ, not on every unrelated
+      # producer commit, because a noisy gate gets switched off.
+      - name: Forge pin is not stale
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: node scripts/check-forge-pin-fresh.mjs
+
       - name: Token drift
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: node scripts/check-forge-tokens.mjs
+
+      # 🔴 The token table must come from the PRODUCER, not from the local mirror.
+      # check-forge-tokens.mjs falls back to src/forge/ when no producer checkout is
+      # present — deliberately, so local runs work — and that fallback is exactly how
+      # this gate could silently return to being unfalsifiable if the checkout step
+      # above ever breaks or the PAT expires. A fallback that is invisible is a
+      # fail-open. Assert in CI that the real source was used.
+      - name: Negative control — the gate is reading the PRODUCER, not the local mirror
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          node scripts/check-forge-tokens.mjs | tee /tmp/forge-src.log
+          if ! grep -q 'table built from the PRODUCER' /tmp/forge-src.log; then
+            echo "::error::The token gate fell back to the local vendored mirror. Its SSOT is the copy again, which is the gy-1phkc defect. Do not trust this green."
+            exit 1
+          fi
+          echo "OK  token table sourced from the producer checkout"
+
+      # 🔴 And the cross-repo comparison itself must be shown capable of failing, in
+      # the same run that reports it passing — the standing rule in this repo and the
+      # explicit close condition on gy-1phkc. Seed a known-bad token value into the
+      # mirror and require the sync gate to reject it.
+      - name: Negative control — the sync gate must reject a hand-edited mirror
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          cp src/forge/forge.css /tmp/forge.selftest.bak
+          # A real token value, not a comment: the drift report is built by parsing
+          # token declarations, so a commented probe would be ignored for the wrong
+          # reason. Re-seed the exact defect this bead was filed for.
+          sed -i 's/--g-font-size-micro: 11px/--g-font-size-micro: 10px/' src/forge/forge.css
+          if node scripts/sync-forge-tokens.mjs --check > /tmp/forge-selftest.log 2>&1; then
+            cp /tmp/forge.selftest.bak src/forge/forge.css
+            echo "::error::NEGATIVE CONTROL FAILED — the sync gate passed a mirror whose --g-font-size-micro disagrees with the producer. This is precisely the divergence the bead was filed for; the gate is not wired. Do not trust its green."
+            cat /tmp/forge-selftest.log
+            exit 1
+          fi
+          grep -q 'font-size-micro' /tmp/forge-selftest.log || {
+            cp /tmp/forge.selftest.bak src/forge/forge.css
+            echo "::error::NEGATIVE CONTROL FAILED — the sync gate failed, but not on the seeded token. It is failing for some other reason and does not discriminate."
+            exit 1
+          }
+          cp /tmp/forge.selftest.bak src/forge/forge.css
+          echo "OK  sync gate correctly rejected a hand-edited mirror, naming the token"
+          # Prove the restore worked, so a broken restore cannot leave the tree dirty
+          # and silently pass the next step.
+          node scripts/sync-forge-tokens.mjs --check
 
       # gy-aczn1: functions/_forge.js is GENERATED from src/forge/forge.css, because
       # the Pages Functions run in a Worker and cannot import the site's CSS. A
@@ -51,6 +137,8 @@ jobs:
       # A control that only exercises one scan root cannot detect the loss of the
       # other, so both roots get one.
       - name: Negative control — the gate must reject drift in functions/ too
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp 'functions/w/[token].js' /tmp/w.selftest.bak
           # Real code, NOT a comment: the gate deliberately blanks comments so it
@@ -63,8 +151,21 @@ jobs:
             cat /tmp/selftest-fn.log
             exit 1
           fi
+          # 🔴 A NON-ZERO EXIT IS NOT PROOF OF A REJECTION. Found 2026-09-11 in run
+          # 34564110037: a ReferenceError crashed this gate at module load, the
+          # `if` below read the non-zero exit as success, and this step printed
+          # "OK gate correctly rejected drift" while the gate had not evaluated a
+          # single file. A control that accepts any failure cannot tell the rule
+          # firing from the instrument breaking. Require the seeded literal to be
+          # NAMED in the output.
+          if ! grep -q 'functions/w/\[token\].js' /tmp/selftest-fn.log; then
+            cp /tmp/w.selftest.bak 'functions/w/[token].js'
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named the seeded literal in functions/w/[token].js. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest-fn.log
+            exit 1
+          fi
           cp /tmp/w.selftest.bak 'functions/w/[token].js'
-          echo "OK  gate correctly rejected drift inside functions/"
+          echo "OK  gate correctly rejected drift inside functions/, naming the file"
           node scripts/check-forge-tokens.mjs
 
       # The gate must be shown capable of FAILING, in the same run that reports
@@ -72,6 +173,8 @@ jobs:
       # that cannot fail — which is the shape this repo already guards against in
       # gate-selftest.yml, and the reason that file exists.
       - name: Negative control — the gate must reject reintroduced drift
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp src/App.tsx /tmp/App.selftest.bak
           # Substitute a token's exact value back in as a raw literal.
@@ -82,8 +185,16 @@ jobs:
             cat /tmp/selftest.log
             exit 1
           fi
+          # Same hardening as the functions/ control above: prove the gate failed
+          # ON THE SEEDED LITERAL, not merely that it failed.
+          if ! grep -q 'src/App.tsx' /tmp/selftest.log; then
+            cp /tmp/App.selftest.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named src/App.tsx. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest.log
+            exit 1
+          fi
           cp /tmp/App.selftest.bak src/App.tsx
-          echo "OK  gate correctly rejected reintroduced drift"
+          echo "OK  gate correctly rejected reintroduced drift, naming the file"
           # And prove the restore worked, so a broken restore cannot leave the
           # tree dirty and silently pass the next step.
           node scripts/check-forge-tokens.mjs
