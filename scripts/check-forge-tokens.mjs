@@ -33,9 +33,37 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
-const ROOT = new URL('..', import.meta.url).pathname;
-const SSOT = join(ROOT, 'src/forge');
+
+// 🔴 SSOT REPOINTED AT THE PRODUCER — gy-1phkc, pm ruling 2026-09-11.
+//
+// This used to read `const SSOT = join(ROOT, 'src/forge')`, i.e. this repo's own
+// vendored copy. That made the gate UNFALSIFIABLE in the dimension that mattered:
+// it asked "is this file internally consistent?" and could never ask "does it
+// match the design system?". A green meant the local copy agreed with itself.
+// It did so while the copy was missing 17 producer tokens and carried
+// --g-font-size-micro: 10px against the producer's ratified 11px floor.
+//
+// The token table is now built from the PRODUCER's emitted CSS when a producer
+// checkout is available (CI always provides one). src/forge/ is a generated
+// mirror of exactly that, enforced byte-for-byte by
+// `sync-forge-tokens.mjs --check` in the same job — so the fallback below is a
+// convenience for local runs without a Gymbo-v1 checkout, not a second source
+// of truth. If they ever disagree, the sync gate fails first and this gate's
+// answer is moot.
+// The token table is read from the producer AT THE PINNED SHA (see
+// scripts/forge-producer.mjs for why the pin, not the worktree). src/forge/ is a
+// generated mirror of exactly those bytes, enforced by
+// `sync-forge-tokens.mjs --check` in the same CI job — so the local fallback
+// below is a convenience for developers without a Gymbo-v1 checkout, not a
+// second source of truth. CI asserts the fallback was NOT taken.
+const PRODUCER_DIR = producerDir();
+const producerCss = PRODUCER_DIR ? FILES.map((f) => readAtPin(PRODUCER_DIR, f)) : [];
+const FROM_PRODUCER = producerCss.length > 0 && producerCss.every((c) => c !== null);
+const tokenSources = FROM_PRODUCER
+  ? producerCss
+  : walk(VENDORED).map((f) => readFileSync(f, 'utf8'));
 // 🔴 functions/ JOINED THIS LIST IN gy-aczn1, AND THE OMISSION WAS NOT COSMETIC.
 // The three Cloudflare Pages Functions serve PUBLIC pages — /w/<token>, /m/<id>,
 // /m/takedown — and this gate scanned src/ and only .css/.tsx/.ts, so it was
@@ -71,8 +99,7 @@ const norm = (h) => {
 
 // Build the token table from the SSOT.
 const tokens = new Map(); // normalised hex -> token name
-for (const f of walk(SSOT)) {
-  const src = readFileSync(f, 'utf8');
+for (const src of tokenSources) {
   for (const m of src.matchAll(/(--g-[a-z0-9-]+)\s*:\s*(#[0-9a-fA-F]{3,8})\s*;/g)) {
     const k = norm(m[2]);
     if (!tokens.has(k)) tokens.set(k, m[1]);
@@ -110,7 +137,12 @@ const errors = [];
 const advisory = [];
 
 for (const f of SCAN.flatMap((d) => walk(d))) {
-  if (f.startsWith(SSOT)) continue; // the SSOT is allowed to contain literals
+  // The vendored mirror is allowed to contain literals — it IS the palette.
+  // NOTE this tests VENDORED, not SSOT: since gy-1phkc the token table may be
+  // sourced from the producer checkout, which lives outside this tree entirely,
+  // so a startsWith(SSOT) test would no longer exempt src/forge/ and the gate
+  // would flag the design system for being the design system.
+  if (f.startsWith(VENDORED)) continue;
   if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
@@ -139,4 +171,7 @@ if (errors.length) {
   process.exit(1);
 }
 
-console.log(`\nOK  no literal outside src/forge/ duplicates a Forge token (${tokens.size} tokens checked).`);
+console.log(
+  `\nOK  no literal outside src/forge/ duplicates a Forge token (${tokens.size} tokens checked, ` +
+    `table built from ${FROM_PRODUCER ? `the PRODUCER ${PIN.repo}@${PIN.sha.slice(0, 9)}` : 'the local vendored mirror — NO producer checkout found'}).`,
+);
