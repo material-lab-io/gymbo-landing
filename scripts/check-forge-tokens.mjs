@@ -200,6 +200,43 @@ function insideDir(f, dir) {
   return rel === '' || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel));
 }
 
+// ============================================================================
+// EXEMPTIONS — EACH ONE STATES WHAT IT IS FOR. (designer's standing ask, 2026-09-12,
+// arising from gy-swdgh.)
+//
+// 🔴 WHY THIS IS A TABLE AND NOT TWO `if` LINES. The gy-swdgh defect was an
+// exemption whose PURPOSE lived only in a comment: it was written to mean "the
+// src/forge/ directory", was implemented as a string prefix, and silently grew to
+// cover src/forge-ui.tsx — the one file the gate exists for. It then survived the
+// gy-1phkc refactor because a rename carried the mechanism without the intent.
+// Naming each exemption and printing what it caught makes both halves visible: if
+// an exemption starts matching something it was not written for, the COUNT moves
+// and the name no longer describes the set. A comment cannot do that.
+// ============================================================================
+const EXEMPTIONS = [
+  {
+    name: 'vendored-mirror',
+    // FOR: src/forge/ IS the palette. It is a generated mirror of the producer and
+    // is SUPPOSED to contain raw literals; flagging it would be flagging the design
+    // system for being the design system. Its fidelity is enforced elsewhere, by
+    // sync-forge-tokens.mjs --check, so exempting it here loses no coverage.
+    // NOT FOR: anything merely NAMED like it. Containment, never a prefix.
+    reason: 'the vendored mirror IS the palette; its fidelity is gated by sync-forge-tokens.mjs --check',
+    test: (f) => insideDir(f, VENDORED),
+  },
+  {
+    name: 'generated-functions-palette',
+    // FOR: functions/_forge.js only. It is GENERATED from src/forge/forge.css
+    // because Pages Functions run in a Worker and cannot import the site's CSS.
+    // Its drift is caught by gen-functions-forge-tokens.mjs --check.
+    // NOT FOR: hand-written code in functions/. That is scanned — functions/ once
+    // held 48 exact duplicates under a green check (gy-aczn1).
+    reason: 'generated from forge.css; drift gated by gen-functions-forge-tokens.mjs --check',
+    test: (f) => f === GENERATED,
+  },
+];
+const exemptedBy = new Map();
+
 // gy-73h3j: colour-at-sanctioned-alpha hits, counted per (file, literal).
 const alphaFound = new Map();
 const alphaSites = new Map();
@@ -213,8 +250,11 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
   // sourced from the producer checkout, which lives outside this tree entirely,
   // so a startsWith(SSOT) test would no longer exempt src/forge/ and the gate
   // would flag the design system for being the design system.
-  if (insideDir(f, VENDORED)) continue;
-  if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
+  const exempt = EXEMPTIONS.find((e) => e.test(f));
+  if (exempt) {
+    exemptedBy.set(exempt.name, (exemptedBy.get(exempt.name) || 0) + 1);
+    continue;
+  }
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
   lines.forEach((line, i) => {
@@ -322,6 +362,15 @@ for (const k of Object.keys(alphaBaseline)) {
       `${k} — baseline expects ${alphaBaseline[k]} instance(s), found ${n}. MIGRATED? Then delete this entry from scripts/forge-alpha-baseline.json so the list cannot rot into an exemption.`,
     );
   }
+}
+
+// 🔴 PRINT WHAT EACH EXEMPTION ACTUALLY CAUGHT. An exemption that quietly widens is
+// the gy-swdgh defect; a moving count is the cheapest possible tell, and it costs
+// two lines of output. If a name stops describing its set, that is visible here
+// BEFORE it hides a real duplicate.
+console.log('\nExemptions applied (each states what it is for — see EXEMPTIONS in this file):');
+for (const e of EXEMPTIONS) {
+  console.log(`  ${e.name}: ${exemptedBy.get(e.name) || 0} file(s) — ${e.reason}`);
 }
 
 if (errors.length) {
