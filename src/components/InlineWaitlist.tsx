@@ -1,4 +1,4 @@
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { F } from "../forge-ui";
 import { WaitlistForm } from "./WaitlistForm";
 import { WaitlistRevealContext } from "../lib/waitlistReveal";
@@ -55,7 +55,6 @@ export function InlineWaitlist({
 }) {
   const [revealed, setRevealed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const headingId = useId();
 
   // 🔴 IDEMPOTENT ON PURPOSE. A second tap on the CTA must not re-run the focus
   // effect and yank the caret out of a field the visitor is halfway through
@@ -95,17 +94,31 @@ export function InlineWaitlist({
           <div
             ref={panelRef}
             role="group"
-            aria-labelledby={headingId}
-            className={`mt-5 w-full max-w-[440px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
+            // 🔴 LABELLED, NOT HEADED. A first pass rendered a visible "Request
+            // access" line at the top of the panel and the phone capture showed
+            // the words twice, six pixels apart: once on the button just tapped
+            // and again immediately below it. The panel opens directly under its
+            // own CTA, so it needs no visible title to be understood — but it
+            // still needs an ACCESSIBLE NAME, because a screen-reader user who
+            // lands in the group after the reveal does not have that adjacency.
+            // aria-label gives the name without repeating the words on screen.
+            aria-label="Request access"
+            // 🔴 THE PANEL'S INSET IS RECLAIMED ON PHONES, AND IT IS A MEASUREMENT.
+            // A first pass used a plain p-5 and made the capture 40px NARROWER
+            // than the footer form it mirrors — the same WaitlistForm, two
+            // widths. Measured on a 375px viewport: the email placeholder
+            // ("Your email (optional if you gave a number)") needs 276px, the
+            // footer field gives it 295 and does not clip, and the inset panel
+            // gave it 255 and DID. I had assumed that clipping was pre-existing;
+            // measuring both forms showed I had introduced it. The hint that
+            // gets cut is the half that says email is OPTIONAL, on the capture a
+            // phone visitor from Instagram actually reaches.
+            // -mx-5 gives the padding back below sm so the fields land at the
+            // footer's exact width; from sm up the column is wide enough that
+            // the inset costs nothing and the panel sits inside it as designed.
+            className={`-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full mt-5 max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
             style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)" }}
           >
-            <p
-              id={headingId}
-              className="text-[14px] mb-3"
-              style={{ color: F.bone, fontFamily: "var(--font-sans)", fontWeight: 600 }}
-            >
-              Request access
-            </p>
             <WaitlistForm />
           </div>
         )}

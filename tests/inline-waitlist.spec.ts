@@ -77,7 +77,7 @@ for (const [page_, loc, label] of [
 
     // The capture is revealed, and it is revealed INSIDE this cluster — not the
     // footer form becoming visible because the page moved.
-    const panel = page.locator('[role="group"][aria-labelledby]').filter({ has: page.locator('input[type="email"]') });
+    const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
     await expect(panel).toBeVisible();
 
     // designer item 2: focus the first field, because revealing a form the
@@ -147,7 +147,7 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
   // locator filtered on the email input stops matching the moment the thing it
   // is there to check happens — it would report "not found" for a submit that
   // worked perfectly.
-  const panel = page.locator('[role="group"][aria-labelledby]').first();
+  const panel = page.locator('[role="group"][aria-label="Request access"]').first();
   await panel.locator('input[type="email"]').fill('gy-becxi-control@example.invalid');
   await panel.locator('button[type="submit"]').click();
 
@@ -216,4 +216,52 @@ test('the capture opens below the fold without the page chasing it (preventScrol
   const scrollAfter = await page.evaluate(() => window.scrollY);
   expect(Math.abs(scrollAfter - scrollBefore), 'focusing a below-the-fold field must not scroll the page').toBeLessThanOrEqual(2);
   expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
+});
+
+/**
+ * 🔴 THE INLINE CAPTURE MUST NOT BE NARROWER THAN THE ONE IT MIRRORS.
+ *
+ * Both captures are the SAME WaitlistForm (item 4), so a width difference is
+ * pure containing-block accident — and it is not cosmetic. A first pass wrapped
+ * the form in a plain p-5 panel, which cost 40px and, on a 375px phone, clipped
+ * the email placeholder: 276px of text into 255px of field. The half that gets
+ * cut is the part that says email is OPTIONAL, on the capture a visitor arriving
+ * from Instagram actually reaches — so a lead who has already typed a phone
+ * number is left reading a field that looks required.
+ *
+ * I had assumed that clipping was pre-existing. MEASURING BOTH FORMS showed the
+ * footer field had 19px of headroom and did not clip, and that the inline panel
+ * had introduced it. This test is the assumption turned into a measurement.
+ */
+test('the inline capture is no narrower than the footer capture (measured, both viewports)', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+
+  const innerWidth = (sel: string) =>
+    page.locator(sel).evaluate((el: HTMLInputElement) => {
+      const cs = getComputedStyle(el);
+      return el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    });
+
+  await page.locator('#cta').scrollIntoViewIfNeeded();
+  const footer = await innerWidth('#cta input[type="email"]');
+
+  await page.locator(WAITLIST_CTA('hero')).click();
+  await page.waitForTimeout(400);
+  const inline = await innerWidth('[role="group"][aria-label="Request access"] input[type="email"]');
+
+  expect(inline, 'the revealed capture must give the fields at least as much room as the footer one')
+    .toBeGreaterThanOrEqual(footer);
+
+  // And the placeholder that carries the "optional" hint must actually fit.
+  const fits = await page
+    .locator('[role="group"][aria-label="Request access"] input[type="email"]')
+    .evaluate((el: HTMLInputElement) => {
+      const cs = getComputedStyle(el);
+      const ctx = document.createElement('canvas').getContext('2d')!;
+      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const avail = el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      return ctx.measureText(el.placeholder).width <= avail;
+    });
+  expect(fits, 'the email placeholder must not clip — the clipped half is the word "optional"').toBe(true);
 });
