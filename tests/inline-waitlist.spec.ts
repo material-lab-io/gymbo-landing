@@ -20,6 +20,12 @@ const WAITLIST_CTA = (loc: string) => `[data-cta="waitlist"][data-cta-location="
 for (const [page_, loc, label] of [
   ['/', 'hero', 'the App hero — the founder-reported journey'],
   ['/compare/gymbo-vs-wellnessz/', 'compare', 'the compare page hero'],
+  // gy-becxi follow-up 2026-09-12: the GALLERY cluster is WRAPPED in App.tsx
+  // (<InlineWaitlist> around <PrimaryCTA location="gallery">) but was NOT pinned
+  // here. Code coverage without test coverage is how a cluster silently reverts
+  // to scrolling — the exact defect this bead removes — so the wrapped set and
+  // the tested set must be the same set.
+  ['/', 'gallery', 'the gallery cluster'],
 ] as const) {
   test(`${label}: tapping the waitlist CTA reveals the capture WITHOUT scrolling`, async ({ page }) => {
     await page.goto(page_);
@@ -264,4 +270,61 @@ test('the inline capture is no narrower than the footer capture (measured, both 
       return ctx.measureText(el.placeholder).width <= avail;
     });
   expect(fits, 'the email placeholder must not clip — the clipped half is the word "optional"').toBe(true);
+});
+
+/**
+ * 🔴 THE WRAPPED SET IS PINNED AS A SET, NOT AS A LIST OF CASES — gy-becxi
+ * follow-up, 2026-09-12.
+ *
+ * The per-cluster tests above prove that each cluster they NAME reveals. They
+ * say nothing about a cluster nobody remembered to name: forgetting to wrap one
+ * degrades it silently to the pre-gy-becxi scroll behaviour, which is the defect
+ * this bead exists to remove.
+ *
+ * waitlistReveal.ts used to claim that "tests/inline-waitlist.test.mjs pins the
+ * wrapped set by reading the sources". THAT FILE NEVER EXISTED — the claim was
+ * written alongside the intent and the control was never built, so the silence
+ * it described as bounded was in fact unbounded. This is that control, and it
+ * reads the SERVED MARKUP rather than the sources: a source grep would pass on a
+ * wrapper that renders but fails to provide the context, which is the failure
+ * most worth catching.
+ *
+ * It asserts an EXACT map, and BOTH failure directions are demonstrated, not
+ * assumed:
+ *   · a cluster that LOSES its wrapper -> gallery flips "reveal" to "scroll" and
+ *     this fails. That is the silent revert, and it is the one worth catching.
+ *   · a NEW CTA at a valid location, unwrapped -> an extra key appears
+ *     ("cta-section": "scroll") and this fails.
+ *
+ * 🔴 WHAT THIS TEST DOES *NOT* CONTROL, stated so nobody credits it with more
+ * than it does: a CTA at an UNKNOWN location cannot reach this assertion at all,
+ * because CtaLocation (forge-ui.tsx) is a CLOSED UNION and tsc rejects it first.
+ * My first attempt at the second direction used location="selftestprobe" and the
+ * test PASSED — not because the test is weak, but because the probe was a type
+ * error, the build never emitted it, and I was measuring a stale dist. The type
+ * system owns that direction; this test owns the two above. A control's claimed
+ * scope has to match its demonstrated scope, which is the whole reason the
+ * comment this replaces was wrong.
+ */
+test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set', async ({ page }) => {
+  await page.goto('/');
+  const EXPECTED: Record<string, 'reveal' | 'scroll'> = {
+    hero: 'reveal',
+    gallery: 'reveal',
+    // The sticky footer CTA deliberately still scrolls — it scrolls to the
+    // footer form, which is its own capture point and STAYS (designer item 3).
+    footer: 'scroll',
+  };
+  const found = await page.evaluate(() =>
+    Object.fromEntries(
+      [...document.querySelectorAll('[data-cta="waitlist"]')].map((el) => [
+        el.getAttribute('data-cta-location'),
+        el.getAttribute('data-cta-behaviour'),
+      ]),
+    ),
+  );
+  expect(
+    found,
+    'every waitlist CTA on / must have a DECLARED behaviour. A new location here means someone added a CTA without deciding whether it reveals; an absent one means a cluster lost its wrapper and silently reverted to scrolling.',
+  ).toEqual(EXPECTED);
 });

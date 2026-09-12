@@ -27,9 +27,17 @@ export const WaitlistRevealContext = createContext<WaitlistRevealApi | null>(nul
  * outside any <InlineWaitlist> keeps its pre-gy-becxi scroll behaviour, so this
  * change is purely additive and cannot break a call site it did not touch.
  * The cost of that safety is that FORGETTING to wrap a cluster is silent — it
- * degrades to the exact defect this bead exists to remove. tests/inline-
+ * degrades to the exact defect this bead exists to remove.
+ *
+ * 🔴 CORRECTED 2026-09-12. This comment previously read "tests/inline-
  * waitlist.test.mjs pins the wrapped set by reading the sources, so the silence
- * is bounded by a control rather than by anyone's memory.
+ * is bounded by a control rather than by anyone's memory." THAT FILE NEVER
+ * EXISTED. The claim was written alongside the intent and the control was never
+ * built, so the silence this comment described as bounded was unbounded — and
+ * the gallery cluster was in fact wrapped in code but pinned by no test.
+ * The control now exists, in tests/inline-waitlist.spec.ts ("pinned as a set"),
+ * and it reads the SERVED MARKUP rather than the sources: a source grep would
+ * pass on a wrapper that renders but fails to provide this context.
  */
 export function useWaitlistReveal(): WaitlistRevealApi | null {
   return useContext(WaitlistRevealContext);
