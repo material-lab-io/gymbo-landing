@@ -9,6 +9,11 @@
 // Do NOT add `Prefer: resolution=ignore-duplicates` or `return=representation` —
 // both require SELECT (401 by design) and representation would leak emails.
 // A duplicate returns 409, which we treat as success — see THE ORACLE below.
+// gy-0v33y — ONE definition of a legal source, shared with the browser. The
+// client is not trusted: whatever arrives is re-normalised here, and anything
+// that is not a clean slug becomes NULL rather than being stored as a channel.
+import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
+
 const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
 
@@ -81,10 +86,22 @@ export async function onRequestPost(context) {
     // collide with the first on waitlist_email_idx and be silently deduped into
     // it. That would look like "phone signup works" for exactly one visitor and
     // then swallow everyone after them.
+    // gy-0v33y — WRITE THE COLUMN THAT ALREADY EXISTS. public.waitlist.source
+    // has carried DEFAULT 'getgymbo.com' since the table was created and has
+    // never been written by anything: on prod, all 7 rows read 'getgymbo.com'.
+    // Every row therefore claimed to come from the website, including the ones
+    // that came from Instagram — which is precisely the question Damini asked.
+    //
+    // 🔴 `source` IS ALWAYS PRESENT IN THIS OBJECT, INCLUDING AS NULL. That is
+    // load-bearing and is AC7: a column DEFAULT only fires when the key is
+    // OMITTED, so leaving it out would silently re-stamp 'getgymbo.com' on an
+    // unattributed lead — the default masquerading as a measurement, which is
+    // the exact defect this bead exists to end. An explicit null stores NULL.
     const row = {
       name: name || null,
       email: email || null,
       phone: phone || null,
+      source: sourceSlug(body.source),
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {

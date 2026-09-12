@@ -102,6 +102,17 @@ jobs:
         # positive control and exits 2 if it cannot read forge.css at all —
         # a zero it cannot substantiate is a failure, not a pass.
 
+      - name: "gy-0v33y: the lead-source rule is bounded and never guesses"
+        run: node --test tests/attribution-source.test.mjs
+        # AC5/AC7. public.waitlist.source carried DEFAULT 'getgymbo.com' and was
+        # never written, so every row claimed the website — including the
+        # Instagram ones. The risk in fixing that is not an empty column, it is
+        # a CONFIDENT WRONG one, so most of these controls assert on NULL and
+        # two positive controls prove the rule can still return a channel at
+        # all. Mutation-checked three ways (drop the placeholder guard, store
+        # the referrer host instead of the engine slug, add a "direct"
+        # fallback); each is caught.
+
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
         run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
