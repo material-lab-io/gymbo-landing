@@ -31,7 +31,7 @@
  *
  * Exits 1 on drift, 0 when clean. `--list` prints the token table and exits 0.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync, statSync, existsSync, writeFileSync } from 'node:fs';
 import { join, relative, isAbsolute, sep } from 'node:path';
 import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
@@ -93,6 +93,12 @@ function walk(dir, out = []) {
   return out;
 }
 
+// Alpha literals appear in BOTH spellings in this tree — `0.14` and `.14`, and
+// `0.6` vs a hypothetical `0.60`. Measured: 12 sites at .14 split across the two
+// forms. Compare numerically, or half the instances read as off-scale and the
+// rule silently under-reports exactly where it matters most.
+const normAlpha = (a) => String(Number(a));
+
 const norm = (h) => {
   h = h.toLowerCase().replace('#', '');
   if (h.length === 3) h = h.split('').map((c) => c + c).join('');
@@ -106,6 +112,46 @@ for (const src of readTokenSources()) {
     const k = norm(m[2]);
     if (!tokens.has(k)) tokens.set(k, m[1]);
   }
+}
+
+// ============================================================================
+// ALPHA-AWARE RULE — gy-73h3j, the open half of gy-1phkc AC4.
+//
+// gy-1phkc imported the 7 alpha tokens (whisper .04, hairline .08, subtle .14,
+// muted .22, veil .6, surface .7, scrim .75) but did NOT migrate the literals.
+// This repo hand-writes the alpha scale as raw rgba() at exactly those steps.
+//
+// 🔴 WHY THIS RULE COULD NOT HAVE BEEN WRITTEN BEFORE gy-1phkc, and why it can
+// now: matching rgba() needs a statement of WHICH alpha steps are sanctioned.
+// Before the producer shipped the alpha scale as named tokens, inventing that
+// list here would have been the gate asserting a design decision it has no
+// authority to make. The steps are now a stated fact, read from the SSOT below
+// rather than hardcoded — so if Forge retires a step, this rule follows.
+//
+// 🔴 DELIBERATELY NARROW, for the same reason the hex rule is (see header): this
+// is NOT "no rgba anywhere". A literal FAILS only when BOTH halves match a
+// token — the colour equals a Forge colour token AND the alpha equals a Forge
+// alpha step. That pair is the alpha scale duplicated by hand, which is the
+// defect. An rgba() at an off-scale alpha is REPORTED, never failed: it may be
+// a legitimate one-off, and failing it is how a gate gets switched off.
+// ============================================================================
+const alphas = new Map(); // normalised alpha value -> alpha token name
+for (const src of readTokenSources()) {
+  for (const m of src.matchAll(/(--g-alpha-[a-z0-9-]+)\s*:\s*([0-9]*\.?[0-9]+)\s*;/g)) {
+    const k = normAlpha(m[2]);
+    if (!alphas.has(k)) alphas.set(k, m[1]);
+  }
+}
+
+// rgb triple -> colour token name, derived from the same hex table so the two
+// rules cannot disagree about what a token's value is.
+const rgbTokens = new Map();
+for (const [hex, name] of tokens) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const k = `${r},${g},${b}`;
+  if (!rgbTokens.has(k)) rgbTokens.set(k, name);
 }
 
 if (process.argv.includes('--list')) {
@@ -154,6 +200,10 @@ function insideDir(f, dir) {
   return rel === '' || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel));
 }
 
+// gy-73h3j: colour-at-sanctioned-alpha hits, counted per (file, literal).
+const alphaFound = new Map();
+const alphaSites = new Map();
+
 const errors = [];
 const advisory = [];
 
@@ -176,6 +226,24 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
       if (tok) errors.push(`${where}  ${m[0]}  is exactly ${tok} — use var(${tok})`);
       else advisory.push(`${where}  ${m[0]}  (no matching Forge token)`);
     }
+
+    // gy-73h3j: the same question for rgba(). Fails only when the colour AND the
+    // alpha BOTH name a token; anything else is reported, not failed.
+    for (const m of line.matchAll(/rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9]*\.?[0-9]+)\s*\)/g)) {
+      const where = `${rel}:${i + 1}`;
+      const colour = rgbTokens.get(`${+m[1]},${+m[2]},${+m[3]}`);
+      const alpha = alphas.get(normAlpha(m[4]));
+      if (colour && alpha) {
+        // Keyed WITHOUT the line number: line numbers churn on every unrelated
+        // edit above, and a baseline that churns gets regenerated blindly, which
+        // is how a baseline becomes an exemption list.
+        const key = `${rel}|${m[0].replace(/\s+/g, '')}`;
+        alphaFound.set(key, (alphaFound.get(key) || 0) + 1);
+        alphaSites.set(key, `${where}  ${m[0]}  is exactly ${colour} at ${alpha}`);
+      } else if (colour) {
+        advisory.push(`${where}  ${m[0]}  (${colour} at an alpha OUTSIDE the Forge scale — may be a legitimate one-off)`);
+      }
+    }
   });
 }
 
@@ -183,6 +251,77 @@ if (advisory.length) {
   console.log(`\nAdvisory — ${advisory.length} literal(s) with no matching Forge token (NOT failing):`);
   for (const a of advisory.slice(0, 20)) console.log(`  ${a}`);
   if (advisory.length > 20) console.log(`  ... and ${advisory.length - 20} more`);
+}
+
+// ============================================================================
+// gy-73h3j BASELINE RECONCILIATION — and why this is a gate, not an exemption.
+//
+// The alpha rule finds 25 pre-existing sites. Failing all 25 today would red-gate
+// main on work that is BLOCKED ON A RULING, and a gate that blocks everything on
+// day one gets switched off inside a week (this gate's own header says so).
+//
+// 🔴 WHAT IS BLOCKED, precisely, because it is not a scheduling excuse: there is
+// no way to write "this colour token at this alpha token" in plain CSS. The
+// mechanism would be color-mix(), and this repo uses it ZERO times today and
+// declares no browserslist — so adopting it sets a NEW browser-support floor on a
+// live public marketing site, and an unsupported color-mix() makes the whole
+// declaration invalid and DROPPED, i.e. a border or scrim silently disappears
+// rather than degrading. That is a founder-visible risk and a designer/pm call.
+// The better answer is almost certainly that the PRODUCER emits composed alpha
+// tokens (rgba, universally supported), after which the migration is a plain
+// var() — which is exactly what gy-73h3j AC2 asks for, and is a hint that AC2
+// already presupposed tokens that do not exist yet. Escalated, not guessed.
+//
+// SO THIS FILE IS A COUNTED BASELINE, AND IT FAILS IN BOTH DIRECTIONS:
+//   * a NEW colour-at-sanctioned-alpha literal, or one more copy of an existing
+//     one, FAILS. The rule is live for all new work from today.
+//   * a baseline entry that no longer exists also FAILS, with an instruction to
+//     delete the line. Otherwise the list rots into a permanent exemption and the
+//     migration becomes invisible again — the gy-swdgh failure mode.
+// It is NOT a path exemption and NOT a suppression: every entry names an exact
+// file and an exact literal, so nothing new hides behind it.
+// ============================================================================
+const ALPHA_BASELINE_FILE = join(ROOT, 'scripts/forge-alpha-baseline.json');
+let alphaBaseline = {};
+if (existsSync(ALPHA_BASELINE_FILE)) {
+  alphaBaseline = JSON.parse(readFileSync(ALPHA_BASELINE_FILE, 'utf8')).sites || {};
+}
+
+if (process.argv.includes('--write-alpha-baseline')) {
+  const sites = {};
+  for (const k of [...alphaFound.keys()].sort()) sites[k] = alphaFound.get(k);
+  writeFileSync(
+    ALPHA_BASELINE_FILE,
+    JSON.stringify(
+      {
+        _comment:
+          'gy-73h3j. Pre-existing colour-token-at-Forge-alpha-step literals, PENDING A MECHANISM RULING (see check-forge-tokens.mjs). Each key is file|literal, each value a count. DO NOT add entries to silence a new finding: the rule is live for new work. Delete an entry when its site is migrated — a stale entry FAILS the gate on purpose.',
+        sites,
+      },
+      null,
+      2,
+    ) + '\n',
+  );
+  console.log(`wrote ${Object.keys(sites).length} baseline entries`);
+  process.exit(0);
+}
+
+for (const [k, n] of [...alphaFound].sort()) {
+  const allowed = alphaBaseline[k] || 0;
+  if (n > allowed) {
+    const extra = n - allowed;
+    errors.push(
+      `${alphaSites.get(k)} — ${extra} instance(s) beyond the gy-73h3j baseline (${allowed}). Do not add a baseline entry: use the ruled mechanism, or get the ruling.`,
+    );
+  }
+}
+for (const k of Object.keys(alphaBaseline)) {
+  const n = alphaFound.get(k) || 0;
+  if (n < alphaBaseline[k]) {
+    errors.push(
+      `${k} — baseline expects ${alphaBaseline[k]} instance(s), found ${n}. MIGRATED? Then delete this entry from scripts/forge-alpha-baseline.json so the list cannot rot into an exemption.`,
+    );
+  }
 }
 
 if (errors.length) {
