@@ -95,15 +95,24 @@ test("🔴 NO 'direct' FALLBACK — absent referrer is unknown, not direct traff
   // Instagram's in-app browser sends NO referrer, so untagged IG traffic is
   // indistinguishable from genuine direct traffic. Writing "direct" here would
   // manufacture the precise answer Damini asked us to stop guessing at, and it
-  // would do it most often for the channel she cares about most. Unknown stays
-  // NULL and is honestly countable as unknown.
-  assert.equal(resolveSource({ utmSource: null, referrer: "", selfHost: "getgymbo.com" }), null);
-  assert.equal(resolveSource({}), null);
+  // would do it most often for the channel she cares about most.
+  //
+  // 🔴 UPDATED 2026-09-12 BY marketer's gy-ufxgo v2 RULING, and the rule this
+  // test defends is UNCHANGED — only the spelling of the answer moved. It used
+  // to assert null; it now asserts "unknown". The thing being forbidden is still
+  // "direct", and that assertion is now explicit rather than implied by null.
+  // Recorded rather than quietly edited: a test that reverses without saying why
+  // reads as someone bending the suite to fit the code.
+  assert.equal(resolveSource({ utmSource: null, referrer: "", selfHost: "getgymbo.com" }), "unknown");
+  assert.equal(resolveSource({}), "unknown");
+  assert.notEqual(resolveSource({}), "direct");
 });
 
-test("NEGATIVE CONTROL — the detector is not just returning null for everything", () => {
-  // Every assertion above about NULL is worthless if the function cannot
-  // return anything else. Two positive results, by both routes.
+test("NEGATIVE CONTROL — the detector is not just returning 'unknown' for everything", () => {
+  // Every assertion above about the unattributed case is worthless if the
+  // function cannot return anything else. Two positive results, by both routes.
+  // (Premise updated with the v2 ruling: the uniform answer it could collapse to
+  // is now "unknown" rather than null, so that is what this rules out.)
   assert.equal(resolveSource({ utmSource: "instagram" }), "instagram");
   assert.equal(
     resolveSource({ utmSource: null, referrer: "https://www.bing.com/s", selfHost: "getgymbo.com" }),
@@ -164,4 +173,53 @@ test("organic search: the google pattern is anchored at BOTH ends", () => {
 test("organic search: our own site is never a source, www or bare", () => {
   assert.equal(sourceFromReferrer("https://getgymbo.com/guide/", "getgymbo.com"), null);
   assert.equal(sourceFromReferrer("https://www.getgymbo.com/guide/", "getgymbo.com"), null);
+});
+
+// gy-ufxgo registry v2 (marketer ruling, 2026-09-12) — "unknown", not "direct",
+// and not null.
+//
+// marketer's registry first specified `direct` for a visit with no UTM and no
+// referrer. It is the same SEMANTICS as our null and a different CLAIM: IG's
+// in-app browser sends no referrer, so untagged Instagram traffic is identical
+// to genuine direct traffic at classification time. "direct" asserts the visitor
+// typed the URL in, and would assert it most often for the one channel Damini is
+// actually asking about. marketer ruled for "unknown".
+test("an unattributable visit records unknown — a measurement, not a gap", () => {
+  assert.equal(resolveSource({ selfHost: "getgymbo.com" }), "unknown");
+  assert.equal(resolveSource({ referrer: "", selfHost: "getgymbo.com" }), "unknown");
+  assert.equal(
+    resolveSource({ referrer: "https://unrecognised.example/x", selfHost: "getgymbo.com" }),
+    "unknown",
+  );
+  // Never "direct": that is a claim about behaviour we cannot observe.
+  assert.notEqual(resolveSource({ selfHost: "getgymbo.com" }), "direct");
+});
+
+// 🔴 THE TRAP THIS PINS. "unknown" reads like it belongs in NOT_A_MEASUREMENT,
+// right beside "none" and "n/a", and tidying it in there would silently NULL
+// every honestly-unattributed visit — destroying the exact value the registry
+// ruling created. The distinction: those strings are what a BROKEN CALLER emits
+// when it meant to send nothing; "unknown" is what our own resolver deliberately
+// emits after looking and finding nothing.
+test("sourceSlug must NOT treat 'unknown' as a non-measurement", () => {
+  assert.equal(sourceSlug("unknown"), "unknown");
+  assert.equal(sourceSlug("UNKNOWN"), "unknown");
+  // The genuine non-measurements still collapse to null.
+  for (const junk of ["undefined", "null", "none", "n/a", "-"]) {
+    assert.equal(sourceSlug(junk), null, `${junk} must not be stored as a channel`);
+  }
+});
+
+// gy-ufxgo v2 — Android app referrers. Organic search on the platform most of
+// our market uses was resolving to null, so search was undercounted there.
+test("the Android Google app referrer is organic search, and lookalikes are not", () => {
+  const H = "getgymbo.com";
+  assert.equal(sourceFromReferrer("android-app://com.google.android.googlequicksearchbox/", H), "google");
+  assert.equal(sourceFromReferrer("android-app://com.google.android.googlequicksearchbox", H), "google");
+  // Exact package match only — no pattern, no suffix matching.
+  assert.equal(sourceFromReferrer("android-app://com.evil.googlequicksearchbox/", H), null);
+  // Not ruled in: the Instagram app's own referrer. Raised with marketer rather
+  // than assumed, because crediting it would change the answer to the founder's
+  // actual question. If this starts returning a value, it was a decision.
+  assert.equal(sourceFromReferrer("android-app://com.instagram.android/", H), null);
 });
