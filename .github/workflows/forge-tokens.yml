@@ -168,6 +168,54 @@ jobs:
           echo "OK  gate correctly rejected drift inside functions/, naming the file"
           node scripts/check-forge-tokens.mjs
 
+      # 🔴 REGRESSION CONTROL FOR THE EXEMPTION'S SHAPE — gy-swdgh, 2026-09-12.
+      # The vendored-mirror exemption was a STRING PREFIX where a PATH BOUNDARY was
+      # meant (`f.startsWith(VENDORED)`, VENDORED = <root>/src/forge with no trailing
+      # separator). It therefore also exempted every sibling whose name merely begins
+      # with "forge" — and one existed: src/forge-ui.tsx, THE FILE THIS GATE WAS
+      # WRITTEN FOR. The gate reported OK over its own founding defect for its entire
+      # life, and the gy-1phkc SSOT repoint carried the bug through untouched.
+      #
+      # The other controls in this file cannot catch that: they all seed files
+      # (src/App.tsx, functions/w/[token].js) whose paths do not collide with the
+      # exemption, so they pass identically whether the boundary is right or wrong.
+      # This one seeds the collision itself. src/forge.tsx is the tightest case —
+      # one character from the exempt directory name.
+      - name: Negative control — a path that only PREFIX-matches src/forge must still be scanned
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          # Real code, not a comment: the gate blanks comments, so a commented probe
+          # would be ignored for the wrong reason.
+          printf 'export const probe = "#f59e0b";\n' > src/forge.tsx
+          if node scripts/check-forge-tokens.mjs > /tmp/selftest-boundary.log 2>&1; then
+            rm -f src/forge.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate passed src/forge.tsx, which contains the brand amber as a raw literal. The vendored exemption is matching a STRING PREFIX again instead of a path boundary, so every src/forge* sibling is invisible. This is the gy-swdgh regression; do not trust this green."
+            cat /tmp/selftest-boundary.log
+            exit 1
+          fi
+          # A non-zero exit is not proof of a rejection (see the note above): require
+          # the seeded file to be NAMED, or a crash would read as success.
+          if ! grep -q 'src/forge.tsx' /tmp/selftest-boundary.log; then
+            rm -f src/forge.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named src/forge.tsx. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest-boundary.log
+            exit 1
+          fi
+          rm -f src/forge.tsx
+          echo "OK  gate scans a path that only prefix-matches the exempt directory, naming the file"
+          # POSITIVE CONTROL, in the same step: fixing the boundary must not have
+          # broken the exemption it exists for. A literal genuinely INSIDE src/forge/
+          # must still be exempt — otherwise "boundary fixed" and "exemption broken"
+          # look identical from a red gate.
+          node scripts/check-forge-tokens.mjs > /tmp/selftest-inside.log 2>&1
+          if grep -qE '^  src/forge/' /tmp/selftest-inside.log; then
+            echo "::error::The gate is now flagging the vendored mirror itself. The exemption is over-corrected — src/forge/ IS the palette and is allowed to contain literals."
+            cat /tmp/selftest-inside.log
+            exit 1
+          fi
+          echo "OK  src/forge/ is still exempt — the boundary narrowed, the exemption survived"
+
       # The gate must be shown capable of FAILING, in the same run that reports
       # it passing. A guard nobody has watched fail is indistinguishable from one
       # that cannot fail — which is the shape this repo already guards against in
