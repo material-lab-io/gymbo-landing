@@ -1,0 +1,23 @@
+{
+  "_comment": "gy-73h3j. Pre-existing colour-token-at-Forge-alpha-step literals, PENDING A MECHANISM RULING (see check-forge-tokens.mjs). Each key is file|literal, each value a count. DO NOT add entries to silence a new finding: the rule is live for new work. Delete an entry when its site is migrated — a stale entry FAILS the gate on purpose.",
+  "sites": {
+    "src/App.tsx|rgba(240,240,235,0.08)": 2,
+    "src/App.tsx|rgba(240,240,235,0.14)": 1,
+    "src/App.tsx|rgba(240,240,235,0.22)": 2,
+    "src/App.tsx|rgba(245,158,11,0.14)": 2,
+    "src/App.tsx|rgba(251,191,36,0.14)": 3,
+    "src/App.tsx|rgba(26,26,26,0.14)": 1,
+    "src/App.tsx|rgba(26,26,26,0.6)": 1,
+    "src/App.tsx|rgba(26,26,26,0.75)": 1,
+    "src/forge-ui.tsx|rgba(240,240,235,0.04)": 1,
+    "src/forge-ui.tsx|rgba(240,240,235,0.22)": 1,
+    "src/forge-ui.tsx|rgba(245,158,11,.22)": 2,
+    "src/forge-ui.tsx|rgba(245,158,11,0.08)": 2,
+    "src/forge-ui.tsx|rgba(245,158,11,0.14)": 1,
+    "src/forge-ui.tsx|rgba(251,191,36,0.22)": 1,
+    "src/pages/ArticlePage.tsx|rgba(245,158,11,0.14)": 1,
+    "src/pages/CompareWellnessZ.tsx|rgba(240,240,235,0.08)": 1,
+    "src/pages/CompareWellnessZ.tsx|rgba(245,158,11,0.14)": 1,
+    "src/pages/CompareWellnessZ.tsx|rgba(251,191,36,0.14)": 1
+  }
+}

@@ -168,6 +168,59 @@ jobs:
           echo "OK  gate correctly rejected drift inside functions/, naming the file"
           node scripts/check-forge-tokens.mjs
 
+      # 🔴 BOTH-DIRECTION CONTROL FOR THE ALPHA BASELINE — gy-73h3j, 2026-09-12.
+      # The alpha rule carries a counted baseline of 18 pre-existing sites (see the
+      # script for why the migration is blocked on a mechanism ruling). A baseline
+      # is one edit away from being an exemption list, so BOTH failure directions
+      # are exercised here: a new instance must fail, AND a migrated site whose
+      # entry was left behind must fail. Only testing the first would let the list
+      # rot silently, which is the gy-swdgh failure mode in a new costume.
+      - name: Negative control — the alpha baseline must fail in BOTH directions
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          cp src/App.tsx /tmp/App.alpha.bak
+          # (1) A NEW colour-token-at-Forge-alpha literal must fail.
+          sed -i '0,/return (/s//return (\n      <div style={{ borderTop: "1px solid rgba(251,191,36,0.22)" }} \/>) || (/' src/App.tsx
+          if node scripts/check-forge-tokens.mjs > /tmp/alpha-new.log 2>&1; then
+            cp /tmp/App.alpha.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate passed a NEW rgba() at a Forge colour token and a Forge alpha step. The alpha rule is not live for new work; do not trust its green."
+            cat /tmp/alpha-new.log; exit 1
+          fi
+          if ! grep -q 'beyond the gy-73h3j baseline' /tmp/alpha-new.log; then
+            cp /tmp/App.alpha.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but not on the seeded alpha literal. It does not discriminate (a crash counts)."
+            cat /tmp/alpha-new.log; exit 1
+          fi
+          cp /tmp/App.alpha.bak src/App.tsx
+          echo "OK  a new colour-at-alpha literal fails the gate"
+          # (2) A MIGRATED site whose baseline entry was left behind must fail.
+          cp src/pages/ArticlePage.tsx /tmp/AP.alpha.bak
+          sed -i 's/rgba(245,158,11,0.14)/var(--forge-selftest-migrated)/' src/pages/ArticlePage.tsx
+          if node scripts/check-forge-tokens.mjs > /tmp/alpha-stale.log 2>&1; then
+            cp /tmp/AP.alpha.bak src/pages/ArticlePage.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — a baselined site was migrated and the gate stayed green with the stale entry in place. The baseline can rot into a permanent exemption; do not trust its green."
+            cat /tmp/alpha-stale.log; exit 1
+          fi
+          if ! grep -q 'baseline expects' /tmp/alpha-stale.log; then
+            cp /tmp/AP.alpha.bak src/pages/ArticlePage.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but not on the stale baseline entry. It does not discriminate."
+            cat /tmp/alpha-stale.log; exit 1
+          fi
+          cp /tmp/AP.alpha.bak src/pages/ArticlePage.tsx
+          echo "OK  a stale baseline entry fails the gate — the list cannot rot"
+          # POSITIVE CONTROL: the tree as committed is green. A control that leaves
+          # the tree dirty would silently red the next step.
+          node scripts/check-forge-tokens.mjs
+          # And the baseline must still describe reality: regenerating it must be a
+          # no-op. If this diffs, someone edited the tree without the gate, or
+          # edited the baseline by hand.
+          node scripts/check-forge-tokens.mjs --write-alpha-baseline
+          git diff --exit-code scripts/forge-alpha-baseline.json || {
+            echo "::error::The alpha baseline does not match the tree. Regenerating it changed the file, so it was hand-edited or a site moved. Do not commit a baseline you did not generate."
+            exit 1
+          }
+
       # 🔴 REGRESSION CONTROL FOR THE EXEMPTION'S SHAPE — gy-swdgh, 2026-09-12.
       # The vendored-mirror exemption was a STRING PREFIX where a PATH BOUNDARY was
       # meant (`f.startsWith(VENDORED)`, VENDORED = <root>/src/forge with no trailing
