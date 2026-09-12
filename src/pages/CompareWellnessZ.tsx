@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
+import { InlineWaitlist } from "../components/InlineWaitlist";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton } from "../forge-ui";
 
@@ -142,9 +143,15 @@ export function CompareWellnessZ() {
               </div>
             </Reveal>
 
-            <Reveal className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5">
-              <WhatsAppCTA size="lg" location="compare">Talk to the founder</WhatsAppCTA>
-              <WaitlistCTA size="lg" location="compare" />
+            {/* gy-becxi item 5 — the SAME shared component as the App hero, not a
+                per-page fork. Both call sites reveal identically or neither does. */}
+            <Reveal className="mt-8">
+              <InlineWaitlist reducedMotion={prefersReduced}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
+                  <WhatsAppCTA size="lg" location="compare">Talk to the founder</WhatsAppCTA>
+                  <WaitlistCTA size="lg" location="compare" />
+                </div>
+              </InlineWaitlist>
             </Reveal>
           </div>
         </header>
