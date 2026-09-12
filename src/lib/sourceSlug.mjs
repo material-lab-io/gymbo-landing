@@ -62,17 +62,35 @@ export function sourceSlug(raw) {
 // Allowlist, not a heuristic: anything off-list stays NULL. A referrer we do not
 // recognise is "we do not know", and AC7 is explicit that a guess is worse than
 // an empty column.
+// 🔴 THE "www." AND REGIONAL-DOMAIN HOLE, FOUND 2026-09-12 BY EXERCISING THIS
+// FUNCTION INSTEAD OF READING IT. The hand-written map below listed
+// "www.google.com" but NOT "www.google.co.in", so the single most likely organic
+// referrer in our ONLY market returned null and was recorded as unmeasured. The
+// map was internally inconsistent (www for .com, bare for .co.in) in a way that
+// reads as fine and is not. Every regional Google — .co.uk, .com.au, .de — was
+// null too.
+//
+// Fixed at the two places the inconsistency lived rather than by adding rows:
+//   1. a leading "www." is stripped before lookup, so each engine needs ONE row
+//   2. any host that is ENTIRELY google.<tld> resolves to "google"
+// The google rule is ANCHORED at both ends (see the regex): "google.co.in"
+// matches, "google.com.attacker.test" and "notgoogle.com" do not. That anchoring
+// is the whole safety argument for a pattern here, and it is why this is a
+// pattern only for the engine with dozens of ccTLDs, while everything else stays
+// an explicit row.
 const SEARCH_ENGINE_BY_HOST = new Map([
   ["google.com", "google"],
-  ["www.google.com", "google"],
   ["google.co.in", "google"],
   ["bing.com", "bing"],
-  ["www.bing.com", "bing"],
   ["duckduckgo.com", "duckduckgo"],
   ["yahoo.com", "yahoo"],
   ["search.yahoo.com", "yahoo"],
   ["yandex.com", "yandex"],
 ]);
+
+// Anchored: the ENTIRE hostname must be google.<tld...>, nothing before, nothing
+// after. Guards against notgoogle.com and google.com.attacker.test alike.
+const GOOGLE_REGIONAL = /^google\.[a-z]{2,}(\.[a-z]{2,})?$/;
 
 /**
  * Derive a lead source from document.referrer, or null.
@@ -89,10 +107,16 @@ export function sourceFromReferrer(referrer, selfHost) {
     return null;
   }
   if (!host) return null;
-  // Our own pages are not a referral to ourselves.
+  // Our own pages are not a referral to ourselves. Checked BEFORE the www strip
+  // so both getgymbo.com and www.getgymbo.com are excluded either way.
   if (selfHost && (host === String(selfHost).toLowerCase() ||
       host === `www.${String(selfHost).toLowerCase()}`)) return null;
-  return SEARCH_ENGINE_BY_HOST.get(host) ?? null;
+  // One engine must not become two channels because a visitor's browser sent the
+  // www form. Strip it once, then match.
+  const bare = host.replace(/^www\./, "");
+  if (selfHost && bare === String(selfHost).toLowerCase()) return null;
+  if (GOOGLE_REGIONAL.test(bare)) return "google";
+  return SEARCH_ENGINE_BY_HOST.get(bare) ?? null;
 }
 
 /**

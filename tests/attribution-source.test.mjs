@@ -110,3 +110,58 @@ test("NEGATIVE CONTROL — the detector is not just returning null for everythin
     "bing",
   );
 });
+
+// gy-0v33y follow-up, 2026-09-12 — THE REGIONAL / www HOLE.
+//
+// 🔴 FOUND BY EXECUTING THE FUNCTION, NOT BY READING IT. The host map listed
+// "www.google.com" but only the bare "google.co.in", so www.google.co.in — the
+// single most likely organic referrer in our ONLY market — returned null and was
+// recorded as unmeasured. Every other regional Google was null too. The map read
+// as fine; the inconsistency was invisible until the values were compared.
+//
+// marketer had already caught the neighbouring half of this (store the ENGINE,
+// not the hostname, so google.co.in does not become its own channel). That fix
+// was applied to the VALUE and the KEY list kept the bug.
+test("organic search: regional and www host forms all resolve to one engine", () => {
+  for (const referrer of [
+    "https://www.google.co.in/search?q=gymbo",
+    "https://google.co.in/search?q=gymbo",
+    "https://www.google.com/search?q=gymbo",
+    "https://google.com/search?q=gymbo",
+    "https://www.google.co.uk/search?q=gymbo",
+    "https://www.google.com.au/search?q=gymbo",
+  ]) {
+    assert.equal(
+      sourceFromReferrer(referrer, "getgymbo.com"),
+      "google",
+      `${referrer} must record the ENGINE, not null and not a per-region channel`,
+    );
+  }
+  assert.equal(sourceFromReferrer("https://www.bing.com/search?q=g", "getgymbo.com"), "bing");
+});
+
+// The anchoring is the entire safety argument for using a pattern instead of a
+// row per ccTLD. Without both anchors a lookalike host would be credited to
+// Google, which is a worse failure than the null it replaced.
+test("organic search: the google pattern is anchored at BOTH ends", () => {
+  for (const hostile of [
+    "https://notgoogle.com/",
+    "https://mygoogle.com/",
+    "https://google.com.attacker.test/",
+    "https://google.co.in.evil.test/",
+    "https://evil.test/?x=google.com",
+  ]) {
+    assert.equal(
+      sourceFromReferrer(hostile, "getgymbo.com"),
+      null,
+      `${hostile} must NOT be credited to google`,
+    );
+  }
+});
+
+// Our own pages are not a referral to ourselves, in either host form. A visitor
+// moving from /guide to the form must not be re-credited as organic.
+test("organic search: our own site is never a source, www or bare", () => {
+  assert.equal(sourceFromReferrer("https://getgymbo.com/guide/", "getgymbo.com"), null);
+  assert.equal(sourceFromReferrer("https://www.getgymbo.com/guide/", "getgymbo.com"), null);
+});
