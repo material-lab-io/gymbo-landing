@@ -302,6 +302,31 @@ jobs:
           node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 390 || RC=1
           node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 320 || RC=1
 
+          # gy-becxi — the inline waitlist capture, gated as BEHAVIOUR.
+          #
+          # Damini reported that tapping the waitlist CTA threw her to the page
+          # footer ("this journey is a bit annoying"), arriving from Instagram.
+          # The fix reveals the capture in place, and the ONLY assertion that can
+          # tell the fix from the defect is that the viewport does not move — a
+          # form appears and a field is focused in BOTH worlds, once the old
+          # behaviour has finished scrolling. So this is a correctness gate and
+          # it BLOCKS, alongside the smoke and console checks, not a warn-on-main
+          # change detector like the visual suite below.
+          #
+          # Mutation-checked two ways before being wired here: restore the scroll
+          # (6 of 12 cases red) and drop focus({preventScroll}) (2 of 2 red on
+          # the dedicated below-the-fold control, which was itself rewritten
+          # twice after it was caught PASSING under the mutation it exists to
+          # catch — see the comments in the spec).
+          #
+          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: tests/smoke.spec.ts and
+          # tests/analytics-guard.spec.ts run NOWHERE in CI today — only visual,
+          # audit and audit-perf specs are wired. That is a real fail-open (the
+          # analytics guard exists because 96.4% of recorded pageviews turned out
+          # to be our own runs) and is filed separately rather than absorbed
+          # here. Do not assume a spec in tests/ is gating anything.
+          npx playwright test tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
+
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
           # baselines are refreshed. Blocking production on it is what wedged

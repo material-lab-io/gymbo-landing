@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
+import { InlineWaitlist } from "./components/InlineWaitlist";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton } from "./forge-ui";
 
@@ -297,10 +298,16 @@ export default function App() {
               <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
                 <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
               </p>
-              <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
-                <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
-                <WaitlistCTA size="lg" location="hero" />
-              </div>
+              {/* gy-becxi — THE FOUNDER-REPORTED JOURNEY IS THIS EXACT CLUSTER.
+                  Damini arrives from Instagram, taps the waitlist CTA here, and
+                  before this was thrown to the page footer. The capture now opens
+                  underneath these two buttons without moving the viewport. */}
+              <InlineWaitlist className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`} reducedMotion={prefersReduced}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
+                  <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
+                  <WaitlistCTA size="lg" location="hero" />
+                </div>
+              </InlineWaitlist>
               {/* Mobile/tablet keeps the approved three-phone composition below
                   the copy, scaled as one coherent image so its screens and device
                   silhouettes remain legible without clipping. */}
@@ -422,7 +429,9 @@ export default function App() {
             <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
-              <PrimaryCTA dark size="lg" location="gallery" />
+              <InlineWaitlist className="flex flex-col items-center" reducedMotion={prefersReduced}>
+                <PrimaryCTA dark size="lg" location="gallery" />
+              </InlineWaitlist>
             </Reveal>
           </div>
         </section>
