@@ -185,8 +185,64 @@ DB_RESULT="$(db_verdict)"
 DB_STATE="${DB_RESULT%%|*}"
 DB_MSG="${DB_RESULT#*|}"
 
+# --- THE gy-gcr22 ALLOWANCE: a NAMED, SIGNATURE-PINNED, DATED non-red ---------
+#
+# 🔴 WHY THIS EXISTS AT ALL. gy-gcr22 is real, known, and NOT OURS TO FIX: the
+# Cloudflare Pages production environment has no SUPABASE_SERVICE_ROLE_KEY, so
+# /w/ and /m/ are dead. Binding it is a prod-credential action behind the
+# Kaushik gate, and pm has ruled the no-login web surface a NAMED NON-GOAL of
+# this cut — it ships next. So the condition will persist for a while by
+# decision, not by neglect.
+#
+# The harm in the meantime is WALLPAPER. This script is also prod-watch.yml's
+# hourly regression and every deploy's post-deploy verification, so a permanent
+# red trained everyone to stop reading both: 29 consecutive red Prod Watch runs
+# over ~28 hours by 2026-09-12, and a deploy step that says FAIL while the
+# deploy in fact succeeded. pm dismissed five pages as known-red in one week and
+# found the MASKED COUNT BEHIND THEM HAD MOVED FROM 1 TO 6. A check nobody reads
+# is worse than no check, because it still claims to be watching.
+#
+# 🔴 WHAT MAKES THIS AN ALLOWANCE AND NOT A SUPPRESSION — all four, on purpose:
+#   PINNED TO ONE SIGNATURE. Only "db":"unconfigured" is allowed. "rejected" (a
+#     wrong/rotated/revoked key), a 404 (probe not deployed), and any other HTTP
+#     or body still FAIL. Those are the states that would otherwise hide behind
+#     this one, and they are exactly the failure modes a reader would assume
+#     "the health check is known red" already covers.
+#   STILL LOUD. It prints KNOWN, not OK, and names the bead. Nothing is skipped
+#     in silence and the line cannot be mistaken for a pass.
+#   DATED, SO IT CANNOT OUTLIVE THE DECISION. After the date below it goes RED
+#     again on its own and forces a fresh ruling. An undated allowance is a
+#     permanent one that nobody chose.
+#   SELF-RETIRING. If the key is ever bound, the OK branch says so and tells the
+#     next reader to delete this block, so it does not linger as dead code that
+#     still looks like policy.
+#
+# The date is MY choice, not a ruling, and it is one line to change: pm said the
+# surface "ships next", so this is set to roughly a month out.
+GCR22_ALLOWANCE_UNTIL="2026-10-15"
+# SMOKE_FAKE_TODAY exists so the EXPIRY can itself be a negative control — an
+# allowance whose expiry has never been seen to fire is an allowance nobody has
+# checked is temporary. Setting it is no easier to hide than editing the
+# constant above, and setting it to a PAST date only makes this gate stricter.
+GCR22_TODAY="${SMOKE_FAKE_TODAY:-$(date -u +%Y-%m-%d)}"
+
 if [ "$DB_STATE" = "OK" ]; then
   log "OK   /api/health: $DB_MSG"
+  # Positive control on the allowance itself: the moment this passes, the block
+  # above is dead code that still reads as policy. Say so, here, where whoever
+  # is looking at a green run will see it.
+  if [ "$GCR22_TODAY" \< "$GCR22_ALLOWANCE_UNTIL" ]; then
+    log "INFO the gy-gcr22 allowance in this script is now UNNECESSARY (the key is bound) — delete it."
+  fi
+elif [ "$DB_REQUIRED" = "1" ] \
+     && printf '%s' "$HBODY" | grep -q '"db":"unconfigured"' \
+     && [ "$GCR22_TODAY" \< "$GCR22_ALLOWANCE_UNTIL" ]; then
+  # The known, ruled-on, non-goal condition. Reported in full, attributed, and
+  # deliberately NOT counted as a failure of THIS deploy or THIS hour.
+  log "KNOWN /api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND (gy-gcr22). /w/ and /m/ refuse every request."
+  log "KNOWN   ruled a non-goal of this cut by pm; binding it is a prod-credential action behind the Kaushik gate."
+  log "KNOWN   NOT counted as a failure until $GCR22_ALLOWANCE_UNTIL, after which this goes RED again by design."
+  log "KNOWN   every OTHER database state (rejected / 404 / any other body) still FAILS — this is pinned to one signature."
 elif [ "$DB_REQUIRED" = "1" ]; then
   fail "/api/health: $DB_MSG"
 else

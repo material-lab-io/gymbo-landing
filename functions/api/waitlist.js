@@ -101,6 +101,12 @@ export async function onRequestPost(context) {
       name: name || null,
       email: email || null,
       phone: phone || null,
+      // gy-ufxgo v2: an ABSENT key stays NULL on purpose and is NOT promoted to
+      // "unknown". The client's resolver never returns null — it sends "unknown"
+      // when it looked and found nothing — so a missing source here means the
+      // visit was never classified at all (a client older than this change, or a
+      // POST that is not our form). Those are different facts about the lead and
+      // the column must keep them apart.
       source: sourceSlug(body.source),
     };
 

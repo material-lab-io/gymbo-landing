@@ -10,7 +10,7 @@
 #
 # Usage: build-fixture-site.sh <outdir> <mode>
 # Modes: good | no-title | missing-pricing | robots-disallow-claudebot |
-#        js-error | dark-theme-leak | db-unconfigured
+#        js-error | dark-theme-leak | db-unconfigured | db-rejected
 set -euo pipefail
 
 OUT="${1:?usage: build-fixture-site.sh <outdir> <mode>}"
@@ -49,7 +49,12 @@ ERROR_SCRIPT=""
 # the body precisely so it can tell "unconfigured" from "rejected" from "not
 # deployed" rather than collapsing them into one status code.
 mkdir -p "$OUT/api"
-if [ "$MODE" = "db-unconfigured" ]; then
+if [ "$MODE" = "db-rejected" ]; then
+  # gy-gcr22 allowance anti-masking fixture. A key that EXISTS and is wrong,
+  # rotated or revoked is a DIFFERENT failure from an absent binding, and it is
+  # the one most likely to hide behind "the health check is known red".
+  printf '%s' '{"db":"rejected","detail":"fixture: PostgREST refused the key"}' > "$OUT/api/health"
+elif [ "$MODE" = "db-unconfigured" ]; then
   printf '%s' '{"db":"unconfigured","detail":"fixture: binding absent"}' > "$OUT/api/health"
 else
   printf '%s' '{"db":"ok"}' > "$OUT/api/health"
