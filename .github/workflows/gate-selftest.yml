@@ -152,26 +152,117 @@ jobs:
       # serves {"db":"ok"} and check 9 accepts it. This proves the FAIL path, and
       # sets SMOKE_EXPECT_DB=1 because a fixture is not production and the check
       # is otherwise (correctly) advisory there.
-      - name: Negative control — getgymbo-smoke.sh must FAIL when the DB probe reports unconfigured
+      # 🔴 THE gy-gcr22 ALLOWANCE, AND THE FOUR CONTROLS THAT KEEP IT AN
+      # ALLOWANCE RATHER THAN A SUPPRESSION.
+      #
+      # WHAT CHANGED AND WHY, because this block previously asserted the exact
+      # OPPOSITE and that inversion must not look like an accident. Until
+      # 2026-09-12 the rule was "db:unconfigured MUST fail the gate". It was the
+      # right rule when the probe was new and unproven. It became wallpaper: pm
+      # ruled the no-login web surface a NAMED NON-GOAL of this cut and the
+      # binding a prod-credential action, so the condition now persists BY
+      # DECISION. Meanwhile this script is prod-watch.yml's hourly regression and
+      # every deploy's post-deploy check, so it produced 29 consecutive red Prod
+      # Watch runs in ~28 hours and a deploy step reporting FAIL on a deploy that
+      # succeeded. pm dismissed five pages as known-red in one week and found the
+      # MASKED COUNT BEHIND THEM HAD MOVED FROM 1 TO 6.
+      #
+      # So the gate now reports this ONE signature as KNOWN and does not count
+      # it. Everything below exists to prove that is narrow, loud and temporary.
+      - name: Allowance control 1 — the KNOWN signature does not fail, and says so
         run: |
           set -e
           FIX=$(mktemp -d)
           bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
           python3 -m http.server 8907 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8907 > /tmp/db-neg.log 2>&1; then
-            echo "::error::getgymbo-smoke.sh PASSED against a site whose DB probe reports 'unconfigured'. The probe is not wired; merging it would install a green monitor over a dead surface."
-            cat /tmp/db-neg.log
+          if ! CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8907 > /tmp/db-known.log 2>&1; then
+            echo "::error::getgymbo-smoke.sh FAILED on the known gy-gcr22 signature. The allowance is not working, so prod-watch and every deploy stay permanently red."
+            cat /tmp/db-known.log
             exit 1
           fi
-          # And it must fail FOR THE RIGHT REASON, not incidentally. A control
-          # that accepts any failure reports the reassuring one.
-          if ! grep -q 'SUPABASE_SERVICE_ROLE_KEY is NOT BOUND' /tmp/db-neg.log; then
-            echo "::error::The smoke gate failed, but not on the DB probe. It does not discriminate."
-            cat /tmp/db-neg.log
+          # Passing is not enough — a SILENT pass is the thing being guarded
+          # against. It must still name the condition and its expiry.
+          grep -q 'KNOWN /api/health' /tmp/db-known.log || { echo "::error::The gate passed but never reported the KNOWN condition — that is silence, not an allowance."; cat /tmp/db-known.log; exit 1; }
+          grep -q 'gy-gcr22' /tmp/db-known.log || { echo "::error::The KNOWN line does not name the bead, so a reader cannot chase it."; exit 1; }
+          grep -q 'goes RED again' /tmp/db-known.log || { echo "::error::The KNOWN line does not state its expiry, so nothing marks the allowance as temporary."; exit 1; }
+          echo "OK: the known condition is reported loudly and not counted."
+
+      # 🔴 THIS IS THE ANTI-MASKING CONTROL AND IT IS THE POINT OF THE WHOLE
+      # CHANGE. A key that EXISTS but is wrong, rotated or revoked is a different
+      # fault from an absent binding, and it is precisely what a reader would
+      # wrongly assume "the health check is known red" already covers.
+      - name: Allowance control 2 — a REJECTED key must still FAIL
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" db-rejected
+          python3 -m http.server 8911 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8911 > /tmp/db-rej.log 2>&1; then
+            echo "::error::The gate PASSED on a REJECTED service_role key. The gy-gcr22 allowance is masking a different database fault — exactly the failure it was written to avoid."
+            cat /tmp/db-rej.log
             exit 1
           fi
-          echo "OK: the DB probe correctly failed the gate, naming the absent binding."
+          grep -q 'REJECTED the service_role key' /tmp/db-rej.log || { echo "::error::It failed, but not on the rejected key — it does not discriminate between database states."; cat /tmp/db-rej.log; exit 1; }
+          echo "OK: a rejected key still fails; the allowance is pinned to one signature."
+
+      # "The check is not there" must never read as "the check passed", and the
+      # allowance must not have quietly widened that hole either.
+      - name: Allowance control 3 — an ABSENT probe must still FAIL
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" good
+          rm -f "$FIX/api/health"
+          python3 -m http.server 8912 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8912 > /tmp/db-404.log 2>&1; then
+            echo "::error::The gate PASSED with /api/health absent. DB reachability is UNKNOWN, not OK, and the allowance has widened into a hole."
+            cat /tmp/db-404.log
+            exit 1
+          fi
+          echo "OK: an absent probe still fails."
+
+      # 🔴 AN ALLOWANCE WHOSE EXPIRY HAS NEVER BEEN SEEN TO FIRE IS A PERMANENT
+      # ONE THAT NOBODY CHOSE. This proves the date is load-bearing.
+      - name: Allowance control 4 — the allowance EXPIRES
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
+          python3 -m http.server 8913 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 SMOKE_FAKE_TODAY=2099-01-01 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8913 > /tmp/db-exp.log 2>&1; then
+            echo "::error::The gy-gcr22 allowance did NOT expire — it is permanent, and a permanent allowance is a suppression."
+            cat /tmp/db-exp.log
+            exit 1
+          fi
+          grep -q 'SUPABASE_SERVICE_ROLE_KEY is NOT BOUND' /tmp/db-exp.log || { echo "::error::It failed after expiry, but not on the DB probe."; cat /tmp/db-exp.log; exit 1; }
+          echo "OK: past its date the allowance lapses and the condition goes red again."
+
+      # 🔴 THE CONTROL FOR pm's ACTUAL FEAR, stated in their words: "I dismissed
+      # five pages as known-red this week and the masked count had moved from 1
+      # to 6 behind them." The danger of a known-red is never the known fault —
+      # it is the SECOND fault arriving into a surface nobody reads any more.
+      # This proves a real regression still turns the gate red while the known
+      # condition is simultaneously active and being reported.
+      - name: Allowance control 5 — a REAL regression still fails alongside the known condition
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
+          sed -i 's/\xe2\x82\xb9399/\xe2\x82\xb9999/g' "$FIX/index.html"
+          python3 -m http.server 8914 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914 > /tmp/db-both.log 2>&1; then
+            echo "::error::A broken page PASSED while the gy-gcr22 condition was active. The allowance is hiding real regressions behind a known one — the exact 1-to-6 masking this was written to prevent."
+            cat /tmp/db-both.log
+            exit 1
+          fi
+          grep -q 'FAIL: body missing' /tmp/db-both.log || { echo "::error::It failed, but not on the content regression."; cat /tmp/db-both.log; exit 1; }
+          grep -q 'KNOWN /api/health' /tmp/db-both.log || { echo "::error::The known condition stopped being reported once something else failed — it must stay visible."; cat /tmp/db-both.log; exit 1; }
+          echo "OK: a real regression still turns the gate red, and the known condition is still reported beside it."
 
       # The other side of the same rule: on a target with no database the check
       # must REPORT rather than fail -- and must not be silently absent either.
