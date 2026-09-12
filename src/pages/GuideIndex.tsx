@@ -21,7 +21,7 @@ export function GuideIndex() {
           Guides for independent trainers
         </h1>
         <p className="mt-4 text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.7 }}>
-          Practical, honest guides to running an independent personal-training business in India — the systems, the money, and the admin, without the jargon.
+          Practical, honest guides to running an independent personal-training business in India: the systems, the money, and the admin, without the jargon.
         </p>
 
         <div className="mt-10 flex flex-col">
