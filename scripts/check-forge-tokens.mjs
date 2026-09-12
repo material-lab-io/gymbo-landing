@@ -32,7 +32,7 @@
  * Exits 1 on drift, 0 when clean. `--list` prints the token table and exits 0.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, isAbsolute, sep } from 'node:path';
 import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
 
@@ -135,6 +135,25 @@ function blankComments(src) {
   return out;
 }
 
+/**
+ * True when `f` is the directory `dir` itself or lives underneath it.
+ *
+ * 🔴 THE DEFECT THIS REPLACES — gy-swdgh, measured on main 57943e8. This test
+ * used to be `f.startsWith(VENDORED)`, a STRING prefix where a PATH boundary
+ * was meant. `VENDORED` is <ROOT>/src/forge with no trailing separator, so the
+ * exemption also swallowed every sibling whose name merely begins with
+ * "forge" — and exactly one exists: src/forge-ui.tsx, which is THE FILE THIS
+ * GATE WAS WRITTEN FOR (see the header: it declared a parallel copy of the
+ * brand palette). The gate reported OK over its own founding defect for its
+ * whole life, and the gy-1phkc SSOT repoint carried the bug through unchanged.
+ * Comparing on a path boundary is the whole fix; `..` and absolute results mean
+ * "outside", and an empty result means "is the directory itself".
+ */
+function insideDir(f, dir) {
+  const rel = relative(dir, f);
+  return rel === '' || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel));
+}
+
 const errors = [];
 const advisory = [];
 
@@ -144,7 +163,7 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
   // sourced from the producer checkout, which lives outside this tree entirely,
   // so a startsWith(SSOT) test would no longer exempt src/forge/ and the gate
   // would flag the design system for being the design system.
-  if (f.startsWith(VENDORED)) continue;
+  if (insideDir(f, VENDORED)) continue;
   if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
