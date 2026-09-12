@@ -166,8 +166,22 @@ export function scrollToId(id: string) {
 // element children, which would corrupt raw CSS. __html keeps it raw.
 // LIGHT ONLY (gy-uesmd) — no [data-theme="dark"] rule ships here or anywhere
 // else in the bundle; do not reintroduce one without a new founder ruling.
+// 🔴 --c-* POINTS AT FORGE, IT DOES NOT COPY IT — gy-swdgh, 2026-09-12.
+// Nine of these values were verbatim copies of Forge tokens, including the brand
+// amber. They AGREED with Forge at the time, so nothing rendered wrong; the defect
+// was that if a Forge colour moved, --c-* silently would not. The drift gate that
+// exists to catch exactly this could not see this file at all (a path-prefix
+// exemption swallowed src/forge-ui.tsx), so it stayed green over its own founding
+// defect for its whole life. Resolution order is not a concern: both namespaces
+// are declared on :root and custom properties resolve at computed-value time.
+//
+// DELIBERATE DIVERGENCES, stated rather than left to look like oversights:
+//  · --c-ink-anchor #3d3d3d has NO Forge equivalent (advisory in the gate, not a
+//    duplicate). Left literal; it is a real value with no token to point at.
+//  · the rgba() values below sit outside this gate by design — it compares HEX
+//    only, and the alpha family is gy-73h3j's scope, not this bead's.
 const FORGE_CSS = `
-        :root{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
+        :root{--c-bg:var(--g-color-neutral-light-0);--c-card:var(--g-color-neutral-light-1);--c-card2:var(--g-color-neutral-light-2);--c-muted:var(--g-color-neutral-light-3);--c-ink:var(--g-color-neutral-light-fg);--c-ink-muted:var(--g-color-grey-muted-fg-light);--c-ink-anchor:#3d3d3d;--c-ink-label:var(--g-color-grey-label-light);--c-brand:var(--g-color-brand-amber-500);--c-brand-text:var(--g-color-brand-amber-text-light);--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
