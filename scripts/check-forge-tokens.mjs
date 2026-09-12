@@ -32,7 +32,7 @@
  * Exits 1 on drift, 0 when clean. `--list` prints the token table and exits 0.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, isAbsolute, sep } from 'node:path';
 import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
 
@@ -135,6 +135,62 @@ function blankComments(src) {
   return out;
 }
 
+/**
+ * True when `f` is the directory `dir` itself or lives underneath it.
+ *
+ * 🔴 THE DEFECT THIS REPLACES — gy-swdgh, measured on main 57943e8. This test
+ * used to be `f.startsWith(VENDORED)`, a STRING prefix where a PATH boundary
+ * was meant. `VENDORED` is <ROOT>/src/forge with no trailing separator, so the
+ * exemption also swallowed every sibling whose name merely begins with
+ * "forge" — and exactly one exists: src/forge-ui.tsx, which is THE FILE THIS
+ * GATE WAS WRITTEN FOR (see the header: it declared a parallel copy of the
+ * brand palette). The gate reported OK over its own founding defect for its
+ * whole life, and the gy-1phkc SSOT repoint carried the bug through unchanged.
+ * Comparing on a path boundary is the whole fix; `..` and absolute results mean
+ * "outside", and an empty result means "is the directory itself".
+ */
+function insideDir(f, dir) {
+  const rel = relative(dir, f);
+  return rel === '' || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel));
+}
+
+// ============================================================================
+// EXEMPTIONS — EACH ONE STATES WHAT IT IS FOR. (designer's standing ask, 2026-09-12,
+// arising from gy-swdgh.)
+//
+// 🔴 WHY THIS IS A TABLE AND NOT TWO `if` LINES. The gy-swdgh defect was an
+// exemption whose PURPOSE lived only in a comment: it was written to mean "the
+// src/forge/ directory", was implemented as a string prefix, and silently grew to
+// cover src/forge-ui.tsx — the one file the gate exists for. It then survived the
+// gy-1phkc refactor because a rename carried the mechanism without the intent.
+// Naming each exemption and printing what it caught makes both halves visible: if
+// an exemption starts matching something it was not written for, the COUNT moves
+// and the name no longer describes the set. A comment cannot do that.
+// ============================================================================
+const EXEMPTIONS = [
+  {
+    name: 'vendored-mirror',
+    // FOR: src/forge/ IS the palette. It is a generated mirror of the producer and
+    // is SUPPOSED to contain raw literals; flagging it would be flagging the design
+    // system for being the design system. Its fidelity is enforced elsewhere, by
+    // sync-forge-tokens.mjs --check, so exempting it here loses no coverage.
+    // NOT FOR: anything merely NAMED like it. Containment, never a prefix.
+    reason: 'the vendored mirror IS the palette; its fidelity is gated by sync-forge-tokens.mjs --check',
+    test: (f) => insideDir(f, VENDORED),
+  },
+  {
+    name: 'generated-functions-palette',
+    // FOR: functions/_forge.js only. It is GENERATED from src/forge/forge.css
+    // because Pages Functions run in a Worker and cannot import the site's CSS.
+    // Its drift is caught by gen-functions-forge-tokens.mjs --check.
+    // NOT FOR: hand-written code in functions/. That is scanned — functions/ once
+    // held 48 exact duplicates under a green check (gy-aczn1).
+    reason: 'generated from forge.css; drift gated by gen-functions-forge-tokens.mjs --check',
+    test: (f) => f === GENERATED,
+  },
+];
+const exemptedBy = new Map();
+
 const errors = [];
 const advisory = [];
 
@@ -144,8 +200,11 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
   // sourced from the producer checkout, which lives outside this tree entirely,
   // so a startsWith(SSOT) test would no longer exempt src/forge/ and the gate
   // would flag the design system for being the design system.
-  if (f.startsWith(VENDORED)) continue;
-  if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
+  const exempt = EXEMPTIONS.find((e) => e.test(f));
+  if (exempt) {
+    exemptedBy.set(exempt.name, (exemptedBy.get(exempt.name) || 0) + 1);
+    continue;
+  }
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
   lines.forEach((line, i) => {
@@ -164,6 +223,15 @@ if (advisory.length) {
   console.log(`\nAdvisory — ${advisory.length} literal(s) with no matching Forge token (NOT failing):`);
   for (const a of advisory.slice(0, 20)) console.log(`  ${a}`);
   if (advisory.length > 20) console.log(`  ... and ${advisory.length - 20} more`);
+}
+
+// 🔴 PRINT WHAT EACH EXEMPTION ACTUALLY CAUGHT. An exemption that quietly widens is
+// the gy-swdgh defect; a moving count is the cheapest possible tell, and it costs
+// two lines of output. If a name stops describing its set, that is visible here
+// BEFORE it hides a real duplicate.
+console.log('\nExemptions applied (each states what it is for — see EXEMPTIONS in this file):');
+for (const e of EXEMPTIONS) {
+  console.log(`  ${e.name}: ${exemptedBy.get(e.name) || 0} file(s) — ${e.reason}`);
 }
 
 if (errors.length) {
