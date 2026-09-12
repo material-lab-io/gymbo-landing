@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { useWaitlistReveal } from "./lib/waitlistReveal";
 
 /* ============================================================================
    forge-ui — shared design tokens and presentational primitives for
@@ -173,6 +174,15 @@ const FORGE_CSS = `
         @keyframes g-rise{to{opacity:1;transform:none}}
         @keyframes g-fade{to{opacity:1}}
         .hero-rise{opacity:0;transform:translateY(16px);animation:g-rise .7s cubic-bezier(.22,.9,.3,1) forwards}
+        /* gy-becxi — the inline capture reveal. Short and small on purpose: the
+           panel appears directly under the CTA the visitor just tapped, so it is
+           already in their fixation area and a long or large motion reads as the
+           page moving, which is the register Kaushik called "abrupt and jerky"
+           elsewhere. 160ms and 6px announce the change without performing it.
+           The call site passes reducedMotion and the class is simply not applied,
+           so this never needs a media query that could disagree with the JS. */
+        @keyframes g-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        .gy-reveal{animation:g-reveal .16s cubic-bezier(.22,.9,.3,1) both}
         .hero-fade{opacity:0;animation:g-fade .8s ease forwards}
         .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.30s}.d4{animation-delay:.44s}.d5{animation-delay:.58s}
         .d6{animation-delay:.55s}.d7{animation-delay:.95s}
@@ -365,6 +375,38 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
 }
 
 /**
+ * WHAT A WAITLIST CTA DOES WHEN TAPPED (gy-becxi).
+ *
+ * 🔴 ONE DEFINITION, SHARED BY BOTH WAITLIST CTAs. WaitlistCTA and PrimaryCTA
+ * are two VISUAL cells of the same control; before this they each carried their
+ * own hand-written copy of `trackCta(...); scrollToId("cta")`. Two copies of one
+ * behaviour is how a fix lands on one of them and quietly not the other — and a
+ * waitlist CTA that still scrolls is indistinguishable, from the outside, from
+ * one nobody got round to wrapping.
+ *
+ * INSIDE a cluster: reveal the capture in place. Damini's report (gy-becxi) is
+ * that the scroll itself is the friction.
+ * OUTSIDE one: scroll to the footer form, exactly as before. That fallback is
+ * what makes this change additive — no call site this bead did not touch can
+ * change behaviour — and the footer form is deliberately kept (designer's item
+ * 3): people who arrive by scrolling must still find a capture there, and it is
+ * the target of every existing deep link and of the prod smoke suite.
+ *
+ * THE TRACKING IS IDENTICAL EITHER WAY. waitlist_cta_click fires with the same
+ * location whichever branch runs, so the before/after comparison Damini is
+ * actually asking for — how many taps reach a submit — is a comparison of the
+ * same event and not of two differently-instrumented worlds.
+ */
+function useWaitlistCtaAction(location: CtaLocation) {
+  const cluster = useWaitlistReveal();
+  return () => {
+    trackCta("waitlist_cta_click", location);
+    if (cluster) cluster.reveal();
+    else scrollToId("cta");
+  };
+}
+
+/**
  * SECONDARY + SCROLL — the demoted waitlist (gy-e9h9y).
  *
  * 🔴 DEMOTION MEANS LOWER VISUAL WEIGHT, NOT LOWER REACHABILITY. This stays a
@@ -379,11 +421,14 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
  */
 export function WaitlistCTA({ dark, size = "md", location, className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children?: React.ReactNode }) {
   const v = ctaVisual("secondary", { dark, size });
+  const onClick = useWaitlistCtaAction(location);
+  const reveal = useWaitlistReveal();
   return (
     <button
-      onClick={() => { trackCta("waitlist_cta_click", location); scrollToId("cta"); }}
+      onClick={onClick}
       data-cta="waitlist"
       data-cta-location={location}
+      data-cta-behaviour={reveal ? "reveal" : "scroll"}
       className={`${v.className} ${className}`}
       style={v.style}
     >
@@ -406,11 +451,14 @@ export function WaitlistCTA({ dark, size = "md", location, className = "", child
  */
 export function PrimaryCTA({ dark, size = "md", className = "", location, children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; location: CtaLocation; children?: React.ReactNode }) {
   const v = ctaVisual("primary", { dark, size });
+  const onClick = useWaitlistCtaAction(location);
+  const reveal = useWaitlistReveal();
   return (
     <button
-      onClick={() => { trackCta("waitlist_cta_click", location); scrollToId("cta"); }}
+      onClick={onClick}
       data-cta="waitlist"
       data-cta-location={location}
+      data-cta-behaviour={reveal ? "reveal" : "scroll"}
       className={`${v.className} ${className}`}
       style={v.style}
     >
