@@ -1,3 +1,14 @@
+/* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
+ * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.hc.css
+ * Pinned at commit: 2656eb128c3bb8272a69b054d0179917aaaed53e
+ *
+ * Regenerate:  node scripts/sync-forge-tokens.mjs
+ * Verify:      node scripts/sync-forge-tokens.mjs --check
+ *
+ * Edits here are erased by the next sync AND fail CI immediately. Token
+ * changes belong in the producer (Gymbo-v1 design-tokens/), then repin:
+ *   node scripts/sync-forge-tokens.mjs --pin <producer-sha>
+ */
 @media (prefers-contrast: more) {
   :root {
     --g-text-brand: #78350f; /** light brand-as-text HC = #78350F (AAA) */

@@ -1,10 +1,35 @@
-import { marked } from "marked";
+import { marked, Renderer } from "marked";
 import { Plus } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { F, SERIF, SANS, SHADOW } from "../forge-ui";
 import type { Post } from "../content/blog/posts";
 
 marked.setOptions({ gfm: true });
+
+/* gy-ma11q — keyboard access to wide tables.
+   Guide/research bodies are markdown rendered to HTML and injected with
+   dangerouslySetInnerHTML, so there is no JSX to hang attributes on: the wrapper has to
+   come from the renderer. A horizontally scrollable region that contains no focusable
+   element cannot be scrolled by keyboard or switch at all — the off-screen columns are
+   simply unreachable (axe scrollable-region-focusable, WCAG-AA). Measured live on
+   2026-09-06: 6 guide/research routes failed on exactly this.
+   tabindex="0" makes the region scrollable by keyboard; role="region" + aria-label give it
+   a name so it is announced rather than being an unlabelled tab stop. This is the single
+   choke point for every markdown table on the site — ArticlePage is the only place marked
+   runs and the only user of .article-prose.
+
+   Implementation note, learned the hard way: do NOT `bind()` the default renderer here.
+   marked attaches `parser` to the renderer instance it actually uses, and a bound copy of a
+   bare `new Renderer()` has no parser — the build dies inside tablecell. Calling
+   `Renderer.prototype.table` with `this` keeps the live renderer (and its parser) intact. */
+marked.use({
+  renderer: {
+    table(this: Renderer, token: Parameters<Renderer["table"]>[0]) {
+      const table = Renderer.prototype.table.call(this, token);
+      return `<div class="table-scroll" tabindex="0" role="region" aria-label="Table — scroll horizontally to see all columns">${table}</div>`;
+    },
+  },
+});
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -45,11 +70,26 @@ export function ArticlePage({
 
         <div className="article-prose mt-8" style={{ color: F.inkMuted, fontFamily: SANS, fontSize: "15.5px", lineHeight: 1.75 }} dangerouslySetInnerHTML={{ __html: html }} />
 
+        {/* gy-a9fkv VARIANT A — request-access primary (pm's interim default).
+            This one CTA renders on all 16 content pages. It linked to /#cta (the
+            waitlist) while promising a 7-day trial, so the label already did not
+            describe what the button does. The trial is REAL — P7D intro offer live
+            in ASC on both products, 175/175 territories (gy-8af60) — but the app is
+            404 on the App Store in both IN and US storefronts, so a visitor cannot
+            start it. Sequencing, not a false claim: the trial is what you get AFTER
+            admission. PROVENANCE OF THE TWO PHRASES DIFFERS AND THE DIFFERENCE
+            MATTERS: "Gymbo is in private alpha" IS voice-guide canon (v9 section 7,
+            founder ruling gy-2f2ak.4). "Request access" IS NOT — it is ratified by
+            BEAD RULING ONLY (gy-wymhs, extended by gy-a9fkv and gy-tjqwg). The v10
+            proposal that would make it guide canon, Gymbo-v1 PR #983, is still OPEN
+            and deliberately does not block this change. So do not cite this file as
+            evidence that "Request access" is guide canon. If #983 lands differently,
+            this is a two-string revert. */}
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
-            Try Gymbo free for 7 days →
+            Request access →
           </a>
-          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Billed via the App Store</span>
+          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Gymbo is in private alpha. Your 7-day free trial starts once you are in. Billed via the App Store.</span>
         </div>
 
         {post.faq.length > 0 && (
