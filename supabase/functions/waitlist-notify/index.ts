@@ -75,9 +75,14 @@ async function db(path: string, init: RequestInit = {}): Promise<Response> {
   if (!url || !key) throw new Error("supabase_env_missing")
   return await fetch(`${url}/rest/v1/${path}`, {
     ...init,
+    // gy-sywii: every write to waitlist.team_alerted_at / contacted_at is logged to
+    // waitlist_outreach_events by a trigger that reads this header. Without it this
+    // function's marks log as 'undeclared' -- indistinguishable from a stray caller.
+    // Declared here, not at the PATCH site, so a future write cannot forget it.
     headers: {
       apikey: key, Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json", ...(init.headers ?? {}),
+      "Content-Type": "application/json", "X-Outreach-Actor": "automation",
+      ...(init.headers ?? {}),
     },
   })
 }
