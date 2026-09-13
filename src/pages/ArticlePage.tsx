@@ -26,7 +26,7 @@ marked.use({
   renderer: {
     table(this: Renderer, token: Parameters<Renderer["table"]>[0]) {
       const table = Renderer.prototype.table.call(this, token);
-      return `<div class="table-scroll" tabindex="0" role="region" aria-label="Table — scroll horizontally to see all columns">${table}</div>`;
+      return `<div class="table-scroll" tabindex="0" role="region" aria-label="Table: scroll horizontally to see all columns">${table}</div>`;
     },
   },
 });

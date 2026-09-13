@@ -169,7 +169,7 @@ export function CompareWellnessZ() {
                 inside it rather than a prop on it. The table already carries an sr-only
                 <caption>, so the region is labelled by that same wording. */}
             <Reveal className="-mx-5 px-5 md:mx-0 md:px-0">
-              <div className="table-scroll overflow-x-auto" tabIndex={0} role="region" aria-label="Feature comparison of Gymbo and WellnessZ — scroll horizontally to see all columns">
+              <div className="table-scroll overflow-x-auto" tabIndex={0} role="region" aria-label="Feature comparison of Gymbo and WellnessZ: scroll horizontally to see all columns">
               <table className="w-full border-collapse" style={{ minWidth: "640px", fontFamily: SANS }}>
                 <caption className="sr-only">Feature comparison of Gymbo and WellnessZ</caption>
                 <thead>
