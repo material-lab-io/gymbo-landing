@@ -64,3 +64,37 @@ test("gy-9ggf3: the longest option text is still present in full", async () => {
   const h = await html();
   assert.match(h, /It shows me and I did not agree to this use/);
 });
+
+// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback that tells a
+// rightsholder where to go when the form cannot record their claim must point at
+// grievance@getgymbo.com, the address VERIFIED to deliver on 2026-09-08
+// (gy-vhxsd). privacy@ has no delivery evidence: a claim that fails at the
+// form must not also fail at the fallback.
+const post = async (env, upstreamStatus) => {
+  globalThis.fetch = async () => new Response("", { status: upstreamStatus });
+  const { onRequestPost } = await import(MOD);
+  const body = new URLSearchParams({
+    media_id: "11111111-2222-3333-4444-555555555555", requester_name: "Test Reporter",
+    requester_email: "reporter@example.invalid", requester_role: "other", claim_kind: "other",
+    claim_detail: "control",
+  });
+  const request = new Request("https://x/m/takedown", {
+    method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" },
+  });
+  const res = await onRequestPost({ env, request, params: {} });
+  return { status: res.status, h: await res.text() };
+};
+
+test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never privacy@", async () => {
+  const cases = [
+    ["no credential bound", {}, 201, 503],
+    ["upstream insert failure", ENV, 500, 502],
+    ["case already open", ENV, 409, 200],
+  ];
+  for (const [label, env, upstream, expected] of cases) {
+    const { status, h } = await post(env, upstream);
+    assert.equal(status, expected, label);
+    assert.match(h, /mailto:grievance@getgymbo\.com/, `${label}: must offer the verified grievance address`);
+    assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
+  }
+});
