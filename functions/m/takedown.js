@@ -69,6 +69,16 @@ function caseRef() {
   return "GYM-TD-" + [...b].map((n) => ALPHABET[n % 32]).join("");
 }
 
+// gy-wwr2e.8.1 AC4 — the retention period for reporter data, in the EXACT words
+// Kaushik approved on 2026-09-14 (option A, recorded on that bead by pm). Shown
+// BEFORE submission, because the lawful basis is consent and consent needs the
+// notice first; repeated on the confirmation. Deliberately NOT on the
+// "already open" reply: that path stored none of this reporter's details, so
+// promising to delete them would imply we hold them. Do not paraphrase -- a
+// change here is a change to an approved notice and goes back through compliance.
+export const RETENTION_NOTICE =
+  "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
+
 const FORM = (mediaId) => `<h1>Request removal of a video</h1>
 <p class="note">If you appear in a video shared through Gymbo, or you hold rights in
 one, use this form and we will take it down while we review your request. You do not
@@ -100,6 +110,7 @@ ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
 <textarea id="claim_detail" name="claim_detail" required></textarea>
 <label for="evidence">Anything that helps us check this — optional</label>
 <textarea id="evidence" name="evidence"></textarea>
+<p class="note">${RETENTION_NOTICE}</p>
 <button type="submit">Send request</button>
 </form>`;
 
@@ -144,7 +155,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
     console.error("[takedown] SUPABASE_SERVICE_ROLE_KEY missing — claim NOT recorded");
     return shell("Request removal", `<h1>We could not record your request</h1>
 <p class="note">Something is wrong on our side. Please email
-<a href="mailto:privacy@getgymbo.com">privacy@getgymbo.com</a> and we will act on it.</p>`, 503);
+<a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 503);
   }
 
   const ref = caseRef();
@@ -164,15 +175,16 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
 <div class="card">
 <p>Your reference is</p><p class="ref">${esc(suppressed ? "already open" : ref)}</p>
 <p class="note">${suppressed
-  ? `A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:privacy@getgymbo.com">privacy@getgymbo.com</a> if you want your details added to it.`
+  ? `A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> if you want your details added to it.`
   : `Keep this reference. The video is hidden from the Gymbo app and from its public
 link from now, while we review your request. We will email you at
-${esc(fields.requester_email)} when it is decided.`}</p>
+${esc(fields.requester_email)} when it is decided.</p>
+<p class="note">${RETENTION_NOTICE}`}</p>
 </div>`);
   }
 
   console.error("[takedown] insert failed", res.status, await res.text().catch(() => ""));
   return shell("Request removal", `<h1>We could not record your request</h1>
 <p class="note">Something is wrong on our side. Please email
-<a href="mailto:privacy@getgymbo.com">privacy@getgymbo.com</a> and we will act on it.</p>`, 502);
+<a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 502);
 }

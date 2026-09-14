@@ -64,3 +64,62 @@ test("gy-9ggf3: the longest option text is still present in full", async () => {
   const h = await html();
   assert.match(h, /It shows me and I did not agree to this use/);
 });
+
+// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback that tells a
+// rightsholder where to go when the form cannot record their claim must point at
+// grievance@getgymbo.com, the address VERIFIED to deliver on 2026-09-08
+// (gy-vhxsd). privacy@ has no delivery evidence: a claim that fails at the
+// form must not also fail at the fallback.
+const post = async (env, upstreamStatus) => {
+  globalThis.fetch = async () => new Response("", { status: upstreamStatus });
+  const { onRequestPost } = await import(MOD);
+  const body = new URLSearchParams({
+    media_id: "11111111-2222-3333-4444-555555555555", requester_name: "Test Reporter",
+    requester_email: "reporter@example.invalid", requester_role: "other", claim_kind: "other",
+    claim_detail: "control",
+  });
+  const request = new Request("https://x/m/takedown", {
+    method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" },
+  });
+  const res = await onRequestPost({ env, request, params: {} });
+  return { status: res.status, h: await res.text() };
+};
+
+test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never privacy@", async () => {
+  const cases = [
+    ["no credential bound", {}, 201, 503],
+    ["upstream insert failure", ENV, 500, 502],
+    ["case already open", ENV, 409, 200],
+  ];
+  for (const [label, env, upstream, expected] of cases) {
+    const { status, h } = await post(env, upstream);
+    assert.equal(status, expected, label);
+    assert.match(h, /mailto:grievance@getgymbo\.com/, `${label}: must offer the verified grievance address`);
+    assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
+  }
+});
+
+// gy-wwr2e.8.1 AC4 — the approved retention notice, verbatim, in the right places.
+const APPROVED = "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
+
+test("gy-wwr2e.8.1 AC4: the form shows the APPROVED retention notice, verbatim, BEFORE the submit button", async () => {
+  const h = await html();
+  const at = h.indexOf(APPROVED);
+  assert.ok(at > -1, "the approved wording must appear exactly, not paraphrased");
+  assert.ok(at < h.indexOf('type="submit"'), "consent needs the notice before collection, so it sits above submit");
+});
+
+test("gy-wwr2e.8.1 AC4: a recorded claim's confirmation repeats it; the already-open reply (nothing stored) does NOT", async () => {
+  const recorded = await post(ENV, 201);
+  assert.equal(recorded.status, 200);
+  assert.ok(recorded.h.includes(APPROVED), "confirmation of a stored claim repeats the notice");
+  const open = await post(ENV, 409);
+  assert.ok(!open.h.includes(APPROVED), "no details were stored on this path, so no deletion promise about them");
+});
+
+test("gy-wwr2e.8.1 AC4 NEG: no OTHER retention period is stated anywhere on the takedown surface", async () => {
+  for (const h of [await html(), (await post(ENV, 201)).h, (await post(ENV, 409)).h, (await post({}, 201)).h]) {
+    const periods = h.match(/\b\d+\s*(day|days|month|months|year|years|week|weeks)\b/gi) || [];
+    assert.deepEqual(periods.filter((p) => !/^90\s*days$/i.test(p)), [], "only the approved 90 days may be stated");
+  }
+});
