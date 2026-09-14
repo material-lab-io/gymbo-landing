@@ -65,13 +65,18 @@ test("gy-9ggf3: the longest option text is still present in full", async () => {
   assert.match(h, /It shows me and I did not agree to this use/);
 });
 
-// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback that tells a
-// rightsholder where to go when the form cannot record their claim must point at
-// grievance@getgymbo.com, the address VERIFIED to deliver on 2026-09-08
-// (gy-vhxsd). privacy@ has no delivery evidence: a claim that fails at the
-// form must not also fail at the fallback.
-const post = async (env, upstreamStatus) => {
-  globalThis.fetch = async () => new Response("", { status: upstreamStatus });
+// gy-s8z4z AC-I5 / AC-I6 — the form records a claim through ONE anon RPC.
+// The stub plays the database: it returns what submit_media_takedown returns
+// (a case reference, "already_open", "rate_limited") or an HTTP failure.
+const REF = "GYM-TD-7K2M9QXA";
+let calls = [];
+const post = async ({ rpc = { status: 200, body: REF }, headers = {}, throws = false, env = ENV } = {}) => {
+  calls = [];
+  globalThis.fetch = async (url, init = {}) => {
+    calls.push({ url: String(url), init });
+    if (throws) throw new Error("network down");
+    return new Response(JSON.stringify(rpc.body), { status: rpc.status });
+  };
   const { onRequestPost } = await import(MOD);
   const body = new URLSearchParams({
     media_id: "11111111-2222-3333-4444-555555555555", requester_name: "Test Reporter",
@@ -79,20 +84,73 @@ const post = async (env, upstreamStatus) => {
     claim_detail: "control",
   });
   const request = new Request("https://x/m/takedown", {
-    method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded" },
+    method: "POST", body, headers: { "content-type": "application/x-www-form-urlencoded", ...headers },
   });
   const res = await onRequestPost({ env, request, params: {} });
   return { status: res.status, h: await res.text() };
 };
 
+test("AC-I5: one call to the anon RPC, the anon key, the service key NEVER sent even when bound", async () => {
+  await post({ headers: { "CF-Connecting-IP": "203.0.113.7" } });
+  assert.equal(calls.length, 1);
+  const { url, init } = calls[0];
+  assert.match(url, /\/rest\/v1\/rpc\/submit_media_takedown$/);
+  assert.equal(init.method, "POST");
+  assert.doesNotMatch(JSON.stringify(init.headers), /"k"|Bearer k\b/, "the bound service key must not be used");
+  assert.match(init.headers.apikey, /^eyJ/);
+  const sent = JSON.parse(init.body);
+  assert.deepEqual(Object.keys(sent).sort(), ["p_claim_detail", "p_claim_kind", "p_client_ip", "p_evidence",
+    "p_media_id", "p_requester_email", "p_requester_name", "p_requester_role"]);
+  assert.equal(sent.p_media_id, "11111111-2222-3333-4444-555555555555");
+});
+
+test("AC-I6: the client IP comes ONLY from CF-Connecting-IP, in the body, never the URL", async () => {
+  await post({ headers: { "CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.9" } });
+  assert.equal(JSON.parse(calls[0].init.body).p_client_ip, "203.0.113.7");
+  assert.doesNotMatch(calls[0].url, /203\.0\.113\.7/, "the IP must not travel in the URL (request logs)");
+});
+
+test("AC-I6 NEG: a client-supplied X-Forwarded-For is IGNORED; with no CF header the IP is null, never invented", async () => {
+  await post({ headers: { "X-Forwarded-For": "198.51.100.9" } });
+  assert.equal(JSON.parse(calls[0].init.body).p_client_ip, null);
+});
+
+test("AC-I6: rate_limited -> neutral 'try again later' (429), still offering the grievance address, no count or window disclosed", async () => {
+  const { status, h } = await post({ rpc: { status: 200, body: "rate_limited" } });
+  assert.equal(status, 429);
+  assert.match(h, /try again later/i);
+  assert.match(h, /mailto:grievance@getgymbo\.com/);
+  assert.doesNotMatch(h, /Request received/i);
+  assert.doesNotMatch(h, /\b\d+\s*(minute|minutes|hour|hours|request|requests|submissions)\b/i, "do not teach a script the limit");
+});
+
+test("a recorded claim shows the DATABASE-minted reference, the notice, and no fallback", async () => {
+  const { status, h } = await post();
+  assert.equal(status, 200);
+  assert.match(h, /GYM-TD-7K2M9QXA/);
+  assert.match(h, /Request received/);
+});
+
+test("NEG: an unrecognised RPC answer is NEVER shown as received (a reference must match the shape)", async () => {
+  for (const body of ["ok", "GYM-TD-short", null, { case_ref: REF }, "<script>x</script>"]) {
+    const { status, h } = await post({ rpc: { status: 200, body } });
+    assert.equal(status, 502, JSON.stringify(body));
+    assert.doesNotMatch(h, /Request received/, JSON.stringify(body));
+    assert.doesNotMatch(h, /<script>x<\/script>/);
+  }
+});
+
+// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback points at the address
+// VERIFIED to deliver (grievance@, gy-vhxsd), never privacy@.
 test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never privacy@", async () => {
   const cases = [
-    ["no credential bound", {}, 201, 503],
-    ["upstream insert failure", ENV, 500, 502],
-    ["case already open", ENV, 409, 200],
+    ["rpc http failure", { rpc: { status: 500, body: { message: "x" } } }, 502],
+    ["network failure", { throws: true }, 502],
+    ["case already open", { rpc: { status: 200, body: "already_open" } }, 200],
+    ["rate limited", { rpc: { status: 200, body: "rate_limited" } }, 429],
   ];
-  for (const [label, env, upstream, expected] of cases) {
-    const { status, h } = await post(env, upstream);
+  for (const [label, opts, expected] of cases) {
+    const { status, h } = await post(opts);
     assert.equal(status, expected, label);
     assert.match(h, /mailto:grievance@getgymbo\.com/, `${label}: must offer the verified grievance address`);
     assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
@@ -109,16 +167,16 @@ test("gy-wwr2e.8.1 AC4: the form shows the APPROVED retention notice, verbatim, 
   assert.ok(at < h.indexOf('type="submit"'), "consent needs the notice before collection, so it sits above submit");
 });
 
-test("gy-wwr2e.8.1 AC4: a recorded claim's confirmation repeats it; the already-open reply (nothing stored) does NOT", async () => {
-  const recorded = await post(ENV, 201);
-  assert.equal(recorded.status, 200);
-  assert.ok(recorded.h.includes(APPROVED), "confirmation of a stored claim repeats the notice");
-  const open = await post(ENV, 409);
-  assert.ok(!open.h.includes(APPROVED), "no details were stored on this path, so no deletion promise about them");
+test("gy-wwr2e.8.1 AC4: a recorded claim's confirmation repeats it; already-open and rate-limited (nothing stored) do NOT", async () => {
+  assert.ok((await post()).h.includes(APPROVED));
+  assert.ok(!(await post({ rpc: { status: 200, body: "already_open" } })).h.includes(APPROVED));
+  assert.ok(!(await post({ rpc: { status: 200, body: "rate_limited" } })).h.includes(APPROVED));
 });
 
 test("gy-wwr2e.8.1 AC4 NEG: no OTHER retention period is stated anywhere on the takedown surface", async () => {
-  for (const h of [await html(), (await post(ENV, 201)).h, (await post(ENV, 409)).h, (await post({}, 201)).h]) {
+  const pages = [await html(), (await post()).h, (await post({ rpc: { status: 200, body: "already_open" } })).h,
+    (await post({ rpc: { status: 500, body: {} } })).h, (await post({ rpc: { status: 200, body: "rate_limited" } })).h];
+  for (const h of pages) {
     const periods = h.match(/\b\d+\s*(day|days|month|months|year|years|week|weeks)\b/gi) || [];
     assert.deepEqual(periods.filter((p) => !/^90\s*days$/i.test(p)), [], "only the approved 90 days may be stated");
   }
