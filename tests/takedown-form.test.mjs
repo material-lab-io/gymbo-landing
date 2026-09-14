@@ -98,3 +98,28 @@ test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never p
     assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
   }
 });
+
+// gy-wwr2e.8.1 AC4 — the approved retention notice, verbatim, in the right places.
+const APPROVED = "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
+
+test("gy-wwr2e.8.1 AC4: the form shows the APPROVED retention notice, verbatim, BEFORE the submit button", async () => {
+  const h = await html();
+  const at = h.indexOf(APPROVED);
+  assert.ok(at > -1, "the approved wording must appear exactly, not paraphrased");
+  assert.ok(at < h.indexOf('type="submit"'), "consent needs the notice before collection, so it sits above submit");
+});
+
+test("gy-wwr2e.8.1 AC4: a recorded claim's confirmation repeats it; the already-open reply (nothing stored) does NOT", async () => {
+  const recorded = await post(ENV, 201);
+  assert.equal(recorded.status, 200);
+  assert.ok(recorded.h.includes(APPROVED), "confirmation of a stored claim repeats the notice");
+  const open = await post(ENV, 409);
+  assert.ok(!open.h.includes(APPROVED), "no details were stored on this path, so no deletion promise about them");
+});
+
+test("gy-wwr2e.8.1 AC4 NEG: no OTHER retention period is stated anywhere on the takedown surface", async () => {
+  for (const h of [await html(), (await post(ENV, 201)).h, (await post(ENV, 409)).h, (await post({}, 201)).h]) {
+    const periods = h.match(/\b\d+\s*(day|days|month|months|year|years|week|weeks)\b/gi) || [];
+    assert.deepEqual(periods.filter((p) => !/^90\s*days$/i.test(p)), [], "only the approved 90 days may be stated");
+  }
+});
