@@ -10,7 +10,7 @@
 // It is linked from the footer of every media page, including the unavailable
 // ones -- that is where someone checking whether their earlier request took
 // effect will land.
-import { supabaseUrl, svcHeaders, esc } from "./_shared.js";
+import { supabaseUrl, anonHeaders, esc } from "./_shared.js";
 import { rootVars } from "../_forge.js";
 
 const CSS = `
@@ -57,17 +57,23 @@ const shell = (title, body, status = 200) =>
     { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
   );
 
-// A HUMAN-QUOTABLE REFERENCE, not the raw uuid.
-//
-// The requester has to be able to keep this, type it into an email, and read it
-// back to us over the phone. Crockford-style alphabet: no I, L, O or U, so it
-// cannot be misread as 1/0 and cannot accidentally spell anything.
-const ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
-function caseRef() {
-  const b = new Uint8Array(8);
-  crypto.getRandomValues(b);
-  return "GYM-TD-" + [...b].map((n) => ALPHABET[n % 32]).join("");
-}
+// A HUMAN-QUOTABLE REFERENCE, not the raw uuid: GYM-TD- plus 8 Crockford
+// characters (no I, L, O or U, so it cannot be misread as 1/0). It is MINTED BY
+// THE DATABASE now (submit_media_takedown), so an anonymous caller never
+// chooses its own case id. The page only checks the shape before showing it.
+const CASE_REF_RE = /^GYM-TD-[0-9A-HJKMNP-TV-Z]{8}$/;
+
+// gy-s8z4z AC-I5 / AC-I6: the ONE anon RPC that records a claim. The name is a
+// constant so coach's final name is a one-line change.
+export const TAKEDOWN_RPC = "submit_media_takedown";
+
+// AC-I6: the client IP for the database's hashed burst limit.
+// 🔴 ONLY CF-Connecting-IP, which Cloudflare's edge sets and overwrites. NEVER
+// X-Forwarded-For or any other client-supplied header: trusting one would let a
+// script rotate a fake IP per request and walk straight through the limit.
+// Absent (only possible off Cloudflare) -> null, and the database decides; the
+// page never invents a value.
+export const clientIp = (request) => request.headers.get("CF-Connecting-IP") || null;
 
 // gy-wwr2e.8.1 AC4 — the retention period for reporter data, in the EXACT words
 // Kaushik approved on 2026-09-14 (option A, recorded on that bead by pm). Shown
@@ -149,41 +155,65 @@ export async function onRequestPost(context) {
 what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
   }
 
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    // NEVER silently drop a rights claim. If we cannot record it, say so and
-    // give the person a route that does not depend on this form working.
-    console.error("[takedown] SUPABASE_SERVICE_ROLE_KEY missing — claim NOT recorded");
-    return shell("Request removal", `<h1>We could not record your request</h1>
-<p class="note">Something is wrong on our side. Please email
-<a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 503);
+  // ONE call, the PUBLIC anon key, no service-role key (founder decision
+  // 2026-09-14). The IP travels in the POST BODY, never the URL: query strings
+  // land in API request logs, and the raw IP must not be stored anywhere (the
+  // database keeps only an HMAC of it, AC-I6).
+  let outcome = null;
+  try {
+    const res = await fetch(`${supabaseUrl(env)}/rest/v1/rpc/${TAKEDOWN_RPC}`, {
+      method: "POST",
+      headers: anonHeaders(),
+      body: JSON.stringify({
+        p_media_id: fields.media_id,
+        p_requester_name: fields.requester_name,
+        p_requester_email: fields.requester_email,
+        p_requester_role: fields.requester_role,
+        p_claim_kind: fields.claim_kind,
+        p_claim_detail: fields.claim_detail,
+        p_evidence: fields.evidence,
+        p_client_ip: clientIp(request),
+      }),
+    });
+    if (res.ok) outcome = await res.json().catch(() => null);
+    else console.error("[takedown] rpc failed", res.status, await res.text().catch(() => ""));
+  } catch (e) {
+    console.error("[takedown] rpc unreachable", String(e));
   }
 
-  const ref = caseRef();
-  const res = await fetch(`${supabaseUrl(env)}/rest/v1/media_takedown_cases`, {
-    method: "POST",
-    headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
-    body: JSON.stringify({ case_ref: ref, ...fields }),
-  });
-
-  // 409 means a case is ALREADY OPEN on this asset -- the unique partial index
-  // permits only one. That is a success from the reporter's point of view: the
-  // clip is already suppressed and a human is already looking. Telling them
-  // "duplicate" would read as a refusal.
-  if (res.status === 201 || res.status === 409) {
-    const suppressed = res.status === 409;
+  // "already_open" is a success from the reporter's point of view: the clip is
+  // already suppressed and a human is already looking. Telling them "duplicate"
+  // would read as a refusal. Nothing of THIS reporter was stored.
+  if (outcome === "already_open") {
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
-<p>Your reference is</p><p class="ref">${esc(suppressed ? "already open" : ref)}</p>
-<p class="note">${suppressed
-  ? `A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> if you want your details added to it.`
-  : `Keep this reference. The video is hidden from the Gymbo app and from its public
-link from now, while we review your request. We will email you at
-${esc(fields.requester_email)} when it is decided.</p>
-<p class="note">${RETENTION_NOTICE}`}</p>
+<p>Your reference is</p><p class="ref">already open</p>
+<p class="note">A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> if you want your details added to it.</p>
 </div>`);
   }
 
-  console.error("[takedown] insert failed", res.status, await res.text().catch(() => ""));
+  // AC-I6: too many submissions from this network in a short window. The copy
+  // is deliberately NEUTRAL (no count, no window, no "you are blocked"), and it
+  // still gives a genuine reporter a route that does not depend on this form.
+  if (outcome === "rate_limited") {
+    return shell("Request removal", `<h1>Please try again later</h1>
+<p class="note">We could not take another request from your connection just now. Please try
+again later, or email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 429);
+  }
+
+  if (typeof outcome === "string" && CASE_REF_RE.test(outcome)) {
+    return shell("Request received", `<h1>Request received</h1>
+<div class="card">
+<p>Your reference is</p><p class="ref">${esc(outcome)}</p>
+<p class="note">Keep this reference. The video is hidden from the Gymbo app and from its public
+link from now, while we review your request. We will email you at
+${esc(fields.requester_email)} when it is decided.</p>
+<p class="note">${RETENTION_NOTICE}</p>
+</div>`);
+  }
+
+  // NEVER silently drop a rights claim, and never show "received" for an answer
+  // we do not recognise. Say so, and give a route that does not depend on this form.
   return shell("Request removal", `<h1>We could not record your request</h1>
 <p class="note">Something is wrong on our side. Please email
 <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 502);
