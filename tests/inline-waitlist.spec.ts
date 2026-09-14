@@ -314,6 +314,12 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
     // The sticky footer CTA deliberately still scrolls — it scrolls to the
     // footer form, which is its own capture point and STAYS (designer item 3).
     footer: 'scroll',
+    // gy-w77x3 AC4: the "Get Gymbo" buttons are now TRACKED, but still scroll.
+    // Scroll is a recorded non-decision, not a ruling: whether they reveal
+    // waits on AC1 (which control Damini actually tapped). Change these
+    // when that is answered, not to get this test green.
+    nav: 'scroll',
+    pricing: 'scroll',
   };
   const found = await page.evaluate(() =>
     Object.fromEntries(
@@ -327,4 +333,43 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
     found,
     'every waitlist CTA on / must have a DECLARED behaviour. A new location here means someone added a CTA without deciding whether it reveals; an absent one means a cluster lost its wrapper and silently reverted to scrolling.',
   ).toEqual(EXPECTED);
+});
+
+/**
+ * gy-w77x3 AC4 — no "Get Gymbo" button on / may be untracked.
+ *
+ * The set test above cannot see this: it keys on location, so ONE tracked
+ * pricing button hides any number of untracked siblings. This counts every
+ * visible-label match instead, and requires the untracked count to be zero
+ * with at least one match found (so an empty page cannot pass it).
+ */
+test('every "Get Gymbo" button on / is a tracked waitlist CTA', async ({ page }) => {
+  await page.goto('/');
+  const buttons = page.getByRole('button', { name: 'Get Gymbo', exact: true });
+  const total = await buttons.count();
+  expect(total, 'positive control: the page must actually contain Get Gymbo buttons').toBeGreaterThan(1);
+  const untracked = await page.evaluate(() =>
+    [...document.querySelectorAll('button')]
+      .filter((b) => b.textContent?.trim() === 'Get Gymbo')
+      .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
+      .map((b) => b.outerHTML.slice(0, 120)),
+  );
+  expect(untracked, 'a Get Gymbo button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
+});
+
+// The attributes above are a label; this proves the click EMITS. umami is absent
+// off production hostnames (#110), so it is stubbed to record calls.
+test('clicking nav and pricing "Get Gymbo" emits waitlist_cta_click with its location', async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).__tracked = [];
+    (window as any).umami = { track: (name: string, data: unknown) => (window as any).__tracked.push({ name, data }) };
+  });
+  await page.goto('/');
+  await page.locator('[data-cta="waitlist"][data-cta-location="nav"]').click();
+  await page.locator('[data-cta="waitlist"][data-cta-location="pricing"]').first().click();
+  const tracked = await page.evaluate(() => (window as any).__tracked);
+  expect(tracked).toEqual([
+    { name: 'waitlist_cta_click', data: { location: 'nav' } },
+    { name: 'waitlist_cta_click', data: { location: 'pricing' } },
+  ]);
 });

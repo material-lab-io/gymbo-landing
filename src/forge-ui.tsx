@@ -290,8 +290,9 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
 
 /** Where a CTA sits. Measured inventory, not a guess — designer's design named
  * "hero / mid-page / footer" but flagged it as an intended taxonomy they had not
- * checked against the code. The real placements are these five. */
-export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare";
+ * checked against the code. The real placements were these five; gy-w77x3 added
+ * "nav" and "pricing" for the "Get Gymbo" buttons, which fired no event at all. */
+export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare" | "nav" | "pricing";
 
 /**
  * Fire a CTA click event.
@@ -411,6 +412,28 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
  * actually asking for — how many taps reach a submit — is a comparison of the
  * same event and not of two differently-instrumented worlds.
  */
+/**
+ * TRACKING ONLY, BEHAVIOUR UNCHANGED — for the hand-styled "Get Gymbo" buttons
+ * (nav, pricing) that are not PrimaryCTA/WaitlistCTA (gy-w77x3 AC4).
+ *
+ * They still scroll to the footer form. Whether they should reveal instead waits
+ * on gy-w77x3 AC1 (which control Damini actually tapped), so this deliberately
+ * does NOT route through useWaitlistCtaAction: that would silently start
+ * revealing inside a cluster, which is a decision, not instrumentation.
+ * Spread onto the existing element so its visual treatment is untouched.
+ */
+export function waitlistScrollCtaProps(location: CtaLocation) {
+  return {
+    onClick: () => {
+      trackCta("waitlist_cta_click", location);
+      scrollToId("cta");
+    },
+    "data-cta": "waitlist",
+    "data-cta-location": location,
+    "data-cta-behaviour": "scroll",
+  } as const;
+}
+
 function useWaitlistCtaAction(location: CtaLocation) {
   const cluster = useWaitlistReveal();
   return () => {
