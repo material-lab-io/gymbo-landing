@@ -8,6 +8,11 @@
 // definition. Ratified by pm: read with the service_role key HERE, in the
 // Pages Function, and return only whitelisted fields.
 //
+// 🔴 SUPERSEDED FOR /m/[id] (gy-gcr22, founder decision 2026-09-14): the media
+// page now reads through the anon RPC below and holds NO service-role key.
+// svcHeaders/signObject remain ONLY for /w/ and /m/takedown, which move to their
+// own anon RPCs next (gy-s8z4z AC-I2 / AC-I5). Do not add a new caller.
+//
 // 🔴 THE SERVICE_ROLE KEY MUST NEVER REACH THE BROWSER. It is a full-database
 // credential; a leak is rotate-everything, not fix-forward. It is read from the
 // environment binding and used only in fetches originating in this Worker. No
@@ -20,6 +25,75 @@ export const SUPABASE_DEFAULT_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 // anti-goal: a test that passes without the feature working. Production sets no
 // SUPABASE_URL and gets the constant above.
 export const supabaseUrl = (env) => (env && env.SUPABASE_URL) || SUPABASE_DEFAULT_URL;
+
+// ============================================================================
+// gy-gcr22 / gy-s8z4z — THE /m/ READ PATH WITHOUT A SERVICE-ROLE KEY.
+//
+// Founder decision 2026-09-14: no full-database credential on Cloudflare Pages,
+// now or as a stopgap. /m/ reads through ONE anon-callable SECURITY DEFINER RPC
+// that selects FROM exercise_media_for_app (the app's view), so the page and the
+// app share one definition of "available and attribution-complete".
+//
+// NO SIGNING. Available objects live in the PUBLIC exercise-media bucket and are
+// served by their public URL everywhere; a takedown MOVES the objects to a
+// private quarantine bucket (gy-h8a7o.1). Suppression is therefore enforced at
+// the object layer, not by a short-lived URL.
+//
+// The anon key below is PUBLIC by design (the same key the app ships and
+// functions/api/waitlist.js inlines). It grants only what anon's grants allow:
+// EXECUTE on the narrow RPCs, nothing on the tables.
+// ============================================================================
+export const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
+
+// The RPC name is ONE constant so coach's final name is a one-line change.
+export const MEDIA_PAGE_RPC = "media_page";
+
+export const anonHeaders = () => ({
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  "Content-Type": "application/json",
+});
+
+export const mediaBucket = (env) => (env && env.MEDIA_BUCKET) || "exercise-media";
+
+// Public object URL for a stored path. Each segment is encoded so a path can
+// never break out of the bucket prefix or smuggle a query string.
+export const publicObjectUrl = (env, objectPath) =>
+  `${supabaseUrl(env)}/storage/v1/object/public/${mediaBucket(env)}/` +
+  String(objectPath).split("/").map(encodeURIComponent).join("/");
+
+/**
+ * Resolve one media id through the anon RPC.
+ * Returns { kind: "ok", m } | { kind: "not_found" } | { kind: "withdrawn" }
+ *       | { kind: "unavailable" } | { kind: "error" }.
+ *
+ * 🔴 "error" is NEVER collapsed into "not_found". A page that cannot reach the
+ * database says "cannot be shown right now", not "that link does not point to a
+ * video we have" -- the second is a false statement to a trainer holding a link.
+ */
+export async function fetchMediaPage(env, id) {
+  let res;
+  try {
+    res = await fetch(`${supabaseUrl(env)}/rest/v1/rpc/${MEDIA_PAGE_RPC}`, {
+      method: "POST",
+      headers: anonHeaders(),
+      body: JSON.stringify({ p_media_id: id }),
+    });
+  } catch {
+    return { kind: "error" };
+  }
+  if (!res.ok) return { kind: "error" };
+  const rows = await res.json().catch(() => null);
+  if (!Array.isArray(rows)) return { kind: "error" };
+  if (rows.length === 0) return { kind: "not_found" };
+  const m = rows[0];
+  if (m.state === "ok") return { kind: "ok", m };
+  if (m.state === "withdrawn") return { kind: "withdrawn" };
+  // Any other or unknown state is treated as unavailable: an RPC that grows a
+  // new state must not accidentally render media on this page.
+  return { kind: "unavailable" };
+}
 
 // Only these columns ever leave the database for the public page. A whitelist
 // rather than `select=*` so that a column added later -- an operator note, an
