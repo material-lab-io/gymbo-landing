@@ -13,6 +13,7 @@
 // provable here is the contract: the same names and values the backend reads.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 
 const MOD = "../functions/m/takedown.js";
 const ENV = { SUPABASE_SERVICE_ROLE_KEY: "k", SUPABASE_URL: "https://stub.invalid" };
@@ -90,8 +91,12 @@ const post = async ({ rpc = { status: 200, body: REF }, headers = {}, throws = f
   return { status: res.status, h: await res.text() };
 };
 
-test("AC-I5: one call to the anon RPC, the anon key, the service key NEVER sent even when bound", async () => {
-  await post({ headers: { "CF-Connecting-IP": "203.0.113.7" } });
+const SECRET = "test-ip-signing-secret";
+const SIGN_ENV = { ...ENV, TAKEDOWN_IP_SIGNING_SECRET: SECRET };
+const hmac = (ip, ts) => createHmac("sha256", SECRET).update(`${ip}.${ts}`).digest("hex");
+
+test("AC-I5: one call to the anon RPC, the anon key, 7 args, NO p_client_ip, service key NEVER sent", async () => {
+  await post({ env: SIGN_ENV, headers: { "CF-Connecting-IP": "203.0.113.7" } });
   assert.equal(calls.length, 1);
   const { url, init } = calls[0];
   assert.match(url, /\/rest\/v1\/rpc\/submit_media_takedown$/);
@@ -99,20 +104,52 @@ test("AC-I5: one call to the anon RPC, the anon key, the service key NEVER sent 
   assert.doesNotMatch(JSON.stringify(init.headers), /"k"|Bearer k\b/, "the bound service key must not be used");
   assert.match(init.headers.apikey, /^eyJ/);
   const sent = JSON.parse(init.body);
-  assert.deepEqual(Object.keys(sent).sort(), ["p_claim_detail", "p_claim_kind", "p_client_ip", "p_evidence",
-    "p_media_id", "p_requester_email", "p_requester_name", "p_requester_role"]);
-  assert.equal(sent.p_media_id, "11111111-2222-3333-4444-555555555555");
+  assert.deepEqual(Object.keys(sent).sort(), ["p_claim_detail", "p_claim_kind", "p_evidence",
+    "p_media_id", "p_requester_email", "p_requester_name", "p_requester_role"],
+    "the RPC no longer takes the IP as an argument (pm B1): a caller-supplied IP is spoofable");
+  assert.doesNotMatch(init.body, /203\.0\.113\.7/, "the IP is not in the body");
+  assert.doesNotMatch(url, /203\.0\.113\.7/, "nor in the URL (request logs)");
 });
 
-test("AC-I6: the client IP comes ONLY from CF-Connecting-IP, in the body, never the URL", async () => {
-  await post({ headers: { "CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.9" } });
-  assert.equal(JSON.parse(calls[0].init.body).p_client_ip, "203.0.113.7");
-  assert.doesNotMatch(calls[0].url, /203\.0\.113\.7/, "the IP must not travel in the URL (request logs)");
+test("AC-I6 (b1): the page attests CF-Connecting-IP with a VALID HMAC over ip.ts and a fresh ts", async () => {
+  const before = Math.floor(Date.now() / 1000);
+  await post({ env: SIGN_ENV, headers: { "CF-Connecting-IP": "203.0.113.7" } });
+  const h = calls[0].init.headers;
+  assert.equal(h["x-gymbo-client-ip"], "203.0.113.7");
+  const ts = Number(h["x-gymbo-client-ts"]);
+  assert.ok(Number.isInteger(ts) && ts >= before && ts <= before + 5, "ts is current unix SECONDS");
+  // Verified independently with node:crypto, not with the page's own WebCrypto code.
+  assert.equal(h["x-gymbo-client-sig"], hmac("203.0.113.7", h["x-gymbo-client-ts"]));
+  assert.match(h["x-gymbo-client-sig"], /^[0-9a-f]{64}$/, "lowercase hex SHA-256");
 });
 
-test("AC-I6 NEG: a client-supplied X-Forwarded-For is IGNORED; with no CF header the IP is null, never invented", async () => {
-  await post({ headers: { "X-Forwarded-For": "198.51.100.9" } });
-  assert.equal(JSON.parse(calls[0].init.body).p_client_ip, null);
+test("AC-I6 (b1) NEG: the signature binds the IP AND the ts (a tampered value does not verify)", async () => {
+  await post({ env: SIGN_ENV, headers: { "CF-Connecting-IP": "203.0.113.7" } });
+  const h = calls[0].init.headers;
+  assert.notEqual(h["x-gymbo-client-sig"], hmac("203.0.113.8", h["x-gymbo-client-ts"]), "another IP must not verify");
+  assert.notEqual(h["x-gymbo-client-sig"], hmac("203.0.113.7", String(Number(h["x-gymbo-client-ts"]) + 1)), "another ts must not verify");
+});
+
+test("AC-I6 NEG: X-Forwarded-For is NEVER signed or forwarded (signing a client value would launder a spoofed IP)", async () => {
+  await post({ env: SIGN_ENV, headers: { "X-Forwarded-For": "198.51.100.9" } });
+  const h = calls[0].init.headers;
+  assert.equal(h["x-gymbo-client-ip"], undefined);
+  assert.equal(h["x-gymbo-client-sig"], undefined);
+  assert.doesNotMatch(JSON.stringify(h) + calls[0].init.body, /198\.51\.100\.9/);
+  await post({ env: SIGN_ENV, headers: { "CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.9" } });
+  assert.equal(calls[0].init.headers["x-gymbo-client-ip"], "203.0.113.7", "CF-Connecting-IP wins, XFF ignored");
+});
+
+test("AC-I6 NEG: NO signing secret -> NO attestation headers at all (never an unsigned x-gymbo-client-ip)", async () => {
+  await post({ env: ENV, headers: { "CF-Connecting-IP": "203.0.113.7" } });
+  const h = calls[0].init.headers;
+  for (const k of ["x-gymbo-client-ip", "x-gymbo-client-ts", "x-gymbo-client-sig"]) assert.equal(h[k], undefined, k);
+  assert.equal(calls.length, 1, "the claim is still submitted; the RPC applies its strict fallback bucket");
+});
+
+test("the secret never appears in any outgoing request or rendered page", async () => {
+  const r = await post({ env: SIGN_ENV, headers: { "CF-Connecting-IP": "203.0.113.7" } });
+  assert.doesNotMatch(JSON.stringify(calls[0].init.headers) + calls[0].init.body + r.h, new RegExp(SECRET));
 });
 
 test("AC-I6: rate_limited -> neutral 'try again later' (429), still offering the grievance address, no count or window disclosed", async () => {
