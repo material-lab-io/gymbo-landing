@@ -67,13 +67,44 @@ const CASE_REF_RE = /^GYM-TD-[0-9A-HJKMNP-TV-Z]{8}$/;
 // constant so coach's final name is a one-line change.
 export const TAKEDOWN_RPC = "submit_media_takedown";
 
-// AC-I6: the client IP for the database's hashed burst limit.
-// 🔴 ONLY CF-Connecting-IP, which Cloudflare's edge sets and overwrites. NEVER
-// X-Forwarded-For or any other client-supplied header: trusting one would let a
-// script rotate a fake IP per request and walk straight through the limit.
-// Absent (only possible off Cloudflare) -> null, and the database decides; the
-// page never invents a value.
+// AC-I6 (pm ruling (b1), gy-s8z4z 2026-09-15 06:01): SIGNED CLIENT IP.
+//
+// WHY THE PAGE MUST ATTEST THE IP. This Function calls supabase.co, which is
+// itself behind Cloudflare, so the call is a CROSS-ZONE subrequest and Cloudflare
+// sets the CF-Connecting-IP that PostgREST sees to a CONSTANT Worker address
+// (2a06:98c0:3600::103). Keyed on that, every real reporter would share ONE bucket.
+// So the page forwards the IP IT received and signs it:
+//   x-gymbo-client-ip  = this request's CF-Connecting-IP (set by Cloudflare's edge)
+//   x-gymbo-client-ts  = unix seconds
+//   x-gymbo-client-sig = hex HMAC-SHA256(TAKEDOWN_IP_SIGNING_SECRET, ip + "." + ts)
+// The RPC verifies the signature and freshness (60 s) and only then keys on that IP.
+//
+// 🔴 ONLY CF-Connecting-IP. NEVER X-Forwarded-For or any client-supplied header:
+// signing a value the client chose would launder a spoofed IP into a trusted one.
+// 🔴 NO SECRET OR NO CF HEADER -> SEND NO ATTESTATION AT ALL. An unsigned
+// x-gymbo-client-ip would be ignored by the RPC anyway; sending none keeps the
+// failure mode obvious (the strict fallback bucket) instead of half-working.
+//
+// The secret is NARROW: it grants no database access and can only attest an IP to
+// this limiter (it is NOT the service-role key barred by the 09-14 decision).
 export const clientIp = (request) => request.headers.get("CF-Connecting-IP") || null;
+
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+export async function signedIpHeaders(request, env, nowSeconds = Math.floor(Date.now() / 1000)) {
+  const ip = clientIp(request);
+  const secret = env && env.TAKEDOWN_IP_SIGNING_SECRET;
+  if (!ip || !secret) {
+    if (!secret) console.error("[takedown] TAKEDOWN_IP_SIGNING_SECRET missing — sending no IP attestation (strict fallback bucket)");
+    return {};
+  }
+  const ts = String(nowSeconds);
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = hex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ip}.${ts}`)));
+  return { "x-gymbo-client-ip": ip, "x-gymbo-client-ts": ts, "x-gymbo-client-sig": sig };
+}
 
 // gy-wwr2e.8.1 AC4 — the retention period for reporter data, in the EXACT words
 // Kaushik approved on 2026-09-14 (option A, recorded on that bead by pm). Shown
@@ -156,14 +187,15 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
   }
 
   // ONE call, the PUBLIC anon key, no service-role key (founder decision
-  // 2026-09-14). The IP travels in the POST BODY, never the URL: query strings
-  // land in API request logs, and the raw IP must not be stored anywhere (the
-  // database keeps only an HMAC of it, AC-I6).
+  // 2026-09-14). The client IP travels ONLY in the signed x-gymbo-client-* headers,
+  // never the URL (query strings land in API request logs) and never the body
+  // (the RPC no longer takes it as an argument: pm B1, #1183).
   let outcome = null;
   try {
+    const attest = await signedIpHeaders(request, env);
     const res = await fetch(`${supabaseUrl(env)}/rest/v1/rpc/${TAKEDOWN_RPC}`, {
       method: "POST",
-      headers: anonHeaders(),
+      headers: { ...anonHeaders(), ...attest },
       body: JSON.stringify({
         p_media_id: fields.media_id,
         p_requester_name: fields.requester_name,
@@ -172,7 +204,6 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
         p_claim_kind: fields.claim_kind,
         p_claim_detail: fields.claim_detail,
         p_evidence: fields.evidence,
-        p_client_ip: clientIp(request),
       }),
     });
     if (res.ok) outcome = await res.json().catch(() => null);
