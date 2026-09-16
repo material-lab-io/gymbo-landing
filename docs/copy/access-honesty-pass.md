@@ -75,7 +75,7 @@ timeframe.
 
 | Location | Exact current string | Exact new string | Reason |
 |---|---|---|---|
-| New 3-step block, below hero CTAs | *(does not exist today)* | `1. Request access — leave your email or WhatsApp number.` `2. We reach out with your access.` `3. Install, import your clients, and log your first class.` | Beta-accurate: verified against the actual insert-only backend, no invented mechanism or timing. **Flagging to pm, per AC2:** if there's a real, confirmed signup-to-invite turnaround (push or analyst may have this — I don't), it's a one-line addition to step 2; I have no evidence for one today and won't invent one. |
+| New 3-step block, below hero CTAs | *(does not exist today)* | `1. Request access. Leave your email or WhatsApp number.` `2. We reach out with your access.` `3. Install, import your clients, and log your first class.` | Beta-accurate: verified against the actual insert-only backend, no invented mechanism or timing. **Flagging to pm, per AC2:** if there's a real, confirmed signup-to-invite turnaround (push or analyst may have this — I don't), it's a one-line addition to step 2; I have no evidence for one today and won't invent one. |
 
 ---
 
