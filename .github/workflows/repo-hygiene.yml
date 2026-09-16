@@ -1,0 +1,75 @@
+# gy-8g9ov — refuse a tracked symlink whose target escapes the repository.
+#
+# THE GAP THIS CLOSES IS A DETECTION GAP, NOT A CODE ONE. gymbo-landing commit
+# 02699b3f put `node_modules -> ../site/node_modules` (mode 120000) on main. It
+# survived three merges and NOTHING IN CI COULD SEE IT: a tracked symlink
+# pointing outside the repo produces no failing check, no lint error and no
+# review signal. Deploys kept passing, which is exactly why it lasted. It fails
+# later on somebody else's machine and presents as "the clone is broken".
+name: Repo hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tracked-symlinks:
+    # Self-hosted only (standing rule). gt2 has spare capacity; this job is
+    # seconds long and must not be the thing that puts us on a billed runner.
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # 🔴 FULL HISTORY IS REQUIRED, not an optimisation to trim later: the
+          # self-test below runs the check against the REAL historical commit
+          # 02699b3f. At the default fetch-depth that commit is absent and the
+          # control would silently pass by being unable to look.
+          fetch-depth: 0
+
+      - name: No tracked symlink may escape the repository
+        run: bash scripts/check-tracked-symlinks.sh
+
+      # 🔴 THE CONTROL IS PART OF THE GATE, PERMANENTLY. A check that has only
+      # ever been observed passing has not been shown to detect anything. This
+      # asserts the check still goes RED on the actual incident it was written
+      # for -- so if someone later loosens the rule, THIS step fails rather than
+      # the gate quietly becoming decorative.
+      - name: CONTROL — the check must still FAIL on commit 02699b3f
+        run: |
+          set -e
+          if bash scripts/check-tracked-symlinks.sh 02699b3f > /tmp/ctl.log 2>&1; then
+            echo "::error::The check PASSED on 02699b3f, the commit that put a dangling node_modules symlink on main. It can no longer detect the very defect it exists for."
+            cat /tmp/ctl.log
+            exit 1
+          fi
+          grep -q "node_modules -> ../site/node_modules" /tmp/ctl.log || {
+            echo "::error::It failed, but not on the known symlink — the control is no longer testing what it claims."; cat /tmp/ctl.log; exit 1; }
+          echo "OK: the check still detects the original incident."
+
+      # An in-repo symlink is legitimate and common. Without this, the rule above
+      # is indistinguishable from a blanket ban on symlinks -- which is the shape
+      # this house already refuses for allowlists.
+      - name: CONTROL — an IN-REPO symlink must still PASS
+        run: |
+          set -e
+          ln -sf README.md tmp-hygiene-inrepo
+          git add -f tmp-hygiene-inrepo
+          if ! bash scripts/check-tracked-symlinks.sh > /tmp/ok.log 2>&1; then
+            echo "::error::A symlink that stays inside the repo was refused. This gate is a blanket ban, not a check."
+            cat /tmp/ok.log; git rm -f --cached tmp-hygiene-inrepo >/dev/null; rm -f tmp-hygiene-inrepo; exit 1
+          fi
+          git rm -f --cached tmp-hygiene-inrepo >/dev/null; rm -f tmp-hygiene-inrepo
+          echo "OK: an in-repo symlink is allowed."
+
+      - name: CONTROL — a NEW escaping symlink must FAIL
+        run: |
+          set -e
+          ln -sf ../../../../etc/hosts tmp-hygiene-escape
+          git add -f tmp-hygiene-escape
+          if bash scripts/check-tracked-symlinks.sh > /tmp/esc.log 2>&1; then
+            echo "::error::A symlink escaping the repo was allowed. The gate catches only the one historical path, not the class."
+            cat /tmp/esc.log; git rm -f --cached tmp-hygiene-escape >/dev/null; rm -f tmp-hygiene-escape; exit 1
+          fi
+          git rm -f --cached tmp-hygiene-escape >/dev/null; rm -f tmp-hygiene-escape
+          echo "OK: the gate catches the class, not just the known path."

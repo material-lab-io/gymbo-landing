@@ -1,4 +1,4 @@
-import { F, SHADOW, SERIF, SANS, ForgeStyle } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, ForgeStyle, WHATSAPP_PLAIN } from "../forge-ui";
 
 /* ============================================================================
    PageShell — shared chrome (nav + footer) for standalone content pages
@@ -30,7 +30,7 @@ function FooterNav() {
           <a href="mailto:damini@materiallab.io" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
           <div className="flex items-center gap-4">
             <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-            <a href="https://wa.me/918050131733" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+            <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
             <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
           </div>
         </div>
@@ -53,7 +53,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
+        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo, home">
           <img
             src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""

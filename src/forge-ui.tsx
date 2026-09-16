@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import { useWaitlistReveal } from "./lib/waitlistReveal";
 
 /* ============================================================================
    forge-ui — shared design tokens and presentational primitives for
@@ -26,18 +27,20 @@ export const F = {
   inkLabel: "var(--c-ink-label)",
   inkAnchor: "var(--c-ink-anchor)",
   amber: "var(--c-brand)",
-  marigold: "#fbbf24",
+  marigold: "var(--g-color-brand-marigold-500)",
   amberText: "var(--c-brand-text)",
-  onCta: "#1a1a1a",
-  charcoal: "#0a0a0a",
-  charcoalCard: "#141414",
-  charcoalCard2: "#1c1c1e",
-  bone: "#f0f0eb",
-  boneMuted: "#b8b8b8",
-  boneLabel: "#a0a0a0",
-  green: "#15803d",
-  red: "#b80f34",
-  white: "#ffffff",
+  onCta: "var(--g-color-neutral-light-fg)",
+  charcoal: "var(--g-color-neutral-dark-0)",
+  charcoalCard: "var(--g-color-neutral-dark-1)",
+  charcoalCard2: "var(--g-color-neutral-dark-2)",
+  bone: "var(--g-color-neutral-dark-fg)",
+  boneMuted: "var(--g-color-grey-muted-fg-dark)",
+  boneLabel: "var(--g-color-grey-label-dark)",
+  green: "var(--g-color-status-green-text)",
+  red: "var(--g-color-status-destructive-light)",
+  white: "var(--g-color-absolute-white)",
+  // No Forge token for pure black; 0 usages. Kept so the object stays
+  // exhaustive, flagged so nobody reads it as an approved brand value.
   black: "#000000",
 };
 
@@ -75,7 +78,83 @@ export const SHADOW = {
 export const SERIF = "var(--font-serif)"; // Merriweather
 export const SANS = "var(--font-sans)"; // Open Sans
 
-export const WHATSAPP = "https://wa.me/918050131733?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo";
+/**
+ * 🔴 THE FOUNDER LINE. +91 80501 31733 is Kaushik's, confirmed by him 2026-09-10.
+ *
+ * DO NOT "fix" the fact that Damini's outreach signature carries a different
+ * number (wa.me/message/XBV6ZBNZOHOBM1). Inbound-from-site and outbound-to-lead
+ * are deliberately different channels; making them match would merge two
+ * conversations that are meant to stay apart.
+ *
+ * Hoisted here by gy-e9h9y AC2 because the bare URL was written out by hand in
+ * three footers (App.tsx, PageShell.tsx, CompareWellnessZ.tsx) plus this
+ * constant — four independent copies of one phone number, which is three
+ * opportunities for it to be changed in only some of them.
+ */
+const WHATSAPP_NUMBER = "918050131733";
+
+/** Bare chat link, no prefilled message. For contact listings (footers). */
+export const WHATSAPP_PLAIN = `https://wa.me/${WHATSAPP_NUMBER}`;
+
+/**
+ * Chat link with the visitor's intent prefilled. For CTAs.
+ *
+ * AC2 asked for "one shape for prefilled text". The honest answer is TWO shapes
+ * over ONE number, and that is deliberate rather than a dodge: the thing that
+ * must never diverge is the NUMBER, and it no longer can. The prefill is a
+ * per-intent choice — a CTA states why the visitor is writing ("I'd like to try
+ * Gymbo"), whereas a footer contact link is used for support and billing too,
+ * and stuffing trial intent into a support message would put words in the
+ * sender's mouth. Collapsing these into one URL would be tidier and wrong.
+ *
+ * The query string is kept byte-identical to the pre-hoist literal (%27 for the
+ * apostrophe, which encodeURIComponent does NOT produce) so this stays a pure
+ * refactor with no change to the rendered href.
+ */
+export const WHATSAPP = `${WHATSAPP_PLAIN}?text=Hi%2C%20I%27d%20like%20to%20try%20Gymbo`;
+
+/**
+ * The WhatsApp glyph. Was copy-pasted verbatim into App.tsx and
+ * CompareWellnessZ.tsx (gy-e9h9y AC2).
+ */
+export function WhatsAppGlyph({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
+    </svg>
+  );
+}
+
+/**
+ * The dark-surface WhatsApp button used in the closing CTA section.
+ *
+ * This whole <a> — classes, inline style and label — was duplicated BYTE FOR
+ * BYTE in App.tsx and CompareWellnessZ.tsx. gy-e9h9y AC2 described the glyph as
+ * the copy-pasted part; measured, the entire button was.
+ *
+ * 🔴 It is a THIRD visual variant, outside the primary/secondary pair in
+ * forge-ui — a neutral-dark surface rather than either. Hoisting it does not
+ * bless it; it makes the fact that a third variant exists visible in one place
+ * so gy-e9h9y's shape work can decide what happens to it, instead of that
+ * decision being spread across two files.
+ */
+export function WhatsAppButton({ location, children }: { location: CtaLocation; children: React.ReactNode }) {
+  return (
+    <a
+      href={WHATSAPP}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackCta("whatsapp_cta_click", location)}
+      data-cta="whatsapp"
+      data-cta-location={location}
+      className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]"
+      style={{ background: "var(--g-color-neutral-dark-1)", color: F.bone, border: "1px solid var(--g-color-grey-placeholder-dark)", fontFamily: SANS }}
+    >
+      <WhatsAppGlyph />
+      {children}
+    </a>
+  );
+}
 
 /** Smooth-scroll to an in-page anchor by id (used by CTAs + nav). */
 export function scrollToId(id: string) {
@@ -88,13 +167,36 @@ export function scrollToId(id: string) {
 // element children, which would corrupt raw CSS. __html keeps it raw.
 // LIGHT ONLY (gy-uesmd) — no [data-theme="dark"] rule ships here or anywhere
 // else in the bundle; do not reintroduce one without a new founder ruling.
+// 🔴 --c-* POINTS AT FORGE, IT DOES NOT COPY IT — gy-swdgh, 2026-09-12.
+// Nine of these values were verbatim copies of Forge tokens, including the brand
+// amber. They AGREED with Forge at the time, so nothing rendered wrong; the defect
+// was that if a Forge colour moved, --c-* silently would not. The drift gate that
+// exists to catch exactly this could not see this file at all (a path-prefix
+// exemption swallowed src/forge-ui.tsx), so it stayed green over its own founding
+// defect for its whole life. Resolution order is not a concern: both namespaces
+// are declared on :root and custom properties resolve at computed-value time.
+//
+// DELIBERATE DIVERGENCES, stated rather than left to look like oversights:
+//  · --c-ink-anchor #3d3d3d has NO Forge equivalent (advisory in the gate, not a
+//    duplicate). Left literal; it is a real value with no token to point at.
+//  · the rgba() values below sit outside this gate by design — it compares HEX
+//    only, and the alpha family is gy-73h3j's scope, not this bead's.
 const FORGE_CSS = `
-        :root{--c-bg:#fafaf7;--c-card:#eaeae5;--c-card2:#e8e8e3;--c-muted:#dcdcd9;--c-ink:#1a1a1a;--c-ink-muted:#555555;--c-ink-anchor:#3d3d3d;--c-ink-label:#595959;--c-brand:#f59e0b;--c-brand-text:#92400e;--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
+        :root{--c-bg:var(--g-color-neutral-light-0);--c-card:var(--g-color-neutral-light-1);--c-card2:var(--g-color-neutral-light-2);--c-muted:var(--g-color-neutral-light-3);--c-ink:var(--g-color-neutral-light-fg);--c-ink-muted:var(--g-color-grey-muted-fg-light);--c-ink-anchor:#3d3d3d;--c-ink-label:var(--g-color-grey-label-light);--c-brand:var(--g-color-brand-amber-500);--c-brand-text:var(--g-color-brand-amber-text-light);--c-line:rgba(26,26,26,.1);--c-nav-bg:rgba(250,250,247,.85);--c-elevation-1:0 1px 2px rgba(34,24,14,.05),0 4px 10px -4px rgba(34,24,14,.06),0 10px 20px -10px rgba(34,24,14,.05);--c-elevation-2:0 1px 2px rgba(34,24,14,.06),0 6px 16px -6px rgba(34,24,14,.08),0 16px 32px -14px rgba(34,24,14,.07);--c-elevation-3:0 2px 3px rgba(34,24,14,.07),0 10px 24px -8px rgba(34,24,14,.10),0 24px 48px -20px rgba(34,24,14,.09);--c-elevation-4:0 2px 4px rgba(34,24,14,.08),0 16px 32px -10px rgba(34,24,14,.11),0 36px 64px -26px rgba(34,24,14,.10);--c-elevation-5:0 3px 6px rgba(34,24,14,.09),0 20px 44px -12px rgba(34,24,14,.13),0 52px 96px -34px rgba(34,24,14,.14);--c-elevation-4-filter:drop-shadow(0 2px 3px rgba(34,24,14,.08)) drop-shadow(0 14px 26px rgba(34,24,14,.10)) drop-shadow(0 28px 46px rgba(34,24,14,.09))}
         .reveal-on-scroll{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.22,.9,.3,1),transform .6s cubic-bezier(.22,.9,.3,1)}
         .reveal-on-scroll.is-visible{opacity:1;transform:none}
         @keyframes g-rise{to{opacity:1;transform:none}}
         @keyframes g-fade{to{opacity:1}}
         .hero-rise{opacity:0;transform:translateY(16px);animation:g-rise .7s cubic-bezier(.22,.9,.3,1) forwards}
+        /* gy-becxi — the inline capture reveal. Short and small on purpose: the
+           panel appears directly under the CTA the visitor just tapped, so it is
+           already in their fixation area and a long or large motion reads as the
+           page moving, which is the register Kaushik called "abrupt and jerky"
+           elsewhere. 160ms and 6px announce the change without performing it.
+           The call site passes reducedMotion and the class is simply not applied,
+           so this never needs a media query that could disagree with the JS. */
+        @keyframes g-reveal{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+        .gy-reveal{animation:g-reveal .16s cubic-bezier(.22,.9,.3,1) both}
         .hero-fade{opacity:0;animation:g-fade .8s ease forwards}
         .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.30s}.d4{animation-delay:.44s}.d5{animation-delay:.58s}
         .d6{animation-delay:.55s}.d7{animation-delay:.95s}
@@ -118,7 +220,22 @@ const FORGE_CSS = `
         .article-prose ol{list-style:decimal;padding-left:22px;display:flex;flex-direction:column;gap:8px}
         .article-prose blockquote{border-left:3px solid var(--c-brand);padding-left:16px;color:var(--c-ink-muted);font-style:italic}
         .article-prose hr{border:0;border-top:1px solid var(--c-line);margin:28px 0}
-        .article-prose table{width:100%;border-collapse:collapse;font-size:14px;display:block;overflow-x:auto}
+        /* gy-ma11q: the scroll container is the WRAPPER, not the table. 'display:block;
+           overflow-x:auto' on the <table> itself made the table a scrollable region with no
+           focusable descendant, so a keyboard or switch user could not scroll it at all and
+           simply could not reach the off-screen columns (axe scrollable-region-focusable,
+           WCAG-AA, measured on 6 live guide/research routes 2026-09-06). 'display:block' also
+           drops the table's semantics in some AT. The wrapper carries the overflow AND
+           tabindex=0, which is what makes it keyboard-scrollable. */
+        .article-prose table{width:100%;border-collapse:collapse;font-size:14px}
+        .article-prose .table-scroll{overflow-x:auto}
+        /* A tabbable element must show where focus is (WCAG 2.4.7). Focus-visible only, so
+           mouse users never see a ring on a plain click. */
+        /* UNSCOPED on purpose: .table-scroll is also used outside .article-prose (the
+           /compare at-a-glance table). A tabbable element with no visible focus
+           indicator is itself a WCAG 2.4.7 failure, so scoping this to .article-prose
+           would trade one violation for another. */
+        .table-scroll:focus-visible{outline:2px solid var(--c-brand);outline-offset:3px;border-radius:6px}
         .article-prose th,.article-prose td{border:1px solid var(--c-line);padding:10px 12px;text-align:left;vertical-align:top}
         .article-prose thead th{background:rgba(245,158,11,0.08);font-family:var(--font-serif);color:var(--c-ink)}
         .article-prose tbody td:first-child{color:var(--c-ink);font-weight:600}
@@ -171,12 +288,216 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
   );
 }
 
-export function PrimaryCTA({ dark, size = "md", className = "", children = "Join the waitlist" }: { dark?: boolean; size?: "md" | "lg"; className?: string; children?: React.ReactNode }) {
+/** Where a CTA sits. Measured inventory, not a guess — designer's design named
+ * "hero / mid-page / footer" but flagged it as an intended taxonomy they had not
+ * checked against the code. The real placements were these five; gy-w77x3 added
+ * "nav" and "pricing" for the "Get Gymbo" buttons, which fired no event at all. */
+export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare" | "nav" | "pricing";
+
+/**
+ * Fire a CTA click event.
+ *
+ * 🔴 FIRE AND DO NOT WAIT. A click that navigates away can lose an in-flight
+ * beacon, and the tempting fix — preventDefault, send, then navigate — makes the
+ * site's primary conversion hesitate. A CTA that stalls to improve its own
+ * telemetry is a worse CTA. We accept a small undercount instead, and that
+ * undercount must be stated wherever these numbers are quoted.
+ *
+ * Guarded on `umami` existing: #110 scoped the tracker to production hostnames,
+ * so on localhost it is legitimately absent and this must be a no-op, never a
+ * crash inside a click handler.
+ */
+export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click", location: CtaLocation) {
+  if (typeof window !== "undefined" && (window as any).umami) {
+    (window as any).umami.track(event, { location });
+  }
+}
+
+/**
+ * THE SHARED CTA VISUAL (gy-e9h9y AC3).
+ *
+ * This file used to WELD TWO INDEPENDENT AXES together:
+ *   VISUAL:    primary (filled amber + shadow + arrow) | secondary (transparent + 1px border)
+ *   BEHAVIOUR: in-page scroll (<button>)               | navigate off-site (<a href>)
+ * Only two of the four combinations existed, each hardwired: PrimaryCTA was
+ * primary+scroll, SecondaryButton was secondary+link. gy-e9h9y needs the OTHER
+ * diagonal — primary+link for WhatsApp, secondary+scroll for the demoted
+ * waitlist — which is why "add an href prop" and "add one sibling" both felt
+ * wrong: each fixes one cell of a 2x2.
+ *
+ * 🔴 NOT A POLYMORPHIC PrimaryCTA THAT RENDERS <a> OR <button> ON A PROP. That
+ * puts a branch inside a primitive used at every CTA site, and makes the prop
+ * combination (href AND scroll) representable-but-invalid. Thin wrappers over
+ * one shared style cannot express the invalid state.
+ */
+export function ctaVisual(variant: "primary" | "secondary", { dark, size = "md" }: { dark?: boolean; size?: "md" | "lg" } = {}) {
+  // 🔴 The class strings below reproduce the pre-existing PrimaryCTA and
+  // SecondaryButton markup EXACTLY, including class ORDER. Tailwind does not
+  // care about order, but the rendered HTML does: keeping it identical is what
+  // lets the visual-regression baselines and the built-output diff stay
+  // meaningful evidence rather than noise to be waved through.
+  const sizing = size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]";
+  if (variant === "primary") {
+    return {
+      className: `inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sizing}`,
+      style: { background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS } as React.CSSProperties,
+    };
+  }
+  return {
+    className: `inline-flex items-center justify-center gap-2 ${sizing} rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2`,
+    style: {
+      background: "transparent",
+      color: dark ? F.bone : F.ink,
+      border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`,
+      fontFamily: SANS,
+      fontWeight: 500,
+    } as React.CSSProperties,
+  };
+}
+
+/**
+ * PRIMARY + LINK — the WhatsApp conversion (gy-e9h9y).
+ *
+ * 🔴 THIS MUST BE A REAL <a href>, NEVER <button> + window.open, and that is the
+ * single thing in this bead that must not be got wrong. A fake link breaks
+ * cmd/middle-click "open in new tab", right-click "Copy link address", and is
+ * announced as a button rather than a link by screen readers. Making the site's
+ * primary conversion a fake link is a real regression AND an invisible one:
+ * every smoke test we have asserts the LABEL, so all of them would still pass.
+ *
+ * No WhatsApp green (AC4): #25D366 beside our amber reads as third-party chrome
+ * pasted into the page, and "this is the main action here" is a hierarchy
+ * statement that belongs in our own palette. The glyph carries the channel
+ * recognition instead, at zero token cost.
+ */
+export function WhatsAppCTA({ dark, size = "md", location, className = "", children }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children: React.ReactNode }) {
+  const v = ctaVisual("primary", { dark, size });
+  return (
+    <a
+      href={WHATSAPP}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={() => trackCta("whatsapp_cta_click", location)}
+      data-cta="whatsapp"
+      data-cta-location={location}
+      className={`${v.className} ${className}`}
+      style={v.style}
+    >
+      <WhatsAppGlyph />
+      {children}
+    </a>
+  );
+}
+
+/**
+ * WHAT A WAITLIST CTA DOES WHEN TAPPED (gy-becxi).
+ *
+ * 🔴 ONE DEFINITION, SHARED BY BOTH WAITLIST CTAs. WaitlistCTA and PrimaryCTA
+ * are two VISUAL cells of the same control; before this they each carried their
+ * own hand-written copy of `trackCta(...); scrollToId("cta")`. Two copies of one
+ * behaviour is how a fix lands on one of them and quietly not the other — and a
+ * waitlist CTA that still scrolls is indistinguishable, from the outside, from
+ * one nobody got round to wrapping.
+ *
+ * INSIDE a cluster: reveal the capture in place. Damini's report (gy-becxi) is
+ * that the scroll itself is the friction.
+ * OUTSIDE one: scroll to the footer form, exactly as before. That fallback is
+ * what makes this change additive — no call site this bead did not touch can
+ * change behaviour — and the footer form is deliberately kept (designer's item
+ * 3): people who arrive by scrolling must still find a capture there, and it is
+ * the target of every existing deep link and of the prod smoke suite.
+ *
+ * THE TRACKING IS IDENTICAL EITHER WAY. waitlist_cta_click fires with the same
+ * location whichever branch runs, so the before/after comparison Damini is
+ * actually asking for — how many taps reach a submit — is a comparison of the
+ * same event and not of two differently-instrumented worlds.
+ */
+/**
+ * TRACKING ONLY, BEHAVIOUR UNCHANGED — for the hand-styled "Get Gymbo" buttons
+ * (nav, pricing) that are not PrimaryCTA/WaitlistCTA (gy-w77x3 AC4).
+ *
+ * They still scroll to the footer form. Whether they should reveal instead waits
+ * on gy-w77x3 AC1 (which control Damini actually tapped), so this deliberately
+ * does NOT route through useWaitlistCtaAction: that would silently start
+ * revealing inside a cluster, which is a decision, not instrumentation.
+ * Spread onto the existing element so its visual treatment is untouched.
+ */
+export function waitlistScrollCtaProps(location: CtaLocation) {
+  return {
+    onClick: () => {
+      trackCta("waitlist_cta_click", location);
+      scrollToId("cta");
+    },
+    "data-cta": "waitlist",
+    "data-cta-location": location,
+    "data-cta-behaviour": "scroll",
+  } as const;
+}
+
+function useWaitlistCtaAction(location: CtaLocation) {
+  const cluster = useWaitlistReveal();
+  return () => {
+    trackCta("waitlist_cta_click", location);
+    if (cluster) cluster.reveal();
+    else scrollToId("cta");
+  };
+}
+
+/**
+ * SECONDARY + SCROLL — the demoted waitlist (gy-e9h9y).
+ *
+ * 🔴 DEMOTION MEANS LOWER VISUAL WEIGHT, NOT LOWER REACHABILITY. This stays a
+ * full-size outline BUTTON with the same h-12 hit target, sitting immediately
+ * beside the primary. It must never become a text link: the waitlist is still
+ * the only capture we own that produces a ROW, and Damini's actual request
+ * (gy-becxi) is to reduce friction on exactly that path — turning it into a text
+ * link would answer her with the opposite.
+ *
+ * No arrow. The ArrowRight on the primary is doing hierarchy work and should not
+ * be duplicated onto the secondary.
+ */
+export function WaitlistCTA({ dark, size = "md", location, className = "", children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children?: React.ReactNode }) {
+  const v = ctaVisual("secondary", { dark, size });
+  const onClick = useWaitlistCtaAction(location);
+  const reveal = useWaitlistReveal();
   return (
     <button
-      onClick={() => scrollToId("cta")}
-      className={`inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]"} ${className}`}
-      style={{ background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}
+      onClick={onClick}
+      data-cta="waitlist"
+      data-cta-location={location}
+      data-cta-behaviour={reveal ? "reveal" : "scroll"}
+      className={`${v.className} ${className}`}
+      style={v.style}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * PRIMARY + SCROLL — a lone waitlist CTA.
+ *
+ * Kept, and kept primary, at the three placements where it is the ONLY call to
+ * action (gallery, footer, compare-page hero is a pair and is handled there).
+ * See the commit message for why a lone waitlist CTA was not converted to
+ * WhatsApp: demoting the only on-site capture at a placement where nothing
+ * competes with it would reduce waitlist reachability, which AC8 and Damini's
+ * actual request both forbid.
+ *
+ * `location` is required so no CTA can ship untracked (AC6).
+ */
+export function PrimaryCTA({ dark, size = "md", className = "", location, children = "Request access" }: { dark?: boolean; size?: "md" | "lg"; className?: string; location: CtaLocation; children?: React.ReactNode }) {
+  const v = ctaVisual("primary", { dark, size });
+  const onClick = useWaitlistCtaAction(location);
+  const reveal = useWaitlistReveal();
+  return (
+    <button
+      onClick={onClick}
+      data-cta="waitlist"
+      data-cta-location={location}
+      data-cta-behaviour={reveal ? "reveal" : "scroll"}
+      className={`${v.className} ${className}`}
+      style={v.style}
     >
       {children}
       <ArrowRight size={16} aria-hidden="true" />
@@ -184,17 +505,14 @@ export function PrimaryCTA({ dark, size = "md", className = "", children = "Join
   );
 }
 
-export function SecondaryButton({ dark, children }: { dark?: boolean; children: React.ReactNode }) {
-  return (
-    <a
-      href={WHATSAPP}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2"
-      style={{ background: "transparent", color: dark ? F.bone : F.ink, border: `1px solid ${dark ? "rgba(240,240,235,0.22)" : "var(--c-line)"}`, fontFamily: SANS, fontWeight: 500 }}
-    >
-      {children}
-    </a>
-  );
-}
+/* SecondaryButton (secondary + link) was REMOVED by gy-e9h9y.
+ *
+ * Both of its call sites became <WhatsAppCTA> when WhatsApp was promoted to the
+ * primary conversion, leaving it with zero consumers. It is not kept "in case":
+ * an exported primitive that nothing uses but that still looks authoritative is
+ * the same hazard as a hand-kept copy beside a generated one — the next person
+ * reaches for it, and it quietly diverges from the cell that is actually
+ * maintained. The secondary+link combination is still expressible via
+ * ctaVisual("secondary") if a real call site ever appears.
+ */
 

@@ -16,8 +16,9 @@ import {
 } from "lucide-react";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
+import { InlineWaitlist } from "./components/InlineWaitlist";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, waitlistScrollCtaProps } from "./forge-ui";
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
@@ -29,9 +30,9 @@ import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, Prim
    scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.9).
    ============================================================================ */
 
-/* Design tokens (F, SHADOW, SERIF, SANS), WHATSAPP, scrollToId, and the shared
-   presentational primitives now live in ./forge-ui (SSOT shared with the
-   comparison pages). */
+/* Design tokens (F, SHADOW, SERIF, SANS), the WhatsApp constants and button,
+   scrollToId, and the shared presentational primitives now live in ./forge-ui
+   (SSOT shared with the comparison pages). */
 
 /* ── 4 pillars ── */
 const PILLARS = [
@@ -254,7 +255,7 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+          <button {...waitlistScrollCtaProps("nav")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>
         </div>
@@ -284,7 +285,7 @@ export default function App() {
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
             <div className="max-w-[600px] lg:w-[46%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>In beta</Eyebrow>
+                <Eyebrow>Private alpha</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 Run your entire{" "}
@@ -297,10 +298,16 @@ export default function App() {
               <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
                 <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
               </p>
-              <div className={`mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5 ${prefersReduced ? "" : "hero-rise d4"}`}>
-                <PrimaryCTA size="lg" />
-                <SecondaryButton>Talk to us</SecondaryButton>
-              </div>
+              {/* gy-becxi — THE FOUNDER-REPORTED JOURNEY IS THIS EXACT CLUSTER.
+                  Damini arrives from Instagram, taps the waitlist CTA here, and
+                  before this was thrown to the page footer. The capture now opens
+                  underneath these two buttons without moving the viewport. */}
+              <InlineWaitlist className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`} reducedMotion={prefersReduced}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
+                  <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
+                  <WaitlistCTA size="lg" location="hero" />
+                </div>
+              </InlineWaitlist>
               {/* Mobile/tablet keeps the approved three-phone composition below
                   the copy, scaled as one coherent image so its screens and device
                   silhouettes remain legible without clipping. */}
@@ -360,7 +367,7 @@ export default function App() {
                         clip={demoClip(p.demoId)}
                         poster={demoPoster(p.demoId)}
                         theme={dark ? "dark" : "light"}
-                        label={`${p.title} — demo`}
+                        label={`${p.title}: demo`}
                         maxWidth={360}
                       />
                     </div>
@@ -389,7 +396,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex - 1)}
                 disabled={galleryIndex === 0}
                 aria-label="Show previous Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
                 style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
               >
                 <ChevronLeft size={18} aria-hidden="true" />
@@ -402,7 +409,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex + 1)}
                 disabled={galleryIndex === SCREENS.length - 1}
                 aria-label="Show next Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
                 style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
               >
                 <ChevronRight size={18} aria-hidden="true" />
@@ -422,7 +429,9 @@ export default function App() {
             <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
-              <PrimaryCTA dark size="lg" />
+              <InlineWaitlist className="flex flex-col items-center" reducedMotion={prefersReduced}>
+                <PrimaryCTA dark size="lg" location="gallery" />
+              </InlineWaitlist>
             </Reveal>
           </div>
         </section>
@@ -495,7 +504,7 @@ export default function App() {
                           </li>
                         ))}
                       </ul>
-                      <button onClick={() => scrollToId("cta")} className="mt-auto inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
+                      <button {...waitlistScrollCtaProps("pricing")} className="mt-auto inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
                         Get Gymbo
                       </button>
                     </div>
@@ -542,26 +551,21 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" data-testid="footer-cta-section" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>In beta</Eyebrow>
+              <Eyebrow dark>Private alpha</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Run your whole business from one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn.
+                Request access and we'll be in touch when you're in.
               </p>
             </Reveal>
 
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
               <WaitlistForm />
-              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: "rgba(240,240,235,0.06)", color: F.bone, border: "1px solid rgba(240,240,235,0.12)", fontFamily: SANS }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                </svg>
-                Talk to the founder
-              </a>
+              <WhatsAppButton location="cta-section">Talk to the founder</WhatsAppButton>
             </Reveal>
 
           </div>
@@ -578,6 +582,19 @@ export default function App() {
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
               <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
               <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
+              {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
+                  18-page content estate that had ZERO inbound links from the reachable
+                  site: sitemap.xml carries 22 URLs and the rendered homepage linked only
+                  /compare, /privacy and /terms, so 18 pages were crawlable from the
+                  sitemap alone and unreachable by a human. The estate is densely
+                  interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is one
+                  disconnected component rather than 18 loose orphans — which is why three
+                  hub links restore all 22. Measured: /blog/ alone also reconnects all 22,
+                  but leaves the guides 3-5 clicks deep behind our thinnest page (92 words);
+                  these three cap the deepest page at 3 and put 18 of 22 within 2. */}
+              <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
+              <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
+              <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
               <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
               <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
               <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
@@ -587,7 +604,7 @@ export default function App() {
             <a href="mailto:damini@materiallab.io" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
             <div className="flex items-center gap-4">
               <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-              <a href="https://wa.me/918050131733" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
               <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
             </div>
           </div>
@@ -599,7 +616,7 @@ export default function App() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)", background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(12px)", WebkitBackdropFilter: "saturate(140%) blur(12px)", borderTop: "1px solid var(--c-line)", transform: showStickyCTA ? "translateY(0)" : "translateY(120%)" }}
       >
-        <PrimaryCTA size="lg" className="w-full" />
+        <PrimaryCTA size="lg" className="w-full" location="footer" />
       </div>
     </div>
   );
@@ -625,7 +642,7 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your own URL", icon: Link },
   { name: "Booking link", icon: CalendarCheck },
   { name: "Fitness reports", icon: BarChart3 },
-  { name: "Branded client app", icon: Smartphone },
+  { name: "Custom branded client content", icon: Smartphone },
 ];
 
 function BrandMarquee() {

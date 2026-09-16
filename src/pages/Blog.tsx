@@ -18,7 +18,7 @@ export function Blog() {
           The Gymbo blog
         </h1>
         <p className="mt-4 text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.7 }}>
-          Practical guides for independent personal trainers in India — running the business, getting paid, and growing past the notebook.
+          Practical guides for independent personal trainers in India: running the business, getting paid, and growing past the notebook.
         </p>
 
         <div className="mt-10 flex flex-col">
