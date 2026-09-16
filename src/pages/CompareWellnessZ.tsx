@@ -3,7 +3,7 @@ import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { InlineWaitlist } from "../components/InlineWaitlist";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, waitlistScrollCtaProps } from "../forge-ui";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -105,7 +105,7 @@ export function CompareWellnessZ() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+          <button {...waitlistScrollCtaProps("nav")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </button>
         </div>
