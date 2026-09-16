@@ -282,6 +282,72 @@ jobs:
           fi
           echo "OK: off production the DB probe reports without failing, and is visible in the log."
 
+      # =====================================================================
+      # gy-gcr22 AC5 — THE ANON /m/ PATH IS A SECOND CREDENTIAL, AND ITS GATE
+      # MUST BE SHOWN TO FAIL BEFORE ANY GREEN FROM IT MEANS ANYTHING.
+      #
+      # /m/ stopped using the service_role key and now reads through the anon
+      # media_page RPC. The "db" verdict no longer speaks for it. A gate that has
+      # only ever been observed saying OK about /m/ has not been shown to watch
+      # /m/ at all -- which is precisely how the original gy-gcr22 outage stayed
+      # invisible for as long as it did.
+      # =====================================================================
+      - name: m_rpc control 1 — a REVOKED anon grant FAILS even with a healthy service key
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" m-rpc-denied
+          python3 -m http.server 8915 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8915 > /tmp/m-denied.log 2>&1; then
+            echo "::error::The gate PASSED while /m/ was dead for every viewer. db:ok is not a verdict about /m/, and treating it as one rebuilds the gy-gcr22 blind spot on the new credential."
+            cat /tmp/m-denied.log
+            exit 1
+          fi
+          grep -q 'm_rpc' /tmp/m-denied.log || { echo "::error::It failed, but not on the anon media_page verdict."; cat /tmp/m-denied.log; exit 1; }
+          grep -q 'LOST EXECUTE' /tmp/m-denied.log || { echo "::error::The failure does not name the cause, so nobody can act on it."; cat /tmp/m-denied.log; exit 1; }
+          echo "OK: a missing anon grant turns the gate red on its own."
+
+      # 🔴 THE ANTI-MASKING CONTROL FOR THE NEW VERDICT. The gy-gcr22 allowance is
+      # pinned to db:"unconfigured". A missing anon grant is a DIFFERENT fault that
+      # nobody has ruled on, and it must not inherit that excuse -- otherwise the
+      # allowance widens into exactly the hole it was written to close.
+      - name: m_rpc control 2 — the gy-gcr22 allowance must NOT excuse a dead /m/
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" m-rpc-denied-and-db-unconfigured
+          python3 -m http.server 8916 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8916 > /tmp/m-both.log 2>&1; then
+            echo "::error::A dead /m/ PASSED because the service key happened to be unbound. The allowance is masking a second, unruled fault."
+            cat /tmp/m-both.log
+            exit 1
+          fi
+          grep -q 'm_rpc' /tmp/m-both.log || { echo "::error::It failed, but not on the anon media_page verdict."; cat /tmp/m-both.log; exit 1; }
+          grep -q 'KNOWN /api/health' /tmp/m-both.log || { echo "::error::The known db condition stopped being reported once /m/ failed — it must stay visible beside it."; cat /tmp/m-both.log; exit 1; }
+          echo "OK: the allowance still excuses only its own pinned signature."
+
+      # "The check is not there" must never read as "the check passed" -- the same
+      # rule the 404 branch already enforces, applied to a probe deployed from
+      # before AC5 that carries no m_rpc field at all.
+      - name: m_rpc control 3 — an UNPROBED /m/ is not a healthy /m/
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" good
+          # An old probe: db verdict present, m_rpc field absent entirely.
+          printf '%s' '{"db":"ok"}' > "$FIX/api/health"
+          python3 -m http.server 8917 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8917 > /tmp/m-old.log 2>&1; then
+            echo "::error::A probe with NO m_rpc verdict passed as healthy. An unprobed /m/ is UNKNOWN, not OK — that equivalence is the whole gy-gcr22 defect."
+            cat /tmp/m-old.log
+            exit 1
+          fi
+          grep -q 'UNPROBED' /tmp/m-old.log || { echo "::error::It failed, but not because the anon verdict was missing."; cat /tmp/m-old.log; exit 1; }
+          echo "OK: a probe older than AC5 reports UNKNOWN and fails, rather than passing silently."
+
       - name: Negative control — getgymbo-smoke.sh must FAIL on missing <title>
         run: |
           set -e
