@@ -15,7 +15,7 @@
 // cannot be rewritten. Every id served here must therefore be stable forever,
 // which is why the importer UPSERTs on the natural key instead of
 // delete-then-insert (ratified by pm). Treat this URL shape as an external API.
-import { supabaseUrl, MEDIA_FIELDS, svcHeaders, esc, attributionIsComplete, signObject } from "./_shared.js";
+import { esc, attributionIsComplete, fetchMediaPage, publicObjectUrl } from "./_shared.js";
 import { rootVars } from "../_forge.js";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -102,53 +102,45 @@ export async function onRequestGet(context) {
   // malformed id is a cheap 404 rather than a filter we hand upstream.
   if (!UUID_RE.test(id)) return unavailable("That link does not point to a video we have.");
 
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    // Fail CLOSED on misconfiguration. A page that renders media without being
-    // able to check suppression is worse than a page that is down.
-    console.error("[media] SUPABASE_SERVICE_ROLE_KEY missing — refusing to serve");
-    return unavailable("This video cannot be shown right now.");
+  // gy-gcr22: ONE anon RPC, no service-role key (founder decision 2026-09-14).
+  // The RPC returns attribution and paths ONLY for an available, attribution-
+  // complete row with a rendition; for anything else it returns a state and no
+  // data, so a withdrawn clip cannot leak through this page even by accident.
+  //
+  // SUPPRESSION IS STILL CHECKED ON EVERY REQUEST, and it is the same predicate
+  // the app reads (exercise_media_for_app), so one flip takes the asset down on
+  // both surfaces at once.
+  const r = await fetchMediaPage(env, id);
+  if (r.kind === "error") return unavailable("This video cannot be shown right now.");
+  if (r.kind === "not_found") return unavailable("That link does not point to a video we have.");
+  if (r.kind === "withdrawn") {
+    return unavailable("This video has been withdrawn following a removal request.");
   }
-
-  let m;
-  try {
-    const res = await fetch(
-      `${supabaseUrl(env)}/rest/v1/exercise_media?id=eq.${id}&select=${MEDIA_FIELDS}`,
-      { headers: svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY) },
-    );
-    if (!res.ok) return unavailable("This video cannot be shown right now.");
-    m = (await res.json())[0];
-  } catch {
-    return unavailable("This video cannot be shown right now.");
-  }
-
-  if (!m) return unavailable("That link does not point to a video we have.");
-
-  // SUPPRESSION IS CHECKED ON EVERY REQUEST, and it is the same column the app
-  // reads, so one flip takes the asset down on both surfaces at once. A takedown
-  // that only suppressed in-app while this page kept serving would not be a
-  // takedown at all.
-  if (m.availability !== "available") {
-    return unavailable(
-      m.availability === "withdrawn"
-        ? "This video has been withdrawn following a removal request."
-        : "This video is not currently available.",
-    );
-  }
+  if (r.kind !== "ok") return unavailable("This video is not currently available.");
+  const m = r.m;
 
   // FAIL-CLOSED ON PROVENANCE. Missing attribution means the MEDIA does not
   // render -- not the media with the credit quietly dropped.
   if (!attributionIsComplete(m)) {
-    console.error("[media] incomplete provenance, refusing to publish", m.id);
+    // The id comes from the validated route param, NOT from the RPC row: media_page
+    // is keyed by id and does not return one, so reading m.id logs `undefined` in
+    // exactly the branch an operator is debugging.
+    console.error("[media] incomplete provenance, refusing to publish", id);
     return unavailable("This video is not currently available.");
   }
 
-  const signed = m.object_path ? await signObject(env, m.object_path) : null;
-  if (!signed) return unavailable("This video cannot be shown right now.");
+  // THE RENDITION, NEVER THE MASTER (gy-wx6ja AC1). This page does not read
+  // object_path at all, so a row with a master and no rendition cannot fall back
+  // to serving hundreds of MB to a trainee on mobile data.
+  if (!m.video_object_path) return unavailable("This video is not currently available.");
+  const src = publicObjectUrl(env, m.video_object_path);
+  const poster = m.poster_object_path ? publicObjectUrl(env, m.poster_object_path) : null;
 
   const isVideo = m.asset_kind === "video" || m.asset_kind === "animation";
+  // preload="none" with a poster: nothing is fetched until the viewer presses play.
   const asset = isVideo
-    ? `<video controls playsinline preload="metadata" src="${esc(signed)}"></video>`
-    : `<img class="asset" alt="Exercise demonstration" src="${esc(signed)}">`;
+    ? `<video controls playsinline preload="none"${poster ? ` poster="${esc(poster)}"` : ""} src="${esc(src)}"></video>`
+    : `<img class="asset" alt="Exercise demonstration" src="${esc(src)}">`;
 
   // TWO SOURCES, TWO TREATMENTS, VISIBLY DISTINCT (AC2). A public-domain FEDB
   // still and a CC-BY-SA wger clip must never imply one licence covers both, so
@@ -162,13 +154,10 @@ export async function onRequestGet(context) {
   let attribution;
   if (m.source === "wger") {
     const author = esc(m.author);
-    // author_url is deliberately NOT in MEDIA_FIELDS: the column does not exist
-    // yet, and asking PostgREST for a missing column is an error, not an empty
-    // value. Measured against the live wger API on 2026-09-09, license_author_url
-    // is empty on 78 of 78 videos, so today every credit is plain text and this
-    // branch is dormant. It is written now so that the day the column lands and
-    // wger starts supplying the URI, crediting it is a select-list change and not
-    // a re-harvest.
+    // author_url comes from the RPC (exercise_media_for_app carries it). Measured
+    // against the live wger API on 2026-09-09, license_author_url is empty on 78
+    // of 78 videos, so today every credit is plain text and this branch is
+    // dormant until wger starts supplying the URI.
     const authorHtml = m.author_url
       ? `<a href="${esc(m.author_url)}" rel="noopener nofollow">${author}</a>`
       : author;
