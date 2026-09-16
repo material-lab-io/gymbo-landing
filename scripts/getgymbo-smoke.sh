@@ -171,9 +171,9 @@ db_verdict() {
   if [ "$HCODE" = "200" ] && printf '%s' "$HBODY" | grep -q '"db":"ok"'; then
     echo "OK|server-side database read succeeds"
   elif printf '%s' "$HBODY" | grep -q '"db":"unconfigured"'; then
-    echo "FAIL|SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/ are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change."
+    echo "FAIL|SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/takedown are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change. /m/ itself reads through the anon RPC and is reported separately as m_rpc."
   elif printf '%s' "$HBODY" | grep -q '"db":"rejected"'; then
-    echo "FAIL|PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/ are dead. Not the same as an absent binding."
+    echo "FAIL|PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/takedown are dead. Not the same as an absent binding. /m/ is reported separately as m_rpc."
   elif [ "$HCODE" = "404" ]; then
     # "The check is not there" must never read as "the check passed".
     echo "FAIL|/api/health returned 404 — the probe itself is not deployed, so DB reachability is UNKNOWN, not OK."
@@ -184,6 +184,37 @@ db_verdict() {
 DB_RESULT="$(db_verdict)"
 DB_STATE="${DB_RESULT%%|*}"
 DB_MSG="${DB_RESULT#*|}"
+
+# --- gy-gcr22 AC5: the SECOND credential, reported separately ------------------
+#
+# /m/ stopped using the service_role key and now reads through the anon
+# media_page RPC. So "db" no longer speaks for /m/, and a verdict that pretends
+# it does would recreate the original gy-gcr22 outage on the new path: /m/ dead
+# for every viewer while this script prints OK.
+#
+# 🔴 THIS IS DELIBERATELY OUTSIDE THE gy-gcr22 ALLOWANCE BELOW. That allowance is
+# pinned to db:"unconfigured" — an unbound service key, ruled a non-goal of this
+# cut. A missing anon grant is NOT that condition, is not ruled on by anyone, and
+# is one line of SQL to fix. It must go red on its own even while the db half is
+# being excused, or the allowance quietly widens into a hole.
+m_rpc_verdict() {
+  if printf '%s' "$HBODY" | grep -q '"m_rpc":"ok"'; then
+    echo "OK|anon media_page RPC answers — /m/ can serve"
+  elif printf '%s' "$HBODY" | grep -q '"m_rpc":"denied"'; then
+    echo "FAIL|anon has LOST EXECUTE on media_page — /m/ is dead for every viewer while the rest of the site looks fine. One GRANT fixes it; this is not a code change."
+  elif printf '%s' "$HBODY" | grep -q '"m_rpc":"missing"'; then
+    echo "FAIL|media_page is not in the schema cache (absent, renamed or re-signatured) — /m/ is dead. Needs a migration, not a grant."
+  elif printf '%s' "$HBODY" | grep -q '"m_rpc":'; then
+    echo "FAIL|/api/health reports an unhealthy anon media_page RPC: $(printf '%s' "$HBODY" | head -c 200)"
+  else
+    # An OLD probe that predates AC5 has no m_rpc field at all. "The check is not
+    # there" must never read as "the check passed" — same rule as the 404 above.
+    echo "UNKNOWN|/api/health carries no m_rpc verdict, so the anon /m/ path is UNPROBED. This is a probe older than gy-gcr22 AC5, not a healthy /m/."
+  fi
+}
+M_RESULT="$(m_rpc_verdict)"
+M_STATE="${M_RESULT%%|*}"
+M_MSG="${M_RESULT#*|}"
 
 # --- THE gy-gcr22 ALLOWANCE: a NAMED, SIGNATURE-PINNED, DATED non-red ---------
 #
@@ -239,7 +270,11 @@ elif [ "$DB_REQUIRED" = "1" ] \
      && [ "$GCR22_TODAY" \< "$GCR22_ALLOWANCE_UNTIL" ]; then
   # The known, ruled-on, non-goal condition. Reported in full, attributed, and
   # deliberately NOT counted as a failure of THIS deploy or THIS hour.
-  log "KNOWN /api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND (gy-gcr22). /w/ and /m/ refuse every request."
+  log "KNOWN /api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND (gy-gcr22). /w/ and /m/takedown refuse every request."
+  # 🔴 NARROWED SINCE gy-gcr22 AC5. This line used to say "/w/ and /m/". /m/ no
+  # longer uses the service key, so naming it here asserted an outage on a
+  # surface that is in fact serving — and would have sent the next reader
+  # hunting the wrong credential. /m/ has its own verdict, reported below.
   log "KNOWN   ruled a non-goal of this cut by pm; binding it is a prod-credential action behind the Kaushik gate."
   log "KNOWN   NOT counted as a failure until $GCR22_ALLOWANCE_UNTIL, after which this goes RED again by design."
   log "KNOWN   every OTHER database state (rejected / 404 / any other body) still FAILS — this is pinned to one signature."
@@ -248,6 +283,17 @@ elif [ "$DB_REQUIRED" = "1" ]; then
 else
   # Reported, attributable, and explicitly not counted -- not skipped in silence.
   log "INFO /api/health not required for this target (no database expected here; production always requires it). Observed: $DB_MSG"
+fi
+
+# The anon /m/ verdict, judged on its own. Note this runs for the SAME targets the
+# db verdict is required on, and is NOT gated on DB_STATE: the whole point is that
+# /m/ can be dead while the service path is healthy, and vice versa.
+if [ "$M_STATE" = "OK" ]; then
+  log "OK   /api/health m_rpc: $M_MSG"
+elif [ "$DB_REQUIRED" = "1" ]; then
+  fail "/api/health m_rpc: $M_MSG"
+else
+  log "INFO /api/health m_rpc not required for this target. Observed: $M_MSG"
 fi
 rm -f "$HEALTH_FILE"
 
