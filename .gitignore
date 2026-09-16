@@ -8,7 +8,15 @@ dist-ssr/
 tsconfig.tsbuildinfo
 
 # dependencies
+# BOTH forms on purpose. "node_modules/" with a trailing slash matches only a
+# DIRECTORY, so it does NOT ignore a SYMLINK named node_modules -- and a symlink is
+# exactly what you get when someone links a shared install into a git worktree to run
+# tests. That gap let `git add -A` commit a node_modules symlink onto main (commit
+# 02699b3f, landing, 2026-09-16); it pointed at ../site/node_modules, a path that only
+# exists inside one agent's workspace, so every fresh clone got a dangling symlink.
+# The slashless form below covers the file/symlink case. Do not "tidy" it away.
 node_modules/
+node_modules
 
 # logs
 npm-debug.log*
