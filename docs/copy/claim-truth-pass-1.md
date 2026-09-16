@@ -1,219 +1,94 @@
-# Claim-truth copy spec — pass 1
+# getgymbo.com claim-truth pass 1
 
-**Bead:** gm-mva (child of gm-t0e) · **Author:** content · **Date:** 2026-08-31
-**Input:** gy-gim46 (closed, product rig) — ranked recommendation-action list ranks 1 and 3,
-plus the first four rows of the legal/claim risk register. Item 5 (status-language flag) added
-by pm 2026-08-31 off a re-read of gy-2f2ak.4's close reason. Item 2's hero string folds in
-marketer's rank-8 category-framing addition per pm's routing.
-**Verified against:** `origin/main` of `gymbo-landing` (git-show, commit `2b0bdd8`, matching
-the live `build-sha.txt` reported in gy-u29nr 2026-08-30) — the actual deployed state, not a
-local ahead-of-live checkout.
+gm-mva. Child of gm-t0e (competitor-audit claim-truth epic). Copy spec only — no
+App.tsx edits; the landing seat (gm-muo) applies this mechanically.
 
-This is a **copy spec**, not code. Landing (gm-muo) lands these strings. No design token,
-colour, spacing, or component change is proposed. All verdicts state the evidence and the axis
-(truth) they were cleared or changed on, per pm's standing note on gm-111.
+Live-verified against https://getgymbo.com/ on 2026-09-16 (fresh fetch, positive
+control "private alpha" = 2 occurrences confirming the page is server-rendered
+and a zero count means genuinely absent, not client-render lag). Source strings
+below are also cross-checked against `src/App.tsx` on `origin/main` so the exact
+strings are copy-pasteable, not paraphrased from rendered HTML.
 
----
+pm's 2026-09-16 06:51 re-verification (gm-mva comment) already established that
+2 of the original 4 audit claims had moved since the 2026-08-31 audit
+("Branded client app" removed, "Run your entire fitness business" removed).
+This pass covers what's still live.
 
-## Part A — land this pass (AC1–AC3)
+## AC1 — the four claims
 
-### 1. Brand strip vs reality (audit rank 1, risk HIGH)
+| # | Location | EXACT current string | EXACT replacement string | Reason | Audit ref |
+|---|---|---|---|---|---|
+| 1 | Hero, `src/App.tsx:299` | `Track revenue, stay organized, look professional, train smarter` | `Track payments and balances, stay organized, look professional, train smarter` | "Revenue" implies accounting-grade income tracking; the product only logs cash/UPI payments a trainer records themselves and shows a running balance (Terms.tsx: "track payments and balances... it does not process those payments or handle your money"). No documented accounting-grade revenue scope exists. Matches the capability language already ratified in gy-wymhs's FAQ copy ("Gymbo keeps the running balance. It doesn't touch your money."). | audit rank 3, risk HIGH |
+| 2 | Annual plan pricing card, `src/App.tsx:129`, `features` array 3rd item | `Lowest price, locked in` | `Our lowest price per month` | "Locked in" reads as a renewal/lifetime price guarantee. Terms.tsx is explicit: "Prices may change, with notice." No grandfather clause exists for current subscribers (confirmed by reading Terms.tsx directly — the only grandfathering bead in flight, gy-bk99c.1, is about pre-launch legacy trainers getting comped Pro at monetization go-live, unrelated to a price-change guarantee). Replacement keeps the true comparative fact (₹250/mo effective vs ₹399/mo monthly) without promising permanence. | risk HIGH |
+| 3 | Below the testimonial/gallery figure, `src/App.tsx:466` | `More trainers across India are coming on board.` | *(remove the line entirely — `<p>` and its content deleted, no replacement text)* | Unsubstantiated adoption claim; no public/consented evidence backs it (per instruction, not inventing a number or a replacement claim). Deleting rather than rewording since there is nothing true and specific to say here without real trainer-count data. | risk MEDIUM-HIGH |
+| 4 | Brand-touchpoints marquee, `src/App.tsx:643` `MARQUEE_CHIPS` | `{ name: "Booking link", icon: CalendarCheck },` | *(remove this array entry)* | NOT BUILT. Verified independently today: zero hits for "book"/"booking" anywhere in the Next.js client-facing app (`app/`) — the only booking-adjacent code is the trainer-side scheduling wizard (`OpenSlotService`), which has no client-facing self-book route. This confirms marketer's 2026-08-13 finding on gy-mdqxp verbatim, 34 days later, same conclusion. See "readiness grouping" note below for why REMOVE (not MARK-coming) is the only AC3-compliant verdict. | audit rank 1 (brand-strip family), risk HIGH |
+| 5 | Brand-touchpoints marquee, `src/App.tsx:644` `MARQUEE_CHIPS` | `{ name: "Fitness reports", icon: BarChart3 },` | *(remove this array entry)* | NOT BUILT. Verified independently today: no fitness/workout-progress report feature exists anywhere in the codebase. The only export/report-adjacent feature is a per-client billing/attendance PDF statement (`app/api/clients/[id]/export-data`, `ClientPDFData` type) — a payments/attendance statement, not a fitness progress report. Confirms marketer's 2026-08-13 finding on gy-mdqxp verbatim. | audit rank 1 (brand-strip family), risk HIGH |
 
-Location: `src/App.tsx`, `MARQUEE_CHIPS` array (~line 620) and the "Your brand, everywhere"
-marquee it feeds. Five labels, five verdicts (AC2):
+Rows 4 and 5 are numbered separately from rows 1-3 because they're two of the
+five brand-strip labels this bead also owes verdicts for (AC2) — see below.
 
-| Chip label | Verdict | Evidence |
+## AC2 — brand-strip label verdicts (all five, with evidence)
+
+The brand-touchpoints marquee (`MARQUEE_CHIPS`, `src/App.tsx:637-646`) is a
+single flat scrolling list with **no visual distinction** between shipped and
+unshipped items — it is not the "shipped grid / forthcoming grid, no badge"
+two-block layout speced and built in gy-mdqxp's round-6 pass (design comment
+2026-08-13 07:38). That grouping component apparently did not carry forward
+into this marquee redesign. This matters for the verdict: because there is no
+copy-only way to signal "coming later" without either a label (Kaushik
+explicitly banned re-introducing one — gy-slagn) or a layout change (AC3 bars
+component/token changes here), **MARK-as-coming-later is not an available
+verdict under this bead's constraints** for anything not built. That leaves
+KEEP or REMOVE only.
+
+| Label | Verdict | Evidence |
 |---|---|---|
-| `Brand theming` | **KEEP as-is** | Shipped: trainer-configurable accent colour (`ProfileSettingsView.swift`, "Accent color" control) and custom brand logo (`CoachCardSheetData.brandLogoUrl`, gy-lrffu/GYM-644) render on the public profile card and exported statements. |
-| `Your own URL` | **KEEP as-is** | Shipped: personalised public-profile slug, `/t/slug` (`CoachCardSheetData.swift` — "gy-jx67w: public-profile slug — drives the QR (/t/slug)"), live route `app/(public)/t/[slug]/page.tsx`. |
-| `Booking link` | **DEFERRED — pending product shipped-status, pm chasing** | pm's 2026-08-31 ruling: Kaushik's verbatim quote in `gy-mdqxp` item 4 names "shareable booking link" as a touchpoint to keep, so this is founder-endorsed, not a REMOVE candidate. What's still unsettled is not whether to talk about it, but *which group* it belongs in — `gy-mdqxp` item 3 rules the strip groups by shipped-readiness (shipped items in the top row(s), not-yet-shipped below, no "coming soon" badges). That's a shipped-status question that lives in the product repo; I could not establish it from code (see my original search below), and per pm's ruling I'm not the one chasing it — pm is taking it to the product rig directly. Chip stays unchanged in pass 1. |
-| `Fitness reports` | **DEFERRED — pending product shipped-status, pm chasing** | Same ruling and same reason as `Booking link` — Kaushik's `gy-mdqxp` item 4 quote also names "fitness reports" explicitly, so this is founder-endorsed content, not a REMOVE. Grouping (shipped vs. not-yet-shipped row) is the open question, owned by pm. Chip stays unchanged in pass 1. |
-| `Branded client app` | **RE-WORD → "Custom branded client content"** | pm's 2026-08-31 ruling, reading `gy-mdqxp` item 4 directly: Kaushik's verbatim quote is *"...shareable booking link, fitness reports, and custom branded client **content**. Brand themes are fine."* — content, not app. The "Branded client app" phrasing on the live chip is a downstream paraphrase that drifted one word from the founder's own text; it was never a ruling that clients get an app. My original REMOVE verdict was right in substance (no client-facing app exists, and the phrase as-shipped does contradict "clients download nothing") but pm's re-word is the better fix: it restores Kaushik's own phrase instead of deleting a touchpoint he explicitly asked to be talked about. When a bead's prose summary and its quoted founder text disagree, the quote wins. Using his exact wording, unhyphenated ("custom branded client content"), rather than my first pass's compound-adjective hyphen — caught during the gm-111 voice pass: a paraphrase-of-a-quote is exactly the failure mode this ruling exists to correct, so the safer move is his literal string, not a copyedited version of it. |
+| "Branded client app" | Already resolved, no action | Removed in PR #103 (2026-08-31), reworded to "Custom branded client content" per Kaushik's verbatim phrase (gy-mdqxp item 4). Confirmed live today: zero occurrences of the old string, "Custom branded client content" present at `MARQUEE_CHIPS[7]`. |
+| "Your own URL" | KEEP | SHIPPED. `app/(public)/t/[slug]/page.tsx` is a real public trainer profile page; `trainer.slug` is a live, validated field (`app/api/trainers/route.ts:84-86`, auto-provisioned on activation). Confirms gy-mdqxp's 2026-08-13 designer verification (QR profile card resolves to `/t/{slug}`). |
+| "Booking link" | REMOVE | NOT BUILT — see row 4 above. |
+| "Fitness reports" | REMOVE | NOT BUILT — see row 5 above. |
+| "Brand theming" | KEEP | SHIPPED. `accent_color`, `theme`, `app_icon`, `brand_name`/`brand_address`/`brand_phone`/`brand_email` are real, settable fields (`app/api/trainers/route.ts:65`, `app/(main)/settings/profile/page.tsx`) with a live Settings surface. Confirms gy-mdqxp's 2026-08-13 designer verification. |
 
-**Exact change**, `MARQUEE_CHIPS` array (`src/App.tsx` ~line 620) — only the `Branded client app`
-entry is renamed; `Booking link` and `Fitness reports` are untouched (deferred, not decided
-here), matching the array's current order:
+## Flag-only absolutes (list with bounded rewrite, DO NOT FIX this pass)
 
-Current:
-```
-const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
-  { name: "QR profile", icon: QrCode },
-  { name: "Share links", icon: Share2 },
-  { name: "PDF invoices", icon: FileText },
-  { name: "Brand theming", icon: Palette },
-  { name: "Your own URL", icon: Link },
-  { name: "Booking link", icon: CalendarCheck },
-  { name: "Fitness reports", icon: BarChart3 },
-  { name: "Branded client app", icon: Smartphone },
-];
-```
+Per the bead's own scope instruction, these stay out of pass 1 so it lands
+small. Listed here so pass 2 doesn't have to re-derive them.
 
-Replacement:
-```
-const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
-  { name: "QR profile", icon: QrCode },
-  { name: "Share links", icon: Share2 },
-  { name: "PDF invoices", icon: FileText },
-  { name: "Brand theming", icon: Palette },
-  { name: "Your own URL", icon: Link },
-  { name: "Booking link", icon: CalendarCheck },
-  { name: "Fitness reports", icon: BarChart3 },
-  { name: "Custom branded client content", icon: Smartphone },
-];
-```
-
-The `Smartphone` icon is left as-is — swapping it is a component/design call (icon-to-label
-fit), not a copy call; flagging for landing/designer that "Smartphone" may now read oddly next
-to "content" rather than "app," but not proposing an icon change myself (AC3 scope).
-
-### 2. Hero overclaim (audit rank 3, risk HIGH)
-
-Location: `src/App.tsx`, hero H1 (~line 289) and hero subhead (~line 298).
-
-| Location | Exact current string | Exact replacement string | Reason |
+| Location | EXACT current string | Suggested bounded rewrite | Why it's flagged |
 |---|---|---|---|
-| Hero H1 | `Run your entire fitness business from your phone.` (rendered across three JSX text nodes, with "fitness business" in a highlighted `<span>`) | `The business app for independent personal trainers.` | **Revised during the gm-111 voice pass** — see the note below. Fixes the same overclaim (this bead, gy-gim46 rank 3) and carries marketer's category framing (gy-gim46 rank 8, folded in from gm-kkl), but as the guide's own canonical §7 one-liner rather than a colon-plus-feature-list construction. |
-| Hero subhead | `Track revenue, stay organized, look professional, train smarter.` (the rest of the sentence, "Built for independent trainers like you in India.", is unchanged) | `Track payments and balances, stay organized, look professional, train smarter.` | Audit: use "payments and balances," not "revenue," unless accounting-grade revenue scope is documented — it is not; Gymbo records cash/UPI and does not process money. |
+| `src/App.tsx:47` | `Every balance, clear: credit and classes left, always current` | `Every balance, clear: credit and classes left, kept up to date as you go` | "Always current" is an uptime/reliability absolute against the Terms' "as is / as available" disclaimer. |
+| `src/App.tsx:49` | `Cash or UPI logged. Nothing slips.` | `Cash or UPI logged, so nothing gets missed.` | "Nothing slips" is an absolute guarantee claim. |
+| `src/App.tsx:136` (+ JSON-LD twin, `index.html` FAQPage schema — see note below) | `Yes. Log classes and payments without signal; everything syncs when you're back online.` | `Yes. Log classes and payments without signal; it syncs once you're back online.` | "Everything syncs" is an absolute; bounding it to "it syncs" (the sync mechanism, not a completeness guarantee) is enough without changing the claim's substance. |
 
-**Revision note (gm-111 voice pass, 2026-08-31):** my first pass folded marketer's fix in as
-`The business app for independent personal trainers: payments, balances, schedules and classes
-from your phone.` — truth-clean, but on the voice pass I flagged it as a feature-dump construction
-(named axis: voice, not truth). The subhead directly below it already carries the concrete scope
-("payments and balances, stay organized..."), so a colon-plus-list H1 duplicates that list one
-line above it — two consecutive lines both enumerating product nouns is denser than the "short
-sentences, concrete nouns, zero fluff" register calls for in the highest-impact spot on the page.
-The shorter replacement is the guide's own §7 one-liner verbatim — it satisfies the truth fix (no
-"entire"/"revenue" claim, nothing broader than what's substantiated), carries marketer's category
-framing intact ("business app for independent personal trainers"), and lets the subhead do the
-scope-listing work it already does, rather than doing it twice. Same INFERRED evidence-class note
-applies to the category-framing half as before; no "SEO" justification used anywhere.
+**Dependency note for whoever picks up the FAQ rewrite:** `index.html` carries a
+hand-authored FAQPage JSON-LD block that duplicates this exact FAQ answer for
+SEO rich results (already the subject of gy-ivyxb, fixed today in PR #164 for a
+different divergence). If this bounded rewrite ships, the JSON-LD twin needs
+the same edit in the same PR, or it will drift again — same failure class,
+now flagged in advance instead of found after the fact.
 
-**Note — pm's gm-111 hero clearance, cross-referenced:** marketer's 2026-08-31 spot-check cleared
-the *current* hero string on voice ("calm, precise, no fear register"). That clearance stands on
-the voice axis and is not contradicted here — this is a truth-axis fix to a different problem
-(overclaim vs. our own terms/privacy). Per pm's ruling, gm-111 audits the *new* hero for voice,
-not this one.
+## Found, not fixed (same claim family, outside this bead's 4 named rows)
 
-**Note — this string is also the recorded canonical one-liner:** the new H1 is now verbatim the
-voice guide's own §7 "One-liner" entry ("The business app for independent personal trainers.") —
-no guide update needed for that entry. What DOES go stale: §7's "Longer tagline" entry ("Run your
-entire fitness business from your phone.") is the *old* H1, word for word, and stops being used
-anywhere on the page once this ships. I'll update §7 to drop or replace the stale tagline entry in
-the same pass this lands, per §8.2 (voice ruling folds back at the next version bump) — flagging
-here so it isn't lost as a follow-up nobody owns.
+`src/App.tsx:44-45`, the "Gymbo ledger" pillar section (`id: "revenue"`):
+- `title: "Track your revenue"` — same overclaim pattern as the hero's "Track
+  revenue" (row 1 above), but a different literal string, so it wasn't part
+  of the original audit's 4 rows or pm's re-verification count.
+- `intro: "...so you always know where every client stands."` — another
+  absolute ("always know").
 
-**Adjacent finding, not in scope for this bead — flagging only:** a second "revenue" instance
-exists elsewhere on the page, outside the hero: `src/App.tsx:43`, feature-card title `"Track your
-revenue"` (eyebrow "The Gymbo ledger"). Same overclaim pattern, different location, not named in
-the audit's rank-3 finding and not covered by pm's brief for this bead. Not touched here — worth
-a follow-up bead if pm wants it swept in the same pass.
+Not fixing here — this bead names 4 specific claims plus the 5 brand-strip
+labels, and silently expanding scope makes a spec harder to review and land.
+Filing as a follow-on for whoever owns pass 2 or the flag-only absolutes list.
 
-### 3. "Lowest price, locked in" (risk HIGH)
+## AC3 confirmation
 
-Location: `src/App.tsx`, `PRICING` array, Annual plan `features` (~line 128).
+No proposed replacement reintroduces "no credit card," adds a pricing tier, or
+touches any design token, color, spacing, or component. Two rows are deletions
+(array entries / a `<p>` tag), not rewords — that's copy scope, not layout.
 
-| Location | Exact current string | Exact replacement string | Reason |
-|---|---|---|---|
-| Annual pricing card, 3rd feature bullet | `Lowest price, locked in` | `₹2,999 billed annually` | Audit's own suggested fix — states the fixed, current-term price instead of implying a renewal/lifetime guarantee our terms don't make (terms: prices may change with notice). This duplicates the adjacent `note` field ("Billed yearly at ₹2,999 via the App Store. Save 37%.") in substance; that redundancy is accepted here in favour of a zero-judgment-call replacement per the audit's literal wording, rather than my inventing a lock-duration claim we can't substantiate. |
+## AC4 confirmation
 
-### 4. "More trainers across India are coming on board" (risk MEDIUM-HIGH)
-
-Location: `src/App.tsx` ~line 457, directly under the testimonial figure.
-
-| Location | Exact current string | Exact replacement string | Reason |
-|---|---|---|---|
-| Below testimonial | `<p className="mt-4 text-center text-[14px]" style={{ color: F.inkLabel, fontFamily: SANS }}>More trainers across India are coming on board.</p>` | Delete this line entirely — no replacement paragraph. | Unsubstantiated adoption claim, no public evidence. AC forbids inventing a number; no consented/evidenced replacement exists to substitute in this pass. |
-
-### 5. Status-language discrepancy — FLAG ONLY, no verdict (pm addition, 2026-08-31)
-
-This row is deliberately a flag, not a fix. Kaushik ruled the ground truth on gy-2f2ak.4
-(closed 2026-08-23): public status language is **"private alpha."** He did not rule on which
-exact phrase appears where — that close reason explicitly says so, and explicitly declines to
-resolve a drift the product rig caught the same day. This bead does not resolve it either; the
-phrase choice is founder-level and pm is carrying it up.
-
-**Full inventory of stage-language strings on the page** (grepped `src/App.tsx` for
-beta/alpha, plus `index.html`'s meta/OG/Twitter descriptions and JSON-LD):
-
-| Location | Exact string |
-|---|---|
-| Hero eyebrow, `src/App.tsx:287` | `In beta` |
-| Footer CTA eyebrow, `src/App.tsx:548` | `In beta` |
-| `index.html` meta description, OG description, Twitter description, JSON-LD description | No stage/status language at all — all four describe the product functionally only (features, price), no "beta," "alpha," "waitlist," or availability claim. |
-
-**Internal consistency: YES.** Both live occurrences say the same thing, "In beta" — this is not
-an internal contradiction on the page itself.
-
-**Agreement with the founder ruling: NO.** "In beta" and "private alpha" are different words for
-what the ruling calls the same status. Two readings, both plausible, not mine to pick between:
-
-- **Reading A — deliberate distinction.** "In beta" could be intentionally softer/more familiar
-  consumer language for a public-facing landing page, while "private alpha" is the internal/
-  formal term used for the branding package and other founder-facing material. Under this
-  reading, no drift exists — different audiences, different register, both accurate.
-- **Reading B — drift.** "In beta" is simply the pre-ruling wording that was never updated after
-  Kaushik's 2026-08-23 decision, and the site should say "private alpha" (or some ruled variant
-  of it) to match. Under this reading, the live site has been stating stale/wrong status language
-  for 8 days.
-
-**Not proposing a replacement string for either reading.** Do not read the absence of a fix here
-as an oversight — per pm's instruction, this is the one row in this spec where an unresolved FLAG
-is the correct and expected output. Also not introducing "waitlist" anywhere in this row or
-elsewhere in this spec, per pm's separate note that "waitlist" risks a fabricated-demand claim
-(see gm-7pd for the funnel evidence behind that instruction).
-
-### 6. Synthetic-data disclosure (register row 3, sourced to gm-zag)
-
-Location: `src/App.tsx`, "See Gymbo in action" gallery section (~line 383), directly under the
-`<h2>` and before the gallery controls (~line 386).
-
-**Background:** register row 3 (public testimonial/screenshot provenance, HIGH) was out of my
-scope in the first version of this spec, flagged in Part C as needing its own bead. `gm-zag`
-(researcher, closed 2026-08-31 while I was working) answered the screenshot half outright:
-**SYNTHETIC, high confidence.** The six gallery images show the real Gymbo app UI, but the
-trainer identity, client names, balances, and history come from a deterministic capture fixture
-(`scripts/seed-priya.sh`'s "Priya Sharma" roster), not a live account — full commit and script
-evidence on `gm-zag`. The live gallery carries no demo-data disclosure today; the four separate
-animated pillar images elsewhere on the page do already say "— demo" in their accessible labels,
-so this is a real, narrow gap, not a page-wide pattern.
-
-This is a HIGH register row with a settled, cheap, honest fix — pm's ruling is that it ships in
-pass 1 rather than waiting for its own bead. The testimonial half (the attributed "S Sarfaraz"
-quote) is explicitly NOT part of this row or this spec — pm is carrying that to the founder
-directly; not investigated, not drafted, not filed here.
-
-| Location | Exact current string | Exact new string | Reason |
-|---|---|---|---|
-| New line, gallery section, under the `<h2>` | *(does not exist today)* | `Screens shown with sample data.` | Substance is `gm-zag`'s finding, settled and unchanged — high-confidence sourced to the capture pipeline (`scripts/capture-appstore-screenshots.sh` + `scripts/seed-priya.sh`, both cited on that bead). Wording revised during the gm-111 voice pass: pm flagged the original proposal ("Screens show synthetic demo data.") as "honest and necessary, but a flat systems phrase on a marketing page." "Synthetic" is accurate but technical/ML-register vocabulary, not the plain, concrete word choice the voice guide calls for and not something that "reads identically Mumbai/Manila/Manchester" the way "sample" does. "Sample data" carries the identical disclosure — this is demo content, not a real trainer's account — without the jargon. Same claim, same honesty, plainer word. |
-
----
-
-## Part B — flagged, held out of this pass (audit MEDIUM, register row 4)
-
-Per gm-mva's instruction: list, do not fix, so the first pass stays small and landable.
-
-| Location | Exact current string | Suggested bounded rewrite (not authorized yet) |
-|---|---|---|
-| `src/App.tsx:46`, ledger feature bullet | `Every balance, clear: credit and classes left, always current` | `Every balance, clear: credit and classes left, updated the moment you log a class.` |
-| `src/App.tsx:48`, ledger feature bullet | `Cash or UPI logged. Nothing slips.` | `Cash or UPI logged, so you don't lose track.` |
-| `src/App.tsx:135`, FAQ answer ("Does it work offline?") | `Yes. Log classes and payments without signal; everything syncs when you're back online.` | `Yes. Log classes and payments without signal; they sync when you're back online.` |
-
----
-
-## Part C — out of scope, not decided here
-
-- **Public testimonial provenance** (the attributed "S Sarfaraz" quote specifically — the
-  screenshot half of register row 3 is now resolved, see item 6 above): not mine, not a bead,
-  not to be investigated or drafted by content. pm is carrying it to the founder as a single
-  sentence. Recorded here only so the record shows this half of register row 3 was seen and
-  deliberately left alone, not missed.
-- **Named-competitor comparison page** (register row, HIGH/founder-owned): explicitly routed to
-  gy-u9goi by the audit itself. Not touched.
-
-## Target metric
-
-Zero of the four original HIGH-risk items from gy-gim46 named in gm-mva's brief remain live after
-landing ships this spec. `Booking link` and `Fitness reports` are DEFERRED pending product
-shipped-status (pm chasing, not a gap in this spec). The status-language discrepancy (item 5) is
-left open for a founder call rather than silently resolved. The synthetic-data disclosure (item
-6, register row 3's screenshot half) ships in this pass.
+No UNKNOWN rows in this pass — all four claims plus five brand-strip labels
+have a verdict backed by either a direct code read (this pass) or a prior
+source-verified finding (gy-mdqxp, marketer, 2026-08-13) that I independently
+re-confirmed rather than took on trust.
