@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { F } from "../forge-ui";
 import { WaitlistForm } from "./WaitlistForm";
 import { WaitlistRevealContext } from "../lib/waitlistReveal";
@@ -46,6 +46,7 @@ export function InlineWaitlist({
   panelClassName = "",
   reducedMotion = false,
   above = false,
+  onRevealedChange,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -67,6 +68,18 @@ export function InlineWaitlist({
    * call site nobody checked. The call site knows; it says so.
    */
   above?: boolean;
+  /**
+   * gy-w77x3 K1/K2 — told to the call site, because the call site owns the box
+   * that has to move.
+   *
+   * The fixed bottom bar must lift clear of the software keyboard, and only the
+   * bar can do that: it is the positioned element. But only THIS component knows
+   * whether a field exists to be focused. Rather than have the bar guess (lift
+   * whenever any keyboard is up, including one raised by the footer form far
+   * below) or have this component reach upward into a parent it does not own,
+   * the state is reported and the bar decides.
+   */
+  onRevealedChange?: (revealed: boolean) => void;
 }) {
   const [revealed, setRevealed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -136,6 +149,14 @@ export function InlineWaitlist({
             <WaitlistForm />
           </div>
   ) : null;
+
+  // Reported as an EFFECT rather than from inside the reveal callback: calling a
+  // parent's setState during our own state updater is a render-phase update, and
+  // React will warn or drop it. This fires after commit, when the panel really
+  // is in the DOM and the field can actually take focus.
+  useEffect(() => {
+    onRevealedChange?.(revealed);
+  }, [revealed, onRevealedChange]);
 
   return (
     <WaitlistRevealContext.Provider value={{ revealed, reveal }}>

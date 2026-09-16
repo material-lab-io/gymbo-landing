@@ -1,4 +1,5 @@
 import { ArrowRight } from "lucide-react";
+import type { CSSProperties, ReactNode } from "react";
 import { useWaitlistReveal } from "./lib/waitlistReveal";
 
 /* ============================================================================
@@ -413,25 +414,78 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
  * same event and not of two differently-instrumented worlds.
  */
 /**
- * TRACKING ONLY, BEHAVIOUR UNCHANGED — for the hand-styled "Get Gymbo" buttons
- * (nav, pricing) that are not PrimaryCTA/WaitlistCTA (gy-w77x3 AC4).
+ * gy-w77x3 D3 — the hand-styled "Get Gymbo" buttons (nav, pricing) behave like
+ * every other waitlist CTA: reveal inside a cluster, scroll outside one.
  *
- * They still scroll to the footer form. Whether they should reveal instead waits
- * on gy-w77x3 AC1 (which control Damini actually tapped), so this deliberately
- * does NOT route through useWaitlistCtaAction: that would silently start
- * revealing inside a cluster, which is a decision, not instrumentation.
- * Spread onto the existing element so its visual treatment is untouched.
+ * 🔴 THIS REPLACED waitlistScrollCtaProps, WHICH WAS TRACKING-ONLY BY DESIGN AND
+ * IS NOW GONE. That function existed for one reason, stated in its own comment:
+ * "whether they should reveal instead waits on gy-w77x3 AC1 (which control
+ * Damini actually tapped)". designer ruled 2026-09-16 (D5) that AC1 STOPS
+ * BLOCKING — if every waitlist control reveals AND shares one label, then
+ * whichever control she tapped is fixed and the ambiguity that made AC1 a
+ * dependency is gone. So the reason for a separate scroll-only primitive
+ * expired, and keeping it would leave an exported function that still looks
+ * authoritative while nothing uses it — the hazard that removed SecondaryButton.
+ *
+ * SPREAD ONTO THE EXISTING ELEMENT, so the hand-styled visual treatment is
+ * untouched. The tracking is byte-identical to before: same event, same
+ * location, so the before/after comparison stays a comparison of one event.
+ *
+ * 🔴 THE FALLBACK IS THE WHOLE SAFETY ARGUMENT AND IT IS UNCHANGED. Outside a
+ * cluster this still scrolls to the footer form, because useWaitlistCtaAction
+ * returns that branch when the context is null. No call site this bead did not
+ * touch can change behaviour, and tests/inline-waitlist.spec.ts guards the
+ * fallback directly rather than by inspection.
  */
-export function waitlistScrollCtaProps(location: CtaLocation) {
+export function useWaitlistCtaProps(location: CtaLocation) {
+  const onClick = useWaitlistCtaAction(location);
+  const reveal = useWaitlistReveal();
   return {
-    onClick: () => {
-      trackCta("waitlist_cta_click", location);
-      scrollToId("cta");
-    },
+    onClick,
     "data-cta": "waitlist",
     "data-cta-location": location,
-    "data-cta-behaviour": "scroll",
+    // Reports what this control WILL do, read straight from whether a cluster
+    // encloses it -- not a literal anyone has to remember to update.
+    "data-cta-behaviour": reveal ? "reveal" : "scroll",
   } as const;
+}
+
+/**
+ * gy-w77x3 D3 — a hand-styled waitlist button that can see its cluster.
+ *
+ * 🔴 THIS COMPONENT EXISTS FOR A REACT REASON, NOT A STYLING ONE, AND THE REASON
+ * IS EASY TO GET WRONG. useWaitlistCtaProps reads the reveal context, and a hook
+ * reads context AT THE POSITION OF THE COMPONENT THAT CALLS IT. Calling it in
+ * <App> and spreading the result onto a button nested inside <InlineWaitlist>
+ * would compile, render, and ALWAYS REPORT null -- every wrapped control would
+ * quietly keep scrolling while data-cta-behaviour truthfully said "scroll", so
+ * the bug would look like a deliberate decision. The call has to happen INSIDE
+ * the provider, which means inside a child component.
+ *
+ * It also keeps the hook out of PRICING.map(): a hook in a loop is a rules-of-
+ * hooks violation even when the array length happens to be constant.
+ *
+ * Visual treatment stays entirely at the call site -- this adds no styling of
+ * its own, which is what lets the nav and pricing buttons keep their hand-built
+ * appearance while gaining the behaviour.
+ */
+export function WaitlistPlainButton({
+  location,
+  className = "",
+  style,
+  children,
+}: {
+  location: CtaLocation;
+  className?: string;
+  style?: CSSProperties;
+  children: ReactNode;
+}) {
+  const props = useWaitlistCtaProps(location);
+  return (
+    <button {...props} className={className} style={style}>
+      {children}
+    </button>
+  );
 }
 
 function useWaitlistCtaAction(location: CtaLocation) {
