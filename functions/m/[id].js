@@ -122,7 +122,10 @@ export async function onRequestGet(context) {
   // FAIL-CLOSED ON PROVENANCE. Missing attribution means the MEDIA does not
   // render -- not the media with the credit quietly dropped.
   if (!attributionIsComplete(m)) {
-    console.error("[media] incomplete provenance, refusing to publish", m.id);
+    // The id comes from the validated route param, NOT from the RPC row: media_page
+    // is keyed by id and does not return one, so reading m.id logs `undefined` in
+    // exactly the branch an operator is debugging.
+    console.error("[media] incomplete provenance, refusing to publish", id);
     return unavailable("This video is not currently available.");
   }
 

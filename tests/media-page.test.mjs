@@ -209,3 +209,31 @@ test("no key of any kind appears in the rendered HTML", async () => {
   assert.doesNotMatch(html, /SUPABASE_SERVICE_ROLE_KEY/);
   assert.doesNotMatch(html, /eyJhbGci/, "not even the public anon key belongs in the markup");
 });
+
+// gy-gcr22: the fail-closed refusal must say WHICH asset it refused.
+//
+// This branch is the one an operator reaches for when a video silently will not
+// publish, and it is the only place the page logs anything. The RPC's contract
+// (20260914210000_gy-s8z4z) returns no `id` column -- it is keyed BY id, so it
+// does not echo it back -- and the fixtures above correctly mirror that. So a
+// log line reading the id off the RPC row prints `undefined` in production
+// while every fixture-based test stays green. Assert on the log, not just the
+// response, or the diagnostic can rot without a single test noticing.
+test("the incomplete-provenance refusal NAMES the media id in the log", async () => {
+  const incomplete = { ...WGER_OK, licence_url: null }; // wger row missing a required credit
+  const seen = [];
+  const realError = console.error;
+  console.error = (...args) => { seen.push(args.join(" ")); };
+  try {
+    const { status } = await render([incomplete]);
+    assert.equal(status, 404, "an unattributable row must not render");
+  } finally {
+    console.error = realError;
+  }
+  const line = seen.find((l) => l.includes("incomplete provenance"));
+  assert.ok(line, "the refusal must be logged at all");
+  assert.ok(
+    line.includes(ID),
+    `the refusal log must name the media id, got: ${JSON.stringify(line)}`,
+  );
+});
