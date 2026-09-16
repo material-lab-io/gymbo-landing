@@ -59,7 +59,7 @@ export function WaitlistForm() {
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        You're on the list — we'll be in touch when your access is ready.
+        You're on the list. We'll be in touch when your access is ready.
       </p>
     );
   }
@@ -155,7 +155,7 @@ export function WaitlistForm() {
       )}
       {status === "error" && (
         <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
-          Couldn't add you just now — please try again, or{" "}
+          Couldn't add you just now. Please try again, or{" "}
           <a
             href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nphone: ${phone}\nemail: ${email}`)}`}
             className="underline"

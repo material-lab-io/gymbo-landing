@@ -19,22 +19,22 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "Built for", gymbo: "independent personal trainers (session-led)", wellnessz: "dietitians / nutritionists & health coaches (nutrition-led)", win: null },
   { label: "The core job", gymbo: "log a session in one tap; track payments & balances", wellnessz: "create & assign diet / meal plans", win: null },
   { label: "Entry price", gymbo: "₹399/mo (₹250/mo effective on annual)", wellnessz: "₹499/mo", win: "g" },
-  { label: "Client limits", gymbo: "unlimited — flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
+  { label: "Client limits", gymbo: "unlimited: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
   { label: "Free trial", gymbo: "7 days", wellnessz: "14 days", win: null },
   { label: "Session logging", gymbo: "one-tap punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
   { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
-  { label: "Nutrition / meal plans", gymbo: "Workout builder + AI assistant (training-first)", wellnessz: "deep — 20k+ ICMR-verified meals, nutrition AI", win: "w" },
+  { label: "Nutrition / meal plans", gymbo: "Workout builder + AI assistant (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
   { label: "Sign-in", gymbo: "passwordless (Apple + Face ID)", wellnessz: "account-based", win: "g" },
   { label: "White-label app", gymbo: "not yet", wellnessz: "₹3,999/mo tier", win: "w" },
   { label: "Platform", gymbo: "iOS-native", wellnessz: "app + web", win: "w" },
 ];
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Is Gymbo a good WellnessZ alternative?", a: "For personal trainers, yes — Gymbo is built around session logging, payments, and scheduling at a flat ₹399/month. WellnessZ is better if your core service is nutrition and meal planning." },
+  { q: "Is Gymbo a good WellnessZ alternative?", a: "For personal trainers, yes, Gymbo is built around session logging, payments, and scheduling at a flat ₹399/month. WellnessZ is better if your core service is nutrition and meal planning." },
   { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class logging, automatic balance math, payment tracking) for independent personal trainers." },
   { q: "Is Gymbo cheaper than WellnessZ?", a: "Gymbo is ₹399/month (₹250 effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120." },
-  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Yes — Gymbo supports bulk client import so you can bring your roster over." },
-  { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training — one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
+  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Yes, Gymbo supports bulk client import so you can bring your roster over." },
+  { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training: one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
 ];
 
 const GYMBO_FOR = [
@@ -125,10 +125,10 @@ export function CompareWellnessZ() {
                 </span>
               </h1>
               <p className="mt-6 text-[clamp(15px,1.6vw,18px)]" style={{ color: F.ink, fontWeight: 400, lineHeight: 1.6, maxWidth: "60ch" }}>
-                Gymbo and WellnessZ are both India-native coaching apps — but they're built for different people.
+                Gymbo and WellnessZ are both India-native coaching apps, but they're built for different people.
               </p>
               <p className="mt-4 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.7, maxWidth: "64ch", fontFamily: SANS }}>
-                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions — log a class in one tap, track every payment and balance, and look professional, at a flat ₹399/month with no per-client limits.
+                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions: log a class in one tap, track every payment and balance, and look professional, at a flat ₹399/month with no per-client limits.
               </p>
             </Reveal>
 
@@ -221,7 +221,7 @@ export function CompareWellnessZ() {
                 WellnessZ leads with nutrition. Its homepage calls it "all-in-one software for dietitians, nutritionists & coaches," and its standout features are a 20,000+ ICMR-NIN verified meal database and nutrition AI. If your business is built on diet plans, that depth is genuinely valuable.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.bone, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning — it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap punch to log a class, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and an AI assistant are built in, but the hero is running your training business, not planning nutrition.
+                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning: it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap punch to log a class, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and an AI assistant are built in, but the hero is running your training business, not planning nutrition.
               </p>
               <p className="text-[15px] md:text-[16px] pt-2" style={{ color: F.marigold, fontFamily: SANS, fontWeight: 600, lineHeight: 1.6 }}>
                 Bottom line: same country, different jobs. WellnessZ optimizes the dietitian's day; Gymbo optimizes the trainer's.
@@ -239,10 +239,10 @@ export function CompareWellnessZ() {
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5">
               <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                WellnessZ prices by how many clients you have — ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
+                WellnessZ prices by how many clients you have: ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.ink, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹399/month, or ₹250/month effective on the annual plan</b> — with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
+                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹399/month, or ₹250/month effective on the annual plan</b>, with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
               </p>
             </Reveal>
             <Reveal className="mt-8">
@@ -257,7 +257,7 @@ export function CompareWellnessZ() {
                 </div>
                 <div className="flex items-center justify-between px-5 py-4" style={{ borderTop: "1px solid var(--c-line)" }}>
                   <span className="text-[15px] font-black" style={{ fontFamily: SERIF, color: F.inkMuted }}>WellnessZ</span>
-                  <span className="text-[15px] font-bold" style={{ color: F.inkMuted, fontFamily: SANS }}>₹999 <span style={{ fontWeight: 400 }}>(Pro — 40+ clients)</span></span>
+                  <span className="text-[15px] font-bold" style={{ color: F.inkMuted, fontFamily: SANS }}>₹999 <span style={{ fontWeight: 400 }}>(Pro: 40+ clients)</span></span>
                 </div>
               </div>
             </Reveal>
