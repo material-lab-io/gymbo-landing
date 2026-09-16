@@ -45,6 +45,7 @@ export function InlineWaitlist({
   className = "",
   panelClassName = "",
   reducedMotion = false,
+  above = false,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -52,6 +53,20 @@ export function InlineWaitlist({
   panelClassName?: string;
   /** The page already computes this via useReducedMotion; passed in, not re-read. */
   reducedMotion?: boolean;
+  /**
+   * gy-w77x3 D1 — render the capture ABOVE the CTA instead of below it.
+   *
+   * 🔴 FOR THE FIXED BOTTOM BAR, AND ONLY FOR IT. The bar is pinned to the
+   * bottom of the viewport, so a panel rendered below its button is off-screen
+   * by construction — the default order silently produces an invisible capture
+   * there. designer, 2026-09-16: "the capture renders ABOVE the button inside
+   * the fixed container, the button stays under the thumb."
+   *
+   * This is deliberately NOT inferred from `position: fixed`: a component that
+   * guesses its own layout context is a component that guesses wrong on the one
+   * call site nobody checked. The call site knows; it says so.
+   */
+  above?: boolean;
 }) {
   const [revealed, setRevealed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -81,16 +96,15 @@ export function InlineWaitlist({
     });
   }, []);
 
-  return (
-    <WaitlistRevealContext.Provider value={{ revealed, reveal }}>
-      <div className={className}>
-        {children}
-        {/* Rendered only once asked for. Keeping it unmounted (rather than
-            hidden) means the prerendered HTML that ships from
-            scripts/prerender.mjs is BYTE-UNCHANGED by this bead, which is what
-            lets the existing visual baselines and the prod smoke suite stay
-            meaningful evidence instead of being re-baselined through a diff. */}
-        {revealed && (
+  // Built once and PLACED per `above`, rather than written twice. Two copies of
+  // one panel is how a fix lands on the below variant and quietly not the above
+  // one -- the same duplication argument that produced waitlistScrollCtaProps.
+  // Rendered only once asked for. Keeping it unmounted (rather than hidden)
+  // means the prerendered HTML that ships from scripts/prerender.mjs is
+  // BYTE-UNCHANGED by this bead, which is what lets the existing visual
+  // baselines and the prod smoke suite stay meaningful evidence instead of
+  // being re-baselined through a diff.
+  const panel = revealed ? (
           <div
             ref={panelRef}
             role="group"
@@ -116,12 +130,19 @@ export function InlineWaitlist({
             // -mx-5 gives the padding back below sm so the fields land at the
             // footer's exact width; from sm up the column is wide enough that
             // the inset costs nothing and the panel sits inside it as designed.
-            className={`-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full mt-5 max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
+            className={`-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full ${above ? "mb-3" : "mt-5"} max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
             style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)" }}
           >
             <WaitlistForm />
           </div>
-        )}
+  ) : null;
+
+  return (
+    <WaitlistRevealContext.Provider value={{ revealed, reveal }}>
+      <div className={className}>
+        {above && panel}
+        {children}
+        {!above && panel}
       </div>
     </WaitlistRevealContext.Provider>
   );
