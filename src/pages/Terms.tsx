@@ -43,6 +43,21 @@ export function Terms() {
           <p>Your data is yours. We don't claim ownership of it; you grant us only the limited rights needed to operate the service for you. How we handle data is described in our <a href="/privacy/">Privacy Policy</a>.</p>
         </section>
 
+        {/* gy-93n31 — the licence the research page's Dataset structured data cites
+            (license -> https://getgymbo.com/terms/#research). Founder decision: ALL
+            RIGHTS RESERVED, not Creative Commons. Placed directly AFTER "Your data" on
+            purpose: that clause says we don't claim ownership of data, and a reader
+            arriving from the Dataset link must not take it as the licence for what WE
+            publish. Wording by content (accepted by pm, legal-accuracy read by
+            compliance); the two em dashes in the draft became sentence breaks per the
+            gy-pkioo voice cleanup of this page, no words changed. The id is load-bearing:
+            renaming it silently breaks the structured-data citation. */}
+        <section id="research" className="flex flex-col gap-3">
+          <h2>Research and published content</h2>
+          <p>Reports, articles, and datasets we publish on getgymbo.com are © Material Lab, with all rights reserved. That's different from your client data, which we don't claim any ownership of. See Your data, above.</p>
+          <p>You're welcome to quote briefly, with attribution and a link back to the source page. Please don't republish, redistribute, or build derivative datasets from what we publish without asking us first. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>.</p>
+        </section>
+
         <section className="flex flex-col gap-3">
           <h2>Availability</h2>
           <p>Gymbo is provided on an "as is" and "as available" basis. We work hard to keep it reliable, but we can't guarantee it will always be uninterrupted or error-free, and features may change as the product evolves.</p>
