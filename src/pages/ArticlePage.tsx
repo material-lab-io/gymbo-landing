@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { PageShell } from "../components/PageShell";
 import { F, SERIF, SANS, SHADOW } from "../forge-ui";
 import type { Post } from "../content/blog/posts";
+import { TRIAL_LINE } from "../lib/trialAccess";
 
 marked.setOptions({ gfm: true });
 
@@ -89,7 +90,7 @@ export function ArticlePage({
           <a href="/#cta" className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Request access →
           </a>
-          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Gymbo is in private alpha. Your 7-day free trial starts once you are in. Billed via the App Store.</span>
+          <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>{TRIAL_LINE}</span>
         </div>
 
         {post.faq.length > 0 && (

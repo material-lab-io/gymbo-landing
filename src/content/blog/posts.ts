@@ -2,6 +2,8 @@
 // by src/routes.ts (→ rollup inputs + sitemap), and by vite.config (→ RSS).
 // Each post's body is markdown (rendered with `marked`); the FAQ drives BOTH the
 // visible FAQ and the FAQPage JSON-LD, so they can't drift. Single H1 = `title`.
+import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../../lib/trialAccess";
+
 export interface FAQ {
   q: string;
   a: string;
@@ -45,7 +47,7 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "How much should software for an independent trainer cost in India?",
-      a: "It should be a small fraction of monthly income, well under ₹500/mo. Western seats often run ₹1,900+/mo, which is 2–5% of a typical Indian trainer's income. Gymbo is ₹399/mo.",
+      a: `It should be a small fraction of monthly income, well under ₹500/mo. Western seats often run ₹1,900+/mo, which is 2–5% of a typical Indian trainer's income. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
     },
   ],
   bodyMd: `## the short version
@@ -131,7 +133,7 @@ The business runs from your phone, not your memory.
 
 ## where gymbo fits
 
-We built **Gymbo** for exactly this: the independent mobile trainer in India who's hit the wall. One-tap session logging, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and an AI assistant, at ₹399/mo, priced for an Indian roster, not a Western one.
+We built **Gymbo** for exactly this: the independent mobile trainer in India who's hit the wall. One-tap session logging, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and an AI assistant, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
 
 We're not the right tool for a gym chain or a remote coach billing in dollars. We're the right tool for the one-person training business that's outgrown the notebook.`,
 };
@@ -151,7 +153,7 @@ const roundupBestApps: Post = {
   faq: [
     {
       q: "What is the best app for an independent personal trainer in India?",
-      a: "It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from an iPhone, an India-native, session-first tool like Gymbo fits well (UPI, GST, WhatsApp, ₹399/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.",
+      a: `It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from an iPhone, an India-native, session-first tool like Gymbo fits well (UPI, GST, WhatsApp, ₹${PRICE_MONTHLY_INR}/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.`,
     },
     {
       q: "Is Akton good for solo personal trainers?",
@@ -163,7 +165,7 @@ const roundupBestApps: Post = {
     },
     {
       q: "How much do personal trainer apps cost in India?",
-      a: "They range widely. Akton advertises from ₹89/mo (gym management). Gymbo is ₹399/mo (₹250/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.",
+      a: `They range widely. Akton advertises from ₹89/mo (gym management). Gymbo is ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.`,
     },
     {
       q: "Do these apps work on Android?",
@@ -194,7 +196,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 | App | Best for | Built for the solo trainer? | India-native (UPI/GST/WhatsApp) | Platform | Entry price | Free trial |
 |---|---|---|---|---|---|---|
-| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹399/mo** (₹250/mo on annual) | 1 month |
+| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${TRIAL_DAYS} days |
 | **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | from **₹89/mo*** | Not stated |
 | **WellnessZ** | Dietitians & nutrition-led coaches | ➖ Nutrition-first, not session-first | ✅ Yes | iPhone, Android, web | **₹499/mo** (40 clients) | 14 days |
 | **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo (~₹750), 2 clients | 30 days |
@@ -208,7 +210,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from an iPhone.
 
-**What it does (honestly):** Log a session in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; an AI assistant you can chat with; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹399/mo (₹250/mo effective on the annual plan), one flat price.
+**What it does (honestly):** Log a session in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; an AI assistant you can chat with; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 

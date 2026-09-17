@@ -327,6 +327,18 @@ jobs:
           # here. Do not assume a spec in tests/ is gating anything.
           npx playwright test tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
 
+          # gm-pzp — the durable fix for the JSON-LD/App.tsx copy drift that hit
+          # TWICE (#164, #174) with no automated check: this repo's static
+          # index.html cannot import src/lib/trialAccess.ts, so nothing stopped
+          # its FAQPage JSON-LD silently disagreeing with the rendered FAQ. This
+          # BLOCKS (like the waitlist behaviour gate above) because a copy PR
+          # that lands a fact change on one surface and misses the other is
+          # exactly the failure mode this test exists to catch before merge, not
+          # warn about after. Reads index.html and src/App.tsx/src/lib directly
+          # (no browser, no emulator dependency), so it runs regardless of
+          # whether the Pages emulator above is up.
+          npx playwright test tests/copy-facts.spec.ts --project=desktop || RC=1
+
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
           # baselines are refreshed. Blocking production on it is what wedged
