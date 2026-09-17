@@ -515,6 +515,19 @@ test('every revealed capture fits inside the viewport (the too-wide direction)',
   // Positive control: naming which clusters were actually measured turns a
   // vacuous pass (every locator missing, nothing measured, green) into a
   // failure.
+  //
+  // 🔴 BUT IT IS NOT THE ASSERTION THAT FIRES FIRST, AND I ONLY KNOW THAT
+  // BECAUSE I PRODUCED THE STATE INSTEAD OF REASONING ABOUT IT (designer's R-C
+  // step 3, 2026-09-18). Mutating forge-ui so no control renders data-cta
+  // "waitlist" at all, the failure comes from the PER-CLUSTER VISIBILITY guard
+  // above — "hero has no VISIBLE CTA on this viewport" — which is strictly
+  // better, because it names the cluster. This count never got the chance.
+  //
+  // It is kept, not deleted, because it covers a DIFFERENT broken state the
+  // visibility guard permits by design: every cluster legitimately skipped (all
+  // hidden at desktop width) would walk the loop to the end with nothing
+  // measured and pass. Recorded so the next reader does not credit this line
+  // with catching the empty-page case — that one belongs to the guard above.
   expect(measured.length, 'positive control: at least four clusters must have been measured').toBeGreaterThanOrEqual(4);
 
   expect(
