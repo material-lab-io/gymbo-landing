@@ -319,13 +319,36 @@ jobs:
           # twice after it was caught PASSING under the mutation it exists to
           # catch — see the comments in the spec).
           #
-          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: tests/smoke.spec.ts and
-          # tests/analytics-guard.spec.ts run NOWHERE in CI today — only visual,
-          # audit and audit-perf specs are wired. That is a real fail-open (the
-          # analytics guard exists because 96.4% of recorded pageviews turned out
-          # to be our own runs) and is filed separately rather than absorbed
-          # here. Do not assume a spec in tests/ is gating anything.
+          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: tests/smoke.spec.ts still runs
+          # NOWHERE in CI. analytics-guard.spec.ts was in that same state until
+          # 2026-09-18 and is now wired below. Do not assume a spec in tests/ is
+          # gating anything — check this file.
           npx playwright test tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
+
+          # gy-kzfg9 — the Umami hostname guard, gated as BEHAVIOUR.
+          #
+          # WHY IT BLOCKS. Without data-domains the production tracker fired from
+          # every hostname, including the preview server this very job starts:
+          # over 2026-08-07..09-06 that was 10,985 local events against 409 real
+          # ones — 96.4% of recorded pageviews were our own runs, and the
+          # founder's daily report published them. The fix (PR #110) is a single
+          # HTML attribute, which is exactly the kind of thing a later edit drops
+          # without noticing. The guard shipped on 2026-09-10 and then sat with
+          # NO CI gate at all for eight days, so nothing would have gone red.
+          #
+          # Mutation-checked before being wired here: strip data-domains from
+          # index.html and BOTH halves go red — the static walk (no attribute in
+          # the built HTML) and the behavioural half (the tracker fires from
+          # localhost). Restoring it returns 4/4 green on desktop and mobile.
+          #
+          # 🔴 AND IT WRITES NOTHING TO PRODUCTION. Its positive control strips
+          # the guard on purpose to prove the test can fail, which means it
+          # provokes a real pageview; as first written that request went through,
+          # so wiring it here would have made every PR run contribute one
+          # localhost event to the series AC3 asks us to reconcile. The send
+          # endpoint is now aborted inside the test and the containment is
+          # asserted, not assumed.
+          npx playwright test tests/analytics-guard.spec.ts --project=desktop --project=mobile || RC=1
 
           # gm-pzp — the durable fix for the JSON-LD/App.tsx copy drift that hit
           # TWICE (#164, #174) with no automated check: this repo's static

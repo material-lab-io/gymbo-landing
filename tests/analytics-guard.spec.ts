@@ -54,6 +54,29 @@ test('every Umami tag is scoped to the production hostnames', () => {
 });
 
 test('the tracker stays silent on localhost, and would not have without the guard', async ({ page }) => {
+  // 🔴 NOTHING THIS TEST SENDS MAY REACH PRODUCTION ANALYTICS — gy-kzfg9,
+  // 2026-09-18, found when wiring this spec into CI.
+  //
+  // The positive control below deliberately strips the guard and asserts the
+  // tracker fires. As first written it let that request GO THROUGH, so every
+  // run wrote one localhost pageview into production Umami: a smaller copy of
+  // the exact contamination this bead exists to remove (10,985 local events
+  // against 409 real ones), and it would have grown with every PR the moment
+  // this spec became a gate. AC3 asks for a 7-day reconciliation; a gate that
+  // injects its own events into the series being reconciled cannot be part of
+  // proving it.
+  //
+  // So the send endpoint is ABORTED for the whole test. The `request` event
+  // still fires on an aborted request, so the control keeps its meaning — it
+  // observes that the tracker TRIED to send — while nothing leaves the box.
+  // Registered first and matched last-registered-first by Playwright, the
+  // document rewrite below still wins for documents.
+  let abortedSends = 0;
+  await page.route(SEND_URL, async (route) => {
+    abortedSends++;
+    await route.abort();
+  });
+
   // --- SUBJECT: the site exactly as it ships, served from localhost ---
   const sentAsShipped: string[] = [];
   page.on('request', (r) => {
@@ -69,7 +92,14 @@ test('the tracker stays silent on localhost, and would not have without the guar
   const sentUnguarded: string[] = [];
   await page.route('**/*', async (route) => {
     const req = route.request();
-    if (req.resourceType() !== 'document') return route.continue();
+    // 🔴 fallback(), NOT continue(). continue() sends the request to the
+    // network from THIS handler and never reaches the send-abort route
+    // registered above — which is how the containment assertion first read 0
+    // aborts while the control happily fired a real event at production.
+    // Playwright runs the most recently registered handler first, so a
+    // catch-all that continues is a catch-all that silently disables every
+    // earlier route.
+    if (req.resourceType() !== 'document') return route.fallback();
     const res = await route.fetch();
     const body = (await res.text()).replace(/\sdata-domains="[^"]*"/g, '');
     return route.fulfill({ response: res, body });
@@ -84,4 +114,12 @@ test('the tracker stays silent on localhost, and would not have without the guar
     'positive control failed: with data-domains removed the tracker still did not fire, ' +
       'so this test cannot detect a regression — check that script.js is reachable from CI',
   ).toBeGreaterThan(0);
+
+  // And the containment is asserted, not assumed: every send this test provoked
+  // was intercepted. If this ever reads 0 while the control above passed, the
+  // abort route stopped matching and the test is writing to production again.
+  expect(
+    abortedSends,
+    'the provoked pageview escaped to production analytics — this test must never contribute an event',
+  ).toBe(sentUnguarded.length);
 });
