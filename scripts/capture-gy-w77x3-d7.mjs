@@ -62,6 +62,29 @@ const settle = async (page) => {
       '*,*::before,*::after{transition:none!important;animation-duration:0s!important;animation-delay:0s!important}' +
       '.reveal-on-scroll{opacity:1!important;transform:none!important}',
   });
+
+  // 🔴 R-B (designer, 2026-09-18): ANY selector-based neutralizer MUST ASSERT ITS
+  // MATCH COUNT, because a selector matching nothing is indistinguishable from
+  // one that found nothing to hide — it fails open and silent.
+  //
+  // This script is the SECOND instance of that rule and I found it by sweeping
+  // for the first. `.reveal-on-scroll` is a STYLE CLASS, i.e. exactly the hook
+  // R-A says not to depend on: rename it in a restyle and these captures quietly
+  // start including mid-animation frames again. Not hypothetical — that is the
+  // specific failure settle() was written to fix, where the light and dark runs
+  // differed BETWEEN RUNS and would have read as "a dark variant exists" on the
+  // one frame where that comparison IS the evidence.
+  //
+  // It throws rather than warns: a capture that cannot be trusted must not reach
+  // evidence/ at all, because the file outlives the console.
+  const revealCount = await page.evaluate(() => document.querySelectorAll('.reveal-on-scroll').length);
+  if (revealCount === 0) {
+    throw new Error(
+      'settle(): .reveal-on-scroll matched nothing. The entry-animation hook was renamed or dropped, ' +
+        'so these frames may capture mid-animation state and the light/dark byte comparison is worthless. ' +
+        'Fix the selector before trusting any capture from this run.',
+    );
+  }
   await page.evaluate(() =>
     Promise.all(
       [...document.images].filter((i) => !i.complete).map((i) => new Promise((r) => { i.onload = i.onerror = r; })),
