@@ -1,5 +1,4 @@
 import { PageShell, Prose } from "../components/PageShell";
-import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_INR_DISPLAY, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../lib/trialAccess";
 
 /* getgymbo.com/terms — Terms of Service (gy-k2543.1). Honest v1; review with
    counsel before scale. */
@@ -36,7 +35,7 @@ export function Terms() {
 
         <section className="flex flex-col gap-3">
           <h2>Plans and payment</h2>
-          <p>Your first {TRIAL_DAYS} days are free. After that, plans are: Monthly at ₹{PRICE_MONTHLY_INR}/month (billed monthly); and Annual at ₹{PRICE_ANNUAL_INR_DISPLAY} per year (₹{PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients — it does not process those payments or handle your money.</p>
+          <p>Your first 7 days are free. After that, plans are: Monthly at ₹399/month (billed monthly); and Annual at ₹2,999 per year (₹250/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients — it does not process those payments or handle your money.</p>
         </section>
 
         <section className="flex flex-col gap-3">
