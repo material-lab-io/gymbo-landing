@@ -10,29 +10,25 @@ gm-muo and gm-7pd/PR #169. No design token, colour, spacing, or component change
 
 ---
 
-## ⚠️ Flag before the table: gm-mva's own fix has not landed in code
+## ⚠️ Status note: gm-mva's hero code-landing is in flight, not yet merged
 
-While sweeping I checked the hero, since it's the highest-traffic string on the page. **The
-hero H1 and subhead gm-mva specified in claim-truth-pass-1.md are still live, unreplaced, on
-`origin/main` and on production `getgymbo.com` as of this sweep:**
+While sweeping I checked the hero, since it's the highest-traffic string on the page. At the time
+of the original sweep, the hero H1/subhead gm-mva specified in `claim-truth-pass-1.md` were still
+live, unreplaced, on `origin/main` and on production `getgymbo.com`.
 
-- `src/App.tsx:291`, hero H1 — still reads `Run your entire fitness business from your phone.`
-  (confirmed via `curl https://getgymbo.com/`, exact match).
-- `src/App.tsx:298`, hero subhead — still reads `Track revenue, stay organized, look
-  professional, train smarter.` (confirmed live, exact match).
+**Revised on pm review (PR #172, head 9c0be3b):** pm confirmed this was accurate but not a defect —
+gm-mva was a spec bead; landing the code was always the separate gm-muo bead, which is up now as
+PR #171 (reviewed and approved by pm, not yet merged as of this revision). Updating this section
+so it doesn't go stale on merge, rather than leaving the original "still live" framing to be read
+as current after #171 lands:
 
-gm-mva is closed with reason "Spec landed on origin/main, verified via direct diff" — that's
-correct for the *spec document* (`docs/copy/claim-truth-pass-1.md` did land), but the `App.tsx`
-code change it specifies has not. This is the same "spec merged as a doc, code not yet landed"
-pattern as gm-7pd → PR #169 (also spec-only, merged today, `docs/copy/access-honesty-pass.md`
-only — no `src/App.tsx` touched).
+- `src/App.tsx:291`/`:298` (hero H1/subhead) — fixed by gm-muo / PR #171, approved, pending merge.
+- This pass's changes (Parts A/B/C below) and gm-7pd's access-honesty strings will land in one
+  **combined** PR after #171 merges, per pm's ruling — removing two of the three sequential
+  `App.tsx` PRs that would otherwise conflict with each other.
 
-**Not fixing this here** — the hero is gm-mva's string, not mine, per this bead's own AC4. Flagging
-because it changes what "zero absolute/overclaim strings live" actually means right now: the
-single highest-risk item from pass 1 is still on production, and a second landing bead (for pass
-1's hero+subhead) plus this pass's changes plus gm-7pd's access-honesty strings are all now
-stacked up waiting on the same code-landing step. pm/landing may want one combined PR rather than
-three sequential ones through whatever the interim non-refinery merge route is (gm-avl).
+No action needed from this doc beyond stating current status accurately; the combined-landing
+sequencing is pm's call, already made.
 
 ---
 
@@ -61,9 +57,9 @@ real number so a "zero" claim here can be trusted against the current site, not 
 
 | Location | Exact current string | Exact replacement string | Reason |
 |---|---|---|---|
-| Footer/final-CTA H2, `App.tsx:559` | `Run your whole business from one app.` | `Payments, schedules, and clients — one app.` | Same overclaim family as gm-mva's hero fix ("run your entire/whole business"). Scoped to the three nouns gm-mva's hero subhead already established as substantiated (payments and balances, schedules; "clients" covers the roster/organize pillar). Keeps the terse, concrete-noun register — no colon-plus-list construction (contrast with the gm-111 H1 finding: this is 3 nouns in one clause, not 4 nouns after a colon). |
+| Footer/final-CTA H2, `App.tsx:559` | `Run your whole business from one app.` | `Payments, schedules, and clients in one app.` | Same overclaim family as gm-mva's hero fix ("run your entire/whole business"). Scoped to the three nouns gm-mva's hero subhead already established as substantiated (payments and balances, schedules; "clients" covers the roster/organize pillar). Keeps the terse, concrete-noun register — no colon-plus-list construction (contrast with the gm-111 H1 finding: this is 3 nouns in one clause, not 4 nouns after a colon). **Revised per pm review (PR #172, head 9c0be3b):** original draft used an em dash, banned in user-visible copy by the voice guide (v6, 2026-08-13). Replaced with "in" and kept the Oxford comma — `App.tsx` uses it consistently on every 3+-item list (`:45` "payment, and balance", `:78` "tagline, and details", `:60` "schedule, and class"), so dropping it here would be the one inconsistent list on the page. |
 | Why-section H2, `App.tsx:327` | `Everything your training business needs to run.` | `What your training business runs on.` | Drops the unbounded "everything." Sits directly above the four pillar cards (ledger, organize, brand, train), so "runs on" points at what's immediately below rather than claiming completeness; the reader judges the "everything" claim for themselves from the four cards, we don't assert it. |
-| Pillar intro, `App.tsx:45` (id `revenue`, eyebrow "The Gymbo ledger") | `The Gymbo ledger tracks every class, payment, and balance automatically, so you always know where every client stands.` | `The Gymbo ledger tracks every class, payment, and balance automatically, updated the moment you log a class.` | Drops "always know... every client stands" (unbounded certainty claim). Replacement reuses the exact event-triggered phrasing gm-mva's Part B already proposed for the adjacent ledger bullet (`App.tsx:46`, below) — same fix, same sentence, keeps the two lines internally consistent instead of solving the same problem two different ways four lines apart. |
+| Pillar intro, `App.tsx:45` (id `revenue`, eyebrow "The Gymbo ledger") | `The Gymbo ledger tracks every class, payment, and balance automatically, so you always know where every client stands.` | `The Gymbo ledger tracks every class, payment, and balance you log, so you can see where each client stands.` | Drops "always know... every client stands" (unbounded certainty claim). **Revised per pm review (PR #172, head 9c0be3b):** original draft kept "automatically" alongside the new "updated the moment you log a class," which asserted the ledger is both automatic and manually triggered in the same sentence — the ledger updates from what the trainer logs, not on its own. Dropped "automatically" and scoped the whole sentence to logged activity, per pm's direction; kept the Oxford comma to match the page's existing list convention. |
 
 ## Part B — gm-mva's held-back absolutes (now unblocked)
 
