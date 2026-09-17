@@ -159,7 +159,7 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
 
   await expect.poll(() => posts.length).toBe(1);
   expect(new URL(posts[0]).pathname).toBe('/api/waitlist');
-  await expect(panel.getByText(/you're on the list/i)).toBeVisible();
+  await expect(panel.getByText(/request received/i)).toBeVisible();
 });
 
 /**
