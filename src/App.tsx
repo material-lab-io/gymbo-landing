@@ -19,6 +19,19 @@ import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, waitlistScrollCtaProps } from "./forge-ui";
+import {
+  TRIAL_DAYS,
+  BILLING_CHANNEL,
+  PLATFORM,
+  PLATFORM_ONLY_CLAUSE,
+  STATUS_LANGUAGE,
+  PRICE_MONTHLY_INR,
+  PRICE_ANNUAL_INR_DISPLAY,
+  PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR,
+  ANNUAL_SAVINGS_PERCENT,
+  TRIAL_LINE,
+  ACCESS_ROUTE_STEPS,
+} from "./lib/trialAccess";
 
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
@@ -125,17 +138,17 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Monthly", tagline: "Flexible", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
-  { name: "Annual", tagline: "Save 37%", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Monthly", "37% savings", "₹2,999 billed annually"], highlight: true },
+  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
+  { name: "Annual", tagline: `Save ${ANNUAL_SAVINGS_PERCENT}%`, price: String(PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR), period: "/month", note: `Billed yearly at ₹${PRICE_ANNUAL_INR_DISPLAY} via ${BILLING_CHANNEL}. Save ${ANNUAL_SAVINGS_PERCENT}%.`, features: ["Everything in Monthly", `${ANNUAL_SAVINGS_PERCENT}% savings`, `₹${PRICE_ANNUAL_INR_DISPLAY} billed annually`], highlight: true },
 ];
 
 /* ── FAQ ── */
-const FAQ = [
-  { q: "Is it free?", a: "Your first 7 days are free on every plan. After that, Gymbo Pro is ₹399/month, or ₹250/month effective on the annual plan, billed through the App Store." },
+export const FAQ = [
+  { q: "Is it free?", a: `Your first ${TRIAL_DAYS} days are free on every plan. After that, Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}.` },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
-  { q: "Which phones does it support?", a: "iPhone, for now. That's where we're focused." },
+  { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
   { q: "Can I import my existing clients?", a: "Yes. Bring your current roster over in minutes and pick up where you left off." },
 ];
@@ -285,7 +298,7 @@ export default function App() {
           <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
             <div className="max-w-[600px] lg:w-[46%]">
               <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>Private alpha</Eyebrow>
+                <Eyebrow>{STATUS_LANGUAGE}</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
                 The{" "}
@@ -308,10 +321,10 @@ export default function App() {
                   <WaitlistCTA size="lg" location="hero" />
                 </div>
                 <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                  For independent trainers in India. iPhone only. Your clients download nothing.
+                  For independent trainers in India. {PLATFORM_ONLY_CLAUSE}. Your clients download nothing.
                 </p>
                 <p className="mt-2 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                  Gymbo is in private alpha. Your 7-day free trial starts once you are in. Billed via the App Store.
+                  {TRIAL_LINE}
                 </p>
               </InlineWaitlist>
               {/* Mobile/tablet keeps the approved three-phone composition below
@@ -329,11 +342,7 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
             <Reveal>
               <ol className="flex flex-col gap-3 max-w-[480px]">
-                {[
-                  "Request access. Leave your email or phone number.",
-                  "We reach out with your access.",
-                  "Install, import your clients, and log your first class.",
-                ].map((step, i) => (
+                {ACCESS_ROUTE_STEPS.map((step, i) => (
                   <li key={step} className="flex items-start gap-3">
                     <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5 text-[12px] font-bold" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText, fontFamily: SANS }}>
                       {i + 1}
@@ -545,7 +554,7 @@ export default function App() {
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · 7 days free · billed via the App Store.</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS} days free · billed via {BILLING_CHANNEL}.</p>
             </Reveal>
           </div>
         </section>
@@ -586,12 +595,12 @@ export default function App() {
         <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>Private alpha</Eyebrow>
+              <Eyebrow dark>{STATUS_LANGUAGE}</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Payments, schedules, and clients in one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Request access and we'll be in touch when you're in.
+                Request access and we'll be in touch with your access.
               </p>
             </Reveal>
 

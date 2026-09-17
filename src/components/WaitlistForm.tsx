@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
 import { getAttributionSource } from "../lib/attribution";
+import { ACCESS_SUCCESS_MESSAGE } from "../lib/trialAccess";
 
 type Status = "idle" | "loading" | "done" | "error" | "needs-contact";
 
@@ -59,7 +60,7 @@ export function WaitlistForm() {
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        Request received. We'll be in touch with your access.
+        {ACCESS_SUCCESS_MESSAGE}
       </p>
     );
   }

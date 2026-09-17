@@ -1,4 +1,5 @@
 import { PageShell, Prose } from "../components/PageShell";
+import { STATUS_LANGUAGE } from "../lib/trialAccess";
 
 /* getgymbo.com/privacy — Privacy Policy (gy-k2543.1). Honest v1 reflecting
    actual data practices; review with counsel before scale. */
@@ -29,7 +30,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we use it</h2>
-          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you requested access to our private alpha, we use your email to notify you when access opens and to share launch updates.</p>
+          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you requested access to our {STATUS_LANGUAGE.toLowerCase()}, we use your email to notify you when access opens and to share launch updates.</p>
         </section>
 
         <section className="flex flex-col gap-3">
