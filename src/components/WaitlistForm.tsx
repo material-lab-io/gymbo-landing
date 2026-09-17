@@ -59,7 +59,7 @@ export function WaitlistForm() {
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        You're on the list. We'll be in touch when your access is ready.
+        Request received. We'll be in touch with your access.
       </p>
     );
   }

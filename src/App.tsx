@@ -42,11 +42,11 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance automatically, so you always know where every client stands.",
+    intro: "The Gymbo ledger tracks every class, payment, and balance you log, so you can see where each client stands.",
     bullets: [
-      "Every balance, clear: credit and classes left, always current",
+      "Every balance, clear: credit and classes left, updated the moment you log a class.",
       "Get paid for every class you teach",
-      "Cash or UPI logged. Nothing slips.",
+      "Cash or UPI logged, so you don't lose track.",
     ],
     brief: "Log a payment: UPI or cash, and the balance clears.",
     dark: false,
@@ -133,7 +133,7 @@ const PRICING = [
 const FAQ = [
   { q: "Is it free?", a: "Your first 7 days are free on every plan. After that, Gymbo Pro is ₹399/month, or ₹250/month effective on the annual plan, billed through the App Store." },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
-  { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; everything syncs when you're back online." },
+  { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
   { q: "Which phones does it support?", a: "iPhone, for now. That's where we're focused." },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
@@ -307,6 +307,12 @@ export default function App() {
                   <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
                   <WaitlistCTA size="lg" location="hero" />
                 </div>
+                <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
+                  For independent trainers in India. iPhone only. Your clients download nothing.
+                </p>
+                <p className="mt-2 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
+                  Gymbo is in private alpha. Your 7-day free trial starts once you are in. Billed via the App Store.
+                </p>
               </InlineWaitlist>
               {/* Mobile/tablet keeps the approved three-phone composition below
                   the copy, scaled as one coherent image so its screens and device
@@ -318,13 +324,37 @@ export default function App() {
           </div>
         </header>
 
+        {/* ───────── what happens next (gm-7pd piece 3) ───────── */}
+        <section aria-label="What happens next" style={{ background: F.beige }}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
+            <Reveal>
+              <ol className="flex flex-col gap-3 max-w-[480px]">
+                {[
+                  "Request access. Leave your email or phone number.",
+                  "We reach out with your access.",
+                  "Install, import your clients, and log your first class.",
+                ].map((step, i) => (
+                  <li key={step} className="flex items-start gap-3">
+                    <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5 text-[12px] font-bold" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText, fontFamily: SANS }}>
+                      {i + 1}
+                    </span>
+                    <span className="text-[14px] md:text-[15px]" style={{ color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
+                      {step}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          </div>
+        </section>
+
         {/* ───────── why — 4 pillars ───────── */}
         <section id="why" aria-label="Why trainers use Gymbo">
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
             <Reveal>
               <Eyebrow>Why trainers use Gymbo</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
-                Everything your training business needs to run.
+                What your training business runs on.
               </h2>
             </Reveal>
           </div>
@@ -558,7 +588,7 @@ export default function App() {
             <Reveal>
               <Eyebrow dark>Private alpha</Eyebrow>
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
-                Run your whole business from one app.
+                Payments, schedules, and clients in one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
                 Request access and we'll be in touch when you're in.

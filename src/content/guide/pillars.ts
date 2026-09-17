@@ -182,7 +182,7 @@ A reminder the evening before a session is the cheapest no-show insurance there 
 
 ## where Gymbo fits
 
-[Gymbo](/) keeps your schedule tied to reality. Each session logs with one tap against the client's package balance, so you always know who's due and who's running low, and nothing double-books in your head. When a package is nearly used up or a session's coming, you get a WhatsApp reminder template to send in your own voice: you tap, it goes. It turns managing a diary into managing a business.`,
+[Gymbo](/) keeps your schedule tied to reality. Each session logs with one tap against the client's package balance, so you can see who's due and who's running low, without double-booking in your head. When a package is nearly used up or a session's coming, you get a WhatsApp reminder template to send in your own voice: you tap, it goes. It turns managing a diary into managing a business.`,
 };
 
 const getOrganized: Post = {
