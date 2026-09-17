@@ -446,6 +446,84 @@ test('the inline capture is no narrower than the footer capture (measured, both 
 });
 
 /**
+ * 🔴 THE PANEL MUST FIT ON THE SCREEN — THE DIRECTION EVERY OTHER WIDTH
+ * ASSERTION IN THIS FILE IS BLIND TO (gy-w77x3 D7, 2026-09-17).
+ *
+ * The measured-width test above asks whether the field is WIDE ENOUGH, because
+ * a too-narrow capture clipped the word "optional" out of the email hint once
+ * before. That is one side of a two-sided property, and the D7 captures found
+ * the other side: the nav panel rendered from -20px to 395px on a 375px phone —
+ * forty pixels wider than the screen, fields cut off at BOTH edges — and every
+ * test in this file passed, because a panel that is too wide is comfortably
+ * wide enough.
+ *
+ * The cause is worth stating because it will recur: the panel reclaims the page
+ * gutter with `-mx-5` and `w-[calc(100%+40px)]`, and for an ABSOLUTELY
+ * POSITIONED panel that percentage resolves against the nearest positioned
+ * ancestor — the sticky <nav> — not against the box its padding came from.
+ * Same class as everything else on this bead: a value computed against a
+ * different frame than the one it is read in.
+ *
+ * So this measures every cluster's revealed panel against the viewport itself.
+ * Verified red before it was trusted: with the pre-fix nav geometry restored it
+ * reports nav at -20..395 and fails.
+ */
+test('every revealed capture fits inside the viewport (the too-wide direction)', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const vw = page.viewportSize()!.width;
+
+  const offenders: string[] = [];
+  const measured: string[] = [];
+  for (const loc of ['hero', 'gallery', 'nav', 'pricing', 'footer'] as const) {
+    const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
+    // 🔴 THE STICKY BAR IS PHONE-ONLY, AND ITS ABSENCE MUST NOT LOOK LIKE A
+    // PASS. Two things were wrong in the first version of this loop: it clicked
+    // the bar blindly and hung for 30s on desktop, and the obvious guard —
+    // count() === 0 — does not work, because `md:hidden` is display:none and
+    // the element is still IN THE DOM at desktop width. Visibility is the
+    // question being asked, so visibility is what is measured. Absence is
+    // allowed for exactly one control at exactly one width; anything else
+    // absent is a failure, because a control that vanished is the silent
+    // revert this file exists to catch.
+    if (!(await cta.isVisible())) {
+      expect(
+        loc === 'footer' && vw >= 768,
+        `${loc} has no VISIBLE CTA on this viewport (${vw}px) — only the phone-only sticky bar may be hidden, and only on desktop`,
+      ).toBe(true);
+      continue;
+    }
+    measured.push(loc);
+    await cta.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await cta.click();
+    await page.waitForTimeout(400);
+    const box = await page
+      .locator('[role="group"][aria-label="Request access"]')
+      .first()
+      .evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: Math.round(r.left), right: Math.round(r.right) };
+      });
+    // A half-pixel of subpixel rounding is not an overflow; 2px of slack keeps
+    // this a report of real overhang rather than of layout arithmetic.
+    if (box.left < -2 || box.right > vw + 2) offenders.push(`${loc}: ${box.left}..${box.right} (viewport 0..${vw})`);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+  }
+
+  // Positive control: naming which clusters were actually measured turns a
+  // vacuous pass (every locator missing, nothing measured, green) into a
+  // failure.
+  expect(measured.length, 'positive control: at least four clusters must have been measured').toBeGreaterThanOrEqual(4);
+
+  expect(
+    offenders,
+    'a capture that hangs off the screen edge has its fields cut, and no width assertion that only checks for "wide enough" can see it',
+  ).toEqual([]);
+});
+
+/**
  * 🔴 THE WRAPPED SET IS PINNED AS A SET, NOT AS A LIST OF CASES — gy-becxi
  * follow-up, 2026-09-12.
  *

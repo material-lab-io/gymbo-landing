@@ -275,7 +275,7 @@ export default function App() {
             rediscovered. It still inherits K1/K2 — a focused field under a
             raised keyboard is the same hazard wherever the cluster lives. */}
         <div className="flex items-center gap-2.5">
-          <InlineWaitlist reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
+          <InlineWaitlist reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
             <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
               Get Gymbo
             </WaitlistPlainButton>
@@ -795,7 +795,7 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
         transform: show ? "translateY(0)" : "translateY(120%)",
       }}
     >
-      <InlineWaitlist above reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
+      <InlineWaitlist above reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
         <PrimaryCTA size="lg" className="w-full" location="footer" />
       </InlineWaitlist>
     </div>

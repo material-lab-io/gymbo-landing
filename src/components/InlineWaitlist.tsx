@@ -46,6 +46,7 @@ export function InlineWaitlist({
   panelClassName = "",
   reducedMotion = false,
   above = false,
+  reclaimGutter = true,
   onRevealedChange,
 }: {
   children: React.ReactNode;
@@ -54,6 +55,29 @@ export function InlineWaitlist({
   panelClassName?: string;
   /** The page already computes this via useReducedMotion; passed in, not re-read. */
   reducedMotion?: boolean;
+  /**
+   * gy-w77x3 D7 — whether to reclaim the 20px page gutter on phones.
+   *
+   * 🔴 TRUE IS RIGHT IN A PAGE COLUMN AND WRONG IN AN ABSOLUTE ONE, and the D7
+   * captures showed that rather than argued it. The reclaim is `-mx-5` plus
+   * `w-[calc(100%+40px)]`, and for an ABSOLUTELY POSITIONED panel the
+   * percentage resolves against the nearest positioned ancestor -- the sticky
+   * <nav>, not the little flex box around the button. Measured on a 375px
+   * phone, the nav panel rendered from -20 to 395: forty pixels wider than the
+   * screen, hanging off BOTH edges with its fields cut.
+   *
+   * 🔴 AND NO EXISTING TEST COULD SEE IT, which is the part worth keeping. Every
+   * width assertion in tests/inline-waitlist.spec.ts checks that the field is
+   * WIDE ENOUGH, because being too narrow is what clipped the "optional" hint
+   * once before. This panel was too WIDE. A one-sided measurement has a blind
+   * side, and the blind side is where this landed.
+   *
+   * So the reclaim is opt-out and the nav opts out, taking a viewport-bounded
+   * width instead. It is not a styling preference: a panel whose width is
+   * measured against a different box than its padding needs a different rule,
+   * not a tweaked one.
+   */
+  reclaimGutter?: boolean;
   /**
    * gy-w77x3 D1 — render the capture ABOVE the CTA instead of below it.
    *
@@ -143,7 +167,7 @@ export function InlineWaitlist({
             // -mx-5 gives the padding back below sm so the fields land at the
             // footer's exact width; from sm up the column is wide enough that
             // the inset costs nothing and the panel sits inside it as designed.
-            className={`-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full ${above ? "mb-3" : "mt-5"} max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
+            className={`${reclaimGutter ? "-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full" : "w-[min(calc(100vw-32px),360px)]"} ${above ? "mb-3" : "mt-5"} max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
             style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)" }}
           >
             <WaitlistForm />
