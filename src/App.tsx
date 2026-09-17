@@ -245,6 +245,7 @@ export default function App() {
       {/* ───────── nav ───────── */}
       <nav
         aria-label="Main navigation"
+        data-fixed-chrome="nav"
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
@@ -784,6 +785,15 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
   const keyboardInset = useKeyboardInset(revealed);
   return (
     <div
+      // 🔴 THE NEUTRALIZER'S HOOK, AND IT IS DELIBERATELY NOT A STYLE CLASS.
+      // tests/visual.spec.ts hides the fixed chrome before capturing a section,
+      // and it used to find this bar with `.fixed.bottom-0`. D1 moved bottom-0
+      // out of the className into the inline style (same computed 0px, because
+      // the offset now tracks the keyboard) and the selector silently stopped
+      // matching — so the bar painted into every section screenshot and the
+      // footer-cta baseline came back 12% different. A gate keyed on HOW a value
+      // is written cannot see the same value written another way.
+      data-fixed-chrome="sticky-cta"
       className="md:hidden fixed left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
       style={{
         bottom: keyboardInset,
