@@ -175,7 +175,7 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
-- You want to log a session in one tap and always know who's paid and who owes.
+- You want to log a session in one tap and see who's paid and who owes.
 - You need GST-ready statements and WhatsApp reminders.
 - You want one flat, India-priced subscription, not a bill that climbs with every client and add-on.
 
