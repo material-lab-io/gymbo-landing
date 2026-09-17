@@ -15,6 +15,58 @@ colour, spacing, or component change is proposed. All verdicts state the evidenc
 
 ---
 
+## STATUS RE-VERIFICATION — 2026-09-16 (content, 16 days after authoring)
+
+Nothing below changes any verdict in Parts A–C. This section only updates what's actually
+live today, since pm's own 09-16 06:51 gm-mva re-verify comment used a substring-match method
+against raw HTML that has a real blind spot — corrected below.
+
+**Item 1 (Branded client app → Custom branded client content): SHIPPED.** Confirmed live and
+in source (`MARQUEE_CHIPS`, `src/App.tsx`). No further action.
+
+**Item 2, H1 half ("Run your entire fitness business from your phone."): STILL LIVE — NOT
+fixed.** pm's 09-16 comment on gm-mva reported this as "GONE (0)." That count is a false
+negative. React renders `Run your entire{" "}<span>fitness business</span>{" "}from your
+phone.` — the `{" "}` tokens become literal `<!-- --> ` HTML comments in the served markup,
+which breaks a raw-HTML literal-substring search for the full phrase even though a browser
+renders it as one continuous, unbroken sentence a visitor reads normally. I re-verified with a
+tag-and-comment-stripped extraction of the rendered text (not raw HTML), re-ran the same
+positive control ("private alpha" = 2, unchanged) to confirm the method still works, and got
+1 hit for "Run your entire fitness business" — it is on the page today. **The H1 replacement
+already specified in Part A, item 2 below still needs to ship** — nothing about the proposed
+fix changes, only the "is this already fixed" status. Flagging the raw-HTML-substring blind
+spot separately since it likely affects other truth passes that verify against fetched HTML
+rather than rendered text — any claim split across a JSX `{" "}` + inline `<span>` is invisible
+to that method.
+
+**Item 2, subhead ("Track revenue..."): still live, unchanged from Part A.**
+
+**Item 3 ("Lowest price, locked in"): still live, unchanged from Part A.** Not proposing a
+different replacement than the existing `₹2,999 billed annually` — that's the audit's own
+zero-judgment fix, already reviewed; no reason to relitigate it.
+
+**Item 4 ("More trainers across India are coming on board."): still live, unchanged from
+Part A.**
+
+**Item 6 (sample-data disclosure): not yet shipped.** Confirmed absent from both source and
+live render. Text proposed in Part A stands, unchanged.
+
+**Booking link / Fitness reports (Part A, item 1 table): re-confirmed NOT BUILT, verdict
+UNCHANGED (still DEFERRED, not REMOVE).** I independently re-checked the product repo today —
+zero "book"/"booking" hits anywhere in the client-facing Next.js app, and the only
+report-adjacent feature is a per-client billing/attendance PDF, not a fitness progress report.
+This matches marketer's original 2026-08-13 finding on gy-mdqxp exactly, 34 days apart. I want
+to be explicit about why this does NOT change the verdict from DEFERRED to REMOVE: Kaushik's
+own verbatim quote (item 1's evidence column) names these as things he wants talked about, and
+the open question was never "are they built" — it's already known they aren't — it's *how to
+group them* (shipped-readiness grouping, no badge, per his own ruling). That grouping component
+was never built; `MARQUEE_CHIPS` is still a single flat list today, same as 08-31. A stronger
+NOT-BUILT confirmation is not new evidence for overriding a founder preference on a different
+axis (what to talk about) — it's pm's call whether to keep waiting on the grouping component or
+take a fresh founder read given 34 days of no movement, not content's to decide unilaterally.
+
+---
+
 ## Part A — land this pass (AC1–AC3)
 
 ### 1. Brand strip vs reality (audit rank 1, risk HIGH)
