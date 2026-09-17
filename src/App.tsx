@@ -126,7 +126,7 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 /* ── pricing ── */
 const PRICING = [
   { name: "Monthly", tagline: "Flexible", price: "399", period: "/month", note: "Billed monthly via the App Store. Cancel anytime.", features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
-  { name: "Annual", tagline: "Save 37%", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Monthly", "37% savings", "Lowest price, locked in"], highlight: true },
+  { name: "Annual", tagline: "Save 37%", price: "250", period: "/month", note: "Billed yearly at ₹2,999 via the App Store. Save 37%.", features: ["Everything in Monthly", "37% savings", "₹2,999 billed annually"], highlight: true },
 ];
 
 /* ── FAQ ── */
@@ -288,15 +288,15 @@ export default function App() {
                 <Eyebrow>Private alpha</Eyebrow>
               </div>
               <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
-                Run your entire{" "}
+                The{" "}
                 <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
                   <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
-                  fitness business
+                  business app
                 </span>{" "}
-                from your phone.
+                for independent personal trainers.
               </h1>
               <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
-                <b style={{ color: F.ink, fontWeight: 400 }}>Track revenue, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
+                <b style={{ color: F.ink, fontWeight: 400 }}>Track payments and balances, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
               </p>
               {/* gy-becxi — THE FOUNDER-REPORTED JOURNEY IS THIS EXACT CLUSTER.
                   Damini arrives from Instagram, taps the waitlist CTA here, and
@@ -388,6 +388,9 @@ export default function App() {
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 See Gymbo in action.
               </h2>
+              <p className="mt-4 text-[15px] mx-auto" style={{ color: F.boneMuted, fontFamily: SANS, maxWidth: "40ch" }}>
+                Screens shown with sample data.
+              </p>
             </Reveal>
 
             <div className="mt-10 flex items-center justify-center gap-4" aria-label="Gallery controls">
@@ -463,7 +466,6 @@ export default function App() {
                   </span>
                 </figcaption>
               </figure>
-              <p className="mt-4 text-center text-[14px]" style={{ color: F.inkLabel, fontFamily: SANS }}>More trainers across India are coming on board.</p>
             </Reveal>
           </div>
         </section>
