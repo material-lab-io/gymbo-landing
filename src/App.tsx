@@ -155,7 +155,7 @@ export const FAQ = [
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
   { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
-  { q: "Can I import my existing clients?", a: "Yes. Bring your current roster over in minutes and pick up where you left off." },
+  { q: "Can I import my existing clients?", a: "If your clients are saved in your phone's contacts, yes. Gymbo adds each client's name and phone number." },
 ];
 
 /* ============================================================================

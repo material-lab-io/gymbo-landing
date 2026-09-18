@@ -175,3 +175,69 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(() => expect(driftedSource).toContain(`₹${PRICE_MONTHLY_INR}/month`)).toThrow();
   });
 });
+
+/**
+ * gm-t0e.7 — bulk-import claim correction (gy-5kwas). The real capability is
+ * the iOS phone-contacts picker, name + phone only; there is no CSV /
+ * spreadsheet / other-app import. These phrases overclaimed it and must not
+ * reappear anywhere the home or /compare/gymbo-vs-wellnessz/ pages are built from.
+ */
+const compareSource = readFileSync(path.resolve(__dirname, '../src/pages/CompareWellnessZ.tsx'), 'utf-8');
+const compareHtml = readFileSync(path.resolve(__dirname, '../compare/gymbo-vs-wellnessz/index.html'), 'utf-8');
+const trialAccessSource = readFileSync(path.resolve(__dirname, '../src/lib/trialAccess.ts'), 'utf-8');
+
+const BANNED_IMPORT_PHRASES = [
+  'in minutes',
+  'rather than re-typing',
+  'bring your roster over',
+  'bulk client import',
+  'import your clients',
+];
+const IMPORT_SURFACES: Record<string, string> = {
+  'index.html': indexHtml,
+  'src/App.tsx': appSource,
+  'src/lib/trialAccess.ts': trialAccessSource,
+  'src/pages/CompareWellnessZ.tsx': compareSource,
+  'compare/gymbo-vs-wellnessz/index.html': compareHtml,
+};
+const HOME_IMPORT_ANSWER =
+  "If your clients are saved in your phone's contacts, yes. Gymbo adds each client's name and phone number.";
+const COMPARE_IMPORT_ANSWER =
+  "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number.";
+
+function offendingImportPhrases(surfaces: Record<string, string>): string[] {
+  const hits: string[] = [];
+  for (const [file, text] of Object.entries(surfaces)) {
+    for (const phrase of BANNED_IMPORT_PHRASES) {
+      if (text.toLowerCase().includes(phrase)) hits.push(`${file}: "${phrase}"`);
+    }
+  }
+  return hits;
+}
+
+test.describe('gm-t0e.7: no bulk-import overclaim on the home or /compare/gymbo-vs-wellnessz/ sources', () => {
+  test('none of the banned import phrases appear in any source that builds those pages', () => {
+    expect(offendingImportPhrases(IMPORT_SURFACES)).toEqual([]);
+  });
+
+  test('home FAQ answer is the phone-contacts answer, byte-identical in App.tsx and JSON-LD', () => {
+    expect(FAQ.find((f) => f.q === 'Can I import my existing clients?')!.a).toBe(HOME_IMPORT_ANSWER);
+    const faqPage = extractJsonLdBlocks(indexHtml).find((b) => b['@type'] === 'FAQPage') as any;
+    const ld = (faqPage.mainEntity as any[]).find((q) => q.name === 'Can I import my existing clients?');
+    expect(ld.acceptedAnswer.text).toBe(HOME_IMPORT_ANSWER);
+  });
+
+  test('compare FAQ answer is identical in CompareWellnessZ.tsx and its JSON-LD twin', () => {
+    expect(compareSource).toContain(`a: ${JSON.stringify(COMPARE_IMPORT_ANSWER)}`);
+    const faqPage = extractJsonLdBlocks(compareHtml).find((b) => b['@type'] === 'FAQPage') as any;
+    const ld = (faqPage.mainEntity as any[]).find((q) => q.name === 'Can I move my clients from WellnessZ to Gymbo?');
+    expect(ld.acceptedAnswer.text).toBe(COMPARE_IMPORT_ANSWER);
+  });
+
+  test('NEGATIVE CONTROL: reintroducing one banned phrase in memory makes the check go red', () => {
+    const mutated = { ...IMPORT_SURFACES, 'src/App.tsx': appSource.replace(HOME_IMPORT_ANSWER, 'Yes. Bring your current roster over in minutes.') };
+    const hits = offendingImportPhrases(mutated);
+    expect(hits).toContain('src/App.tsx: "in minutes"');
+    expect(() => expect(hits).toEqual([])).toThrow();
+  });
+});
