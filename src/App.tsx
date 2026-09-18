@@ -646,7 +646,9 @@ export default function App() {
               <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
             </span>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-              <button onClick={() => scrollToId("cta")} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</button>
+              {/* App Review 1.5: "Support" leads to the support CONTACT below, not to the
+                  waitlist form. getgymbo.com is the app's Support URL. */}
+              <a href="#support" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</a>
               <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
               {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
                   18-page content estate that had ZERO inbound links from the reachable
@@ -667,7 +669,15 @@ export default function App() {
             </nav>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
-            <a href="mailto:damini@materiallab.io" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
+            {/* App Review guideline 1.5 (pm, 2026-09-18): the Support URL (getgymbo.com)
+                must show a visible contact method. The address was already here; it is
+                now LABELLED as support and anchored, so the footer "Support" link lands on
+                it. scripts/prerender.mjs wraps <footer> in Cloudflare's email_off comments,
+                because the zone's email obfuscation otherwise serves "[email protected]"
+                to anything that reads the page without JavaScript (the audit did). */}
+            <p id="support" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>
+              Support: <a href="mailto:damini@materiallab.io" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
+            </p>
             <div className="flex items-center gap-4">
               <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
               <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
