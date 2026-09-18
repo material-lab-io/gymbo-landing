@@ -69,17 +69,12 @@ jobs:
       # must never race for a fixed :4173.
       - name: Audit — a11y, touch targets, scroll integrity
         run: |
-          # Same freeport idiom deploy.yml already uses (gy-cjdtw) rather than a
-          # second implementation of it.
-          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
-          export PW_PORT=$(freeport)
-          npx playwright test tests/audit.spec.ts --project=desktop --project=mobile
+          # gy-3hyzh: pw-test.sh picks PW_PORT just before Playwright binds it.
+          scripts/pw-test.sh tests/audit.spec.ts --project=desktop --project=mobile
 
       - name: Audit — performance budget
         run: |
-          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
-          export PW_PORT=$(freeport)
-          npx playwright test tests/audit-perf.spec.ts --project=desktop
+          scripts/pw-test.sh tests/audit-perf.spec.ts --project=desktop
 
       - name: Upload report
         if: always()
