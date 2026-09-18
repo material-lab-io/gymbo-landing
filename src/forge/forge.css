@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.css
- * Pinned at commit: 2656eb128c3bb8272a69b054d0179917aaaed53e
+ * Pinned at commit: 1381fd8963b710d5e573f16ca3b631a54bf948d8
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -92,10 +92,12 @@
   --g-font-family-sans: 'Open Sans', system-ui, sans-serif; /** everything else */
   --g-font-weight-regular: 400;
   --g-font-weight-medium: 500;
+  --g-font-weight-semibold: 600; /** gy-o6hbo: 600 was ALREADY IN USE in the Swift layer (Font+Theme gymboBodyEmphasis asks for .semibold) while absent from this SSOT — a reach-past, not a new weight. 53 of 112 raw-font deviations name a weight the design system did not define. Legalises the existing use; adds nothing new to the visual language */
   --g-font-weight-bold: 700;
   --g-font-size-micro: 11px; /** 11px hard minimum (gy-hhgqi DS2, ratified 2026-06-23). Equals size-section-label (11) but a distinct role (micro = tab labels/footers/cards) — kept separate by design */
   --g-font-size-section-label: 11px;
   --g-font-size-label: 12px;
+  --g-font-size-subheadline: 13px; /** gy-o6hbo: the missing stop — the ladder jumped 12 -> 14 while 28 call sites render 13pt and annotate the absence. NAMED size-subheadline, ratified by content 2026-08-29 and rejecting size-caption, because Font+Theme.textStyle(for:) ALREADY maps 13 -> .subheadline (12 -> .footnote, 11 -> .caption); size-caption would put three different numbers behind one word. SIZE ONLY — the 28 sites split across three weights (~17 semibold, ~3 medium, ~7 regular), so a single composed style would leave two thirds deviant while looking like a fix. It composes against the now-tokenised weight axis */
   --g-font-size-body: 14px;
   --g-font-size-headline: 16px;
   --g-font-size-title: 20px;
