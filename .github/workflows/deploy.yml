@@ -39,8 +39,32 @@ on:
 # refresh-visual-baselines run, both on a fixed :4173). The gate below now binds
 # per-run FREE ports for both the Pages emulator and the preview, which removes
 # the race regardless of concurrency.
+# gy-ellyl (pm ruling, 2026-09-18) — KEYED PER HEAD SHA, NOT PER REF.
+#
+# THE DEFECT per-ref left behind: on a pull_request event github.ref is
+# refs/pull/<n>/merge, which is IDENTICAL for every sha of that PR. So a PR
+# pushed N times put N full run-sets in ONE group, and with
+# cancel-in-progress:false they serialize NEWEST LAST — the only run anyone
+# would read waits behind every superseded one. Measured on #162 at 00:1xZ:
+# nine queued runs across four shas, the current merge-ref set at the BACK.
+# It is not only your own pushes either: merging ANY pull request moves every
+# open PR's merge ref and queues a fresh set behind the dead ones.
+#
+# 🔴 THE FIX DELIBERATELY DOES NOT TOUCH CANCELLATION, and that is the whole
+# point of it. Flipping cancel-in-progress would reintroduce the fail-open
+# gy-vewd8 closed on 2026-09-07: a CANCELLED required check reads as ABSENT,
+# not failed — "a reviewer saw two green checks and a hole where the required
+# check should have been". Re-keying frees the queue with ZERO change to how
+# the required check reports. Recovering the minutes the stale shas still burn
+# needs cancellation and is gated on a demonstration (pm: push twice on a
+# throwaway PR and show what the CURRENT head carries), not on an argument.
+#
+# THE MAIN INVARIANT ABOVE IS PRESERVED BY THE FALLBACK: a push to main has no
+# pull_request context, so the expression yields github.ref = refs/heads/main
+# and main is still serialized against itself. That is the race (gy-5e9u6) the
+# warning above is about, and this change does not go near it.
 concurrency:
-  group: gymbo-landing-deploy-${{ github.ref }}
+  group: gymbo-landing-deploy-${{ github.event.pull_request.head.sha || github.ref }}
   cancel-in-progress: false
 
 jobs:
