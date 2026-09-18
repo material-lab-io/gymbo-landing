@@ -32,6 +32,8 @@ import {
   ANNUAL_SAVINGS_PERCENT,
   TRIAL_LINE,
   ACCESS_ROUTE_STEPS,
+  PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT,
+  PRICING_LEGIBILITY_LINE,
 } from "./lib/trialAccess";
 
 /* ============================================================================
@@ -146,6 +148,7 @@ const PRICING = [
 /* ── FAQ ── */
 export const FAQ = [
   { q: "Is it free?", a: `Your first ${TRIAL_DAYS} days are free on every plan. After that, Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}.` },
+  { q: "What happens when my trial ends, and can I cancel or get my data out?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
   { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
@@ -278,7 +281,7 @@ export default function App() {
         <div className="flex items-center gap-2.5">
           <InlineWaitlist reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
             <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-              Get Gymbo
+              Request access
             </WaitlistPlainButton>
           </InlineWaitlist>
         </div>
@@ -527,6 +530,7 @@ export default function App() {
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
                 Less than one missed session.
               </h2>
+              <p className="mt-3 text-[14px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_LEGIBILITY_LINE}</p>
             </Reveal>
 
             <div className="mt-12 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
@@ -565,7 +569,7 @@ export default function App() {
                           button would let the cluster div collapse the alignment. */}
                       <InlineWaitlist className="mt-auto" reducedMotion={prefersReduced}>
                         <WaitlistPlainButton location="pricing" className="w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
-                          Get Gymbo
+                          Request access
                         </WaitlistPlainButton>
                       </InlineWaitlist>
                     </div>

@@ -222,7 +222,7 @@ test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level
         'should point at the request-access form at all is a content question, ' +
         'raised separately — it is not this gate\'s to decide.)',
     },
-    // PageShell.tsx's header "Get Gymbo" is deliberately NOT here and needs no
+    // PageShell.tsx's header "Request access" (was "Get Gymbo") is deliberately NOT here and needs no
     // entry: it is an <a href="/#cta"> that NAVIGATES. It does not call
     // scrollToId, so it is out of this gate's scope by construction, and
     // designer ruled that revealing there would be a different control wearing
@@ -388,12 +388,41 @@ test('the capture opens below the fold without the page chasing it (preventScrol
     .toBeGreaterThan(viewport.height - 80);
   const scrollBefore = await page.evaluate(() => window.scrollY);
 
+  // 🔴 gy-14rfs: this assertion FLAKES IN CI ONLY (first attempt scrolled 487px,
+  // retry passed; 0 of 205 local runs reproduce it). A flaky test uploads no
+  // report and the trace is recorded on the RETRY, so the failing attempt left
+  // no evidence. Record who moved the page, so the next flake names its cause
+  // in its own failure message instead of being retried away.
+  await page.evaluate(() => {
+    const w = window as unknown as { __scrollLog: string[] };
+    w.__scrollLog = [];
+    const t0 = performance.now();
+    const who = (el: Element | null) =>
+      el ? `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.getAttribute('name') ? `[name=${el.getAttribute('name')}]` : ''}` : 'null';
+    const log = (s: string) => w.__scrollLog.push(`+${Math.round(performance.now() - t0)}ms ${s}`);
+    const caller = () => (new Error().stack ?? '').split('\n').slice(2, 5).map((l) => l.trim()).join(' | ');
+    window.addEventListener('scroll', () => log(`scroll y=${window.scrollY} active=${who(document.activeElement)}`));
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (this: HTMLElement, opts?: FocusOptions) {
+      log(`focus(${JSON.stringify(opts ?? null)}) on ${who(this)} from ${caller()}`);
+      return focus.call(this, opts);
+    };
+    const siv = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (this: Element, arg?: boolean | ScrollIntoViewOptions) {
+      log(`scrollIntoView(${JSON.stringify(arg ?? null)}) on ${who(this)} from ${caller()}`);
+      return siv.call(this, arg as ScrollIntoViewOptions);
+    };
+  });
+
   await cta.click();
   await page.waitForTimeout(400);
 
   const boxAfter = (await cta.boundingBox())!;
   const scrollAfter = await page.evaluate(() => window.scrollY);
-  expect(Math.abs(scrollAfter - scrollBefore), 'focusing a below-the-fold field must not scroll the page').toBeLessThanOrEqual(2);
+  const scrollLog = await page.evaluate(() => (window as unknown as { __scrollLog: string[] }).__scrollLog.join('\n'));
+  expect(Math.abs(scrollAfter - scrollBefore),
+    `focusing a below-the-fold field must not scroll the page\n--- scroll/focus log (gy-14rfs) ---\n${scrollLog || '(no scroll, focus or scrollIntoView recorded)'}`,
+  ).toBeLessThanOrEqual(2);
   expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
 });
 
@@ -580,7 +609,7 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
     // panel below a fixed viewport-bottom bar renders off-screen; that is a
     // different shape, not a different decision.
     footer: 'reveal',
-    // gy-w77x3 D3 — the two hand-styled "Get Gymbo" buttons. These read
+    // gy-w77x3 D3 — the two hand-styled "Request access" buttons (formerly "Get Gymbo"). These read
     // 'scroll' until 2026-09-16 with a comment saying the ruling waited on AC1
     // (which control Damini actually tapped). D5 retired that dependency: if
     // every waitlist control reveals AND shares one label, whichever one she
@@ -603,30 +632,42 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
 });
 
 /**
- * gy-w77x3 AC4 — no "Get Gymbo" button on / may be untracked.
+ * gy-w77x3 AC4 — no waitlist-opening "Request access" button on / may be untracked.
  *
  * The set test above cannot see this: it keys on location, so ONE tracked
  * pricing button hides any number of untracked siblings. This counts every
  * visible-label match instead, and requires the untracked count to be zero
  * with at least one match found (so an empty page cannot pass it).
+ *
+ * gy-7vbmn renamed the nav and pricing buttons from "Get Gymbo" to "Request
+ * access", which is ALSO the label of the form's own submit button. The submit
+ * button is deliberately not a waitlist CTA (it submits; it opens nothing), so
+ * the label alone no longer identifies the set. The PROPERTY is: a "Request
+ * access" button OUTSIDE a <form> opens or scrolls to the waitlist, and must be
+ * tracked. The exclusion gets its own positive control, so a page where the
+ * form vanished cannot pass by excluding nothing.
  */
-test('every "Get Gymbo" button on / is a tracked waitlist CTA', async ({ page }) => {
+test('every "Request access" button outside a form on / is a tracked waitlist CTA', async ({ page }) => {
   await page.goto('/');
-  const buttons = page.getByRole('button', { name: 'Get Gymbo', exact: true });
-  const total = await buttons.count();
-  expect(total, 'positive control: the page must actually contain Get Gymbo buttons').toBeGreaterThan(1);
-  const untracked = await page.evaluate(() =>
-    [...document.querySelectorAll('button')]
-      .filter((b) => b.textContent?.trim() === 'Get Gymbo')
-      .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
-      .map((b) => b.outerHTML.slice(0, 120)),
-  );
-  expect(untracked, 'a Get Gymbo button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
+  const { openers, submits, untracked } = await page.evaluate(() => {
+    const labelled = [...document.querySelectorAll('button')].filter((b) => b.textContent?.trim() === 'Request access');
+    const openers = labelled.filter((b) => !b.closest('form'));
+    return {
+      openers: openers.length,
+      submits: labelled.filter((b) => b.closest('form')).length,
+      untracked: openers
+        .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
+        .map((b) => b.outerHTML.slice(0, 120)),
+    };
+  });
+  expect(openers, 'positive control: the page must actually contain Request access buttons outside a form').toBeGreaterThan(1);
+  expect(submits, 'positive control for the exclusion: the form submit button must exist, or excluding it proves nothing').toBeGreaterThan(0);
+  expect(untracked, 'a Request access button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
 });
 
 // The attributes above are a label; this proves the click EMITS. umami is absent
 // off production hostnames (#110), so it is stubbed to record calls.
-test('clicking nav and pricing "Get Gymbo" emits waitlist_cta_click with its location', async ({ page }) => {
+test('clicking nav and pricing "Request access" emits waitlist_cta_click with its location', async ({ page }) => {
   await page.addInitScript(() => {
     (window as any).__tracked = [];
     (window as any).umami = { track: (name: string, data: unknown) => (window as any).__tracked.push({ name, data }) };

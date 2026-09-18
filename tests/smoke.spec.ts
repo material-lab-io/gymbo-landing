@@ -39,7 +39,7 @@ test('nav and hero render with the headline', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
   await expect(nav).toBeVisible();
-  await expect(nav.getByText('Get Gymbo', { exact: true })).toBeVisible();
+  await expect(nav.getByText('Request access', { exact: true })).toBeVisible();
 
   const h1 = page.locator('h1');
   await expect(h1).toContainText(/fitness business/i);

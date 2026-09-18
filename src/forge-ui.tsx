@@ -292,7 +292,8 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
 /** Where a CTA sits. Measured inventory, not a guess — designer's design named
  * "hero / mid-page / footer" but flagged it as an intended taxonomy they had not
  * checked against the code. The real placements were these five; gy-w77x3 added
- * "nav" and "pricing" for the "Get Gymbo" buttons, which fired no event at all. */
+ * "nav" and "pricing" for the nav/pricing buttons (then "Get Gymbo", "Request
+ * access" since gy-7vbmn), which fired no event at all. */
 export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare" | "nav" | "pricing";
 
 /**
@@ -414,7 +415,7 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
  * same event and not of two differently-instrumented worlds.
  */
 /**
- * gy-w77x3 D3 — the hand-styled "Get Gymbo" buttons (nav, pricing) behave like
+ * gy-w77x3 D3 — the hand-styled "Request access" buttons (nav, pricing; "Get Gymbo" before gy-7vbmn) behave like
  * every other waitlist CTA: reveal inside a cluster, scroll outside one.
  *
  * 🔴 THIS REPLACED waitlistScrollCtaProps, WHICH WAS TRACKING-ONLY BY DESIGN AND
