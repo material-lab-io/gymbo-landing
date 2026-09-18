@@ -343,7 +343,8 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
     // The sticky footer CTA deliberately still scrolls — it scrolls to the
     // footer form, which is its own capture point and STAYS (designer item 3).
     footer: 'scroll',
-    // gy-w77x3 AC4: the "Get Gymbo" buttons are now TRACKED, but still scroll.
+    // gy-w77x3 AC4: the nav and pricing buttons ("Request access" since
+    // gy-7vbmn, formerly "Get Gymbo") are now TRACKED, but still scroll.
     // Scroll is a recorded non-decision, not a ruling: whether they reveal
     // waits on AC1 (which control Damini actually tapped). Change these
     // when that is answered, not to get this test green.
@@ -365,30 +366,42 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
 });
 
 /**
- * gy-w77x3 AC4 — no "Get Gymbo" button on / may be untracked.
+ * gy-w77x3 AC4 — no waitlist-opening "Request access" button on / may be untracked.
  *
  * The set test above cannot see this: it keys on location, so ONE tracked
  * pricing button hides any number of untracked siblings. This counts every
  * visible-label match instead, and requires the untracked count to be zero
  * with at least one match found (so an empty page cannot pass it).
+ *
+ * gy-7vbmn renamed the nav and pricing buttons from "Get Gymbo" to "Request
+ * access", which is ALSO the label of the form's own submit button. The submit
+ * button is deliberately not a waitlist CTA (it submits; it opens nothing), so
+ * the label alone no longer identifies the set. The PROPERTY is: a "Request
+ * access" button OUTSIDE a <form> opens or scrolls to the waitlist, and must be
+ * tracked. The exclusion gets its own positive control, so a page where the
+ * form vanished cannot pass by excluding nothing.
  */
-test('every "Get Gymbo" button on / is a tracked waitlist CTA', async ({ page }) => {
+test('every "Request access" button outside a form on / is a tracked waitlist CTA', async ({ page }) => {
   await page.goto('/');
-  const buttons = page.getByRole('button', { name: 'Get Gymbo', exact: true });
-  const total = await buttons.count();
-  expect(total, 'positive control: the page must actually contain Get Gymbo buttons').toBeGreaterThan(1);
-  const untracked = await page.evaluate(() =>
-    [...document.querySelectorAll('button')]
-      .filter((b) => b.textContent?.trim() === 'Get Gymbo')
-      .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
-      .map((b) => b.outerHTML.slice(0, 120)),
-  );
-  expect(untracked, 'a Get Gymbo button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
+  const { openers, submits, untracked } = await page.evaluate(() => {
+    const labelled = [...document.querySelectorAll('button')].filter((b) => b.textContent?.trim() === 'Request access');
+    const openers = labelled.filter((b) => !b.closest('form'));
+    return {
+      openers: openers.length,
+      submits: labelled.filter((b) => b.closest('form')).length,
+      untracked: openers
+        .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
+        .map((b) => b.outerHTML.slice(0, 120)),
+    };
+  });
+  expect(openers, 'positive control: the page must actually contain Request access buttons outside a form').toBeGreaterThan(1);
+  expect(submits, 'positive control for the exclusion: the form submit button must exist, or excluding it proves nothing').toBeGreaterThan(0);
+  expect(untracked, 'a Request access button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
 });
 
 // The attributes above are a label; this proves the click EMITS. umami is absent
 // off production hostnames (#110), so it is stubbed to record calls.
-test('clicking nav and pricing "Get Gymbo" emits waitlist_cta_click with its location', async ({ page }) => {
+test('clicking nav and pricing "Request access" emits waitlist_cta_click with its location', async ({ page }) => {
   await page.addInitScript(() => {
     (window as any).__tracked = [];
     (window as any).umami = { track: (name: string, data: unknown) => (window as any).__tracked.push({ name, data }) };
