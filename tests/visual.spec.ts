@@ -106,11 +106,31 @@ async function waitImagesLoaded(locator: Locator) {
  * only, so layout/scroll offsets are unaffected) before capturing. */
 async function neutralizeFixedChrome(page: Page) {
   await page.addStyleTag({
-    content: `
-      nav[aria-label="Main navigation"] { visibility: hidden !important; }
-      .fixed.bottom-0 { visibility: hidden !important; }
-    `,
+    content: `[data-fixed-chrome] { visibility: hidden !important; }`,
   });
+
+  // 🔴 A NEUTRALIZER THAT MATCHES NOTHING FAILS SILENTLY, AND IT DID — gy-w77x3,
+  // 2026-09-18. This used to select `.fixed.bottom-0`. D1 moved `bottom-0` out
+  // of the sticky bar's className and into its inline style (same computed 0px;
+  // the offset now tracks the keyboard), the selector stopped matching, and the
+  // bar painted into the footer-cta capture: a 27,712px / 12% diff that looked
+  // exactly like an intentional design change. It would have been RATIFIED by a
+  // baseline refresh — permanently baking a fixed bar into the reference, and
+  // leaving every other tall section's capture ghosted too.
+  //
+  // Two changes, and the second is the one that matters. The selector is now a
+  // dedicated attribute, so it survives any restyling of HOW the position is
+  // written. And the match is COUNTED: hiding is best-effort and CSS that
+  // selects nothing throws nothing, so the only way this can fail loudly is if
+  // the test asserts it found what it came for.
+  const found = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-fixed-chrome]')].map((el) => el.getAttribute('data-fixed-chrome')),
+  );
+  expect(
+    found,
+    'the fixed-chrome neutralizer matched nothing to hide — its hook was renamed or dropped, and every section capture below is now ghosted with the nav and/or the sticky bar',
+  ).toContain('nav');
+  expect(found.length, 'expected at least the nav to carry data-fixed-chrome').toBeGreaterThan(0);
 }
 
 test.describe('visual baselines', () => {

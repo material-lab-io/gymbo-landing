@@ -1,4 +1,7 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * gy-becxi — the inline waitlist capture, verified as BEHAVIOUR.
@@ -116,20 +119,190 @@ test('the footer capture still exists and is untouched by the reveal (item 3)', 
 });
 
 /**
- * NEGATIVE CONTROL, and it is the one that keeps the fallback honest.
+ * 🔴 N1 — THE RE-POINTED NEGATIVE CONTROL (gy-w77x3 D6, designer 2026-09-16).
  *
- * A waitlist CTA OUTSIDE any cluster must still scroll — that fallback is what
- * makes this change additive. The mobile sticky bar is such a CTA (it is a fixed
- * viewport-bottom bar, so an inline panel beneath it would render off-screen;
- * filed as a follow-up rather than absorbed here, per the bead's scope rule).
- * If this test ever fails because the sticky bar became "reveal", that is a real
- * signal: it means someone wrapped it without solving the off-screen problem.
+ * WHAT THIS TEST USED TO ASSERT, AND WHY ITS SPECIMEN IS GONE. Until D3 this
+ * slot held "an unwrapped waitlist CTA still scrolls, so the change is
+ * additive", and it pointed at the mobile sticky bar — the one waitlist CTA
+ * gy-becxi deliberately left alone, because an inline panel beneath a fixed
+ * viewport-bottom bar renders off-screen. D1 solved that (the panel opens
+ * UPWARD) and D3 wrapped the nav and pricing buttons, so every
+ * data-cta="waitlist" control on / is now inside a cluster BY CONSTRUCTION.
+ * There is no unwrapped specimen left to point at. A re-pointed control with no
+ * history reads to the next person as if it had always meant this, so: it did
+ * not, and the change is deliberate.
+ *
+ * THE FALLBACK ITSELF IS NOW UNTESTED, AND THAT IS A DECISION RATHER THAN AN
+ * OVERSIGHT. useWaitlistCtaAction still returns scrollToId("cta") when the
+ * context is null, and that branch is what keeps this change additive. Proving
+ * it needs a component render outside a provider — a React harness this repo
+ * does not have (the .mjs tests cover Pages Functions; Playwright asserts the
+ * served page). designer ruled 2026-09-16 that a second harness for one branch
+ * nobody can reach through the UI is cost without coverage, and that the branch
+ * is now guarded by ARCHITECTURE: a null context is only reachable from a call
+ * site that does not exist. If a React harness ever lands for other reasons,
+ * assert the fallback then — that is a condition, not a promise.
+ *
+ * WHAT IS GUARDED INSTEAD IS THE PROPERTY THAT HAS ACTUALLY RECURRED TWICE. Not
+ * "the fallback broke" — it never has — but "a waitlist control exists that
+ * nobody routed through the shared symbol". gy-becxi shipped and MISSED THREE
+ * CONTROLS; this bead exists because someone counted them afterwards. That
+ * failure has a live specimen you can seed today, which the old control no
+ * longer does.
+ *
+ * N1 is the DOM half: every element carrying data-cta="waitlist" on the served
+ * page reports behaviour "reveal". After D3 that is ALL of them, so this is a
+ * complete assertion rather than a sample, and it goes red the moment somebody
+ * adds an unwrapped one. Its structural blind spot — a hand-rolled button that
+ * carries no data-cta at all — is exactly how the three missed controls
+ * survived, and is covered by N2 below, not here.
  */
-test('an unwrapped waitlist CTA still scrolls, so the change is additive (negative control)', async ({ page }) => {
+test('N1: every waitlist CTA on the served page reveals in place (no unwrapped survivor)', async ({ page }) => {
   await page.goto('/');
-  const sticky = page.locator(WAITLIST_CTA('footer'));
-  await expect(sticky).toHaveCount(1);
-  await expect(sticky).toHaveAttribute('data-cta-behaviour', 'scroll');
+  const ctas = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-cta="waitlist"]')].map((el) => ({
+      location: el.getAttribute('data-cta-location'),
+      behaviour: el.getAttribute('data-cta-behaviour'),
+      html: el.outerHTML.slice(0, 120),
+    })),
+  );
+
+  // POSITIVE CONTROL. An empty query passes .every() vacuously, and a selector
+  // typo or a page that failed to hydrate would produce exactly that. The six
+  // are hero, gallery, nav, footer (sticky bar) and two pricing cards — one
+  // cluster per card, per designer.
+  expect(ctas.length, 'positive control: the page must actually carry waitlist CTAs').toBeGreaterThanOrEqual(6);
+
+  const notRevealing = ctas.filter((c) => c.behaviour !== 'reveal');
+  expect(
+    notRevealing,
+    'every waitlist CTA must reveal its capture in place. A "scroll" here means a control was added or unwrapped without a cluster — the exact defect gy-becxi shipped with, three times over.',
+  ).toEqual([]);
+});
+
+/**
+ * 🔴 N2 — THE SOURCE-LEVEL HALF, BECAUSE N1 IS STRUCTURALLY BLIND TO THE
+ * HAND-ROLL (gy-w77x3 D6, designer 2026-09-16).
+ *
+ * A raw <button onClick={() => scrollToId("cta")}> carries NO data-cta at all,
+ * so it is invisible to a DOM query BY CONSTRUCTION. That is precisely how two
+ * of the three controls in this bead's description survived gy-becxi: they were
+ * never attributes to begin with, so no attribute gate could see them. This is
+ * the same class as the iOS PageHeader hand-copy (gy-ruy1h) — a gate over
+ * VALUES or ATTRIBUTES cannot see a re-implementation that simply does not
+ * carry them.
+ *
+ * So this reads the SOURCES, not the page: every scrollToId("cta") call site
+ * must be the shared hook in forge-ui.tsx, or a NAMED exception below. An
+ * unnamed one fails, and the failure message is the file and the line.
+ */
+test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level)', () => {
+  const root = path.resolve(fileURLToPath(new URL('../src', import.meta.url)));
+
+  const walk = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)],
+    );
+  const sources = walk(root).filter((f) => /\.(tsx?|jsx?)$/.test(f));
+
+  // 🔴 THE NAMED ALLOW-LIST. A deliberate exception is a line someone can read
+  // and disagree with; an accidental one is a line nobody knew was there. Each
+  // entry names the file, a substring that identifies the specific control, and
+  // WHY it is not a waitlist CTA.
+  const ALLOWED = [
+    {
+      file: 'src/App.tsx',
+      marker: '>Support<',
+      why:
+        'The footer-nav "Support" button. It is not a waitlist CTA and must not ' +
+        'become one: it wears a different label, fires no waitlist_cta_click, and ' +
+        'sends someone with a question to the only contact surface the site has. ' +
+        'Routing it through the shared hook would put it in the funnel numbers and ' +
+        'reveal a signup capture to someone asking for help. (Whether "Support" ' +
+        'should point at the request-access form at all is a content question, ' +
+        'raised separately — it is not this gate\'s to decide.)',
+    },
+    // PageShell.tsx's header "Request access" (was "Get Gymbo") is deliberately NOT here and needs no
+    // entry: it is an <a href="/#cta"> that NAVIGATES. It does not call
+    // scrollToId, so it is out of this gate's scope by construction, and
+    // designer ruled that revealing there would be a different control wearing
+    // the same label.
+  ];
+
+  // 🔴 COMMENTS ARE NOT CALL SITES, AND THIS TEST'S OWN POSITIVE CONTROL CAUGHT
+  // ME ASSUMING THEY WERE. A first pass matched raw lines and reported TWO hits
+  // in forge-ui.tsx: the hook, and a PROSE line documenting the duplication the
+  // hook removed (`trackCta(...); scrollToId("cta")` inside a comment). Left
+  // alone, a gate that counts prose can be silenced by editing a comment and
+  // tripped by writing one — neither of which changes what the page does.
+  // Comment bodies are blanked to spaces rather than deleted, so a violation
+  // still reports its real line number. String state is tracked because '//'
+  // inside a URL literal is not a comment opener.
+  const blankComments = (src: string): string => {
+    let out = '';
+    let mode: 'code' | 'line' | 'block' | 'str' = 'code';
+    let quote = '';
+    for (let i = 0; i < src.length; i++) {
+      const c = src[i];
+      const n = src[i + 1];
+      if (mode === 'code') {
+        if (c === '/' && n === '/') { mode = 'line'; out += '  '; i++; continue; }
+        if (c === '/' && n === '*') { mode = 'block'; out += '  '; i++; continue; }
+        if (c === '"' || c === "'" || c === '`') { mode = 'str'; quote = c; }
+        out += c;
+      } else if (mode === 'line') {
+        if (c === '\n') { mode = 'code'; out += c; } else out += ' ';
+      } else if (mode === 'block') {
+        if (c === '*' && n === '/') { mode = 'code'; out += '  '; i++; continue; }
+        out += c === '\n' ? c : ' ';
+      } else {
+        if (c === '\\') { out += c + (n ?? ''); i++; continue; }
+        if (c === quote) mode = 'code';
+        out += c;
+      }
+    }
+    return out;
+  };
+
+  const hits: { file: string; line: number; text: string }[] = [];
+  for (const file of sources) {
+    const rel = path.relative(path.resolve(root, '..'), file);
+    const raw = readFileSync(file, 'utf8').split('\n');
+    const lines = blankComments(readFileSync(file, 'utf8')).split('\n');
+    lines.forEach((text, i) => {
+      if (/scrollToId\(\s*["'`]cta["'`]\s*\)/.test(text)) hits.push({ file: rel, line: i + 1, text: raw[i].trim() });
+    });
+  }
+
+  // POSITIVE CONTROL, and it is not decoration: a glob that matched nothing, a
+  // regex that stopped matching, or a rename of scrollToId would all make the
+  // violation list empty — a pass that means "I looked at nothing". The shared
+  // hook in forge-ui.tsx is the one call site that must ALWAYS be found.
+  const canonical = hits.filter((h) => h.file === 'src/forge-ui.tsx');
+  expect(sources.length, 'positive control: the source walk must find files').toBeGreaterThan(5);
+  expect(
+    canonical.length,
+    'positive control: the shared hook in forge-ui.tsx must be found. Zero here means this scanner is reading nothing and its silence is worthless.',
+  ).toBe(1);
+
+  const violations = hits
+    .filter((h) => h.file !== 'src/forge-ui.tsx')
+    .filter((h) => !ALLOWED.some((a) => h.file === a.file && h.text.includes(a.marker)));
+
+  expect(
+    violations.map((v) => `${v.file}:${v.line}  ${v.text.slice(0, 100)}`),
+    'a hand-rolled scrollToId("cta") is a waitlist CTA that no attribute gate can see — route it through useWaitlistCtaProps / WaitlistPlainButton, or add a NAMED entry to ALLOWED above saying why it is not one.',
+  ).toEqual([]);
+
+  // The allow-list is itself pinned: an entry whose specimen has been deleted or
+  // renamed must fail rather than sit there granting a permission nobody uses —
+  // a stale exemption is how a gate quietly widens.
+  for (const a of ALLOWED) {
+    expect(
+      hits.some((h) => h.file === a.file && h.text.includes(a.marker)),
+      `the allow-list entry for ${a.file} (${a.marker}) matches nothing any more — delete it rather than leave a permission with no specimen.`,
+    ).toBe(true);
+  }
 });
 
 /**
@@ -241,7 +414,15 @@ test('the capture opens below the fold without the page chasing it (preventScrol
     };
   });
 
-  await cta.click();
+  // 🔴 A TAP AT THE CTA'S OWN COORDINATES, NOT locator.click(). Playwright's
+  // click scrolls its target into view FIRST, and it honours scroll-padding.
+  // gy-w77x3 B7 added a 92px scroll-padding-bottom below md (so a focused
+  // control clears the sticky bar), and this setup deliberately parks the CTA
+  // 12px from the bottom edge, inside that band. Measured: locator.click()
+  // then scrolled 278px BEFORE the reveal ran (focus still on <body>), 20/20
+  // red. That scroll is the harness, not the page. A visitor's tap does not
+  // scroll first, and mouse.click at the box centre does not either.
+  await page.mouse.click(boxBefore.x + boxBefore.width / 2, boxBefore.y + boxBefore.height / 2);
   await page.waitForTimeout(400);
 
   const boxAfter = (await cta.boundingBox())!;
@@ -302,6 +483,97 @@ test('the inline capture is no narrower than the footer capture (measured, both 
 });
 
 /**
+ * 🔴 THE PANEL MUST FIT ON THE SCREEN — THE DIRECTION EVERY OTHER WIDTH
+ * ASSERTION IN THIS FILE IS BLIND TO (gy-w77x3 D7, 2026-09-17).
+ *
+ * The measured-width test above asks whether the field is WIDE ENOUGH, because
+ * a too-narrow capture clipped the word "optional" out of the email hint once
+ * before. That is one side of a two-sided property, and the D7 captures found
+ * the other side: the nav panel rendered from -20px to 395px on a 375px phone —
+ * forty pixels wider than the screen, fields cut off at BOTH edges — and every
+ * test in this file passed, because a panel that is too wide is comfortably
+ * wide enough.
+ *
+ * The cause is worth stating because it will recur: the panel reclaims the page
+ * gutter with `-mx-5` and `w-[calc(100%+40px)]`, and for an ABSOLUTELY
+ * POSITIONED panel that percentage resolves against the nearest positioned
+ * ancestor — the sticky <nav> — not against the box its padding came from.
+ * Same class as everything else on this bead: a value computed against a
+ * different frame than the one it is read in.
+ *
+ * So this measures every cluster's revealed panel against the viewport itself.
+ * Verified red before it was trusted: with the pre-fix nav geometry restored it
+ * reports nav at -20..395 and fails.
+ */
+test('every revealed capture fits inside the viewport (the too-wide direction)', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const vw = page.viewportSize()!.width;
+
+  const offenders: string[] = [];
+  const measured: string[] = [];
+  for (const loc of ['hero', 'gallery', 'nav', 'pricing', 'footer'] as const) {
+    const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
+    // 🔴 THE STICKY BAR IS PHONE-ONLY, AND ITS ABSENCE MUST NOT LOOK LIKE A
+    // PASS. Two things were wrong in the first version of this loop: it clicked
+    // the bar blindly and hung for 30s on desktop, and the obvious guard —
+    // count() === 0 — does not work, because `md:hidden` is display:none and
+    // the element is still IN THE DOM at desktop width. Visibility is the
+    // question being asked, so visibility is what is measured. Absence is
+    // allowed for exactly one control at exactly one width; anything else
+    // absent is a failure, because a control that vanished is the silent
+    // revert this file exists to catch.
+    if (!(await cta.isVisible())) {
+      expect(
+        loc === 'footer' && vw >= 768,
+        `${loc} has no VISIBLE CTA on this viewport (${vw}px) — only the phone-only sticky bar may be hidden, and only on desktop`,
+      ).toBe(true);
+      continue;
+    }
+    measured.push(loc);
+    await cta.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await cta.click();
+    await page.waitForTimeout(400);
+    const box = await page
+      .locator('[role="group"][aria-label="Request access"]')
+      .first()
+      .evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return { left: Math.round(r.left), right: Math.round(r.right) };
+      });
+    // A half-pixel of subpixel rounding is not an overflow; 2px of slack keeps
+    // this a report of real overhang rather than of layout arithmetic.
+    if (box.left < -2 || box.right > vw + 2) offenders.push(`${loc}: ${box.left}..${box.right} (viewport 0..${vw})`);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+  }
+
+  // Positive control: naming which clusters were actually measured turns a
+  // vacuous pass (every locator missing, nothing measured, green) into a
+  // failure.
+  //
+  // 🔴 BUT IT IS NOT THE ASSERTION THAT FIRES FIRST, AND I ONLY KNOW THAT
+  // BECAUSE I PRODUCED THE STATE INSTEAD OF REASONING ABOUT IT (designer's R-C
+  // step 3, 2026-09-18). Mutating forge-ui so no control renders data-cta
+  // "waitlist" at all, the failure comes from the PER-CLUSTER VISIBILITY guard
+  // above — "hero has no VISIBLE CTA on this viewport" — which is strictly
+  // better, because it names the cluster. This count never got the chance.
+  //
+  // It is kept, not deleted, because it covers a DIFFERENT broken state the
+  // visibility guard permits by design: every cluster legitimately skipped (all
+  // hidden at desktop width) would walk the loop to the end with nothing
+  // measured and pass. Recorded so the next reader does not credit this line
+  // with catching the empty-page case — that one belongs to the guard above.
+  expect(measured.length, 'positive control: at least four clusters must have been measured').toBeGreaterThanOrEqual(4);
+
+  expect(
+    offenders,
+    'a capture that hangs off the screen edge has its fields cut, and no width assertion that only checks for "wide enough" can see it',
+  ).toEqual([]);
+});
+
+/**
  * 🔴 THE WRAPPED SET IS PINNED AS A SET, NOT AS A LIST OF CASES — gy-becxi
  * follow-up, 2026-09-12.
  *
@@ -340,16 +612,18 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
   const EXPECTED: Record<string, 'reveal' | 'scroll'> = {
     hero: 'reveal',
     gallery: 'reveal',
-    // The sticky footer CTA deliberately still scrolls — it scrolls to the
-    // footer form, which is its own capture point and STAYS (designer item 3).
-    footer: 'scroll',
-    // gy-w77x3 AC4: the nav and pricing buttons ("Request access" since
-    // gy-7vbmn, formerly "Get Gymbo") are now TRACKED, but still scroll.
-    // Scroll is a recorded non-decision, not a ruling: whether they reveal
-    // waits on AC1 (which control Damini actually tapped). Change these
-    // when that is answered, not to get this test green.
-    nav: 'scroll',
-    pricing: 'scroll',
+    // gy-w77x3 D1 — the mobile sticky bar reveals too, and its panel opens
+    // UPWARD. It was the one control gy-becxi deliberately skipped, because a
+    // panel below a fixed viewport-bottom bar renders off-screen; that is a
+    // different shape, not a different decision.
+    footer: 'reveal',
+    // gy-w77x3 D3 — the two hand-styled "Request access" buttons (formerly "Get Gymbo"). These read
+    // 'scroll' until 2026-09-16 with a comment saying the ruling waited on AC1
+    // (which control Damini actually tapped). D5 retired that dependency: if
+    // every waitlist control reveals AND shares one label, whichever one she
+    // tapped is fixed. So this is now a RULING, not a recorded non-decision.
+    nav: 'reveal',
+    pricing: 'reveal',
   };
   const found = await page.evaluate(() =>
     Object.fromEntries(
@@ -408,6 +682,10 @@ test('clicking nav and pricing "Request access" emits waitlist_cta_click with it
   });
   await page.goto('/');
   await page.locator('[data-cta="waitlist"][data-cta-location="nav"]').click();
+  // Since gy-w77x3 the nav REVEALS an overlay panel, which on a phone covers
+  // the page below it -- including this pricing button. Close it the way a
+  // visitor would (B2) before tapping on; the tracking under test is unchanged.
+  await page.keyboard.press('Escape');
   await page.locator('[data-cta="waitlist"][data-cta-location="pricing"]').first().click();
   const tracked = await page.evaluate(() => (window as any).__tracked);
   expect(tracked).toEqual([

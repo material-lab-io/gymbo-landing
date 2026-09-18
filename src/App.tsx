@@ -17,8 +17,10 @@ import {
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
+import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
+import { useKeyboardInset } from "./lib/keyboardInset";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, waitlistScrollCtaProps } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
 import {
   TRIAL_DAYS,
   BILLING_CHANNEL,
@@ -237,6 +239,8 @@ export default function App() {
   }, []);
 
   return (
+    // gy-w77x3 B5: the ONE owner of which capture overlay (nav or sticky) is open.
+    <WaitlistOverlayProvider>
     <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
@@ -247,6 +251,7 @@ export default function App() {
       {/* ───────── nav ───────── */}
       <nav
         aria-label="Main navigation"
+        data-fixed-chrome="nav"
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
@@ -270,10 +275,18 @@ export default function App() {
           ))}
         </div>
 
+        {/* gy-w77x3 D3 — the nav CTA reveals in place like every other waitlist
+            control. The nav is `sticky top-0`, so the panel opens DOWNWARD into
+            the page and is on-screen by construction; no `above` needed here,
+            and designer said so explicitly rather than leaving it to be
+            rediscovered. It still inherits K1/K2 — a focused field under a
+            raised keyboard is the same hazard wherever the cluster lives. */}
         <div className="flex items-center gap-2.5">
-          <button {...waitlistScrollCtaProps("nav")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-            Request access
-          </button>
+          <InlineWaitlist overlay="nav" dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
+            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+              Request access
+            </WaitlistPlainButton>
+          </InlineWaitlist>
         </div>
       </nav>
 
@@ -441,8 +454,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex - 1)}
                 disabled={galleryIndex === 0}
                 aria-label="Show previous Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
-                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+                {...darkIconButton("h-10 w-10")}
               >
                 <ChevronLeft size={18} aria-hidden="true" />
               </button>
@@ -454,8 +466,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex + 1)}
                 disabled={galleryIndex === SCREENS.length - 1}
                 aria-label="Show next Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
-                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+                {...darkIconButton("h-10 w-10")}
               >
                 <ChevronRight size={18} aria-hidden="true" />
               </button>
@@ -549,9 +560,19 @@ export default function App() {
                           </li>
                         ))}
                       </ul>
-                      <button {...waitlistScrollCtaProps("pricing")} className="mt-auto inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
-                        Request access
-                      </button>
+                      {/* 🔴 ONE CLUSTER PER CARD, NOT ONE FOR THE GRID. A single
+                          cluster around both plans would open the capture at the
+                          bottom of the grid -- far from the button just tapped, on
+                          the other card on desktop -- which is the disorientation
+                          this bead removes, reintroduced at a smaller scale.
+                          mt-auto moves to the wrapper: it is what pins the CTA to
+                          the bottom of the flex column, and leaving it on the
+                          button would let the cluster div collapse the alignment. */}
+                      <InlineWaitlist className="mt-auto" reducedMotion={prefersReduced}>
+                        <WaitlistPlainButton location="pricing" className={`w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`} style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
+                          Request access
+                        </WaitlistPlainButton>
+                      </InlineWaitlist>
                     </div>
                   </Reveal>
                 );
@@ -657,13 +678,9 @@ export default function App() {
       </footer>
 
       {/* ───────── mobile sticky CTA ───────── */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)", background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(12px)", WebkitBackdropFilter: "saturate(140%) blur(12px)", borderTop: "1px solid var(--c-line)", transform: showStickyCTA ? "translateY(0)" : "translateY(120%)" }}
-      >
-        <PrimaryCTA size="lg" className="w-full" location="footer" />
-      </div>
+      <StickyCtaBar show={showStickyCTA} reducedMotion={prefersReduced} />
     </div>
+    </WaitlistOverlayProvider>
   );
 }
 
@@ -741,5 +758,68 @@ function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
       </span>
       <span className="text-[13px] md:text-[14px] font-bold whitespace-nowrap" style={{ fontFamily: SANS, color: F.bone }}>{t.name}</span>
     </span>
+  );
+}
+
+/**
+ * gy-w77x3 D1 — THE STICKY BAR CAPTURES IN PLACE, EXPANDING UPWARD.
+ *
+ * designer, 2026-09-16: "the capture renders ABOVE the button inside the fixed
+ * container, the button stays under the thumb, the page behind does not
+ * scroll." The bar is pinned to the bottom of the viewport, so the default
+ * below-the-CTA panel would render off-screen — which is exactly why gy-becxi
+ * left this control alone and filed it rather than absorbing it.
+ *
+ * 🔴 THE KEYBOARD IS THE LOAD-BEARING CONSTRAINT, NOT THE EXPANSION. A `fixed`
+ * element is pinned to the LAYOUT viewport; the software keyboard shrinks only
+ * the VISUAL one. So without the lift below, the moment the email field takes
+ * focus the whole bar — capture included — sits UNDER the keyboard, and a
+ * visitor who cannot see herself typing is worse off than with the scroll this
+ * bead removes. K1 is "keyboard up, email field AND submit both fully visible".
+ *
+ * 🔴 `bottom` IS SET, NOT `transform`, AND IT IS DELIBERATELY NOT TRANSITIONED.
+ * The className already animates `transform` for the show/hide slide; reusing
+ * transform for the keyboard lift would make the two fight, and animating the
+ * offset at all would make the bar LAG the keyboard — which reads as the bar
+ * tearing away from the keyboard edge and is precisely what K2 forbids. Setting
+ * `bottom` tracks 1:1 and leaves the slide animation untouched.
+ */
+function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: boolean }) {
+  const [revealed, setRevealed] = useState(false);
+  // Only while the capture is open: a bar still holding a keyboard-sized gap
+  // after dismissal would float above the safe area.
+  const keyboardInset = useKeyboardInset(revealed);
+  // gy-w77x3 B5: while the NAV panel is open the bar is not rendered at all.
+  // All it offers is a second capture, and one is already open (B1's
+  // hide-the-pill reasoning applied to the whole bar). It returns when the nav
+  // panel closes. Returned after the hooks, so hook order never changes.
+  const overlay = useWaitlistOverlayOwner();
+  if (overlay?.open === "nav") return null;
+  return (
+    <div
+      // 🔴 THE NEUTRALIZER'S HOOK, AND IT IS DELIBERATELY NOT A STYLE CLASS.
+      // tests/visual.spec.ts hides the fixed chrome before capturing a section,
+      // and it used to find this bar with `.fixed.bottom-0`. D1 moved bottom-0
+      // out of the className into the inline style (same computed 0px, because
+      // the offset now tracks the keyboard) and the selector silently stopped
+      // matching — so the bar painted into every section screenshot and the
+      // footer-cta baseline came back 12% different. A gate keyed on HOW a value
+      // is written cannot see the same value written another way.
+      data-fixed-chrome="sticky-cta"
+      className="md:hidden fixed left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
+      style={{
+        bottom: keyboardInset,
+        paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+        background: "var(--c-nav-bg)",
+        backdropFilter: "saturate(140%) blur(12px)",
+        WebkitBackdropFilter: "saturate(140%) blur(12px)",
+        borderTop: "1px solid var(--c-line)",
+        transform: show ? "translateY(0)" : "translateY(120%)",
+      }}
+    >
+      <InlineWaitlist overlay="sticky" above dismissible hideTriggerWhileRevealed reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
+        <PrimaryCTA size="lg" className="w-full" location="footer" />
+      </InlineWaitlist>
+    </div>
   );
 }
