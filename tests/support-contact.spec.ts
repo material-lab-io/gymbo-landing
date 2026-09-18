@@ -49,3 +49,30 @@ test('the support mailto is distinguishable from its label by more than colour',
   const deco = await page.locator('#support a').evaluate((el) => getComputedStyle(el).textDecorationLine);
   expect(deco).toContain('underline');
 });
+
+/**
+ * designer EYES-ON FAIL at f8dc62a68: on a phone the support line was NEVER
+ * visible. Tapping "Support" lands at max scroll with the line under the fixed
+ * sticky bar, and the hit-test returns the bar. Asserted at 375 and 390, the
+ * way designer measured it: the line is inside the viewport AND the point at
+ * the centre of the link hit-tests to the link itself, not to whatever covers it.
+ */
+for (const width of [375, 390]) {
+  test(`at ${width}px, after tapping Support the contact is on screen and not covered`, async ({ browser }) => {
+    const ctx = await browser.newContext({ viewport: { width, height: 812 }, isMobile: true, hasTouch: true });
+    const page = await ctx.newPage();
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.locator('footer a', { hasText: /^Support$/ }).click();
+    await page.waitForTimeout(800);
+    const r = await page.evaluate(() => {
+      const a = document.querySelector('#support a') as HTMLElement;
+      const box = a.getBoundingClientRect();
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+      const bar = document.querySelector('[data-fixed-chrome="sticky-cta"]')?.getBoundingClientRect();
+      return { inViewport: box.top >= 0 && box.bottom <= innerHeight, hitIsLink: hit === a || a.contains(hit), top: Math.round(box.top), bottom: Math.round(box.bottom), barTop: bar ? Math.round(bar.top) : null };
+    });
+    expect(r, JSON.stringify(r)).toMatchObject({ inViewport: true, hitIsLink: true });
+    await ctx.close();
+  });
+}

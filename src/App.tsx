@@ -639,7 +639,7 @@ export default function App() {
       </main>
 
       {/* ───────── footer ───────── */}
-      <footer style={{ background: F.charcoal, borderTop: "1px solid rgba(240,240,235,0.06)" }}>
+      <footer className="gy-clear-sticky-bar" style={{ background: F.charcoal, borderTop: "1px solid rgba(240,240,235,0.06)" }}>
         <div className="max-w-[1100px] mx-auto px-5 md:px-12 py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <span className="text-[13px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
