@@ -374,6 +374,29 @@ jobs:
           # asserted, not assumed.
           npx playwright test tests/analytics-guard.spec.ts --project=desktop --project=mobile || RC=1
 
+          # gy-31zk5 — the waitlist contact rule as an accessible DESCRIPTION.
+          #
+          # WHY IT BLOCKS. The rule lived in the email placeholder while the
+          # input carried aria-label="Your email", and an aria-label WINS over a
+          # placeholder for the accessible NAME — so the rule reached no
+          # assistive technology at ANY width, including the clusters that
+          # measured as passing on width. The fix is an aria-describedby hint,
+          # and the thing that breaks it is invisible to review: WaitlistForm
+          # renders more than once per document, so a literal id would make one
+          # form describe its inputs with another form's node.
+          #
+          # 🔴 IT ASSERTS THE REFERENCE, NOT THE ANNOUNCED TEXT. Every form
+          # renders the same string, so a cross-form reference still announces
+          # the right words — there is no user-visible symptom, and a test on
+          # the text passes on a fully broken build.
+          #
+          # Mutation-checked before wiring: replacing useId() with a literal
+          # reports "form1:tel,form1:email". (The mutation has to BUILD to mean
+          # anything — the first attempt left an unused import, tsc failed,
+          # dist/ stayed stale, and the check "passed" against the unmutated
+          # build.)
+          npx playwright test tests/contact-rule-a11y.spec.ts --project=desktop --project=mobile || RC=1
+
           # gm-pzp — the durable fix for the JSON-LD/App.tsx copy drift that hit
           # TWICE (#164, #174) with no automated check: this repo's static
           # index.html cannot import src/lib/trialAccess.ts, so nothing stopped
