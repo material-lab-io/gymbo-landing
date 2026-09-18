@@ -10,6 +10,11 @@ import {
   PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR,
   PLATFORM,
   STATUS_LANGUAGE,
+  CANCEL_ROUTE,
+  DATA_EXPORT_ROUTE,
+  DATA_DELETION_ROUTE,
+  PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT,
+  PRICING_LEGIBILITY_LINE,
 } from '../src/lib/trialAccess';
 
 /**
@@ -39,6 +44,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf-8');
 const termsSource = readFileSync(path.resolve(__dirname, '../src/pages/Terms.tsx'), 'utf-8');
 const privacySource = readFileSync(path.resolve(__dirname, '../src/pages/Privacy.tsx'), 'utf-8');
+const appSource = readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf-8');
 
 function extractJsonLdBlocks(html: string): Record<string, unknown>[] {
   const blocks: Record<string, unknown>[] = [];
@@ -104,6 +110,48 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   test('Privacy.tsx states the current status language matching the constant (literal legal text, not interpolated)', () => {
     expect(privacySource).toContain(STATUS_LANGUAGE.toLowerCase());
+  });
+
+  // gm-t0e.3 — the purchase-stage renew/cancel/data-exit facts. Asserted
+  // individually (not only as the assembled PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT
+  // paragraph) so the gate catches a drift in one clause even if the others
+  // still happen to read correctly.
+  test('the FAQ purchase-answer paragraph states the cancel route from CANCEL_ROUTE', () => {
+    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(CANCEL_ROUTE);
+  });
+
+  test('the FAQ purchase-answer paragraph states the data export route from DATA_EXPORT_ROUTE', () => {
+    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(DATA_EXPORT_ROUTE);
+  });
+
+  test('the FAQ purchase-answer paragraph states the data deletion route from DATA_DELETION_ROUTE', () => {
+    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(DATA_DELETION_ROUTE);
+  });
+
+  test('App.tsx FAQ consumes PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT, not a hand-written string', () => {
+    const entry = FAQ.find((f) => f.q === 'What happens when my trial ends, and can I cancel or get my data out?');
+    expect(entry, 'App.tsx FAQ has no purchase-answer entry').toBeTruthy();
+    expect(entry!.a).toBe(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT);
+  });
+
+  test('App.tsx consumes PRICING_LEGIBILITY_LINE by reference exactly once, not a hand-written string', () => {
+    const occurrences = appSource.split('{PRICING_LEGIBILITY_LINE}').length - 1;
+    expect(occurrences).toBe(1);
+    // AC5 guard: the literal string must not ALSO be hand-written somewhere else in App.tsx.
+    expect(appSource).not.toContain(PRICING_LEGIBILITY_LINE);
+  });
+
+  test('NEGATIVE CONTROL: CANCEL_ROUTE assertion actually fails on a deliberately wrong route', () => {
+    const drifted = PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT.split(CANCEL_ROUTE).join('by emailing support');
+    expect(drifted).not.toContain(CANCEL_ROUTE);
+    expect(() => expect(drifted).toContain(CANCEL_ROUTE)).toThrow();
+  });
+
+  test('NEGATIVE CONTROL: the pricing-legibility-line-by-reference check actually fails when the reference is absent', () => {
+    const strippedSource = appSource.split('{PRICING_LEGIBILITY_LINE}').join('');
+    const occurrences = strippedSource.split('{PRICING_LEGIBILITY_LINE}').length - 1;
+    expect(occurrences).not.toBe(1);
+    expect(() => expect(occurrences).toBe(1)).toThrow();
   });
 
   test('NEGATIVE CONTROL: the JSON-LD drift check actually fails on a deliberately wrong string', () => {
