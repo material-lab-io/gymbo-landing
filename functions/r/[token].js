@@ -7,14 +7,19 @@
 // arrived as the same campaign and WHO referred was lost at the first hop.
 // Found by the gy-ufxgo AC4 readback, 2026-09-18.
 //
-// 🔴 THE TOKEN IS FORWARDED ONLY IF IT ALREADY HAS A SLUG'S SHAPE. It is never
-// reshaped. sourceSlug() is the one shape rule on this site (gy-0v33y, "do not
-// invent a second contract"), but it NORMALISES, and for a token normalising is
-// wrong: "Ab.1" and "ab-1" would become one referrer. So a token must equal its
-// own slug to pass, and anything else is dropped. A dropped token still lands as
-// source=referral, since the visit really came through a referral link; it just
-// cannot say whose.
-import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
+// 🔴 TOKEN CONTRACT (pm ruling on gy-3jb0t, 2026-09-18 05:1xZ; marketer's rule):
+//   t = lowercase(path token); forward utm_campaign=t only if t matches
+//   ^[a-z0-9-]{3,32}$. Otherwise the 301 still happens, as source=referral with
+//   NO campaign. Never truncate or reshape beyond lowercasing.
+// Lowercasing first means a hand-typed "Priya-Jan" attributes as "priya-jan"
+// instead of silently dropping. The 3-char floor exists because a token's job
+// is to tell trainers apart, and 1-2 chars invite collisions.
+// This is deliberately NOT sourceSlug(): that rule governs utm_source, a
+// different field with a different collision cost, and it normalises, which
+// for a token would merge distinct referrers ("Ab.1" and "ab-1").
+// A refused token still lands as source=referral, because the visit really
+// came through a referral link; it just cannot say whose.
+export const TOKEN_SHAPE = /^[a-z0-9-]{3,32}$/;
 
 const SITE = "https://getgymbo.com/";
 
@@ -22,8 +27,8 @@ export function referralLocation(rawToken) {
   const url = new URL(SITE);
   url.searchParams.set("utm_source", "referral");
   url.searchParams.set("utm_medium", "referral");
-  const token = rawToken == null ? "" : String(rawToken);
-  if (token && sourceSlug(token) === token) url.searchParams.set("utm_campaign", token);
+  const token = rawToken == null ? "" : String(rawToken).toLowerCase();
+  if (TOKEN_SHAPE.test(token)) url.searchParams.set("utm_campaign", token);
   return url.toString();
 }
 

@@ -15,8 +15,21 @@ test("a well-formed token survives the redirect as utm_campaign", () => {
   assert.notEqual(campaign(loc), ":token");
 });
 
-test("a token that is not already a slug is dropped, never reshaped", () => {
-  for (const bad of ["Ab.1", "has space", "a?b=c", "x".repeat(33), "none", "-lead", "trail-", "ünï"]) {
+// pm's contract (gy-3jb0t 05:1xZ): lowercase, then ^[a-z0-9-]{3,32}$.
+test("accepted tokens are forwarded, lowercased and otherwise unchanged", () => {
+  const cases = [
+    ["priya-jan", "priya-jan"],
+    ["Priya-Jan", "priya-jan"], // hand-typed capitals attribute instead of dropping
+    ["abc", "abc"], // the 3-char floor, inclusive
+    ["a".repeat(32), "a".repeat(32)], // the 32-char ceiling, inclusive
+  ];
+  for (const [raw, want] of cases) {
+    assert.equal(campaign(referralLocation(raw)), want, `${JSON.stringify(raw)} must forward as ${want}`);
+  }
+});
+
+test("refused tokens are dropped, never truncated or reshaped", () => {
+  for (const bad of ["ab", "a".repeat(33), "a_b_c", "Ab.1", "has space", "a?b=c", "ünï"]) {
     const loc = referralLocation(bad);
     assert.equal(campaign(loc), null, `${JSON.stringify(bad)} must not be forwarded`);
     // Still a referral visit: only WHOSE is unknown.
