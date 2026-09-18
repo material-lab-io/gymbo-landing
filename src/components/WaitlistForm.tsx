@@ -179,7 +179,18 @@ export function WaitlistForm() {
       */}
       <span
         id={contactRuleId}
-        className="text-[13px]"
+        // 🔴 leading-5 IS LOAD-BEARING, NOT TYPOGRAPHY (designer, 2026-09-18).
+        // text-[13px] with no line-height inherits 1.5 -> 19.5px, and with
+        // gap-3's 12px this row contributed 31.5px. A FRACTIONAL section height
+        // makes Playwright's element screenshot round UP, and the capture then
+        // takes in ONE ROW OF THE NEXT SECTION — measured on the CI candidate as
+        // rgb(250,250,247) on mobile (the bone section below) where the old
+        // baseline ends on our own charcoal. Freezing that couples footer-cta to
+        // whatever happens to sit underneath it, so the next change THERE reds
+        // THIS section with a one-row diff nobody can explain. leading-5 makes
+        // it 20 + 12 = 32 integer. Forge has no line-height token, so this is
+        // Tailwind's scale, like the gap-3 and px-5 already in this file.
+        className="text-[13px] leading-5"
         style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}
       >
         Add a phone number or an email: either one is enough.
@@ -201,7 +212,10 @@ export function WaitlistForm() {
       {status === "needs-contact" && (
         <span
           role="alert"
-          className="text-[13px]"
+          // Same shape as the hint above, so the same fix: without leading-5
+          // this row is 19.5px and re-introduces a fractional height the moment
+          // it renders.
+          className="text-[13px] leading-5"
           // 🔴 DESTRUCTIVE, NOT MUTED — and this PR is what made that necessary
           // (designer eyes-on of ae2f3ddc6, 2026-09-18).
           //
