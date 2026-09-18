@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { F, darkIconButton } from "../forge-ui";
 import { WaitlistForm } from "./WaitlistForm";
 import { WaitlistRevealContext } from "../lib/waitlistReveal";
+import { useWaitlistOverlayOwner, type OverlayId } from "../lib/waitlistOverlay";
 
 /**
  * gy-becxi — REVEAL THE CAPTURE WHERE THE VISITOR ALREADY IS.
@@ -50,6 +51,7 @@ export function InlineWaitlist({
   reclaimGutter = true,
   dismissible = false,
   hideTriggerWhileRevealed = false,
+  overlay,
   onRevealedChange,
 }: {
   children: React.ReactNode;
@@ -138,8 +140,21 @@ export function InlineWaitlist({
    * rendered page, and a hidden button is still a button to a screen reader.
    */
   hideTriggerWhileRevealed?: boolean;
+  /**
+   * gy-w77x3 B5 -- which OVERLAY this is, so the page's single owner
+   * (WaitlistOverlayProvider) decides whether it is open. Opening one closes
+   * the other. Omit it for inline panels, which keep their own state.
+   */
+  overlay?: OverlayId;
 }) {
-  const [revealed, setRevealed] = useState(false);
+  const owner = useWaitlistOverlayOwner();
+  const shared = overlay && owner ? { owner, id: overlay } : null;
+  const [localRevealed, setLocalRevealed] = useState(false);
+  // An overlay's open state lives in the shared owner, so "two overlays open"
+  // cannot be represented. Everything else keeps its own.
+  const revealed = shared ? shared.owner.open === shared.id : localRevealed;
+  const revealedRef = useRef(revealed);
+  revealedRef.current = revealed;
   const panelRef = useRef<HTMLDivElement | null>(null);
   const clusterRef = useRef<HTMLDivElement | null>(null);
 
@@ -150,26 +165,27 @@ export function InlineWaitlist({
   // now closes it, so that sentence stopped being true. The guarantee it was
   // standing in for -- a repeat tap never re-fires focus -- is unchanged.)
   const reveal = useCallback(() => {
-    setRevealed((was) => {
-      if (was) return was;
-      // 🔴 FOCUS WITH preventScroll, AND THIS IS THE LINE THE BEAD TURNS ON.
-      // designer's item 2 says focus the first field, because revealing a form
-      // the visitor must then tap into spends the very click we are saving. But
-      // the browser's DEFAULT focus behaviour is to scroll the focused element
-      // into view — so the obvious implementation of "focus the first field"
-      // reintroduces the exact jump Damini reported, and it would look like the
-      // fix simply did not work. preventScroll is not a nicety here.
-      //
-      // Deferred to the frame after paint: the panel does not exist in the DOM
-      // until this state change has rendered, so querying for the field inside
-      // the updater or synchronously after would find nothing.
-      requestAnimationFrame(() => {
-        const first = panelRef.current?.querySelector<HTMLElement>("input, select, textarea");
-        first?.focus({ preventScroll: true });
-      });
-      return true;
+    // Read through a ref, not state: the repeat-tap guard must see the value
+    // from the latest render, including an owner that another overlay changed.
+    if (revealedRef.current) return;
+    // 🔴 FOCUS WITH preventScroll, AND THIS IS THE LINE THE BEAD TURNS ON.
+    // designer's item 2 says focus the first field, because revealing a form
+    // the visitor must then tap into spends the very click we are saving. But
+    // the browser's DEFAULT focus behaviour is to scroll the focused element
+    // into view — so the obvious implementation of "focus the first field"
+    // reintroduces the exact jump Damini reported, and it would look like the
+    // fix simply did not work. preventScroll is not a nicety here.
+    //
+    // Deferred to the frame after paint: the panel does not exist in the DOM
+    // until this state change has rendered, so querying for the field
+    // synchronously would find nothing.
+    requestAnimationFrame(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>("input, select, textarea");
+      first?.focus({ preventScroll: true });
     });
-  }, []);
+    if (shared) shared.owner.setOpen(shared.id);
+    else setLocalRevealed(true);
+  }, [shared?.owner, shared?.id]);
 
   // gy-w77x3 B2c -- closing returns focus to the control that opened the panel.
   // Without it a keyboard or screen-reader visitor is left on a node that has
@@ -182,7 +198,10 @@ export function InlineWaitlist({
   // So wait for the frame after the re-render, the same deferral reveal() uses
   // for the first field, and look again one frame later if it is still missing.
   const dismiss = useCallback(() => {
-    setRevealed(false);
+    // Close only if THIS overlay is still the open one: a stale close must
+    // not shut the panel that replaced it.
+    if (shared) shared.owner.setOpen((cur) => (cur === shared.id ? null : cur));
+    else setLocalRevealed(false);
     const focusOpener = (tries: number) =>
       requestAnimationFrame(() => {
         const opener = clusterRef.current?.querySelector<HTMLElement>('[data-cta="waitlist"]');
@@ -190,7 +209,7 @@ export function InlineWaitlist({
         else if (tries > 0) focusOpener(tries - 1);
       });
     focusOpener(1);
-  }, []);
+  }, [shared?.owner, shared?.id]);
 
   // Escape closes an open overlay. Listened on the document rather than the
   // panel, because the visitor may have tabbed or scrolled away from the panel

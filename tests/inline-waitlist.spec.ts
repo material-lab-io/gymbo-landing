@@ -414,7 +414,15 @@ test('the capture opens below the fold without the page chasing it (preventScrol
     };
   });
 
-  await cta.click();
+  // 🔴 A TAP AT THE CTA'S OWN COORDINATES, NOT locator.click(). Playwright's
+  // click scrolls its target into view FIRST, and it honours scroll-padding.
+  // gy-w77x3 B7 added a 92px scroll-padding-bottom below md (so a focused
+  // control clears the sticky bar), and this setup deliberately parks the CTA
+  // 12px from the bottom edge, inside that band. Measured: locator.click()
+  // then scrolled 278px BEFORE the reveal ran (focus still on <body>), 20/20
+  // red. That scroll is the harness, not the page. A visitor's tap does not
+  // scroll first, and mouse.click at the box centre does not either.
+  await page.mouse.click(boxBefore.x + boxBefore.width / 2, boxBefore.y + boxBefore.height / 2);
   await page.waitForTimeout(400);
 
   const boxAfter = (await cta.boundingBox())!;

@@ -114,6 +114,21 @@
   outline: 2px solid var(--g-color-neutral-dark-0);
   outline-offset: 2px;
 }
+/* gy-w77x3 B7 -- WCAG 2.4.11 Focus Not Obscured. Below md the sticky CTA bar
+   is fixed to the bottom of the viewport. With no scroll padding, Tabbing onto
+   the pricing Annual button scrolled it to y 852-900 while the bar's top sat at
+   832, so the focused control was entirely hidden (designer, at 971ade6a1 and
+   on main). scroll-padding-bottom makes focus scrolling (and anchor jumps)
+   stop short of the bar.
+   The value is the bar's own box, from the same tokens the bar is built from:
+   pt-3 + the lg CTA height (--g-size-cta-height) + the 12px bottom padding +
+   the safe-area inset, plus a --g-space-3 gap so a focus ring clears the bar's
+   top border. md and up has no bar (md:hidden), so no padding there. */
+@media (max-width: 47.99rem) {
+  html {
+    scroll-padding-bottom: calc(var(--g-space-3) + var(--g-size-cta-height) + var(--g-space-3) + env(safe-area-inset-bottom, 0px) + var(--g-space-3));
+  }
+}
 .gy-focus-ring-on-cta:focus-visible {
   outline: none;
   box-shadow:

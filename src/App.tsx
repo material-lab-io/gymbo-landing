@@ -17,6 +17,7 @@ import {
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
+import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
 import { useKeyboardInset } from "./lib/keyboardInset";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
@@ -238,6 +239,8 @@ export default function App() {
   }, []);
 
   return (
+    // gy-w77x3 B5: the ONE owner of which capture overlay (nav or sticky) is open.
+    <WaitlistOverlayProvider>
     <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
@@ -279,7 +282,7 @@ export default function App() {
             rediscovered. It still inherits K1/K2 — a focused field under a
             raised keyboard is the same hazard wherever the cluster lives. */}
         <div className="flex items-center gap-2.5">
-          <InlineWaitlist dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
+          <InlineWaitlist overlay="nav" dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
             <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
               Request access
             </WaitlistPlainButton>
@@ -566,7 +569,7 @@ export default function App() {
                           the bottom of the flex column, and leaving it on the
                           button would let the cluster div collapse the alignment. */}
                       <InlineWaitlist className="mt-auto" reducedMotion={prefersReduced}>
-                        <WaitlistPlainButton location="pricing" className="w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
+                        <WaitlistPlainButton location="pricing" className={`w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`} style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
                           Request access
                         </WaitlistPlainButton>
                       </InlineWaitlist>
@@ -677,6 +680,7 @@ export default function App() {
       {/* ───────── mobile sticky CTA ───────── */}
       <StickyCtaBar show={showStickyCTA} reducedMotion={prefersReduced} />
     </div>
+    </WaitlistOverlayProvider>
   );
 }
 
@@ -785,6 +789,12 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
   // Only while the capture is open: a bar still holding a keyboard-sized gap
   // after dismissal would float above the safe area.
   const keyboardInset = useKeyboardInset(revealed);
+  // gy-w77x3 B5: while the NAV panel is open the bar is not rendered at all.
+  // All it offers is a second capture, and one is already open (B1's
+  // hide-the-pill reasoning applied to the whole bar). It returns when the nav
+  // panel closes. Returned after the hooks, so hook order never changes.
+  const overlay = useWaitlistOverlayOwner();
+  if (overlay?.open === "nav") return null;
   return (
     <div
       // 🔴 THE NEUTRALIZER'S HOOK, AND IT IS DELIBERATELY NOT A STYLE CLASS.
@@ -807,7 +817,7 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
         transform: show ? "translateY(0)" : "translateY(120%)",
       }}
     >
-      <InlineWaitlist above dismissible hideTriggerWhileRevealed reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
+      <InlineWaitlist overlay="sticky" above dismissible hideTriggerWhileRevealed reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
         <PrimaryCTA size="lg" className="w-full" location="footer" />
       </InlineWaitlist>
     </div>

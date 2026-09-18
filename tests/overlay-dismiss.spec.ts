@@ -143,3 +143,158 @@ test('B2a: the INLINE panels (hero, gallery, pricing) have no close control -- t
   }
   expect(checked).toEqual(['hero', 'gallery', 'pricing']);
 });
+
+/**
+ * gy-w77x3 B5 (designer FAIL at 971ade6a1) -- ONE capture overlay at a time.
+ *
+ * Each InlineWaitlist owned its own `revealed`, so with the sticky panel open
+ * the nav "Request access" (visible the whole time) opened a SECOND form over
+ * the first: two forms, two submits, the page covered. The property is counted
+ * on the rendered page, VISIBLE forms and VISIBLE submits, because an
+ * unmounted-vs-hidden distinction is exactly what a DOM-only count gets wrong.
+ */
+const visibleCaptures = (page: Page) =>
+  page.evaluate(() => {
+    const vis = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && r.bottom > 0 && r.top < window.innerHeight;
+    };
+    const panels = [...document.querySelectorAll('[role="group"][aria-label="Request access"]')].filter(vis);
+    const submits = [...document.querySelectorAll('form button[type="submit"]')].filter(
+      (b) => vis(b) && b.closest('[role="group"][aria-label="Request access"]'),
+    );
+    return { forms: panels.length, submits: submits.length, stickyBarInDom: !!document.querySelector('[data-fixed-chrome="sticky-cta"]') };
+  });
+
+test.describe('B5: one capture overlay at a time (phone)', () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar only exists below md');
+
+  test('sticky open, then the nav CTA: exactly one form (the nav one), sticky bar gone, Escape returns focus to the nav CTA', async ({ page }) => {
+    await openSticky(page);
+    await page.locator(`nav ${CTA('nav')}`).first().click();
+    await page.waitForTimeout(300);
+    expect(await visibleCaptures(page)).toEqual({ forms: 1, submits: 1, stickyBarInDom: false });
+    await expect(page.locator(`nav ${PANEL}`), 'the one open form must be the NAV panel').toBeVisible();
+    const focusedInNav = await page.evaluate(() => !!document.activeElement?.closest('nav [role="group"]') && document.activeElement?.tagName === 'INPUT');
+    expect(focusedInNav, 'focus moves to the nav panel first field').toBe(true);
+
+    await page.keyboard.press('Escape');
+    await expect(page.locator(PANEL)).toHaveCount(0);
+    await expect
+      .poll(() => page.evaluate(() => {
+        const el = document.activeElement as HTMLElement | null;
+        if (!el) return 'none';
+        const cs = getComputedStyle(el);
+        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2}`;
+      }))
+      .toBe('nav|true|ring=true');
+    expect((await visibleCaptures(page)).stickyBarInDom, 'the sticky bar returns once the nav panel closes').toBe(true);
+  });
+
+  test('nav open, then scroll: the sticky bar is not rendered, so its pill cannot open a second form', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.locator(CTA('nav')).click();
+    await expect(page.locator(PANEL)).toBeVisible();
+    await page.mouse.wheel(0, 1600);
+    await page.waitForTimeout(600);
+    expect(await visibleCaptures(page)).toEqual({ forms: 1, submits: 1, stickyBarInDom: false });
+    await expect(page.locator(CTA('footer')), 'no sticky pill to tap while the nav panel is open').toHaveCount(0);
+  });
+});
+
+/**
+ * gy-w77x3 B6 -- the pricing buttons draw a keyboard focus ring. At 971ade6a1
+ * AND on main they drew NONE (computed outline none), and I had written that
+ * their Tailwind ring "was never overridden" without measuring it. The ring is
+ * matched to the ground it sits on: bone on the dark Monthly card, charcoal on
+ * the amber Annual card. So the COLOUR is asserted too, not just its presence.
+ */
+test('B6: both pricing buttons draw a focus ring in the colour of their ground', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const buttons = page.locator(CTA('pricing'));
+  await expect(buttons, 'positive control: two pricing buttons').toHaveCount(2);
+  const seen: string[] = [];
+  for (let i = 0; i < 2; i++) {
+    const b = buttons.nth(i);
+    await b.scrollIntoViewIfNeeded();
+    await page.keyboard.press('Shift'); // keyboard modality, so :focus-visible applies to the focus below
+    await b.focus();
+    seen.push(
+      await b.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        const card = el.closest('[class*="rounded"]')?.parentElement?.querySelector('h3')?.textContent ?? '';
+        return `${el.matches(':focus-visible')}|${cs.outlineStyle}|${parseFloat(cs.outlineWidth) >= 2}|${cs.outlineColor}|${card}`;
+      }),
+    );
+  }
+  expect(seen.map((s) => s.split('|').slice(0, 4).join('|'))).toEqual([
+    'true|solid|true|rgb(240, 240, 235)', // Monthly: bone ring, dark card ground
+    'true|solid|true|rgb(10, 10, 10)', // Annual: charcoal ring, amber card ground
+  ]);
+});
+
+/**
+ * gy-w77x3 B7 -- WCAG 2.4.11. Below md the fixed sticky bar covers the bottom
+ * of the viewport. Tabbing onto the pricing Annual button parked it at y
+ * 852-900 under a bar whose top was 832: fully hidden. Walk the real Tab order
+ * from the Monthly button through the footer form, and after EVERY Tab require
+ * the focused control, ring included, to sit fully above the bar whenever the
+ * bar is on screen. The walk must actually reach Annual and the footer submit;
+ * a walk that stopped early would pass vacuously.
+ */
+test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar only exists below md');
+
+  test('Tab from pricing through the footer form: no focused control is obscured by the bar', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    // Enter pricing the way a keyboard user does: the section scrolled to the
+    // top of the viewport and focus arriving from ABOVE, so Tab has to scroll
+    // each button into view itself. A first version called monthly.focus(),
+    // which parked Monthly mid-screen with Annual already visible. Tab then
+    // never scrolled, and with the padding REMOVED the Annual stop still read
+    // clean (bottom 434 < bar 731). The walk has to start where designer's did.
+    await page.evaluate(() => {
+      const sec = document.querySelector('#pricing') as HTMLElement;
+      sec.scrollIntoView({ block: 'start' });
+      sec.setAttribute('tabindex', '-1');
+      sec.focus({ preventScroll: true });
+    });
+    await page.waitForTimeout(600);
+    await page.keyboard.press('Tab');
+
+    const obscured: string[] = [];
+    const visited: string[] = [];
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(150);
+      const r = await page.evaluate(() => {
+        const el = document.activeElement as HTMLElement;
+        const bar = document.querySelector('[data-fixed-chrome="sticky-cta"]') as HTMLElement | null;
+        const box = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        const ring = cs.outlineStyle === 'none' ? 0 : parseFloat(cs.outlineWidth) + parseFloat(cs.outlineOffset || '0');
+        const barBox = bar?.getBoundingClientRect();
+        const barOnScreen = !!barBox && barBox.top < window.innerHeight && getComputedStyle(bar!).display !== 'none';
+        const label = el.getAttribute('data-cta-location') ?? el.getAttribute('name') ?? (el as HTMLButtonElement).type ?? el.tagName;
+        return {
+          label: `${label}${el.closest('#cta') ? '@footer' : ''}`,
+          bottom: Math.round(box.bottom + ring),
+          barTop: barOnScreen ? Math.round(barBox!.top) : null,
+          inFooterForm: !!el.closest('#cta form'),
+          isSubmit: (el as HTMLButtonElement).type === 'submit',
+          inBar: !!el.closest('[data-fixed-chrome="sticky-cta"]'),
+        };
+      });
+      visited.push(r.label);
+      if (r.barTop !== null && !r.inBar && r.bottom > r.barTop) obscured.push(`${r.label}: bottom ${r.bottom} > bar top ${r.barTop}`);
+      if (r.inFooterForm && r.isSubmit) break;
+      await page.keyboard.press('Tab');
+    }
+    expect(visited.filter((v) => v === 'pricing').length, `positive control: both pricing buttons visited (${visited.join(', ')})`).toBe(2);
+    expect(visited.some((v) => v.endsWith('@footer')), `positive control: the walk reached the footer form (${visited.join(', ')})`).toBe(true);
+    expect(obscured, 'a focused control hidden behind the sticky bar fails WCAG 2.4.11').toEqual([]);
+  });
+});
