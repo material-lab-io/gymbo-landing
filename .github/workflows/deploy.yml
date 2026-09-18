@@ -290,9 +290,11 @@ jobs:
           # emulator) or :4173 (Playwright preview). A fixed-port collision
           # surfaced as 'localhost:4173 already used' and 'Pages emulator never
           # became ready' -> a degraded/racey render (e.g. hero 650px vs 679px).
-          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
-          WPORT=$(freeport)
-          export PW_PORT=$(freeport)   # Playwright's own preview server; playwright.config reads PW_PORT
+          # gy-3hyzh: a port picked HERE was bound by Playwright ~30s later and
+          # was taken in between (#180, 'localhost:37241 is already used' x4).
+          # Playwright's port is now picked per run, just before it binds, by
+          # scripts/pw-test.sh. WPORT stays here: wrangler binds it on the next line.
+          WPORT=$(node scripts/freeport.mjs)
           BASE="http://127.0.0.1:$WPORT"
 
           npx wrangler pages dev dist --port "$WPORT" --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
@@ -353,7 +355,7 @@ jobs:
           # NOWHERE in CI. analytics-guard.spec.ts was in that same state until
           # 2026-09-18 and is now wired below. Do not assume a spec in tests/ is
           # gating anything — check this file.
-          npx playwright test tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
+          scripts/pw-test.sh tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
 
           # gy-kzfg9 — the Umami hostname guard, gated as BEHAVIOUR.
           #
@@ -378,7 +380,7 @@ jobs:
           # localhost event to the series AC3 asks us to reconcile. The send
           # endpoint is now aborted inside the test and the containment is
           # asserted, not assumed.
-          npx playwright test tests/analytics-guard.spec.ts --project=desktop --project=mobile || RC=1
+          scripts/pw-test.sh tests/analytics-guard.spec.ts --project=desktop --project=mobile || RC=1
 
           # gy-31zk5 — the waitlist contact rule as an accessible DESCRIPTION.
           #
@@ -401,7 +403,7 @@ jobs:
           # anything — the first attempt left an unused import, tsc failed,
           # dist/ stayed stale, and the check "passed" against the unmutated
           # build.)
-          npx playwright test tests/contact-rule-a11y.spec.ts --project=desktop --project=mobile || RC=1
+          scripts/pw-test.sh tests/contact-rule-a11y.spec.ts --project=desktop --project=mobile || RC=1
 
           # gm-pzp — the durable fix for the JSON-LD/App.tsx copy drift that hit
           # TWICE (#164, #174) with no automated check: this repo's static
@@ -413,7 +415,7 @@ jobs:
           # warn about after. Reads index.html and src/App.tsx/src/lib directly
           # (no browser, no emulator dependency), so it runs regardless of
           # whether the Pages emulator above is up.
-          npx playwright test tests/copy-facts.spec.ts --project=desktop || RC=1
+          scripts/pw-test.sh tests/copy-facts.spec.ts --project=desktop || RC=1
 
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
@@ -432,10 +434,10 @@ jobs:
           # refresh workflow uses to GENERATE baselines — NOT this wrangler
           # emulator, so gate and baselines stay consistent.
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
+            scripts/pw-test.sh tests/visual.spec.ts --project=desktop --project=mobile \
               || echo "::warning::Visual baselines are stale on main — deploy proceeding. Run refresh-visual-baselines.yml to resync."
           else
-            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+            scripts/pw-test.sh tests/visual.spec.ts --project=desktop --project=mobile || RC=1
           fi
           exit $RC
 
