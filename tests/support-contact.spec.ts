@@ -41,3 +41,11 @@ test('with JavaScript ON the page hydrates cleanly around the email_off comments
   await expect(page.locator('#support')).toContainText(`Support: ${ADDRESS}`);
   expect(errors.filter((e) => /hydrat|did not match|Minified React error/i.test(e))).toEqual([]);
 });
+
+// designer (#190): the link differs from its "Support:" label by colour alone
+// (1.32:1), which fails WCAG 1.4.1. The underline is the non-colour cue.
+test('the support mailto is distinguishable from its label by more than colour', async ({ page }) => {
+  await page.goto('/');
+  const deco = await page.locator('#support a').evaluate((el) => getComputedStyle(el).textDecorationLine);
+  expect(deco).toContain('underline');
+});

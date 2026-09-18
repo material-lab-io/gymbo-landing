@@ -676,7 +676,7 @@ export default function App() {
                 because the zone's email obfuscation otherwise serves "[email protected]"
                 to anything that reads the page without JavaScript (the audit did). */}
             <p id="support" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>
-              Support: <a href="mailto:damini@materiallab.io" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
+              Support: <a href="mailto:damini@materiallab.io" className="underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
             </p>
             <div className="flex items-center gap-4">
               <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
