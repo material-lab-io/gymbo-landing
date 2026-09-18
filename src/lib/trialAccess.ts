@@ -51,7 +51,7 @@ export const TRIAL_LINE = `Gymbo is in ${STATUS_LANGUAGE.toLowerCase()}. Your ${
 export const ACCESS_ROUTE_STEPS = [
   `${ACCESS_CTA_LABEL}. Leave your email or phone number.`,
   "We reach out with your access.",
-  "Install, import your clients, and log your first class.",
+  "Install, add your clients, and log your first class.",
 ];
 
 /**
