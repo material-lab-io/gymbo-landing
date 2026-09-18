@@ -8,12 +8,20 @@
  * hint is the aria-describedby anchor and must stay stable — and that string is
  * content's follow-up, which does not block this bead.
  *
- * NARROWEST AVAILABLE: on main only hero and gallery reveal, so the narrowest
- * rendered field today is 295px. The 245px pricing cluster does not exist until
- * gy-w77x3 lands. Rather than claim a width I cannot produce, this also
- * captures at a 320px VIEWPORT — a real device width the repo already tests
- * elsewhere — which squeezes the same two sentences harder than the pricing
- * cluster would at 375.
+ * NARROWEST AVAILABLE, AND THE ARITHMETIC CORRECTED (2026-09-18). On main only
+ * hero and gallery reveal, so the 245px pricing cluster does not exist until
+ * gy-w77x3 lands and the 245 capture is owed then. This captures at a 320px
+ * VIEWPORT as the nearest available stand-in.
+ *
+ * 🔴 DO NOT READ THE 320 FRAME AS COVERING THE WORST CASE. designer flagged the
+ * substitute as WIDER than what it stands in for; re-measuring shows the
+ * comparison had mixed two units, and the honest numbers are closer than either
+ * reading suggested:
+ *     320 viewport: email field OUTER 280.0px, INNER 240.0px (padding 20/20)
+ *     pricing cluster (gy-w77x3): INNER 245px
+ * Like for like, inner against inner, 320 is 5px tighter — not 34.6px wider, and
+ * not meaningfully "harder". Five pixels is not coverage of a different cluster
+ * in a different container, so the claim is dropped rather than restated.
  */
 import { chromium, devices } from '@playwright/test';
 import { mkdirSync } from 'node:fs';

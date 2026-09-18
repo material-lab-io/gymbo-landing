@@ -202,7 +202,27 @@ export function WaitlistForm() {
         <span
           role="alert"
           className="text-[13px]"
-          style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}
+          // 🔴 DESTRUCTIVE, NOT MUTED — and this PR is what made that necessary
+          // (designer eyes-on of ae2f3ddc6, 2026-09-18).
+          //
+          // Before the hint existed, this was the only small grey line in the
+          // form, so its mere appearance carried the failure. Now a PERMANENT
+          // muted hint sits above the button saying almost the same words, and
+          // measured from the rendered page the two were byte-identical in
+          // presentation: both rgb(184,184,184), both 13px, both weight 400. A
+          // visitor who submitted empty saw one more grey line appear below the
+          // button, styled exactly like the grey line above it, and nothing
+          // said it had not worked.
+          //
+          // --g-color-status-destructive-dark (#ff6961, forge.css) had no user
+          // on this site until now; designer measured it at 7.02:1 on the
+          // #0a0a0a ground behind this span, which clears AA and AAA.
+          //
+          // 🔴 COLOUR IS THE SIGHTED HALF ONLY. It fixes nothing for a screen
+          // reader, where the two sentences are still near-duplicates — that is
+          // content's restring, and colour must never be the sole carrier of an
+          // error (WCAG 1.4.1). role="alert" already carries it non-visually.
+          style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
         >
           Add a phone number or an email so we can reach you.
         </span>

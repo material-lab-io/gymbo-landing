@@ -184,3 +184,69 @@ test('no placeholder is wider than the field that renders it', async ({ page }) 
   );
   expect(over, 'a clipped placeholder loses its tail, which is where the qualifying half of a sentence lives').toEqual([]);
 });
+
+/**
+ * 🔴 THE ALERT MUST NOT LOOK LIKE THE HINT — a state THIS BEAD CREATED.
+ *
+ * designer, eyes-on of ae2f3ddc6: before the hint existed, the failure alert was
+ * the only small grey line in the form, so its mere appearance carried the
+ * failure. Adding a PERMANENT muted hint above the button left the two
+ * byte-identical in presentation — both rgb(184,184,184), 13px, weight 400 — so
+ * a visitor who submitted empty saw one more grey line appear below the button,
+ * styled exactly like the one above it, and nothing said it had not worked.
+ *
+ * Nothing covered this because until the hint shipped there was only one
+ * sentence to see. Same shape as everything else on this bead: a state that
+ * could not exist before the fix, and therefore had no assertion pointed at it.
+ *
+ * It asserts the PROPERTY (the two are visually distinguishable, and the alert
+ * clears contrast) rather than the literal token, so a later palette change
+ * that keeps them distinct does not fail, and one that collapses them does.
+ * Contrast is computed against the BACKGROUND ACTUALLY BEHIND the alert, walked
+ * up the ancestor chain rather than assumed — a hard-coded ground would pass on
+ * a panel whose background moved.
+ */
+test('the failure alert is visually distinct from the permanent hint, and clears AA', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const opened = await openCluster(page, 'hero');
+  expect(opened.revealed, 'positive control: the hero capture must open, or there is no alert to judge').toBe(true);
+
+  const panel = page.locator('[role="group"][aria-label="Request access"]').first();
+  await panel.locator('button[type="submit"]').click();
+  await page.waitForTimeout(500);
+
+  const m = await page.evaluate(() => {
+    const form = document.querySelector('[role="group"][aria-label="Request access"] form')!;
+    const alert = form.querySelector('[role="alert"]');
+    if (!alert) return null;
+    const email = form.querySelector('input[type="email"]') as HTMLInputElement;
+    const hint = document.getElementById(email.getAttribute('aria-describedby')!)!;
+    let bg: string | null = null;
+    let n: Element | null = alert;
+    while (n && n !== document.documentElement) {
+      const c = getComputedStyle(n).backgroundColor;
+      if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') { bg = c; break; }
+      n = n.parentElement;
+    }
+    const parse = (s: string) => s.match(/\d+(\.\d+)?/g)!.slice(0, 3).map(Number);
+    const lum = (rgb: number[]) => {
+      const f = (v: number) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+    };
+    const ratio = (a: number[], b: number[]) => {
+      const L1 = lum(a), L2 = lum(b);
+      const [hi, lo] = L1 > L2 ? [L1, L2] : [L2, L1];
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const ac = getComputedStyle(alert).color, hc = getComputedStyle(hint).color;
+    return { ac, hc, bg, contrast: bg ? ratio(parse(ac), parse(bg)) : null };
+  });
+
+  expect(m, 'positive control: submitting with nothing filled must raise the alert').not.toBeNull();
+  expect(
+    m!.ac,
+    'the failure alert renders in the SAME colour as the permanent hint above it, so a failed submit is indistinguishable from guidance',
+  ).not.toBe(m!.hc);
+  expect(m!.contrast, `the alert must clear AA on the ground behind it (${m!.bg})`).toBeGreaterThanOrEqual(4.5);
+});
