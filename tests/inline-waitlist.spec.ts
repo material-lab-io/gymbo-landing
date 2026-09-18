@@ -215,12 +215,41 @@ test('the capture opens below the fold without the page chasing it (preventScrol
     .toBeGreaterThan(viewport.height - 80);
   const scrollBefore = await page.evaluate(() => window.scrollY);
 
+  // 🔴 gy-14rfs: this assertion FLAKES IN CI ONLY (first attempt scrolled 487px,
+  // retry passed; 0 of 205 local runs reproduce it). A flaky test uploads no
+  // report and the trace is recorded on the RETRY, so the failing attempt left
+  // no evidence. Record who moved the page, so the next flake names its cause
+  // in its own failure message instead of being retried away.
+  await page.evaluate(() => {
+    const w = window as unknown as { __scrollLog: string[] };
+    w.__scrollLog = [];
+    const t0 = performance.now();
+    const who = (el: Element | null) =>
+      el ? `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.getAttribute('name') ? `[name=${el.getAttribute('name')}]` : ''}` : 'null';
+    const log = (s: string) => w.__scrollLog.push(`+${Math.round(performance.now() - t0)}ms ${s}`);
+    const caller = () => (new Error().stack ?? '').split('\n').slice(2, 5).map((l) => l.trim()).join(' | ');
+    window.addEventListener('scroll', () => log(`scroll y=${window.scrollY} active=${who(document.activeElement)}`));
+    const focus = HTMLElement.prototype.focus;
+    HTMLElement.prototype.focus = function (this: HTMLElement, opts?: FocusOptions) {
+      log(`focus(${JSON.stringify(opts ?? null)}) on ${who(this)} from ${caller()}`);
+      return focus.call(this, opts);
+    };
+    const siv = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (this: Element, arg?: boolean | ScrollIntoViewOptions) {
+      log(`scrollIntoView(${JSON.stringify(arg ?? null)}) on ${who(this)} from ${caller()}`);
+      return siv.call(this, arg as ScrollIntoViewOptions);
+    };
+  });
+
   await cta.click();
   await page.waitForTimeout(400);
 
   const boxAfter = (await cta.boundingBox())!;
   const scrollAfter = await page.evaluate(() => window.scrollY);
-  expect(Math.abs(scrollAfter - scrollBefore), 'focusing a below-the-fold field must not scroll the page').toBeLessThanOrEqual(2);
+  const scrollLog = await page.evaluate(() => (window as unknown as { __scrollLog: string[] }).__scrollLog.join('\n'));
+  expect(Math.abs(scrollAfter - scrollBefore),
+    `focusing a below-the-fold field must not scroll the page\n--- scroll/focus log (gy-14rfs) ---\n${scrollLog || '(no scroll, focus or scrollIntoView recorded)'}`,
+  ).toBeLessThanOrEqual(2);
   expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
 });
 
