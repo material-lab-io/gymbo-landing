@@ -126,6 +126,12 @@ jobs:
         # positive control and exits 2 if it cannot read forge.css at all —
         # a zero it cannot substantiate is a failure, not a pass.
 
+      - name: "gy-3jb0t: /r/<token> forwards the token, not the literal ':token'"
+        run: node --test tests/referral-redirect.test.mjs
+        # The _redirects rule it replaces sent utm_campaign=:token for EVERY
+        # referral, because Pages does not substitute placeholders in a query
+        # string. Found by the gy-ufxgo AC4 prod readback, 2026-09-18.
+
       - name: "gy-0v33y: the lead-source rule is bounded and never guesses"
         run: node --test tests/attribution-source.test.mjs
         # AC5/AC7. public.waitlist.source carried DEFAULT 'getgymbo.com' and was
