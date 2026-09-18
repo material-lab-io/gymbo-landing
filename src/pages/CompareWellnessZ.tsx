@@ -3,7 +3,7 @@ import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { InlineWaitlist } from "../components/InlineWaitlist";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, waitlistScrollCtaProps } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, WaitlistPlainButton } from "../forge-ui";
 import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, STATUS_LANGUAGE } from "../lib/trialAccess";
 
 /* ============================================================================
@@ -105,10 +105,15 @@ export function CompareWellnessZ() {
           <button onClick={() => scrollToId("faq")} className="text-[14px] transition-colors" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 500 }}>FAQ</button>
         </div>
 
+        {/* gy-w77x3 D3 — same treatment as the landing nav, for the same reason:
+            a waitlist control that scrolls on one page and reveals on another is
+            the inconsistency Damini reported, wearing a different URL. */}
         <div className="flex items-center gap-2.5">
-          <button {...waitlistScrollCtaProps("nav")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-            Request access
-          </button>
+          <InlineWaitlist dismissible reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
+            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+              Request access
+            </WaitlistPlainButton>
+          </InlineWaitlist>
         </div>
       </nav>
 
