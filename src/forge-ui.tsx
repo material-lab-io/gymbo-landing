@@ -341,12 +341,12 @@ export function ctaVisual(variant: "primary" | "secondary", { dark, size = "md" 
   const sizing = size === "lg" ? "h-14 px-7 text-[15px]" : "h-12 px-6 text-[14px]";
   if (variant === "primary") {
     return {
-      className: `inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sizing}`,
+      className: `inline-flex items-center justify-center gap-2 rounded-full font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${sizing} ${dark ? "gy-focus-ring-dark" : "gy-focus-ring-light"}`,
       style: { background: dark ? F.marigold : F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS } as React.CSSProperties,
     };
   }
   return {
-    className: `inline-flex items-center justify-center gap-2 ${sizing} rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2`,
+    className: `inline-flex items-center justify-center gap-2 ${sizing} rounded-full transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${dark ? "gy-focus-ring-dark" : "gy-focus-ring-light"}`,
     style: {
       background: "transparent",
       color: dark ? F.bone : F.ink,

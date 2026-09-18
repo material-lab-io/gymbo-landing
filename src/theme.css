@@ -99,6 +99,21 @@
   outline: 2px solid var(--g-color-neutral-dark-fg);
   outline-offset: 2px;
 }
+/* gy-w77x3 B2c -- the focus ring for a CTA on a LIGHT surface.
+   Found by capturing, not by the test: after a keyboard dismiss the opener
+   matched :focus-visible and NOTHING was drawn. Every amber CTA carried
+   focus-visible:outline-none + focus-visible:ring-2, and the ring is a
+   box-shadow, which the element's inline style={{ boxShadow: SHADOW.cta }}
+   overrides. So no amber CTA on the site had a visible focus indicator
+   (WCAG 2.4.7). An OUTLINE is a different property from box-shadow, so the
+   elevation shadow can no longer erase it.
+   Charcoal on the bone page: #0a0a0a vs #fafaf7 = 19.3:1. The 2px offset puts
+   bone between the ring and the amber fill, so the ring's only adjacency is
+   the page. The dark-surface twin is .gy-focus-ring-dark above (bone, 17.3:1). */
+.gy-focus-ring-light:focus-visible {
+  outline: 2px solid var(--g-color-neutral-dark-0);
+  outline-offset: 2px;
+}
 .gy-focus-ring-on-cta:focus-visible {
   outline: none;
   box-shadow:

@@ -15,7 +15,11 @@ import { test, expect, type Page } from '@playwright/test';
  * also true of <body>:
  *  - B1 counts buttons INSIDE THE FIXED BAR, so an off-screen pricing button
  *    with the same label cannot satisfy or fail it.
- *  - B2c asserts the focused element IS the opener AND matches :focus-visible.
+ *  - B2c asserts the focused element IS the opener, matches :focus-visible,
+ *    AND has a ring actually DRAWN (computed outline, >= 2px). The third arm
+ *    exists because the first capture round showed :focus-visible true with
+ *    nothing on screen: the Tailwind ring is a box-shadow and the CTA's inline
+ *    elevation shadow overwrote it. The state was right and the pixels were not.
  *    A dismiss that drops focus to <body> fails the first; a focus() on a node
  *    that had not rendered yet (the B1 ordering trap) leaves focus on <body>
  *    too, so it fails the same way rather than passing silently.
@@ -88,9 +92,12 @@ test.describe('sticky bar (phone only)', () => {
     await expect
       .poll(() => page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
-        return el ? `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}` : 'none';
+        if (!el) return 'none';
+        const cs = getComputedStyle(el);
+        const drawn = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
+        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${drawn}`;
       }))
-      .toBe('footer|true');
+      .toBe('footer|true|ring=true');
   });
 });
 
@@ -111,9 +118,12 @@ for (const url of ['/', '/compare/gymbo-vs-wellnessz/']) {
     await expect
       .poll(() => page.evaluate(() => {
         const el = document.activeElement as HTMLElement | null;
-        return el ? `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}` : 'none';
+        if (!el) return 'none';
+        const cs = getComputedStyle(el);
+        const drawn = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
+        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${drawn}`;
       }))
-      .toBe('nav|true');
+      .toBe('nav|true|ring=true');
   });
 }
 
