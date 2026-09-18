@@ -19,7 +19,7 @@ import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { useKeyboardInset } from "./lib/keyboardInset";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton } from "./forge-ui";
+import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
 import {
   TRIAL_DAYS,
   BILLING_CHANNEL,
@@ -279,7 +279,7 @@ export default function App() {
             rediscovered. It still inherits K1/K2 — a focused field under a
             raised keyboard is the same hazard wherever the cluster lives. */}
         <div className="flex items-center gap-2.5">
-          <InlineWaitlist reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
+          <InlineWaitlist dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
             <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
               Request access
             </WaitlistPlainButton>
@@ -451,8 +451,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex - 1)}
                 disabled={galleryIndex === 0}
                 aria-label="Show previous Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
-                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+                {...darkIconButton("h-10 w-10")}
               >
                 <ChevronLeft size={18} aria-hidden="true" />
               </button>
@@ -464,8 +463,7 @@ export default function App() {
                 onClick={() => scrollGalleryTo(galleryIndex + 1)}
                 disabled={galleryIndex === SCREENS.length - 1}
                 aria-label="Show next Gymbo screen"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]"
-                style={{ background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 }}
+                {...darkIconButton("h-10 w-10")}
               >
                 <ChevronRight size={18} aria-hidden="true" />
               </button>
@@ -809,7 +807,7 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
         transform: show ? "translateY(0)" : "translateY(120%)",
       }}
     >
-      <InlineWaitlist above reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
+      <InlineWaitlist above dismissible hideTriggerWhileRevealed reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
         <PrimaryCTA size="lg" className="w-full" location="footer" />
       </InlineWaitlist>
     </div>

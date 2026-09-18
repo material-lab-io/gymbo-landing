@@ -470,6 +470,27 @@ export function useWaitlistCtaProps(location: CtaLocation) {
  * its own, which is what lets the nav and pricing buttons keep their hand-built
  * appearance while gaining the behaviour.
  */
+/**
+ * gy-w77x3 B2 -- the round icon button on a charcoal ground, written ONCE.
+ *
+ * It existed only as a hand-copied className + style on the two gallery arrows,
+ * with its border as a raw rgba literal both times. The overlay close control
+ * needs the same treatment, and a third hand copy is how the three drift apart
+ * (and adds a third copy of the literal). So the treatment moves here and every
+ * user spreads it. The gallery arrows render byte-identically: same classes,
+ * same style object, the size is the only thing a call site chooses.
+ *
+ * Size is a parameter because the arrows are 40px and the close control must be
+ * 44px (designer B2a: a 44px target on an overlay's only way out). The arrows
+ * keep 40px: resizing them is a visual change this bead was not asked for.
+ */
+export function darkIconButton(size: "h-10 w-10" | "h-11 w-11") {
+  return {
+    className: `inline-flex ${size} items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]`,
+    style: { background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 } as CSSProperties,
+  };
+}
+
 export function WaitlistPlainButton({
   location,
   className = "",

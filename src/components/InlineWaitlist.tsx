@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { F } from "../forge-ui";
+import { X } from "lucide-react";
+import { F, darkIconButton } from "../forge-ui";
 import { WaitlistForm } from "./WaitlistForm";
 import { WaitlistRevealContext } from "../lib/waitlistReveal";
 
@@ -47,6 +48,8 @@ export function InlineWaitlist({
   reducedMotion = false,
   above = false,
   reclaimGutter = true,
+  dismissible = false,
+  hideTriggerWhileRevealed = false,
   onRevealedChange,
 }: {
   children: React.ReactNode;
@@ -104,13 +107,48 @@ export function InlineWaitlist({
    * the state is reported and the bar decides.
    */
   onRevealedChange?: (revealed: boolean) => void;
+  /**
+   * gy-w77x3 B2 -- an OVERLAY panel gets a way out: a visible 44px close
+   * control and Escape.
+   *
+   * 🔴 OVERLAYS ONLY, AND THE CALL SITE SAYS WHICH. The nav panel is absolute
+   * inside a sticky nav and the sticky bar's panel is fixed to the viewport, so
+   * once opened they ride over the page for the whole scroll; with no close they
+   * could never be dismissed. The inline panels (hero, gallery, pricing) sit in
+   * the page flow and scroll away with it, so they have no close control, and
+   * that is correct: a close there would be a control with nothing to rescue
+   * the visitor from. Same reasoning as `above`: the call site knows, the
+   * component does not guess.
+   *
+   * Still NOT a modal: no focus trap, no scroll lock, no aria-modal. The one
+   * popup cost these overlays DO pay is return-focus-on-dismiss (below).
+   */
+  dismissible?: boolean;
+  /**
+   * gy-w77x3 B1 -- unmount the trigger while the panel is open.
+   *
+   * For the sticky bar only. Its panel opens UPWARD, directly above the pill,
+   * so with both rendered there were two identical orange "Request access"
+   * buttons about 20px apart, and the one a thumb reached first (the pill) did
+   * not submit. Hiding the pill leaves the panel's submit as the one "Request
+   * access" on screen, and that submit is WaitlistForm's single submit path.
+   * Making the pill submit instead would have needed a second submit path, and
+   * a second path is how a lead silently stops getting the confirmation mail
+   * and team alert. Unmounted, not visually hidden: designer's B1 counts the
+   * rendered page, and a hidden button is still a button to a screen reader.
+   */
+  hideTriggerWhileRevealed?: boolean;
 }) {
   const [revealed, setRevealed] = useState(false);
   const panelRef = useRef<HTMLDivElement | null>(null);
+  const clusterRef = useRef<HTMLDivElement | null>(null);
 
-  // 🔴 IDEMPOTENT ON PURPOSE. A second tap on the CTA must not re-run the focus
-  // effect and yank the caret out of a field the visitor is halfway through
-  // typing into. `revealed` only ever goes false -> true.
+  // 🔴 IDEMPOTENT ON PURPOSE. A second tap on the CTA while the panel is open
+  // must not re-run the focus effect and yank the caret out of a field the
+  // visitor is halfway through typing into. (Before gy-w77x3 B2 this comment
+  // also said the state only ever goes false -> true. A dismissible overlay
+  // now closes it, so that sentence stopped being true. The guarantee it was
+  // standing in for -- a repeat tap never re-fires focus -- is unchanged.)
   const reveal = useCallback(() => {
     setRevealed((was) => {
       if (was) return was;
@@ -132,6 +170,39 @@ export function InlineWaitlist({
       return true;
     });
   }, []);
+
+  // gy-w77x3 B2c -- closing returns focus to the control that opened the panel.
+  // Without it a keyboard or screen-reader visitor is left on a node that has
+  // just unmounted, and focus falls back to the top of the document.
+  //
+  // 🔴 THE OPENER MAY NOT EXIST YET, and that is the trap in B1. For the sticky
+  // bar the opener is the pill that was unmounted while the panel was open. It
+  // comes back in the render this state change causes, so focusing it now
+  // would find nothing, and focus() on nothing throws nothing and logs nothing.
+  // So wait for the frame after the re-render, the same deferral reveal() uses
+  // for the first field, and look again one frame later if it is still missing.
+  const dismiss = useCallback(() => {
+    setRevealed(false);
+    const focusOpener = (tries: number) =>
+      requestAnimationFrame(() => {
+        const opener = clusterRef.current?.querySelector<HTMLElement>('[data-cta="waitlist"]');
+        if (opener) opener.focus({ preventScroll: true });
+        else if (tries > 0) focusOpener(tries - 1);
+      });
+    focusOpener(1);
+  }, []);
+
+  // Escape closes an open overlay. Listened on the document rather than the
+  // panel, because the visitor may have tabbed or scrolled away from the panel
+  // while it still rides over the page, and Escape should still close it.
+  useEffect(() => {
+    if (!dismissible || !revealed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") dismiss();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [dismissible, revealed, dismiss]);
 
   // Built once and PLACED per `above`, rather than written twice. Two copies of
   // one panel is how a fix lands on the below variant and quietly not the above
@@ -170,6 +241,22 @@ export function InlineWaitlist({
             className={`${reclaimGutter ? "-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full" : "w-[min(calc(100vw-32px),360px)]"} ${above ? "mb-3" : "mt-5"} max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
             style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)" }}
           >
+            {dismissible && (
+              // The close row eats into the panel's own padding (-mt/-mr) so
+              // the 44px target costs the form as little height as possible
+              // without overlapping the first field.
+              <div className="flex justify-end -mt-3 -mr-3 mb-1">
+                <button
+                  type="button"
+                  onClick={dismiss}
+                  aria-label="Close"
+                  data-waitlist-close=""
+                  {...darkIconButton("h-11 w-11")}
+                >
+                  <X size={18} aria-hidden="true" />
+                </button>
+              </div>
+            )}
             <WaitlistForm />
           </div>
   ) : null;
@@ -184,9 +271,9 @@ export function InlineWaitlist({
 
   return (
     <WaitlistRevealContext.Provider value={{ revealed, reveal }}>
-      <div className={className}>
+      <div ref={clusterRef} className={className}>
         {above && panel}
-        {children}
+        {!(hideTriggerWhileRevealed && revealed) && children}
         {!above && panel}
       </div>
     </WaitlistRevealContext.Provider>

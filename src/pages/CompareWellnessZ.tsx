@@ -109,7 +109,7 @@ export function CompareWellnessZ() {
             a waitlist control that scrolls on one page and reveals on another is
             the inconsistency Damini reported, wearing a different URL. */}
         <div className="flex items-center gap-2.5">
-          <InlineWaitlist reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
+          <InlineWaitlist dismissible reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
             <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
               Request access
             </WaitlistPlainButton>

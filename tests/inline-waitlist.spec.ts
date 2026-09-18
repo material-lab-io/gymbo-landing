@@ -674,6 +674,10 @@ test('clicking nav and pricing "Request access" emits waitlist_cta_click with it
   });
   await page.goto('/');
   await page.locator('[data-cta="waitlist"][data-cta-location="nav"]').click();
+  // Since gy-w77x3 the nav REVEALS an overlay panel, which on a phone covers
+  // the page below it -- including this pricing button. Close it the way a
+  // visitor would (B2) before tapping on; the tracking under test is unchanged.
+  await page.keyboard.press('Escape');
   await page.locator('[data-cta="waitlist"][data-cta-location="pricing"]').first().click();
   const tracked = await page.evaluate(() => (window as any).__tracked);
   expect(tracked).toEqual([
