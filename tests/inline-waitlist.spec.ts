@@ -209,19 +209,11 @@ test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level
   // and disagree with; an accidental one is a line nobody knew was there. Each
   // entry names the file, a substring that identifies the specific control, and
   // WHY it is not a waitlist CTA.
-  const ALLOWED = [
-    {
-      file: 'src/App.tsx',
-      marker: '>Support<',
-      why:
-        'The footer-nav "Support" button. It is not a waitlist CTA and must not ' +
-        'become one: it wears a different label, fires no waitlist_cta_click, and ' +
-        'sends someone with a question to the only contact surface the site has. ' +
-        'Routing it through the shared hook would put it in the funnel numbers and ' +
-        'reveal a signup capture to someone asking for help. (Whether "Support" ' +
-        'should point at the request-access form at all is a content question, ' +
-        'raised separately — it is not this gate\'s to decide.)',
-    },
+  const ALLOWED: { file: string; marker: string; why: string }[] = [
+    // The footer "Support" entry was removed by #190 (App Review 1.5): "Support"
+    // now links to the support CONTACT (#support), not to the request-access
+    // form, so it no longer calls scrollToId at all. That settles the content
+    // question this entry left open.
     // PageShell.tsx's header "Request access" (was "Get Gymbo") is deliberately NOT here and needs no
     // entry: it is an <a href="/#cta"> that NAVIGATES. It does not call
     // scrollToId, so it is out of this gate's scope by construction, and
