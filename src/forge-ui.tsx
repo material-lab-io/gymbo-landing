@@ -483,10 +483,16 @@ export function useWaitlistCtaProps(location: CtaLocation) {
  * Size is a parameter because the arrows are 40px and the close control must be
  * 44px (designer B2a: a 44px target on an overlay's only way out). The arrows
  * keep 40px: resizing them is a visual change this bead was not asked for.
+ *
+ * 🔴 THE RING IS AN OUTLINE (gy-focus-ring-dark), found on the post-merge LIVE
+ * Tab pass: the Tailwind ring is a box-shadow and the inline elevation shadow
+ * below overwrote it, so the close control and both gallery arrows matched
+ * :focus-visible and drew nothing. Every user of this treatment sits on a
+ * charcoal ground, so the bone ring (17.3:1 against it) is the right one.
  */
 export function darkIconButton(size: "h-10 w-10" | "h-11 w-11") {
   return {
-    className: `inline-flex ${size} items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)]`,
+    className: `inline-flex ${size} items-center justify-center rounded-full transition-transform hover:-translate-y-px active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--g-color-neutral-dark-0)] gy-focus-ring-dark`,
     style: { background: F.charcoalCard2, border: "1px solid rgba(240,240,235,0.22)", color: F.bone, boxShadow: SHADOW.elevation1 } as CSSProperties,
   };
 }
