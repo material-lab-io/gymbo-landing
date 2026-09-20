@@ -14,13 +14,9 @@ import { test, expect, type Locator, type Page } from '@playwright/test';
  *    (.reveal-on-scroll in App.tsx). A capture that doesn't actually scroll a
  *    section into view renders it EMPTY.
  *
- * gy-k095b: there are no <video> elements on the site any more. Under the
- * founder's no-bezel rule (gy-r4nzh) the pillar demo clips — which had the
- * device frame and captions burnt into the video — were replaced by real
- * screenshots in bezel-less ScreenCards. That deletes this file's single
- * largest flake source (gy-cjdtw: a looping video's decoded frame is
- * non-deterministic across the 3 gt2 runners), along with the poster-swap
- * workaround it needed. Everything captured now is static images and DOM.
+ * Pillars use motion in production. Visual snapshots freeze those videos on
+ * their matching posters through reduced motion, keeping the baseline stable
+ * while smoke tests independently prove real playback advances.
  */
 
 const SECTIONS = [
@@ -82,11 +78,12 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
       c.scrollLeft = 0;
     });
   });
+  await page.waitForTimeout(200); // let the position cue resync to the first card
 }
 
 /** Wait for every <img> inside the locator to finish loading (real natural
- * size, not a still-pending/broken placeholder) — covers every ScreenCard on
- * the page: the hero trio, the four pillar screens, and the gallery strip. */
+ * size, not a still-pending/broken placeholder) — covers the static hero,
+ * reduced-motion pillar posters, and the gallery strip. */
 async function waitImagesLoaded(locator: Locator) {
   await locator.evaluate((el) =>
     Promise.all(
@@ -109,15 +106,36 @@ async function waitImagesLoaded(locator: Locator) {
  * only, so layout/scroll offsets are unaffected) before capturing. */
 async function neutralizeFixedChrome(page: Page) {
   await page.addStyleTag({
-    content: `
-      nav[aria-label="Main navigation"] { visibility: hidden !important; }
-      .fixed.bottom-0 { visibility: hidden !important; }
-    `,
+    content: `[data-fixed-chrome] { visibility: hidden !important; }`,
   });
+
+  // 🔴 A NEUTRALIZER THAT MATCHES NOTHING FAILS SILENTLY, AND IT DID — gy-w77x3,
+  // 2026-09-18. This used to select `.fixed.bottom-0`. D1 moved `bottom-0` out
+  // of the sticky bar's className and into its inline style (same computed 0px;
+  // the offset now tracks the keyboard), the selector stopped matching, and the
+  // bar painted into the footer-cta capture: a 27,712px / 12% diff that looked
+  // exactly like an intentional design change. It would have been RATIFIED by a
+  // baseline refresh — permanently baking a fixed bar into the reference, and
+  // leaving every other tall section's capture ghosted too.
+  //
+  // Two changes, and the second is the one that matters. The selector is now a
+  // dedicated attribute, so it survives any restyling of HOW the position is
+  // written. And the match is COUNTED: hiding is best-effort and CSS that
+  // selects nothing throws nothing, so the only way this can fail loudly is if
+  // the test asserts it found what it came for.
+  const found = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-fixed-chrome]')].map((el) => el.getAttribute('data-fixed-chrome')),
+  );
+  expect(
+    found,
+    'the fixed-chrome neutralizer matched nothing to hide — its hook was renamed or dropped, and every section capture below is now ghosted with the nav and/or the sticky bar',
+  ).toContain('nav');
+  expect(found.length, 'expected at least the nav to carry data-fixed-chrome').toBeGreaterThan(0);
 }
 
 test.describe('visual baselines', () => {
   test.beforeEach(async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await neutralizeFixedChrome(page);
   });
@@ -139,17 +157,14 @@ test.describe('visual baselines', () => {
   // elliptical-vs-circular corner Kaushik flagged, which gy-oooc9 missed by
   // checking the number instead of the curve).
   //
-  // gy-k095b: the aperture is gone with the device frame, but the corner is
-  // still the right place to look — it is where a bezel would come BACK
-  // visually. This clip now gates the ScreenCard's own contract: the Forge
-  // radius actually clips the screenshot, and there is no frame edge, notch
-  // or device rail between the card boundary and the app's own pixels.
+  // The approved photoreal frame restores its aperture; this clip keeps the
+  // physical frame edge and current screenshot crop under visual review.
   // Runs in both projects (desktop + mobile).
   test('gallery-card-corner', async ({ page }) => {
     const gallery = page.getByTestId('gallery-section');
     await revealSection(page, gallery);
     await waitImagesLoaded(gallery);
-    const card = gallery.getByTestId('screen-card').first();
+    const card = gallery.getByTestId('gallery-device-art').first();
     await expect(card).toBeVisible();
     // revealSection ends scrolled to the section BOTTOM, so pull the first card
     // fully back into the viewport before clipping its top-left corner.

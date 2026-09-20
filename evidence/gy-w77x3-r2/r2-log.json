@@ -1,0 +1,280 @@
+[
+  {
+    "id": "E1",
+    "scrollY": 974,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BODY",
+      "location": null,
+      "focusVisible": false
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E2",
+    "scrollY": 974,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "submit"
+    ],
+    "barPillInDom": false
+  },
+  {
+    "id": "E3",
+    "scrollY": 974,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "submit"
+    ],
+    "barPillInDom": false
+  },
+  {
+    "id": "E4",
+    "scrollY": 0,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E7",
+    "scrollY": 812,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E9-nav",
+    "scrollY": 0,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "nav",
+      "focusVisible": false
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E9f-nav",
+    "scrollY": 0,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "nav",
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E4@1280",
+    "scrollY": 0,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E7@1280",
+    "scrollY": 800,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E9-nav@1280",
+    "scrollY": 0,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "nav",
+      "focusVisible": false
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E9f-nav@1280",
+    "scrollY": 0,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "nav",
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E8",
+    "scrollY": 1786,
+    "panelsMounted": 1,
+    "close": {
+      "name": "Close",
+      "w": 44,
+      "h": 44
+    },
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "submit"
+    ],
+    "barPillInDom": false
+  },
+  {
+    "id": "E9-sticky",
+    "scrollY": 974,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "footer",
+      "focusVisible": false
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E9f-sticky",
+    "scrollY": 974,
+    "panelsMounted": 0,
+    "close": null,
+    "focus": {
+      "tag": "BUTTON",
+      "location": "footer",
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "E5",
+    "scrollY": 8392,
+    "panelsMounted": 1,
+    "close": null,
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  },
+  {
+    "id": "H1",
+    "panelInnerWidth": 325,
+    "hint": {
+      "text": "Add a phone number or an email: either one is enough.",
+      "scrollW": 285,
+      "clientW": 285,
+      "lines": 2
+    }
+  },
+  {
+    "id": "E5@1280",
+    "scrollY": 7418,
+    "panelsMounted": 1,
+    "close": null,
+    "focus": {
+      "tag": "INPUT",
+      "location": null,
+      "focusVisible": true
+    },
+    "barRequestAccess": [
+      "pill"
+    ],
+    "barPillInDom": true
+  }
+]

@@ -17,7 +17,7 @@ gate — it does not require a human to notice anything.
 ## Scope: which screenshots are gated
 
 Only the master files actually composited into the live site are gated —
-today, the nine entries in `SCREENS` in `scripts/screens-map.mjs`. Both
+today, the eight entries in `SCREENS` in `scripts/screens-map.mjs`. Both
 `scripts/optimize-gallery.mjs` (build) and
 `scripts/check-screenshot-freshness.mjs` (this gate) import that single
 map, so the gated set always matches what actually ships — no separate
@@ -26,12 +26,13 @@ are not currently rendered anywhere and are not gated (add them to
 `screens-map.mjs`'s `SCREENS` map when they go live, and they'll pick up
 the gate automatically — as long as a manifest entry exists for them).
 
-The gated set grew from six to nine on 2026-08-19 (gy-k095b). Under the
-founder's no-bezel rule (gy-r4nzh) the hero and the four pillar visuals
-stopped being composed device art and pre-composed demo clips and became
-real screenshots in bezel-less cards — so three more masters
+The gated set grew on 2026-08-19 (gy-k095b) when the four pillar visuals became
+real screenshots in screen-only cards. Founder correction gy-dyu6r.9 later
+restored the approved photoreal hero, motion pillars, and framed gallery without
+shrinking the conservative freshness scope, so the additional masters
 (`hero-02-who-owes-balance.png`, `hero-03-log-payment.png`,
-`workouts-04-builder.png`) now render on the live site and are in scope.
+`workouts-04-builder.png`) remain source inputs for approved site media and stay
+in scope.
 
 ### The gate was fail-open from 2026-08-12 to 2026-08-19 (fixed)
 

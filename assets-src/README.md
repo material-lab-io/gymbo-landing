@@ -1,30 +1,31 @@
-# assets-src — device-framed source art, NOT served
+# assets-src — device-art sources and provenance
 
-Everything in here is deliberately OUTSIDE `public/`, so Vite never copies it
-into `dist/` and none of it can reach getgymbo.com.
+Everything here remains outside `public/`, so Vite does not copy source files
+into `dist/`. Selected, optimized derivatives are promoted to `public/mockups/`
+only when the approved composition requires them.
 
 ## Why
 
-Founder rule gy-r4nzh (Kaushik, 2026-08-14, standing, site-wide): getgymbo.com
-shows REAL app screenshots with NO phone bezels or device frames. "Bezels give
-away AI" — the device chrome reads as AI-generated/fake.
+The source directory preserves the licensed artwork and the reproducible
+composition pipeline. Founder correction gy-dyu6r.9 (2026-08-24) restored the
+complete photoreal system: corrected hero art, framed gallery screenshots, and
+the four approved light/dark pillar demo scenes.
 
-These files all carry a device frame, so none of them may ship:
+Contents:
 
 - `mockups/` — the three-iPhone MockupWorld raster (`hero-three-panel*`) and the
-  punched single-phone frame (`iphone-frame-single*`) the old hero and gallery
-  composited into.
-- `demos/` — the pre-composed pillar demo clips. Each `.mp4` is a fully-composed
-  scene with the bezel, a title upper-third and a caption lower-third burnt into
-  the video, so they cannot be cropped into compliance. They are kept as the
-  SOURCE for the screen-only motion loops (gy-39v87), which will re-render the
-  same journeys with no device and no baked captions.
+  punched single-phone frame (`iphone-frame-single*`). Approved optimized
+  derivatives listed in PR #97 ship from `public/mockups/`; source-size and
+  alternate PNG exports remain here only.
+- `demos/` — the pre-composed pillar demo clips and reduced-motion posters. The
+  approved log-payment, schedule, branded-statement, and build-workout light/
+  dark variants are promoted byte-for-byte to `public/demos/`.
 - `hero-demo.mp4` / `hero-demo-poster.png` — the old stand-in hero clip.
 - `legacy-bezel-pipeline/` — was `scripts/gy-7yhkh/`, the builder that composited
-  screenshots into the mockup and punched the frame aperture. Kept for the
-  provenance record (it documents how the source SVG's transforms were composed);
-  it must not be re-wired into the build.
+  screenshots into the mockup and punched the frame aperture. It is preserved
+  as the licensed composition/provenance pipeline and is run deliberately when
+  the approved hero art must be refreshed from current screenshot masters.
 
-`scripts/check-no-bezel.mjs` fails CI if any of this reappears under `src/` or in
-a built `dist/`. It deliberately does NOT scan this directory — storing the
-source art is fine, shipping it is not.
+`scripts/check-photoreal-device.mjs` fails CI unless the exact corrected hero,
+all demo/poster variants, gallery frame, measured mask geometry, rendered
+contract, and self-hosted workflow policy are present in source and build.

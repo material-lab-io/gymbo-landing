@@ -15,52 +15,225 @@ on:
 # Serializes every run of THIS workflow on the gt2 host (gy-5e9u6) so two main
 # deploys never race the actual `wrangler pages deploy`. cancel-in-progress is
 # deliberately false — queue runs, never cancel an in-flight main deploy.
+#
+# 🔴 THE GROUP IS KEYED PER-REF (gy-vewd8). It used to be the constant
+# "gymbo-landing-deploy", which made it REPO-WIDE: every branch competed in one
+# queue. cancel-in-progress:false protects a RUNNING run, but GitHub keeps only
+# the newest PENDING run per group and cancels the rest — across branches. So a
+# push on any branch silently cancelled another PR's `deploy`, which is the SOLE
+# required context on main. A cancelled required check is worse than a red: it
+# has no failing step to read, it is ABSENT from the PR's check rollup rather
+# than failing in it, and nothing ever re-runs it. Measured 2026-09-06: PR #109's
+# run 34012197921 (head 38966ecd) was created 04:42:50Z and cancelled 04:45:10Z
+# with ZERO JOBS — evicted while pending by a run created 04:45:09Z on an
+# unrelated branch. Last 60 Deploy runs: 33 success, 16 failure, 11 CANCELLED;
+# 8 cancellations across 5 branches in one 34-minute window on 08-31.
+# Per-ref preserves the invariant this group was written for exactly: main is
+# still serialized against itself, and a PR run publishes nothing anyway (the
+# deploy step below is `if: github.ref == 'refs/heads/main'`).
+# Do NOT re-flatten this to a constant, and do NOT "fix" a queue wait by setting
+# cancel-in-progress — the main-deploy race (gy-5e9u6) is real.
+#
 # NOTE (gy-cjdtw): this does NOT prevent the smoke-gate port race, because that
 # collision was cross-workflow (a deploy's Playwright preview vs a concurrent
 # refresh-visual-baselines run, both on a fixed :4173). The gate below now binds
 # per-run FREE ports for both the Pages emulator and the preview, which removes
 # the race regardless of concurrency.
+# gy-ellyl (pm ruling, 2026-09-18) — KEYED PER HEAD SHA, NOT PER REF.
+#
+# THE DEFECT per-ref left behind: on a pull_request event github.ref is
+# refs/pull/<n>/merge, which is IDENTICAL for every sha of that PR. So a PR
+# pushed N times put N full run-sets in ONE group, and with
+# cancel-in-progress:false they serialize NEWEST LAST — the only run anyone
+# would read waits behind every superseded one. Measured on #162 at 00:1xZ:
+# nine queued runs across four shas, the current merge-ref set at the BACK.
+# It is not only your own pushes either: merging ANY pull request moves every
+# open PR's merge ref and queues a fresh set behind the dead ones.
+#
+# 🔴 THE FIX DELIBERATELY DOES NOT TOUCH CANCELLATION, and that is the whole
+# point of it. Flipping cancel-in-progress would reintroduce the fail-open
+# gy-vewd8 closed on 2026-09-07: a CANCELLED required check reads as ABSENT,
+# not failed — "a reviewer saw two green checks and a hole where the required
+# check should have been". Re-keying frees the queue with ZERO change to how
+# the required check reports. Recovering the minutes the stale shas still burn
+# needs cancellation and is gated on a demonstration (pm: push twice on a
+# throwaway PR and show what the CURRENT head carries), not on an argument.
+#
+# THE MAIN INVARIANT ABOVE IS PRESERVED BY THE FALLBACK: a push to main has no
+# pull_request context, so the expression yields github.ref = refs/heads/main
+# and main is still serialized against itself. That is the race (gy-5e9u6) the
+# warning above is about, and this change does not go near it.
 concurrency:
-  group: gymbo-landing-deploy
+  group: gymbo-landing-deploy-${{ github.event.pull_request.head.sha || github.ref }}
   cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: [self-hosted, gt2]
     steps:
+      # fetch-depth: 0 (gy-7anl3) — the screenshot gate needs to know which
+      # artifacts THIS change touches, and a depth-1 clone cannot answer that.
+      # The gate exits 1 rather than guessing, so a shallow clone here would
+      # block every deploy instead of silently downgrading. Small repo; cheap.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Approved self-hosted runner guard
+        run: node scripts/check-workflow-runners.mjs
+
+      # No `cache: npm`: on the persistent gt2 runners this step cost a median
+      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
+      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
+      # already warm on local disk, so the Actions cache was restoring a cache
+      # on top of a cache over the network. See gy-2vvun. Do not re-add.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - run: npm ci
 
-      # Screenshot staleness gate (gy-a73px.15): every screenshot actually
-      # rendered on the site must have a manifest entry in
-      # public/screens/manifest.json that is verified and not older than
-      # maxAgeDays — see public/screens/MANIFEST.md. Runs before the build
-      # so a stale/missing manifest fails fast, before the full build +
-      # smoke gate. Mechanical, fail-closed replacement for a human noticing
-      # stale screenshots on the live site (happened twice: 2026-08-06,
-      # 2026-08-08).
-      - name: Screenshot staleness gate
-        run: node scripts/check-screenshot-freshness.mjs
+      # Fast typecheck, deliberately the FIRST thing after install (gy-nqryp).
+      #
+      # WHY IT EXISTS: three times on 2026-09-07 a malformed JSX block comment
+      # (an unclosed `{/*`) reached CI and killed this job at `npm run build`.
+      # `tsc` is the third command inside that build, behind optimize-gallery
+      # and after every gate below, so a one-character syntax error was costing
+      # a full runner slot on a saturated 3-runner pool to report something
+      # `tsc` answers in ~1.4s.
+      #
+      # WHY A STEP AND NOT A SEPARATE JOB: a job would claim a SECOND runner
+      # slot on every push, which is the same resource gy-2vvun just spent
+      # 17 hrs/week reclaiming. A step costs seconds and no extra slot, and
+      # still satisfies "fails before the expensive gates".
+      #
+      # It runs the SAME `tsc -b` the build runs, so it cannot drift from what
+      # the build enforces. Locally: `npm run typecheck` (~1.4s) before any
+      # push touching src/**, and read the exit code DIRECTLY, never through a
+      # pipe — `| tail` reports tail's status and a failed build reads green.
+      - name: Typecheck (fails fast, before the expensive gates)
+        run: npm run typecheck
 
-      # No-bezel gate (gy-k095b, founder rule gy-r4nzh): the site shows REAL app
-      # screenshots with NO phone bezels or device frames — "bezels give away AI".
-      # Runs twice: here against src/ so an authored regression fails fast, and
-      # again after the build against dist/, because the old frame art lived in
-      # public/ and Vite copies that into dist/ with no source file referencing
-      # it — a src-only scan would pass while the bezel shipped.
-      - name: No-bezel gate (source)
-        run: node scripts/check-no-bezel.mjs
+      # gy-a2xps.9 — the public media surface. Both steps are STATIC (no network,
+      # no database, no browser), so they run before the build and fail in
+      # seconds rather than after it.
+      - name: "gy-a2xps.9: Forge token drift on the media pages"
+        run: node scripts/check-forge-token-drift.mjs
+        # functions/m/*.js inline their design tokens because a Pages Function
+        # cannot import the hashed Vite bundle. That second copy is CHECKED here
+        # against src/forge/forge.css, so drift is a red test rather than a public
+        # page that quietly stops looking like Gymbo. The script carries its own
+        # positive control and exits 2 if it cannot read forge.css at all —
+        # a zero it cannot substantiate is a failure, not a pass.
+
+      - name: "gy-3jb0t: /r/<token> forwards the token, not the literal ':token'"
+        run: node --test tests/referral-redirect.test.mjs
+        # The _redirects rule it replaces sent utm_campaign=:token for EVERY
+        # referral, because Pages does not substitute placeholders in a query
+        # string. Found by the gy-ufxgo AC4 prod readback, 2026-09-18.
+
+      - name: "gy-0v33y: the lead-source rule is bounded and never guesses"
+        run: node --test tests/attribution-source.test.mjs
+        # AC5/AC7. public.waitlist.source carried DEFAULT 'getgymbo.com' and was
+        # never written, so every row claimed the website — including the
+        # Instagram ones. The risk in fixing that is not an empty column, it is
+        # a CONFIDENT WRONG one, so most of these controls assert on NULL and
+        # two positive controls prove the rule can still return a channel at
+        # all. Mutation-checked three ways (drop the placeholder guard, store
+        # the referrer host instead of the engine slug, add a "direct"
+        # fallback); each is caught.
+
+      - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
+        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs
+        # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
+        # stored fields, and REFUSES to render media when provenance is missing
+        # or the asset is withdrawn — a CC-BY-SA clip published without its
+        # credit is a licence breach, so fail-closed is the load-bearing case.
+        # Mutation-tested 2026-09-09: forcing attributionIsComplete() true turns
+        # 2 red, removing the availability check turns 1 red, restoring is green.
+
+      # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
+      #
+      # WHAT IT GATES — and ONLY this: the marketing screenshot masters under
+      # public/screens/ that the gallery composites, i.e. the SCREENS map in
+      # scripts/screens-map.mjs. Not the site's code, copy, routes, legal or
+      # privacy pages, or any other asset.
+      #
+      # gy-7anl3: this step lives in `deploy`, which is the SOLE required check
+      # on main, so until 2026-09-06 a question about marketing art also decided
+      # whether ANY change could reach a live public site — including an
+      # emergency legal or privacy correction. On 2026-09-06 that pinned
+      # getgymbo.com to the 2026-08-31 build with no path to publish, because
+      # the staleness input is WALL CLOCK: monotonic, so no re-run can ever go
+      # green (gy-fs7pe).
+      #
+      # It now blocks on what the AUTHOR can act on and warns on what they
+      # cannot:
+      #   BLOCKS  integrity — missing manifest entry, unverified, invalid
+      #           capturedAt. Deterministic, a property of the change.
+      #   BLOCKS  a stale master THIS CHANGE PUBLISHES (touches the PNG, or
+      #           edits manifest.json). You may not ship or re-ship stale art.
+      #   WARNS   a master that was already live and has merely aged. Annotation
+      #           + job summary on every run — moving a gate must not delete an
+      #           alarm, and this one was already silently fail-open 08-12 to
+      #           08-19 (see public/screens/MANIFEST.md).
+      #
+      # Do NOT re-flatten this by raising maxAgeDays, adding a bypass flag, or
+      # backfilling manifest entries — pm ruled all three out. The staleness is
+      # REAL; recapture is gy-iit8q. If the split ever needs revoking, the
+      # script still has --strict, which restores the old block-on-everything
+      # behaviour in one word.
+      - name: Compute the change set the screenshot gate reasons about
+        run: |
+          set -euo pipefail
+          # Fails the step if git cannot answer. The gate itself exits 1 on an
+          # unreadable change set, so neither half can silently degrade to
+          # "this change touched nothing" — which would downgrade every stale
+          # master to a warning and re-open the hole this gate exists to close.
+          # NOTE: no --depth flag. checkout above already uses fetch-depth: 0,
+          # so the history is complete. `git fetch --depth=0` is not "no limit",
+          # it is an ERROR ("fatal: depth 0 is not a positive number") — it
+          # failed this step on run 34039827259 and skipped the nine gates
+          # behind it, which is the exact pathology this bead is about.
+          # Diff against FETCH_HEAD rather than origin/<base>: on a
+          # pull_request checkout the remote-tracking ref is not guaranteed to
+          # exist, and a missing ref would fail here rather than mis-report.
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            git diff --name-only FETCH_HEAD...HEAD > /tmp/changed-files.txt
+          else
+            git diff --name-only HEAD^ HEAD > /tmp/changed-files.txt
+          fi
+          echo "change set ($(wc -l < /tmp/changed-files.txt) path(s)):"
+          sed 's/^/  /' /tmp/changed-files.txt
+
+      - name: Screenshot staleness gate
+        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt
+
+      # Photoreal-device gate (gy-dyu6r.9): exact corrected hero identity, all
+      # four demo/poster pairs, measured gallery mask geometry, and approved
+      # self-hosted runner policy. Runs before build for authored source and
+      # after build for the public assets Vite copies into dist/.
+      - name: Photoreal-device gate (source)
+        run: node scripts/check-photoreal-device.mjs
 
       - run: npm run build
 
-      - name: No-bezel gate (built output)
-        run: node scripts/check-no-bezel.mjs --dist
+      # gy-a2xps.9 — runs AFTER the build because it scans the built bundle, and
+      # BEFORE the deploy because its whole job is to stop one.
+      - name: "gy-a2xps.9: no server credential in the built bundle"
+        run: node scripts/check-no-service-key-in-bundle.mjs
+        # The public media page reads exercise_media with the service_role key,
+        # which bypasses RLS on every table. That is safe ONLY because the key
+        # lives in a Pages Function and is never bundled — an invariant that is
+        # invisible in review and catastrophic to lose (rotate-everything, not
+        # fix-forward). Leads with a positive control and exits 2 if it cannot
+        # find a known string in dist/, because an empty or unbuilt dist reports
+        # the same reassuring zero as a clean one.
+        # Mutation-tested 2026-09-09: planting the var name in dist/ exits 1.
+
+      - name: Photoreal-device gate (built output)
+        run: node scripts/check-photoreal-device.mjs --dist
 
       # Deploy-SHA guard (gy-sa0fm AC3): "merged but not deployed" was
       # invisible until someone manually curled the site — that is exactly
@@ -95,6 +268,21 @@ jobs:
       # emulator — a PR that changes rendering with no snapshot update fails
       # here. Non-zero exit fails the job → the deploy step below is skipped.
       # Blocks bad builds from going live.
+      # gy-t9mm8 AC5 — the ONE client journey, in a real browser, against the
+      # Cloudflare Pages EMULATOR (functions/ do not run under `vite preview`).
+      # Runs after Chromium is installed and before the deploy, so a broken
+      # client page stops the release rather than being found by a client.
+      - name: "gy-t9mm8: client workout journey (real browser, no login)"
+        run: ./scripts/run-client-journey.sh
+        # Opens the link in a FRESH context with no storage — "no login required"
+        # is only proven from a device that has never seen Gymbo. Asserts the
+        # video actually DECODED A FRAME (currentTime > 0, not merely present in
+        # the DOM), and asserts the tick-off AFTER A RELOAD so it can only pass
+        # if the write really happened.
+        # Mutation-tested 2026-09-09: a mock that returns 201 but drops the write
+        # FAILS this journey (the exact "test passes without the feature" defect
+        # the bead names as its anti-goal); 404ing the video bytes also fails it.
+
       - name: Pre-deploy smoke gate
         run: |
           # gy-cjdtw: per-run free ports so concurrent jobs on the shared
@@ -102,9 +290,11 @@ jobs:
           # emulator) or :4173 (Playwright preview). A fixed-port collision
           # surfaced as 'localhost:4173 already used' and 'Pages emulator never
           # became ready' -> a degraded/racey render (e.g. hero 650px vs 679px).
-          freeport() { node -e 'const s=require("net").createServer();s.listen(0,"127.0.0.1",()=>{process.stdout.write(String(s.address().port));s.close()})'; }
-          WPORT=$(freeport)
-          export PW_PORT=$(freeport)   # Playwright's own preview server; playwright.config reads PW_PORT
+          # gy-3hyzh: a port picked HERE was bound by Playwright ~30s later and
+          # was taken in between (#180, 'localhost:37241 is already used' x4).
+          # Playwright's port is now picked per run, just before it binds, by
+          # scripts/pw-test.sh. WPORT stays here: wrangler binds it on the next line.
+          WPORT=$(node scripts/freeport.mjs)
           BASE="http://127.0.0.1:$WPORT"
 
           npx wrangler pages dev dist --port "$WPORT" --ip 127.0.0.1 > /tmp/pagesdev.log 2>&1 &
@@ -125,6 +315,108 @@ jobs:
           bash scripts/getgymbo-smoke.sh "$BASE" || RC=1
           node scripts/console-check.mjs "$BASE" || RC=1
 
+          # gy-9ggf3 — every choice on the takedown form must be READABLE, not
+          # merely present. The Reason <select> clipped its longest option ("It
+          # shows me and I did not agree to this use" — the one an actual
+          # rightsholder picks) while every DOM assertion passed: the option was
+          # in the markup and the select existed, and a natively-clipped select
+          # reports scrollWidth === clientWidth, so the browser does not tell you
+          # either. This measures the text in the control's own font against the
+          # padded box.
+          #
+          # 390 is the iPhone-class width the defect was found at; 320 is the
+          # narrowest phone still in real use, and a control that fits at 390 can
+          # still clip at 320 — checking one width would rebuild the same blind
+          # spot one size down.
+          #
+          # The script exits 2 (not 0) if it finds nothing to measure, so a page
+          # that changes shape underneath it fails rather than passing silently.
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 390 || RC=1
+          node scripts/check-option-text-fits.mjs "$BASE/m/takedown" 320 || RC=1
+
+          # gy-becxi — the inline waitlist capture, gated as BEHAVIOUR.
+          #
+          # Damini reported that tapping the waitlist CTA threw her to the page
+          # footer ("this journey is a bit annoying"), arriving from Instagram.
+          # The fix reveals the capture in place, and the ONLY assertion that can
+          # tell the fix from the defect is that the viewport does not move — a
+          # form appears and a field is focused in BOTH worlds, once the old
+          # behaviour has finished scrolling. So this is a correctness gate and
+          # it BLOCKS, alongside the smoke and console checks, not a warn-on-main
+          # change detector like the visual suite below.
+          #
+          # Mutation-checked two ways before being wired here: restore the scroll
+          # (6 of 12 cases red) and drop focus({preventScroll}) (2 of 2 red on
+          # the dedicated below-the-fold control, which was itself rewritten
+          # twice after it was caught PASSING under the mutation it exists to
+          # catch — see the comments in the spec).
+          #
+          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: tests/smoke.spec.ts still runs
+          # NOWHERE in CI. analytics-guard.spec.ts was in that same state until
+          # 2026-09-18 and is now wired below. Do not assume a spec in tests/ is
+          # gating anything — check this file.
+          scripts/pw-test.sh tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
+
+          # gy-kzfg9 — the Umami hostname guard, gated as BEHAVIOUR.
+          #
+          # WHY IT BLOCKS. Without data-domains the production tracker fired from
+          # every hostname, including the preview server this very job starts:
+          # over 2026-08-07..09-06 that was 10,985 local events against 409 real
+          # ones — 96.4% of recorded pageviews were our own runs, and the
+          # founder's daily report published them. The fix (PR #110) is a single
+          # HTML attribute, which is exactly the kind of thing a later edit drops
+          # without noticing. The guard shipped on 2026-09-10 and then sat with
+          # NO CI gate at all for eight days, so nothing would have gone red.
+          #
+          # Mutation-checked before being wired here: strip data-domains from
+          # index.html and BOTH halves go red — the static walk (no attribute in
+          # the built HTML) and the behavioural half (the tracker fires from
+          # localhost). Restoring it returns 4/4 green on desktop and mobile.
+          #
+          # 🔴 AND IT WRITES NOTHING TO PRODUCTION. Its positive control strips
+          # the guard on purpose to prove the test can fail, which means it
+          # provokes a real pageview; as first written that request went through,
+          # so wiring it here would have made every PR run contribute one
+          # localhost event to the series AC3 asks us to reconcile. The send
+          # endpoint is now aborted inside the test and the containment is
+          # asserted, not assumed.
+          scripts/pw-test.sh tests/analytics-guard.spec.ts --project=desktop --project=mobile || RC=1
+
+          # gy-31zk5 — the waitlist contact rule as an accessible DESCRIPTION.
+          #
+          # WHY IT BLOCKS. The rule lived in the email placeholder while the
+          # input carried aria-label="Your email", and an aria-label WINS over a
+          # placeholder for the accessible NAME — so the rule reached no
+          # assistive technology at ANY width, including the clusters that
+          # measured as passing on width. The fix is an aria-describedby hint,
+          # and the thing that breaks it is invisible to review: WaitlistForm
+          # renders more than once per document, so a literal id would make one
+          # form describe its inputs with another form's node.
+          #
+          # 🔴 IT ASSERTS THE REFERENCE, NOT THE ANNOUNCED TEXT. Every form
+          # renders the same string, so a cross-form reference still announces
+          # the right words — there is no user-visible symptom, and a test on
+          # the text passes on a fully broken build.
+          #
+          # Mutation-checked before wiring: replacing useId() with a literal
+          # reports "form1:tel,form1:email". (The mutation has to BUILD to mean
+          # anything — the first attempt left an unused import, tsc failed,
+          # dist/ stayed stale, and the check "passed" against the unmutated
+          # build.)
+          scripts/pw-test.sh tests/contact-rule-a11y.spec.ts --project=desktop --project=mobile || RC=1
+
+          # gm-pzp — the durable fix for the JSON-LD/App.tsx copy drift that hit
+          # TWICE (#164, #174) with no automated check: this repo's static
+          # index.html cannot import src/lib/trialAccess.ts, so nothing stopped
+          # its FAQPage JSON-LD silently disagreeing with the rendered FAQ. This
+          # BLOCKS (like the waitlist behaviour gate above) because a copy PR
+          # that lands a fact change on one surface and misses the other is
+          # exactly the failure mode this test exists to catch before merge, not
+          # warn about after. Reads index.html and src/App.tsx/src/lib directly
+          # (no browser, no emulator dependency), so it runs regardless of
+          # whether the Pages emulator above is up.
+          scripts/pw-test.sh tests/copy-facts.spec.ts --project=desktop || RC=1
+
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the
           # baselines are refreshed. Blocking production on it is what wedged
@@ -142,10 +434,10 @@ jobs:
           # refresh workflow uses to GENERATE baselines — NOT this wrangler
           # emulator, so gate and baselines stay consistent.
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile \
+            scripts/pw-test.sh tests/visual.spec.ts --project=desktop --project=mobile \
               || echo "::warning::Visual baselines are stale on main — deploy proceeding. Run refresh-visual-baselines.yml to resync."
           else
-            npx playwright test tests/visual.spec.ts --project=desktop --project=mobile || RC=1
+            scripts/pw-test.sh tests/visual.spec.ts --project=desktop --project=mobile || RC=1
           fi
           exit $RC
 

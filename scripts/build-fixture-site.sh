@@ -10,7 +10,7 @@
 #
 # Usage: build-fixture-site.sh <outdir> <mode>
 # Modes: good | no-title | missing-pricing | robots-disallow-claudebot |
-#        js-error | dark-theme-leak
+#        js-error | dark-theme-leak | db-unconfigured | db-rejected
 set -euo pipefail
 
 OUT="${1:?usage: build-fixture-site.sh <outdir> <mode>}"
@@ -33,6 +33,49 @@ fi
 
 ERROR_SCRIPT=""
 [ "$MODE" = "js-error" ] && ERROR_SCRIPT='<script>window.__nonExistentGymboApi.boom();</script>'
+
+# /api/health — the gy-gcr22 DB reachability probe.
+#
+# The good fixture MUST serve it: without it the baseline 404s, check 9 reports
+# "the probe is not deployed" and the whole negative-control suite below becomes
+# untrustworthy. That is exactly what happened on the first attempt at this
+# change, and the sanity step caught it.
+#
+# Serving it here also means the fixture exercises the check's PASS path, so
+# "good" is a real positive control rather than an absence of failure.
+#
+# python3 -m http.server always answers 200, so the db-unconfigured mode below
+# differs by BODY, not status. That is fine and deliberate: check 9 branches on
+# the body precisely so it can tell "unconfigured" from "rejected" from "not
+# deployed" rather than collapsing them into one status code.
+mkdir -p "$OUT/api"
+#
+# gy-gcr22 AC5: the probe now reports TWO credentials, because /m/ stopped using
+# the service key and reads through the anon media_page RPC instead. The db-*
+# fixtures below therefore keep m_rpc healthy on purpose — they exist to test the
+# SERVICE-key signatures, and letting them carry a second fault at the same time
+# would make it impossible to tell which one the gate reacted to.
+if [ "$MODE" = "db-rejected" ]; then
+  # gy-gcr22 allowance anti-masking fixture. A key that EXISTS and is wrong,
+  # rotated or revoked is a DIFFERENT failure from an absent binding, and it is
+  # the one most likely to hide behind "the health check is known red".
+  printf '%s' '{"db":"rejected","m_rpc":"ok","detail":"fixture: PostgREST refused the key"}' > "$OUT/api/health"
+elif [ "$MODE" = "db-unconfigured" ]; then
+  printf '%s' '{"db":"unconfigured","m_rpc":"ok","detail":"fixture: binding absent"}' > "$OUT/api/health"
+elif [ "$MODE" = "m-rpc-denied" ]; then
+  # 🔴 THE NEW ANTI-MASKING FIXTURE. The service key is FINE here and /m/ is dead:
+  # anon has lost EXECUTE on media_page. This is the case the gy-gcr22 allowance
+  # must NOT swallow — the allowance is pinned to db:"unconfigured", and this body
+  # deliberately does not carry that signature while still being a real outage.
+  printf '%s' '{"db":"ok","m_rpc":"denied","m_rpc_detail":"fixture: anon has no EXECUTE on media_page"}' > "$OUT/api/health"
+elif [ "$MODE" = "m-rpc-denied-and-db-unconfigured" ]; then
+  # Both at once: the allowance may excuse the db half and must STILL fail on the
+  # /m/ half. Without this, "known red" would go back to hiding a second fault —
+  # the exact masked-count-moved-from-1-to-6 failure the allowance was built after.
+  printf '%s' '{"db":"unconfigured","m_rpc":"denied","m_rpc_detail":"fixture: anon grant gone"}' > "$OUT/api/health"
+else
+  printf '%s' '{"db":"ok","m_rpc":"ok"}' > "$OUT/api/health"
+fi
 
 cat > "$OUT/index.html" <<HTML
 <!doctype html>

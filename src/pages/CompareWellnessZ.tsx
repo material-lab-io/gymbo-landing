@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
+import { InlineWaitlist } from "../components/InlineWaitlist";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, SecondaryButton } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, WaitlistPlainButton } from "../forge-ui";
+import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, STATUS_LANGUAGE } from "../lib/trialAccess";
 
 /* ============================================================================
    getgymbo.com/compare/gymbo-vs-wellnessz — "Gymbo vs WellnessZ" comparison
@@ -17,23 +19,23 @@ const HOME = "/";
 const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | null }[] = [
   { label: "Built for", gymbo: "independent personal trainers (session-led)", wellnessz: "dietitians / nutritionists & health coaches (nutrition-led)", win: null },
   { label: "The core job", gymbo: "log a session in one tap; track payments & balances", wellnessz: "create & assign diet / meal plans", win: null },
-  { label: "Entry price", gymbo: "₹399/mo (₹250/mo effective on annual)", wellnessz: "₹499/mo", win: "g" },
-  { label: "Client limits", gymbo: "unlimited — flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
-  { label: "Free trial", gymbo: "7 days", wellnessz: "14 days", win: null },
+  { label: "Entry price", gymbo: `₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual)`, wellnessz: "₹499/mo", win: "g" },
+  { label: "Client limits", gymbo: "unlimited: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
+  { label: "Free trial", gymbo: `${TRIAL_DAYS} days`, wellnessz: "14 days", win: null },
   { label: "Session logging", gymbo: "one-tap punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
   { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
-  { label: "Nutrition / meal plans", gymbo: "Workout builder + AI assistant (training-first)", wellnessz: "deep — 20k+ ICMR-verified meals, nutrition AI", win: "w" },
+  { label: "Nutrition / meal plans", gymbo: "Workout builder + AI assistant (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
   { label: "Sign-in", gymbo: "passwordless (Apple + Face ID)", wellnessz: "account-based", win: "g" },
   { label: "White-label app", gymbo: "not yet", wellnessz: "₹3,999/mo tier", win: "w" },
   { label: "Platform", gymbo: "iOS-native", wellnessz: "app + web", win: "w" },
 ];
 
 const FAQ: { q: string; a: string }[] = [
-  { q: "Is Gymbo a good WellnessZ alternative?", a: "For personal trainers, yes — Gymbo is built around session logging, payments, and scheduling at a flat ₹399/month. WellnessZ is better if your core service is nutrition and meal planning." },
+  { q: "Is Gymbo a good WellnessZ alternative?", a: `For personal trainers, yes, Gymbo is built around session logging, payments, and scheduling at a flat ₹${PRICE_MONTHLY_INR}/month. WellnessZ is better if your core service is nutrition and meal planning.` },
   { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class logging, automatic balance math, payment tracking) for independent personal trainers." },
-  { q: "Is Gymbo cheaper than WellnessZ?", a: "Gymbo is ₹399/month (₹250 effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120." },
-  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Yes — Gymbo supports bulk client import so you can bring your roster over." },
-  { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training — one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
+  { q: "Is Gymbo cheaper than WellnessZ?", a: `Gymbo is ₹${PRICE_MONTHLY_INR}/month (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120.` },
+  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number." },
+  { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training: one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
 ];
 
 const GYMBO_FOR = [
@@ -89,7 +91,7 @@ export function CompareWellnessZ() {
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
-        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo — home">
+        <a href={HOME} className="flex items-center focus-visible:outline-none" aria-label="Gymbo, home">
           <img
             src="/gymbo-mark-darkorange-9d3900.svg"
             alt=""
@@ -103,10 +105,15 @@ export function CompareWellnessZ() {
           <button onClick={() => scrollToId("faq")} className="text-[14px] transition-colors" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 500 }}>FAQ</button>
         </div>
 
+        {/* gy-w77x3 D3 — same treatment as the landing nav, for the same reason:
+            a waitlist control that scrolls on one page and reveals on another is
+            the inconsistency Damini reported, wearing a different URL. */}
         <div className="flex items-center gap-2.5">
-          <button onClick={() => scrollToId("cta")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-            Get Gymbo
-          </button>
+          <InlineWaitlist dismissible reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
+            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+              Request access
+            </WaitlistPlainButton>
+          </InlineWaitlist>
         </div>
       </nav>
 
@@ -124,10 +131,10 @@ export function CompareWellnessZ() {
                 </span>
               </h1>
               <p className="mt-6 text-[clamp(15px,1.6vw,18px)]" style={{ color: F.ink, fontWeight: 400, lineHeight: 1.6, maxWidth: "60ch" }}>
-                Gymbo and WellnessZ are both India-native coaching apps — but they're built for different people.
+                Gymbo and WellnessZ are both India-native coaching apps, but they're built for different people.
               </p>
               <p className="mt-4 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.7, maxWidth: "64ch", fontFamily: SANS }}>
-                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions — log a class in one tap, track every payment and balance, and look professional, at a flat ₹399/month with no per-client limits.
+                WellnessZ is a nutrition-first platform for dietitians and health coaches: verified meal databases, diet plans, and nutrition AI. Gymbo is built for the independent <b style={{ color: F.ink, fontWeight: 600 }}>personal trainer</b> who runs sessions: log a class in one tap, track every payment and balance, and look professional, at a flat ₹{PRICE_MONTHLY_INR}/month with no per-client limits.
               </p>
             </Reveal>
 
@@ -142,9 +149,15 @@ export function CompareWellnessZ() {
               </div>
             </Reveal>
 
-            <Reveal className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3.5">
-              <PrimaryCTA size="lg" />
-              <SecondaryButton>Talk to the founder</SecondaryButton>
+            {/* gy-becxi item 5 — the SAME shared component as the App hero, not a
+                per-page fork. Both call sites reveal identically or neither does. */}
+            <Reveal className="mt-8">
+              <InlineWaitlist reducedMotion={prefersReduced}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
+                  <WhatsAppCTA size="lg" location="compare">Talk to the founder</WhatsAppCTA>
+                  <WaitlistCTA size="lg" location="compare" />
+                </div>
+              </InlineWaitlist>
             </Reveal>
           </div>
         </header>
@@ -155,7 +168,14 @@ export function CompareWellnessZ() {
             <Reveal className="mb-8">
               <h2 className="text-[clamp(24px,3.4vw,36px)] font-black" style={{ fontFamily: SERIF, letterSpacing: "-0.02em" }}>At a glance</h2>
             </Reveal>
-            <Reveal className="overflow-x-auto -mx-5 px-5 md:mx-0 md:px-0">
+            {/* gy-ma11q: the scroll container must be focusable or a keyboard/switch user
+                cannot scroll it and never reaches the right-hand columns (axe
+                scrollable-region-focusable, WCAG-AA — measured live 2026-09-06). Reveal
+                only accepts children/className, so the tabbable region is a real element
+                inside it rather than a prop on it. The table already carries an sr-only
+                <caption>, so the region is labelled by that same wording. */}
+            <Reveal className="-mx-5 px-5 md:mx-0 md:px-0">
+              <div className="table-scroll overflow-x-auto" tabIndex={0} role="region" aria-label="Feature comparison of Gymbo and WellnessZ: scroll horizontally to see all columns">
               <table className="w-full border-collapse" style={{ minWidth: "640px", fontFamily: SANS }}>
                 <caption className="sr-only">Feature comparison of Gymbo and WellnessZ</caption>
                 <thead>
@@ -189,6 +209,7 @@ export function CompareWellnessZ() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </Reveal>
             <Reveal><p className="mt-4 text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Pricing verified 22 June 2026.</p></Reveal>
           </div>
@@ -206,7 +227,7 @@ export function CompareWellnessZ() {
                 WellnessZ leads with nutrition. Its homepage calls it "all-in-one software for dietitians, nutritionists & coaches," and its standout features are a 20,000+ ICMR-NIN verified meal database and nutrition AI. If your business is built on diet plans, that depth is genuinely valuable.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.bone, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning — it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap punch to log a class, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and an AI assistant are built in, but the hero is running your training business, not planning nutrition.
+                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning: it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap punch to log a class, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and an AI assistant are built in, but the hero is running your training business, not planning nutrition.
               </p>
               <p className="text-[15px] md:text-[16px] pt-2" style={{ color: F.marigold, fontFamily: SANS, fontWeight: 600, lineHeight: 1.6 }}>
                 Bottom line: same country, different jobs. WellnessZ optimizes the dietitian's day; Gymbo optimizes the trainer's.
@@ -224,10 +245,10 @@ export function CompareWellnessZ() {
             </Reveal>
             <Reveal className="mt-6 flex flex-col gap-5">
               <p className="text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                WellnessZ prices by how many clients you have — ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
+                WellnessZ prices by how many clients you have: ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.ink, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹399/month, or ₹250/month effective on the annual plan</b> — with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
+                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹{PRICE_MONTHLY_INR}/month, or ₹{PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan</b>, with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
               </p>
             </Reveal>
             <Reveal className="mt-8">
@@ -238,11 +259,11 @@ export function CompareWellnessZ() {
                 </div>
                 <div className="flex items-center justify-between px-5 py-4" style={{ background: "rgba(245,158,11,0.07)", borderTop: "1px solid var(--c-line)" }}>
                   <span className="text-[15px] font-black" style={{ fontFamily: SERIF, color: F.ink }}>Gymbo</span>
-                  <span className="text-[15px] font-bold" style={{ color: F.amberText, fontFamily: SANS }}>₹399 <span style={{ color: F.inkMuted, fontWeight: 400 }}>(₹250 effective annual)</span></span>
+                  <span className="text-[15px] font-bold" style={{ color: F.amberText, fontFamily: SANS }}>₹{PRICE_MONTHLY_INR} <span style={{ color: F.inkMuted, fontWeight: 400 }}>(₹{PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} effective annual)</span></span>
                 </div>
                 <div className="flex items-center justify-between px-5 py-4" style={{ borderTop: "1px solid var(--c-line)" }}>
                   <span className="text-[15px] font-black" style={{ fontFamily: SERIF, color: F.inkMuted }}>WellnessZ</span>
-                  <span className="text-[15px] font-bold" style={{ color: F.inkMuted, fontFamily: SANS }}>₹999 <span style={{ fontWeight: 400 }}>(Pro — 40+ clients)</span></span>
+                  <span className="text-[15px] font-bold" style={{ color: F.inkMuted, fontFamily: SANS }}>₹999 <span style={{ fontWeight: 400 }}>(Pro: 40+ clients)</span></span>
                 </div>
               </div>
             </Reveal>
@@ -301,15 +322,15 @@ export function CompareWellnessZ() {
             </Reveal>
             <Reveal>
               <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Moving your clients over is straightforward: Gymbo supports bulk client import, so you can bring your roster in rather than re-typing it. Your sessions and payments start fresh in a structure built for training.
+                Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number. Your sessions and payments start fresh in a structure built for training.
               </p>
             </Reveal>
-            {/* Structural social-proof slot — Gymbo is in beta; a real switcher
+            {/* Structural social-proof slot — Gymbo is in private alpha; a real switcher
                 quote goes here post-launch. Do NOT fabricate a testimonial. */}
             <Reveal>
               <div className="mt-8 rounded-[var(--g-radius-xl)] p-6 text-center" style={{ background: F.beigeCard, border: "1px dashed var(--c-line)" }}>
                 <p className="text-[14px] md:text-[15px]" style={{ color: F.inkLabel, fontFamily: SANS, lineHeight: 1.6 }}>
-                  Gymbo is in beta. Real trainer stories will appear here as trainers come on board.
+                  Gymbo is in {STATUS_LANGUAGE.toLowerCase()}. Real trainer stories will appear here as trainers come on board.
                 </p>
               </div>
             </Reveal>
@@ -342,25 +363,20 @@ export function CompareWellnessZ() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" aria-label="Join the waitlist" style={{ background: F.charcoal }}>
+        <section id="cta" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>In beta</Eyebrow>
+              <Eyebrow dark>{STATUS_LANGUAGE}</Eyebrow>
               <h2 className="text-[clamp(28px,4.5vw,46px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "18ch" }}>
                 Built for trainers. Try it free.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Join the waitlist and we'll tell you the moment it's your turn. Free for your first 7 days.
+                Request access and we'll be in touch with your access. Free for your first {TRIAL_DAYS} days.
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
               <WaitlistForm />
-              <a href={WHATSAPP} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: "rgba(240,240,235,0.06)", color: F.bone, border: "1px solid rgba(240,240,235,0.12)", fontFamily: SANS }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-                </svg>
-                Talk to the founder
-              </a>
+              <WhatsAppButton location="compare">Talk to the founder</WhatsAppButton>
             </Reveal>
             <Reveal className="mt-10">
               <a href={`${HOME}#pricing`} className="text-[14px] underline underline-offset-4" style={{ color: F.boneMuted, fontFamily: SANS }}>See full Gymbo pricing →</a>
@@ -388,7 +404,7 @@ export function CompareWellnessZ() {
             <a href="mailto:damini@materiallab.io" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
             <div className="flex items-center gap-4">
               <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-              <a href="https://wa.me/918050131733" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
               <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
             </div>
           </div>

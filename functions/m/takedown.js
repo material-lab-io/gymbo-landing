@@ -1,0 +1,251 @@
+// gy-a2xps.9 — GET/POST /m/takedown: the public removal-request route.
+//
+// WHO THIS IS FOR, and it is the whole design constraint. A performer who
+// appears in a wger clip is NOT a Gymbo user, has no account, and will never
+// make one in order to object to their own image being used. The founder
+// accepted the unevidenced likeness/model-release risk in these clips and made
+// THIS ROUTE the mitigation. So it must be reachable by a stranger who arrived
+// from a PDF: no login, no app, no JavaScript.
+//
+// It is linked from the footer of every media page, including the unavailable
+// ones -- that is where someone checking whether their earlier request took
+// effect will land.
+import { supabaseUrl, anonHeaders, esc } from "./_shared.js";
+import { rootVars } from "../_forge.js";
+
+const CSS = `
+:root{${rootVars(["brand-amber-500", "brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg"])}--bg:var(--g-color-neutral-light-0);--card:var(--g-color-neutral-light-1);--fg:var(--g-color-neutral-light-fg);--muted:var(--g-color-grey-muted-fg-light);--brand:var(--g-color-brand-amber-text-light);
+  --line:var(--g-color-neutral-light-3);--cta:var(--g-color-brand-amber-500);--cta-ink:var(--g-color-neutral-dark-0)}
+@media (prefers-color-scheme:dark){:root{--bg:var(--g-color-neutral-dark-0);--card:var(--g-color-neutral-dark-1);--fg:var(--g-color-neutral-dark-fg);
+  --muted:var(--g-color-grey-muted-fg-dark);--brand:var(--g-color-brand-marigold-500);--line:var(--g-color-neutral-dark-3);--cta:var(--g-color-brand-marigold-500);--cta-ink:var(--g-color-neutral-dark-0)}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:'Open Sans',system-ui,sans-serif;font-size:14px;line-height:1.55}
+.wrap{max-width:640px;margin:0 auto;padding:24px 16px 48px}
+h1{font-family:Merriweather,Georgia,serif;font-size:20px;margin:0 0 8px}
+.card{background:var(--card);border-radius:20px;padding:16px;margin:16px 0}
+label{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
+input,textarea{width:100%;padding:12px;border-radius:8px;
+  border:1px solid var(--line);background:var(--bg);color:var(--fg);
+  font:inherit;font-size:14px}
+/* gy-9ggf3 — the Reason control is RADIOS, not a <select>, and that is a fix to
+   a defect class rather than to a width. A native select CLIPS its longest option
+   and reports NO overflow (scrollWidth === clientWidth), so the clipping is
+   invisible to every DOM assertion; the previous fix here reserved 36px for the
+   chevron and the longest option still needed 299.4px in a 276px box. Radios
+   WRAP, so no option can be cut at any width, and they are a better mobile
+   control for 4-5 choices anyway. */
+.radio-row{display:flex;gap:10px;align-items:flex-start;padding:10px 4px;
+  min-height:44px;cursor:pointer;line-height:1.4}
+.radio-row input{width:auto;margin:2px 0 0;flex:none;accent-color:var(--g-color-brand-amber-500)}
+fieldset{border:0;padding:0;margin:0 0 4px}
+legend{padding:0;font-size:12px;color:var(--g-color-grey-muted-fg-light)}
+@media (prefers-color-scheme:dark){legend{color:var(--g-color-grey-muted-fg-dark)}}
+textarea{min-height:96px}
+button{margin-top:20px;width:100%;min-height:48px;border:0;border-radius:9999px;
+  background:var(--cta);color:var(--cta-ink);font:inherit;font-weight:700;font-size:16px}
+.note{font-size:12px;color:var(--muted)}
+.ref{font-family:ui-monospace,monospace;font-size:20px;font-weight:700;color:var(--brand)}
+`;
+
+const shell = (title, body, status = 200) =>
+  new Response(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(title)} — Gymbo</title><meta name="robots" content="noindex">
+<style>${CSS}</style></head><body><div class="wrap">${body}</div></body></html>`,
+    { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
+  );
+
+// A HUMAN-QUOTABLE REFERENCE, not the raw uuid: GYM-TD- plus 8 Crockford
+// characters (no I, L, O or U, so it cannot be misread as 1/0). It is MINTED BY
+// THE DATABASE now (submit_media_takedown), so an anonymous caller never
+// chooses its own case id. The page only checks the shape before showing it.
+const CASE_REF_RE = /^GYM-TD-[0-9A-HJKMNP-TV-Z]{8}$/;
+
+// gy-s8z4z AC-I5 / AC-I6: the ONE anon RPC that records a claim. The name is a
+// constant so coach's final name is a one-line change.
+export const TAKEDOWN_RPC = "submit_media_takedown";
+
+// AC-I6 (pm ruling (b1), gy-s8z4z 2026-09-15 06:01): SIGNED CLIENT IP.
+//
+// WHY THE PAGE MUST ATTEST THE IP. This Function calls supabase.co, which is
+// itself behind Cloudflare, so the call is a CROSS-ZONE subrequest and Cloudflare
+// sets the CF-Connecting-IP that PostgREST sees to a CONSTANT Worker address
+// (2a06:98c0:3600::103). Keyed on that, every real reporter would share ONE bucket.
+// So the page forwards the IP IT received and signs it:
+//   x-gymbo-client-ip  = this request's CF-Connecting-IP (set by Cloudflare's edge)
+//   x-gymbo-client-ts  = unix seconds
+//   x-gymbo-client-sig = hex HMAC-SHA256(TAKEDOWN_IP_SIGNING_SECRET, ip + "." + ts)
+// The RPC verifies the signature and freshness (60 s) and only then keys on that IP.
+//
+// 🔴 ONLY CF-Connecting-IP. NEVER X-Forwarded-For or any client-supplied header:
+// signing a value the client chose would launder a spoofed IP into a trusted one.
+// 🔴 NO SECRET OR NO CF HEADER -> SEND NO ATTESTATION AT ALL. An unsigned
+// x-gymbo-client-ip would be ignored by the RPC anyway; sending none keeps the
+// failure mode obvious (the strict fallback bucket) instead of half-working.
+//
+// The secret is NARROW: it grants no database access and can only attest an IP to
+// this limiter (it is NOT the service-role key barred by the 09-14 decision).
+export const clientIp = (request) => request.headers.get("CF-Connecting-IP") || null;
+
+const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+
+export async function signedIpHeaders(request, env, nowSeconds = Math.floor(Date.now() / 1000)) {
+  const ip = clientIp(request);
+  const secret = env && env.TAKEDOWN_IP_SIGNING_SECRET;
+  if (!ip || !secret) {
+    if (!secret) console.error("[takedown] TAKEDOWN_IP_SIGNING_SECRET missing — sending no IP attestation (strict fallback bucket)");
+    return {};
+  }
+  const ts = String(nowSeconds);
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = hex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`${ip}.${ts}`)));
+  return { "x-gymbo-client-ip": ip, "x-gymbo-client-ts": ts, "x-gymbo-client-sig": sig };
+}
+
+// gy-wwr2e.8.1 AC4 — the retention period for reporter data, in the EXACT words
+// Kaushik approved on 2026-09-14 (option A, recorded on that bead by pm). Shown
+// BEFORE submission, because the lawful basis is consent and consent needs the
+// notice first; repeated on the confirmation. Deliberately NOT on the
+// "already open" reply: that path stored none of this reporter's details, so
+// promising to delete them would imply we hold them. Do not paraphrase -- a
+// change here is a change to an approved notice and goes back through compliance.
+export const RETENTION_NOTICE =
+  "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
+
+const FORM = (mediaId) => `<h1>Request removal of a video</h1>
+<p class="note">If you appear in a video shared through Gymbo, or you hold rights in
+one, use this form and we will take it down while we review your request. You do not
+need a Gymbo account, and we will not ask you to create one.</p>
+<form method="POST" class="card">
+${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
+<label for="media_id">Link or reference of the video</label>
+<input id="media_id" name="media_id" required placeholder="https://getgymbo.com/m/...">`}
+<label for="requester_name">Your name</label>
+<input id="requester_name" name="requester_name" required autocomplete="name">
+<label for="requester_email">Your email — we use this only to reach you about this request</label>
+<input id="requester_email" name="requester_email" type="email" required autocomplete="email">
+<fieldset>
+<legend>You are</legend>
+<label class="radio-row"><input type="radio" name="requester_role" value="performer" checked> The person shown in the video</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="rightsholder"> The rights holder</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="agent"> Acting on someone's behalf</label>
+<label class="radio-row"><input type="radio" name="requester_role" value="other"> Other</label>
+</fieldset>
+<fieldset>
+<legend>Reason</legend>
+<label class="radio-row"><input type="radio" name="claim_kind" value="likeness" checked> It shows me and I did not agree to this use</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="copyright"> Copyright</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="licence"> Licence terms</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="privacy"> Privacy</label>
+<label class="radio-row"><input type="radio" name="claim_kind" value="other"> Other</label>
+</fieldset>
+<label for="claim_detail">What is the problem?</label>
+<textarea id="claim_detail" name="claim_detail" required></textarea>
+<label for="evidence">Anything that helps us check this — optional</label>
+<textarea id="evidence" name="evidence"></textarea>
+<p class="note">${RETENTION_NOTICE}</p>
+<button type="submit">Send request</button>
+</form>`;
+
+export async function onRequestGet(context) {
+  // Deep-linked from a media page so the reporter never has to copy an id.
+  const from = new URL(context.request.url).searchParams.get("media") || "";
+  return shell("Request removal", FORM(from));
+}
+
+// Accept a uuid, or the full public URL we ourselves put in the PDF. Someone
+// reporting a clip will paste the link they were given; refusing it and
+// demanding they extract an id would fail the people this route exists for.
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+
+export async function onRequestPost(context) {
+  const { env, request } = context;
+  const form = await request.formData().catch(() => null);
+  if (!form) return shell("Request removal", FORM("") , 400);
+
+  const raw = String(form.get("media_id") || "");
+  const match = raw.match(UUID_RE);
+  const fields = {
+    media_id: match ? match[0] : null,
+    requester_name: String(form.get("requester_name") || "").trim(),
+    requester_email: String(form.get("requester_email") || "").trim(),
+    requester_role: String(form.get("requester_role") || "other"),
+    claim_kind: String(form.get("claim_kind") || "other"),
+    claim_detail: String(form.get("claim_detail") || "").trim(),
+    evidence: String(form.get("evidence") || "").trim() || null,
+  };
+
+  if (!fields.media_id || !fields.requester_name || !fields.claim_detail ||
+      !fields.requester_email.includes("@")) {
+    return shell("Request removal",
+      `<p class="note">Please fill in your name, a contact email, the video link and
+what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
+  }
+
+  // ONE call, the PUBLIC anon key, no service-role key (founder decision
+  // 2026-09-14). The client IP travels ONLY in the signed x-gymbo-client-* headers,
+  // never the URL (query strings land in API request logs) and never the body
+  // (the RPC no longer takes it as an argument: pm B1, #1183).
+  let outcome = null;
+  try {
+    const attest = await signedIpHeaders(request, env);
+    const res = await fetch(`${supabaseUrl(env)}/rest/v1/rpc/${TAKEDOWN_RPC}`, {
+      method: "POST",
+      headers: { ...anonHeaders(), ...attest },
+      body: JSON.stringify({
+        p_media_id: fields.media_id,
+        p_requester_name: fields.requester_name,
+        p_requester_email: fields.requester_email,
+        p_requester_role: fields.requester_role,
+        p_claim_kind: fields.claim_kind,
+        p_claim_detail: fields.claim_detail,
+        p_evidence: fields.evidence,
+      }),
+    });
+    if (res.ok) outcome = await res.json().catch(() => null);
+    else console.error("[takedown] rpc failed", res.status, await res.text().catch(() => ""));
+  } catch (e) {
+    console.error("[takedown] rpc unreachable", String(e));
+  }
+
+  // "already_open" is a success from the reporter's point of view: the clip is
+  // already suppressed and a human is already looking. Telling them "duplicate"
+  // would read as a refusal. Nothing of THIS reporter was stored.
+  if (outcome === "already_open") {
+    return shell("Request received", `<h1>Request received</h1>
+<div class="card">
+<p>Your reference is</p><p class="ref">already open</p>
+<p class="note">A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> if you want your details added to it.</p>
+</div>`);
+  }
+
+  // AC-I6: too many submissions from this network in a short window. The copy
+  // is deliberately NEUTRAL (no count, no window, no "you are blocked"), and it
+  // still gives a genuine reporter a route that does not depend on this form.
+  if (outcome === "rate_limited") {
+    return shell("Request removal", `<h1>Please try again later</h1>
+<p class="note">We could not take another request from your connection just now. Please try
+again later, or email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 429);
+  }
+
+  if (typeof outcome === "string" && CASE_REF_RE.test(outcome)) {
+    return shell("Request received", `<h1>Request received</h1>
+<div class="card">
+<p>Your reference is</p><p class="ref">${esc(outcome)}</p>
+<p class="note">Keep this reference. The video is hidden from the Gymbo app and from its public
+link from now, while we review your request. We will email you at
+${esc(fields.requester_email)} when it is decided.</p>
+<p class="note">${RETENTION_NOTICE}</p>
+</div>`);
+  }
+
+  // NEVER silently drop a rights claim, and never show "received" for an answer
+  // we do not recognise. Say so, and give a route that does not depend on this form.
+  return shell("Request removal", `<h1>We could not record your request</h1>
+<p class="note">Something is wrong on our side. Please email
+<a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 502);
+}

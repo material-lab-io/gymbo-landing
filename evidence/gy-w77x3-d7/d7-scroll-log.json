@@ -1,0 +1,92 @@
+{
+  "log": [
+    {
+      "id": "E2",
+      "scheme": "light",
+      "scrollBefore": 974,
+      "scrollAfter": 974
+    },
+    {
+      "id": "E3",
+      "scheme": "light",
+      "keyboardPx": 336,
+      "barBottomBeforeKeyboard": "0px",
+      "barBottomWithKeyboard": "336px"
+    },
+    {
+      "id": "E4",
+      "scheme": "light",
+      "scrollBefore": 0,
+      "scrollAfter": 0
+    },
+    {
+      "id": "E5",
+      "scheme": "light",
+      "scrollBefore": 8359,
+      "scrollAfter": 8359
+    },
+    {
+      "id": "E2",
+      "scheme": "dark",
+      "scrollBefore": 974,
+      "scrollAfter": 974
+    },
+    {
+      "id": "E3",
+      "scheme": "dark",
+      "keyboardPx": 336,
+      "barBottomBeforeKeyboard": "0px",
+      "barBottomWithKeyboard": "336px"
+    },
+    {
+      "id": "E4",
+      "scheme": "dark",
+      "scrollBefore": 0,
+      "scrollAfter": 0
+    },
+    {
+      "id": "E5",
+      "scheme": "dark",
+      "scrollBefore": 8359,
+      "scrollAfter": 8359
+    }
+  ],
+  "darkDiff": [
+    {
+      "frame": "E1-sticky-bar-before",
+      "identical": true,
+      "lightBytes": 163959,
+      "darkBytes": 163959
+    },
+    {
+      "frame": "E2-sticky-expanded-keyboard-down",
+      "identical": true,
+      "lightBytes": 139054,
+      "darkBytes": 139054
+    },
+    {
+      "frame": "E3-sticky-expanded-keyboard-up",
+      "identical": true,
+      "lightBytes": 99960,
+      "darkBytes": 99960
+    },
+    {
+      "frame": "E4-nav-reveal",
+      "identical": true,
+      "lightBytes": 235512,
+      "darkBytes": 235512
+    },
+    {
+      "frame": "E5-pricing-reveal",
+      "identical": true,
+      "lightBytes": 141747,
+      "darkBytes": 141747
+    },
+    {
+      "frame": "E6-footer-form",
+      "identical": true,
+      "lightBytes": 123053,
+      "darkBytes": 123053
+    }
+  ]
+}
