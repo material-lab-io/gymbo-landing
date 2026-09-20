@@ -749,8 +749,14 @@ export default function App() {
                 <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
                 <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
               </nav>
-              <nav aria-label="Company" className="flex flex-col gap-2">
-                <h2 className="text-[11px] font-bold uppercase" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em" }}>Company</h2>
+              {/* "Help", not "Company" (designer, 05:38Z). Company promises an about-us
+                  category we do not have — About, Careers, Press — while this column holds
+                  Support and Contact, which are both help-seeking routes; a user wanting
+                  help does not scan for "Company". And not "Support" either, by the same
+                  test that rejected "Guides" as the content group's name: a group must not
+                  be named after one of its own members. */}
+              <nav aria-label="Help" className="flex flex-col gap-2">
+                <h2 className="text-[11px] font-bold uppercase" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em" }}>Help</h2>
                 {/* App Review 1.5: "Support" leads to the support CONTACT below, not to the
                     waitlist form. getgymbo.com is the app's Support URL. */}
                 <a href="#support" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</a>
