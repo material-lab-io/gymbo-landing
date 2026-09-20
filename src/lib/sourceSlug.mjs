@@ -111,8 +111,17 @@ const GOOGLE_REGIONAL = /^google\.[a-z]{2,}(\.[a-z]{2,})?$/;
 // .hostname. That is why this is a separate map rather than more rows above: the
 // keys are package names, they are matched EXACTLY, and no www-stripping or
 // pattern is involved. An unlisted package stays NULL.
+//
+// marketer ruling 2026-09-18 (gy-ufxgo): the Instagram app's own referrer is
+// credited to instagram. It is a referrer signal, the same class as the Google
+// app above, not a guess from the landing page, so "unknown stays unknown" is
+// not breached. It is unverified whether Android IG's in-app browser actually
+// sends it; if it never does, this row is inert. marketer also asked for
+// campaign=android_referrer to tell this apart from a tagged bio link — there is
+// no campaign column to hold it yet (gy-l3ji5), so that half is owed, not dropped.
 const SOURCE_BY_ANDROID_PACKAGE = new Map([
   ["com.google.android.googlequicksearchbox", "google"],
+  ["com.instagram.android", "instagram"],
 ]);
 
 /**

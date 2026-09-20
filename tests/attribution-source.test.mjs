@@ -218,8 +218,17 @@ test("the Android Google app referrer is organic search, and lookalikes are not"
   assert.equal(sourceFromReferrer("android-app://com.google.android.googlequicksearchbox", H), "google");
   // Exact package match only — no pattern, no suffix matching.
   assert.equal(sourceFromReferrer("android-app://com.evil.googlequicksearchbox/", H), null);
-  // Not ruled in: the Instagram app's own referrer. Raised with marketer rather
-  // than assumed, because crediting it would change the answer to the founder's
-  // actual question. If this starts returning a value, it was a decision.
-  assert.equal(sourceFromReferrer("android-app://com.instagram.android/", H), null);
+});
+
+// marketer ruling 2026-09-18 (gy-ufxgo): the Instagram app's referrer IS credited.
+// This test was previously pinned to null, recording that crediting it was a
+// decision still to be made; it has now been made.
+test("the Android Instagram app referrer is instagram, and lookalikes are not", () => {
+  const H = "getgymbo.com";
+  assert.equal(sourceFromReferrer("android-app://com.instagram.android/", H), "instagram");
+  assert.equal(sourceFromReferrer("android-app://com.instagram.android", H), "instagram");
+  // Exact package match only: another app, or a package merely containing the name.
+  assert.equal(sourceFromReferrer("android-app://com.instagram.lite/", H), null);
+  assert.equal(sourceFromReferrer("android-app://com.evil.instagram.android/", H), null);
+  assert.equal(sourceFromReferrer("android-app://com.instagram.android.evil/", H), null);
 });
