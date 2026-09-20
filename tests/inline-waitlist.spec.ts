@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { installScrollRecorder, markScrollRecorder, readScrollLog } from './helpers/scroll-recorder';
 
 /**
  * gy-becxi — the inline waitlist capture, verified as BEHAVIOUR.
@@ -74,15 +75,25 @@ for (const [page_, loc, label] of [
     const beforeY = (await cta.boundingBox())!.y;
     const beforeScroll = await page.evaluate(() => window.scrollY);
 
+    // 🔴 gy-14rfs: the first CTA assertion below FLAKES IN CI ONLY (first
+    // attempt moved 99-458px in 24 of 36 deploy runs on 2026-09-18; the traced
+    // retry always passed). Record who moved the page from here on, so the
+    // failing attempt names its cause in its own message. Observation only —
+    // the 2px limits are unchanged.
+    await installScrollRecorder(page);
+    await markScrollRecorder(cta, 'before click');
+
     await cta.click();
 
     // Two settling beats: long enough that a smooth-scroll would have started
     // and a focus()-induced jump would have landed.
     await page.waitForTimeout(400);
+    await markScrollRecorder(cta, 'after click + 400ms');
     const afterY = (await cta.boundingBox())!.y;
     const afterScroll = await page.evaluate(() => window.scrollY);
-    expect(Math.abs(afterY - beforeY), 'the CTA the visitor tapped must not move in the viewport').toBeLessThanOrEqual(2);
-    expect(Math.abs(afterScroll - beforeScroll), 'the page must not scroll when the capture opens').toBeLessThanOrEqual(2);
+    const moveLog = await readScrollLog(page);
+    expect(Math.abs(afterY - beforeY), `the CTA the visitor tapped must not move in the viewport${moveLog}`).toBeLessThanOrEqual(2);
+    expect(Math.abs(afterScroll - beforeScroll), `the page must not scroll when the capture opens${moveLog}`).toBeLessThanOrEqual(2);
 
     // The capture is revealed, and it is revealed INSIDE this cluster — not the
     // footer form becoming visible because the page moved.
@@ -209,19 +220,11 @@ test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level
   // and disagree with; an accidental one is a line nobody knew was there. Each
   // entry names the file, a substring that identifies the specific control, and
   // WHY it is not a waitlist CTA.
-  const ALLOWED = [
-    {
-      file: 'src/App.tsx',
-      marker: '>Support<',
-      why:
-        'The footer-nav "Support" button. It is not a waitlist CTA and must not ' +
-        'become one: it wears a different label, fires no waitlist_cta_click, and ' +
-        'sends someone with a question to the only contact surface the site has. ' +
-        'Routing it through the shared hook would put it in the funnel numbers and ' +
-        'reveal a signup capture to someone asking for help. (Whether "Support" ' +
-        'should point at the request-access form at all is a content question, ' +
-        'raised separately — it is not this gate\'s to decide.)',
-    },
+  const ALLOWED: { file: string; marker: string; why: string }[] = [
+    // The footer "Support" entry was removed by #190 (App Review 1.5): "Support"
+    // now links to the support CONTACT (#support), not to the request-access
+    // form, so it no longer calls scrollToId at all. That settles the content
+    // question this entry left open.
     // PageShell.tsx's header "Request access" (was "Get Gymbo") is deliberately NOT here and needs no
     // entry: it is an <a href="/#cta"> that NAVIGATES. It does not call
     // scrollToId, so it is out of this gate's scope by construction, and
@@ -320,7 +323,13 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
     await route.fulfill({ status: 200, body: '{}' });
   });
 
-  await page.locator(WAITLIST_CTA('hero')).click();
+  // gy-14rfs: this test also flakes in CI only (10 first-attempt failures in
+  // 36 deploy runs, all "posts.length 0, expected 1" after 5s). The log below
+  // says whether the tap reached a hydrated button and where the page went.
+  const heroCta = page.locator(WAITLIST_CTA('hero'));
+  await installScrollRecorder(page);
+  await markScrollRecorder(heroCta, 'before click');
+  await heroCta.click();
   // 🔴 ADDRESSED BY ROLE, NOT BY "the group that contains an email input". On
   // success WaitlistForm REPLACES the fields with the confirmation line, so a
   // locator filtered on the email input stops matching the moment the thing it
@@ -330,7 +339,16 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
   await panel.locator('input[type="email"]').fill('gy-becxi-control@example.invalid');
   await panel.locator('button[type="submit"]').click();
 
-  await expect.poll(() => posts.length).toBe(1);
+  // The message is only known after the wait, so it is attached on failure;
+  // the assertion itself is unchanged.
+  try {
+    await expect.poll(() => posts.length).toBe(1);
+  } catch (e) {
+    await markScrollRecorder(heroCta, 'poll timed out');
+    const where = await page.evaluate(() => `url=${location.href} activeInPanels=${[...document.querySelectorAll('[role="group"][aria-label="Request access"]')].map((g) => g.contains(document.activeElement)).join(',')}`);
+    (e as Error).message += `\n${where}${await readScrollLog(page)}`;
+    throw e;
+  }
   expect(new URL(posts[0]).pathname).toBe('/api/waitlist');
   await expect(panel.getByText(/request received/i)).toBeVisible();
 });
@@ -393,26 +411,8 @@ test('the capture opens below the fold without the page chasing it (preventScrol
   // report and the trace is recorded on the RETRY, so the failing attempt left
   // no evidence. Record who moved the page, so the next flake names its cause
   // in its own failure message instead of being retried away.
-  await page.evaluate(() => {
-    const w = window as unknown as { __scrollLog: string[] };
-    w.__scrollLog = [];
-    const t0 = performance.now();
-    const who = (el: Element | null) =>
-      el ? `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.getAttribute('name') ? `[name=${el.getAttribute('name')}]` : ''}` : 'null';
-    const log = (s: string) => w.__scrollLog.push(`+${Math.round(performance.now() - t0)}ms ${s}`);
-    const caller = () => (new Error().stack ?? '').split('\n').slice(2, 5).map((l) => l.trim()).join(' | ');
-    window.addEventListener('scroll', () => log(`scroll y=${window.scrollY} active=${who(document.activeElement)}`));
-    const focus = HTMLElement.prototype.focus;
-    HTMLElement.prototype.focus = function (this: HTMLElement, opts?: FocusOptions) {
-      log(`focus(${JSON.stringify(opts ?? null)}) on ${who(this)} from ${caller()}`);
-      return focus.call(this, opts);
-    };
-    const siv = Element.prototype.scrollIntoView;
-    Element.prototype.scrollIntoView = function (this: Element, arg?: boolean | ScrollIntoViewOptions) {
-      log(`scrollIntoView(${JSON.stringify(arg ?? null)}) on ${who(this)} from ${caller()}`);
-      return siv.call(this, arg as ScrollIntoViewOptions);
-    };
-  });
+  await installScrollRecorder(page);
+  await markScrollRecorder(cta, 'before tap');
 
   // 🔴 A TAP AT THE CTA'S OWN COORDINATES, NOT locator.click(). Playwright's
   // click scrolls its target into view FIRST, and it honours scroll-padding.
@@ -427,9 +427,9 @@ test('the capture opens below the fold without the page chasing it (preventScrol
 
   const boxAfter = (await cta.boundingBox())!;
   const scrollAfter = await page.evaluate(() => window.scrollY);
-  const scrollLog = await page.evaluate(() => (window as unknown as { __scrollLog: string[] }).__scrollLog.join('\n'));
+  const scrollLog = await readScrollLog(page);
   expect(Math.abs(scrollAfter - scrollBefore),
-    `focusing a below-the-fold field must not scroll the page\n--- scroll/focus log (gy-14rfs) ---\n${scrollLog || '(no scroll, focus or scrollIntoView recorded)'}`,
+    `focusing a below-the-fold field must not scroll the page${scrollLog}`,
   ).toBeLessThanOrEqual(2);
   expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
 });

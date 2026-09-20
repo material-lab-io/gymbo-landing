@@ -126,7 +126,18 @@
    top border. md and up has no bar (md:hidden), so no padding there. */
 @media (max-width: 47.99rem) {
   html {
-    scroll-padding-bottom: calc(var(--g-space-3) + var(--g-size-cta-height) + var(--g-space-3) + env(safe-area-inset-bottom, 0px) + var(--g-space-3));
+    /* ONE definition of "the space the sticky bar covers", read by both rules
+       below, so they cannot drift apart (#190 added the second user). */
+    --gy-sticky-bar-clearance: calc(var(--g-space-3) + var(--g-size-cta-height) + var(--g-space-3) + env(safe-area-inset-bottom, 0px) + var(--g-space-3));
+    scroll-padding-bottom: var(--gy-sticky-bar-clearance);
+  }
+  /* App Review 1.5 (#190, designer 16:17Z): at max scroll on a phone the
+     footer's last line (the support contact) sat UNDER the fixed sticky bar
+     (line y720-738 vs bar top 719; the hit-test returned the bar), so the
+     contact was never visible. Scroll padding cannot help at max scroll: there
+     is no more page to scroll. The page itself must end below the bar. */
+  .gy-clear-sticky-bar {
+    padding-bottom: var(--gy-sticky-bar-clearance);
   }
 }
 .gy-focus-ring-on-cta:focus-visible {
