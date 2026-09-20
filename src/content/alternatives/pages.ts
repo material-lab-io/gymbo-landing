@@ -12,9 +12,12 @@ const truecoach: Post = {
   title: "truecoach is built for remote coaching in dollars. gymbo is built for india.",
   dek: "TrueCoach is a genuinely good product: one of the cleanest tools out there for coaches who program closely for remote 1:1 clients. But it's built for Western online coaching: priced in US dollars, capped by client count, with no UPI, no GST invoicing, and no WhatsApp.",
   date: "2026-06-23",
-  metaTitle: "TrueCoach Alternative for India | Gymbo",
+  // metaTitle/metaDescription are unused (no code reads them — see the static
+  // build entry instead) but kept in sync so a future edit here isn't a false fix.
+  // The served <title>/<meta description> live in alternatives/truecoach/index.html.
+  metaTitle: "TrueCoach Alternative for Personal Trainers in India | Gymbo",
   metaDescription:
-    "TrueCoach is a strong remote-coaching tool, but it's priced in dollars, caps your clients, and has no UPI, GST, or WhatsApp. An honest comparison for Indian trainers.",
+    "TrueCoach is a strong remote-coaching tool, but it's priced in dollars, caps your clients, and has no UPI, GST, or WhatsApp. An honest comparison for personal trainers in India.",
   faq: [
     {
       q: "Is there a TrueCoach alternative for Indian personal trainers?",
@@ -107,9 +110,12 @@ const trainerize: Post = {
   title: "trainerize is built for $100 sessions. gymbo is built for india.",
   dek: "Trainerize is a genuinely strong coaching platform, used by 400,000+ trainers worldwide. But it's priced and shaped for Western coaching businesses. If you're an independent trainer in India charging ₹500–1,500 a session, the dollars, the missing UPI/GST, and no WhatsApp don't fit.",
   date: "2026-06-23",
-  metaTitle: "Trainerize Alternative for India | Gymbo",
+  // metaTitle/metaDescription are unused (no code reads them — see the static
+  // build entry instead) but kept in sync so a future edit here isn't a false fix.
+  // The served <title>/<meta description> live in alternatives/trainerize/index.html.
+  metaTitle: "Trainerize Alternative for Personal Trainers in India | Gymbo",
   metaDescription:
-    `Trainerize is built for $100 sessions. Gymbo is built for how India trains: UPI, GST, WhatsApp, and India pricing from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo. An honest comparison for independent trainers.`,
+    `Trainerize is built for $100 sessions. Gymbo is built for how India trains: UPI, GST, WhatsApp, and India pricing from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo. An honest comparison for independent personal trainers.`,
   faq: [
     {
       q: "Is there a Trainerize alternative for Indian personal trainers?",

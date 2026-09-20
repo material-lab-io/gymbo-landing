@@ -99,6 +99,47 @@
   outline: 2px solid var(--g-color-neutral-dark-fg);
   outline-offset: 2px;
 }
+/* gy-w77x3 B2c -- the focus ring for a CTA on a LIGHT surface.
+   Found by capturing, not by the test: after a keyboard dismiss the opener
+   matched :focus-visible and NOTHING was drawn. Every amber CTA carried
+   focus-visible:outline-none + focus-visible:ring-2, and the ring is a
+   box-shadow, which the element's inline style={{ boxShadow: SHADOW.cta }}
+   overrides. So no amber CTA on the site had a visible focus indicator
+   (WCAG 2.4.7). An OUTLINE is a different property from box-shadow, so the
+   elevation shadow can no longer erase it.
+   Charcoal on the bone page: #0a0a0a vs #fafaf7 = 19.3:1. The 2px offset puts
+   bone between the ring and the amber fill, so the ring's only adjacency is
+   the page. The dark-surface twin is .gy-focus-ring-dark above (bone, 17.3:1). */
+.gy-focus-ring-light:focus-visible {
+  outline: 2px solid var(--g-color-neutral-dark-0);
+  outline-offset: 2px;
+}
+/* gy-w77x3 B7 -- WCAG 2.4.11 Focus Not Obscured. Below md the sticky CTA bar
+   is fixed to the bottom of the viewport. With no scroll padding, Tabbing onto
+   the pricing Annual button scrolled it to y 852-900 while the bar's top sat at
+   832, so the focused control was entirely hidden (designer, at 971ade6a1 and
+   on main). scroll-padding-bottom makes focus scrolling (and anchor jumps)
+   stop short of the bar.
+   The value is the bar's own box, from the same tokens the bar is built from:
+   pt-3 + the lg CTA height (--g-size-cta-height) + the 12px bottom padding +
+   the safe-area inset, plus a --g-space-3 gap so a focus ring clears the bar's
+   top border. md and up has no bar (md:hidden), so no padding there. */
+@media (max-width: 47.99rem) {
+  html {
+    /* ONE definition of "the space the sticky bar covers", read by both rules
+       below, so they cannot drift apart (#190 added the second user). */
+    --gy-sticky-bar-clearance: calc(var(--g-space-3) + var(--g-size-cta-height) + var(--g-space-3) + env(safe-area-inset-bottom, 0px) + var(--g-space-3));
+    scroll-padding-bottom: var(--gy-sticky-bar-clearance);
+  }
+  /* App Review 1.5 (#190, designer 16:17Z): at max scroll on a phone the
+     footer's last line (the support contact) sat UNDER the fixed sticky bar
+     (line y720-738 vs bar top 719; the hit-test returned the bar), so the
+     contact was never visible. Scroll padding cannot help at max scroll: there
+     is no more page to scroll. The page itself must end below the bar. */
+  .gy-clear-sticky-bar {
+    padding-bottom: var(--gy-sticky-bar-clearance);
+  }
+}
 .gy-focus-ring-on-cta:focus-visible {
   outline: none;
   box-shadow:

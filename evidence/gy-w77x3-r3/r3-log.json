@@ -1,0 +1,268 @@
+[
+  {
+    "id": "B5a-before-nav-tap",
+    "visibleForms": 1,
+    "visibleSubmits": 1,
+    "stickyBarInDom": true,
+    "barTop": 419,
+    "focus": {
+      "what": "name",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 488,
+      "bottom": 536
+    }
+  },
+  {
+    "id": "B5a",
+    "visibleForms": 1,
+    "visibleSubmits": 1,
+    "stickyBarInDom": false,
+    "barTop": null,
+    "focus": {
+      "what": "name",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 152,
+      "bottom": 200
+    }
+  },
+  {
+    "id": "B5c",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "nav",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 16,
+      "bottom": 60
+    }
+  },
+  {
+    "id": "B5b",
+    "visibleForms": 1,
+    "visibleSubmits": 1,
+    "stickyBarInDom": false,
+    "barTop": null,
+    "focus": {
+      "what": "name",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 152,
+      "bottom": 200
+    }
+  },
+  {
+    "id": "K1-nav@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": null,
+    "focus": {
+      "what": "nav",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 16,
+      "bottom": 60
+    }
+  },
+  {
+    "id": "K1-hero-waitlist@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": null,
+    "focus": {
+      "what": "hero",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 477,
+      "bottom": 533
+    }
+  },
+  {
+    "id": "K1-gallery@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "gallery",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 332,
+      "bottom": 388
+    }
+  },
+  {
+    "id": "K1-sticky-pill@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "footer",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 744,
+      "bottom": 800
+    }
+  },
+  {
+    "id": "K1-footer-submit@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "submit",
+      "focusVisible": true,
+      "outline": "none 3px rgb(10, 10, 10) offset 0px",
+      "top": 404,
+      "bottom": 452
+    }
+  },
+  {
+    "id": "K1-pricing-monthly@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 336,
+      "bottom": 384
+    }
+  },
+  {
+    "id": "K1-pricing-annual@375",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 336,
+      "bottom": 384
+    }
+  },
+  {
+    "id": "K1-nav@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "nav",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 16,
+      "bottom": 60
+    }
+  },
+  {
+    "id": "K1-hero-waitlist@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "hero",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 670,
+      "bottom": 726
+    }
+  },
+  {
+    "id": "K1-gallery@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "gallery",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 422,
+      "bottom": 478
+    }
+  },
+  {
+    "id": "K1-footer-submit@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "submit",
+      "focusVisible": true,
+      "outline": "none 3px rgb(10, 10, 10) offset 0px",
+      "top": 553,
+      "bottom": 601
+    }
+  },
+  {
+    "id": "K1-pricing-monthly@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 426,
+      "bottom": 474
+    }
+  },
+  {
+    "id": "K1-pricing-annual@1440",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 0,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 426,
+      "bottom": 474
+    }
+  },
+  {
+    "id": "K2-tab1",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(240, 240, 235) offset 2px",
+      "top": 670,
+      "bottom": 718
+    }
+  },
+  {
+    "id": "K2-tab2",
+    "visibleForms": 0,
+    "visibleSubmits": 0,
+    "stickyBarInDom": true,
+    "barTop": 731,
+    "focus": {
+      "what": "pricing",
+      "focusVisible": true,
+      "outline": "solid 2px rgb(10, 10, 10) offset 2px",
+      "top": 320,
+      "bottom": 368
+    }
+  }
+]

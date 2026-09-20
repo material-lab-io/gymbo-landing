@@ -3,7 +3,7 @@ import { Check, Plus } from "lucide-react";
 import { WaitlistForm } from "../components/WaitlistForm";
 import { InlineWaitlist } from "../components/InlineWaitlist";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, waitlistScrollCtaProps } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, WhatsAppCTA, WHATSAPP_PLAIN, WhatsAppButton, WaitlistPlainButton } from "../forge-ui";
 import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, STATUS_LANGUAGE } from "../lib/trialAccess";
 
 /* ============================================================================
@@ -34,7 +34,7 @@ const FAQ: { q: string; a: string }[] = [
   { q: "Is Gymbo a good WellnessZ alternative?", a: `For personal trainers, yes, Gymbo is built around session logging, payments, and scheduling at a flat ₹${PRICE_MONTHLY_INR}/month. WellnessZ is better if your core service is nutrition and meal planning.` },
   { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class logging, automatic balance math, payment tracking) for independent personal trainers." },
   { q: "Is Gymbo cheaper than WellnessZ?", a: `Gymbo is ₹${PRICE_MONTHLY_INR}/month (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120.` },
-  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Yes, Gymbo supports bulk client import so you can bring your roster over." },
+  { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number." },
   { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training: one-tap session logging, payments, scheduling, a workout builder, and an AI assistant. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },
 ];
 
@@ -105,10 +105,15 @@ export function CompareWellnessZ() {
           <button onClick={() => scrollToId("faq")} className="text-[14px] transition-colors" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 500 }}>FAQ</button>
         </div>
 
+        {/* gy-w77x3 D3 — same treatment as the landing nav, for the same reason:
+            a waitlist control that scrolls on one page and reveals on another is
+            the inconsistency Damini reported, wearing a different URL. */}
         <div className="flex items-center gap-2.5">
-          <button {...waitlistScrollCtaProps("nav")} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-            Get Gymbo
-          </button>
+          <InlineWaitlist dismissible reducedMotion={prefersReduced} panelClassName="absolute right-0 top-full z-50">
+            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+              Request access
+            </WaitlistPlainButton>
+          </InlineWaitlist>
         </div>
       </nav>
 
@@ -317,7 +322,7 @@ export function CompareWellnessZ() {
             </Reveal>
             <Reveal>
               <p className="mt-6 text-[15px] md:text-[16px]" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Moving your clients over is straightforward: Gymbo supports bulk client import, so you can bring your roster in rather than re-typing it. Your sessions and payments start fresh in a structure built for training.
+                Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number. Your sessions and payments start fresh in a structure built for training.
               </p>
             </Reveal>
             {/* Structural social-proof slot — Gymbo is in private alpha; a real switcher

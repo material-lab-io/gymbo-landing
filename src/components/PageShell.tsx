@@ -50,6 +50,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 
       <nav
         aria-label="Main navigation"
+        data-fixed-chrome="nav"
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
         style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
       >
@@ -69,7 +70,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex items-center gap-2.5">
           <a href={`${HOME}#cta`} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
-            Get Gymbo
+            Request access
           </a>
         </div>
       </nav>
