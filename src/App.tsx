@@ -474,7 +474,7 @@ export default function App() {
 
             <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel mt-6 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery" aria-describedby="gallery-position">
               {SCREENS.map((s, index) => (
-                <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
+                <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center gy-focus-ring-dark">
                   <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
@@ -732,16 +732,26 @@ function BrandMarquee() {
             ))}
           </div>
         ) : (
+          // gy-mtlt0 AC-1b: the ring CANNOT live on .marquee-mask. Its mask box is the
+          // border box, and an outline at outline-offset sits OUTSIDE that box where the
+          // mask has no coverage, so alpha is 0 along all four sides. Measured on prod:
+          // ring computed correctly as 2px solid rgb(240,240,235) and painted ZERO pixels;
+          // the same ring with mask-image:none painted 390px per row across x 0..778. So
+          // the focus target and the ring move to this unmasked wrapper, which hugs the
+          // strip -- NOT to the existing padded parent, which is 232px tall around a 44px
+          // strip and would be a focus indicator that fails to indicate.
           <div
             role="region"
             aria-label="Brand touchpoints"
             tabIndex={0}
-            className="marquee-mask relative overflow-hidden"
+            className="gy-marquee gy-focus-ring-dark"
           >
-            <div className="marquee-track flex gap-2 w-max">
-              {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
-                <MarqueeChip key={`${c.name}-${i}`} t={c} />
-              ))}
+            <div className="marquee-mask relative overflow-hidden">
+              <div className="marquee-track flex gap-2 w-max">
+                {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
+                  <MarqueeChip key={`${c.name}-${i}`} t={c} />
+                ))}
+              </div>
             </div>
           </div>
         )}
