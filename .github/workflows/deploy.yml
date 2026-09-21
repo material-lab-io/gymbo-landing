@@ -143,6 +143,21 @@ jobs:
         # the referrer host instead of the engine slug, add a "direct"
         # fallback); each is caught.
 
+      - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
+        run: node --test tests/master-asset-drift.test.mjs
+        # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
+        # repos with fixed dates and asserts the verdicts of
+        # scripts/check-master-asset-drift.mjs. NOTHING in CI runs that script
+        # against the real Gymbo-v1 checkout, so a green step here says the
+        # checker works and says NOTHING about whether any landing master is
+        # fresh. Wiring it to a real checkout is gy-1je63 and it must NOT land in
+        # this job: the signal is monotonic (stays FOUND until a recapture), and a
+        # monotonic input in the sole required check is a scheduled outage
+        # generator (gy-7anl3, gy-fs7pe).
+        # Mutation-checked six ways (drop the can-see controls, trust any sha,
+        # additions-only, no non-visual exemption, FOUND outranking blindness,
+        # wrong date direction); each fails the specific test built for it.
+
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
         run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from

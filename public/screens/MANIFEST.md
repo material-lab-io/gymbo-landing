@@ -145,3 +145,34 @@ The build number, app version, and commit SHA are all knowable at
 capture time inside the Gymbo-v1 repo/CI — this manifest schema doesn't
 require anything the capture pipeline doesn't already have; it just
 needs to stop throwing that information away.
+
+## Asset drift: "did the screen change" (gy-iit8q) — 🔴 UNWIRED
+
+The freshness gate above asks how OLD a master is. It cannot say whether the
+app's SCREEN changed since, and neither can a code diff: on 2026-09-21 an audit
+that read every Swift value change returned "no change" for two masters that had
+visibly changed, because PR #568 swapped the bottom-bar avatar by adding an
+image asset and no `.swift` line said so.
+
+`scripts/check-master-asset-drift.mjs` diffs the app's `ios/Gymbo/Resources`
+tree from each master's capture build to the app's main and reports what changed.
+Read its header before trusting it. In short:
+
+- **UNWIRED.** Its logic is unit-tested in CI, but nothing runs it against the
+  real Gymbo-v1 checkout. Wiring is gy-1je63. Until then it protects nothing.
+- **Advisory, never blocking, never in `deploy`.** Its signal is monotonic, so it
+  would be a scheduled outage generator exactly like the age gate was (gy-7anl3,
+  gy-fs7pe).
+- **Three outcomes, three exit codes:** 0 NONE, 3 FOUND, 2 COULD-NOT-LOOK.
+  Blindness (shallow clone, missing resources tree, missing manifest entry) is
+  never reported as NONE and outranks FOUND.
+- **It reports what changed, not what is depicted.** A FOUND means resources
+  changed since that master's capture; whether that master shows them needs a
+  human or a rendered comparison. It is not a pixel check.
+- **Every master is on the approximate date anchor today.** The manifest's
+  `gymboCommitSha` (86f34ef2) is the unmerged capture branch and is not in
+  Gymbo-v1's history. A recapture that records a reachable sha makes it exact.
+
+```
+node scripts/check-master-asset-drift.mjs --app-repo <full Gymbo-v1 clone>
+```
