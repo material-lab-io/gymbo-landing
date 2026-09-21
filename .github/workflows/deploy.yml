@@ -143,6 +143,21 @@ jobs:
         # the referrer host instead of the engine slug, add a "direct"
         # fallback); each is caught.
 
+      - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
+        run: node --test tests/master-asset-drift.test.mjs
+        # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
+        # repos with fixed dates and asserts the verdicts of
+        # scripts/check-master-asset-drift.mjs. NOTHING in CI runs that script
+        # against the real Gymbo-v1 checkout, so a green step here says the
+        # checker works and says NOTHING about whether any landing master is
+        # fresh. Wiring it to a real checkout is gy-1je63 and it must NOT land in
+        # this job: the signal is monotonic (stays FOUND until a recapture), and a
+        # monotonic input in the sole required check is a scheduled outage
+        # generator (gy-7anl3, gy-fs7pe).
+        # Mutation-checked six ways (drop the can-see controls, trust any sha,
+        # additions-only, no non-visual exemption, FOUND outranking blindness,
+        # wrong date direction); each fails the specific test built for it.
+
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
         run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
@@ -351,10 +366,12 @@ jobs:
           # twice after it was caught PASSING under the mutation it exists to
           # catch — see the comments in the spec).
           #
-          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: tests/smoke.spec.ts still runs
-          # NOWHERE in CI. analytics-guard.spec.ts was in that same state until
-          # 2026-09-18 and is now wired below. Do not assume a spec in tests/ is
-          # gating anything — check this file.
+          # 🔴 NOTE FOR WHOEVER TOUCHES THIS NEXT: do not assume a spec in tests/
+          # is gating anything — check this file. Three specs sat unexecuted by CI
+          # until gy-w7x93 (smoke, overlay-dismiss, support-contact) and
+          # analytics-guard until 2026-09-18; the first time smoke ran it was red
+          # (two assertions pinned hero copy the claim-truth pass had rewritten).
+          # The client journey runs in its own step (run-client-journey.sh).
           scripts/pw-test.sh tests/inline-waitlist.spec.ts --project=desktop --project=mobile || RC=1
 
           # gy-kzfg9 — the Umami hostname guard, gated as BEHAVIOUR.
@@ -416,6 +433,22 @@ jobs:
           # (no browser, no emulator dependency), so it runs regardless of
           # whether the Pages emulator above is up.
           scripts/pw-test.sh tests/copy-facts.spec.ts --project=desktop || RC=1
+
+          # gy-w7x93 — the behavioural suites that had never been executed by CI.
+          #
+          # WHY THIS BLOCKS. smoke.spec.ts carries the property designer named as
+          # the one that must not be got wrong in gy-e9h9y (the hero WhatsApp CTA
+          # is a real <a>, not button+window.open, which no label assertion can
+          # see). overlay-dismiss.spec.ts is the gy-w77x3 dismiss/focus-return
+          # contract. support-contact.spec.ts pins App Review guideline 1.5: the
+          # Support URL must show a contact with JavaScript OFF, inside email_off.
+          # All three shipped, were well-written, carried controls, and gated
+          # nothing — a never-fired capability reads as protection to anyone who
+          # opens the file (playbook rules 34, 107).
+          #
+          # A spec that runs no tests must not read green: Playwright exits
+          # non-zero on "no tests found", and this step's RC catches it.
+          scripts/pw-test.sh tests/smoke.spec.ts tests/overlay-dismiss.spec.ts tests/support-contact.spec.ts --project=desktop --project=mobile || RC=1
 
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the

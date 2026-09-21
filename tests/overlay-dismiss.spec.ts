@@ -298,3 +298,35 @@ test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
     expect(obscured, 'a focused control hidden behind the sticky bar fails WCAG 2.4.11').toEqual([]);
   });
 });
+
+/**
+ * Post-merge live Tab pass (gy-w77x3, 10:4xZ): the panel's close control, the
+ * gallery arrows and the logo button matched :focus-visible and DREW NOTHING
+ * on getgymbo.com. The close control is #162's own. Every keyboard-reachable
+ * icon control must draw a computed outline, not just match the pseudo-class.
+ */
+test('icon controls (close, gallery arrows, logo) draw a focus ring', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  const ring = (sel: string) =>
+    page.locator(sel).first().evaluate((el) => {
+      const cs = getComputedStyle(el);
+      return `${el.matches(':focus-visible')}|${cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2}`;
+    });
+  const seen: Record<string, string> = {};
+  for (const sel of ['[aria-label="Gymbo, back to top"]', '[aria-label="Show next Gymbo screen"]']) {
+    await page.keyboard.press('Shift');
+    await page.locator(sel).first().focus();
+    seen[sel] = await ring(sel);
+  }
+  await page.locator(CTA('nav')).click();
+  await expect(page.locator(CLOSE)).toHaveCount(1);
+  await page.keyboard.press('Shift');
+  await page.locator(CLOSE).focus();
+  seen[CLOSE] = await ring(CLOSE);
+  expect(seen).toEqual({
+    '[aria-label="Gymbo, back to top"]': 'true|true',
+    '[aria-label="Show next Gymbo screen"]': 'true|true',
+    [CLOSE]: 'true|true',
+  });
+});
