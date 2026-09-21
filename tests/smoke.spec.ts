@@ -41,9 +41,17 @@ test('nav and hero render with the headline', async ({ page }) => {
   await expect(nav).toBeVisible();
   await expect(nav.getByText('Request access', { exact: true })).toBeVisible();
 
+  // gy-w7x93: this used to pin the words "fitness business" / "from your phone".
+  // Hero copy is content-owned and was rewritten by the claim-truth pass
+  // (gm-muo, ac308f4), so the assertion went red the first time CI ever ran this
+  // file — and a test pinned to superseded copy defends the old wording (rule 15).
+  // Wording facts are gated by copy-facts.spec.ts. What THIS test can honestly
+  // pin is structure: exactly one h1, on screen, carrying a real sentence.
   const h1 = page.locator('h1');
-  await expect(h1).toContainText(/fitness business/i);
-  await expect(h1).toContainText(/from your phone/i);
+  await expect(h1).toHaveCount(1);
+  await expect(h1).toBeVisible();
+  const headline = ((await h1.textContent()) ?? '').trim();
+  expect(headline.length, 'the hero h1 must carry a real headline, not an empty or stub node').toBeGreaterThan(20);
 });
 
 // gy-dyu6r.9: the source/dist gate checks exact asset identity; these browser
@@ -227,7 +235,13 @@ test('footer present, and no web-app references remain', async ({ page }) => {
 test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', async ({ page }) => {
   await page.goto('/');
   const h1 = page.locator('h1');
-  const subheadline = page.locator('p', { hasText: 'Track revenue, stay organized' });
+  // gy-w7x93: addressed as "the paragraph directly under the h1", not by its
+  // wording — the old locator matched the sentence 'Track revenue, stay
+  // organized', which the claim-truth pass (gm-muo, ac308f4) rewrote, so the
+  // font assertion below never got to run. A font-family test must not depend on
+  // the copy it is measuring.
+  const subheadline = page.locator('h1 + p');
+  await expect(subheadline).toHaveCount(1);
   await expect(subheadline).toBeVisible();
 
   const h1Family = await h1.evaluate((el) => getComputedStyle(el).fontFamily);
