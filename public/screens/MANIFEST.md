@@ -62,7 +62,7 @@ A content hash per entry (`sha256`), checked at gate time, would close it.
     "<sourceFile.png>": {     // key = filename in public/screens/real/
       "appVersion": "1.4.2",         // Gymbo-v1 app version at capture time
       "buildNumber": "231",          // Gymbo-v1 build number at capture time
-      "gymboCommitSha": "abc1234…",  // Gymbo-v1 commit the build was cut from
+      "gymboCommitSha": "abc1234…",  // Gymbo-v1 commit the build was cut from. MUST be reachable from Gymbo-v1 main (see the hard condition below)
       "capturedAt": "2026-08-10T09:00:00+05:30", // ISO-8601 capture timestamp
       "verified": true,              // real capture-run data, not backfilled
       "note": "optional free text"
@@ -135,7 +135,7 @@ the same commit:
 "hero-01-dashboard-clean.png": {
   "appVersion": "<from Info.plist / xcodebuild build settings>",
   "buildNumber": "<same>",
-  "gymboCommitSha": "<git rev-parse HEAD in Gymbo-v1 at capture time>",
+  "gymboCommitSha": "<full 40-char sha of a Gymbo-v1 commit that is an ANCESTOR of origin/main; see the hard condition below>",
   "capturedAt": "<capture run's own timestamp, ISO-8601>",
   "verified": true
 }
@@ -145,6 +145,43 @@ The build number, app version, and commit SHA are all knowable at
 capture time inside the Gymbo-v1 repo/CI — this manifest schema doesn't
 require anything the capture pipeline doesn't already have; it just
 needs to stop throwing that information away.
+
+### 🔴 HARD CONDITION: the recorded `gymboCommitSha` MUST be reachable from Gymbo-v1 main
+
+Do not record a sha that only exists on a branch. The 2026-08-12 capture
+(gy-5xmxm) was run from the branch `gy-5xmxm-landing-recapture` and recorded
+that branch's `86f34ef2`. The branch was never merged and is gone, so **all 8
+masters' provenance points at a commit nobody can open.** Nothing can be
+re-anchored to a real build, and the asset-drift check has to fall back to an
+approximate date anchor for every master.
+
+Before you commit a manifest entry, run this in a **full** Gymbo-v1 clone
+(`--depth 1` will not do):
+
+```
+git -C <Gymbo-v1 clone> fetch origin main
+git -C <Gymbo-v1 clone> merge-base --is-ancestor <the sha you are about to record> origin/main && echo REACHABLE
+```
+
+It must print `REACHABLE` (exit 0). If it does not:
+
+- capture from a commit that is on main, **or**
+- merge the capture branch first, then record the sha that main now has.
+
+Do not record the branch sha and explain it in `note`. A note does not make a
+sha resolvable.
+
+**What enforces this today, stated plainly:** nothing automatic. The freshness
+gate cannot verify reachability, because the required `deploy` job has no
+checkout of Gymbo-v1, and the gate must not be tightened to reject short shas:
+the eight current entries would turn the sole required check red. The
+asset-drift check (`scripts/check-master-asset-drift.mjs`) does detect this, by
+printing an APPROXIMATE anchor and the reason for every master whose sha is not
+an ancestor of main, but it is **unwired** until gy-1je63 lands. So today this
+condition is a rule you follow, not a control that catches you. The capture
+script that produces the sha (`scripts/capture-appstore-screenshots.sh`, landing
+profile, held as gy-rxppn) is the right place to refuse to publish from a
+non-main HEAD; that is noted on gy-rxppn.
 
 ## Asset drift: "did the screen change" (gy-iit8q) — 🔴 UNWIRED
 
