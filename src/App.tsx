@@ -333,7 +333,7 @@ export default function App() {
                   underneath these two buttons without moving the viewport. */}
               <InlineWaitlist className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`} reducedMotion={prefersReduced}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
-                  <WhatsAppCTA size="lg" location="hero">Talk to us</WhatsAppCTA>
+                  <WhatsAppCTA size="lg" location="hero">Talk to the founder</WhatsAppCTA>
                   <WaitlistCTA size="lg" location="hero" />
                 </div>
                 <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
