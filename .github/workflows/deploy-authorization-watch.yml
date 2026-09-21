@@ -1,0 +1,27 @@
+name: Deploy Authorisation Watch
+
+# gy-e9wa6 — a green PR that would publish getgymbo.com needs a durable ask
+# to PM, not an implementer self-merging a production deployment.
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  watch:
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Surface authorisation requests waiting over one hour
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/deploy-authorization-watch.mjs
