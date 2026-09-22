@@ -71,12 +71,33 @@ test("legacy/non-form POST with no source key stays NULL", async () => {
   }
 });
 
+test("tuple plus both UUIDv4 IDs are atomic at the waitlist handler", async () => {
+  const variants = [
+    { ...ATTRIBUTION, funnel_visit_id: undefined },
+    { ...ATTRIBUTION, funnel_visit_id: "not-a-uuid" },
+    { ...ATTRIBUTION, anonymous_visitor_id: undefined },
+    { ...ATTRIBUTION, anonymous_visitor_id: "not-a-uuid" },
+  ];
+  for (const variant of variants) {
+    const row = await postedRow({ ...CONTACT, ...variant });
+    for (const key of [
+      "source", "medium", "campaign", "funnel_visit_id",
+      "anonymous_visitor_id", "schema_version",
+    ]) {
+      assert.equal(row[key], null, `${key} must be NULL when either ID is missing/invalid`);
+    }
+  }
+});
+
 test("off-registry values cannot be emitted or stored by the waitlist boundary", async () => {
   for (const source of ["9876543210", "damini-rathi", "summer20", "naveen_maharashi_06"]) {
     const row = await postedRow({ ...CONTACT, ...ATTRIBUTION, source });
-    assert.equal(row.source, null);
-    assert.equal(row.medium, null);
-    assert.equal(row.campaign, null);
+    for (const key of [
+      "source", "medium", "campaign", "funnel_visit_id",
+      "anonymous_visitor_id", "schema_version",
+    ]) {
+      assert.equal(row[key], null);
+    }
     assert.equal(JSON.stringify(row).includes(source), false);
   }
 });

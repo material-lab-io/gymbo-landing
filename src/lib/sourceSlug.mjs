@@ -113,14 +113,21 @@ export function visitId(raw) {
   return new Set(hex).size >= 8 ? value : null;
 }
 
-/** Revalidate a browser payload and stamp the server-owned schema version. */
+/**
+ * Revalidate one atomic v5 payload and stamp the server-owned schema version.
+ * A tuple without BOTH trustworthy visit IDs is not a v5 measurement. Returning
+ * null makes both handlers null every attribution field together instead of
+ * creating a partial row that falsely claims schema_version=5.
+ */
 export function normalizeAttributionPayload(input = {}) {
   const tuple = normalizeAttributionTuple(input);
-  if (!tuple) return null;
+  const funnelVisitId = visitId(input.funnel_visit_id);
+  const anonymousVisitorId = visitId(input.anonymous_visitor_id);
+  if (!tuple || !funnelVisitId || !anonymousVisitorId) return null;
   return {
     ...tuple,
-    funnel_visit_id: visitId(input.funnel_visit_id),
-    anonymous_visitor_id: visitId(input.anonymous_visitor_id),
+    funnel_visit_id: funnelVisitId,
+    anonymous_visitor_id: anonymousVisitorId,
     schema_version: ATTRIBUTION_SCHEMA_VERSION,
   };
 }
@@ -186,7 +193,13 @@ export function resolveSource({ utmSource, referrer, selfHost } = {}) {
   return sourceSlug(utmSource) ?? sourceFromReferrer(referrer, selfHost) ?? SOURCE_UNKNOWN;
 }
 
-/** Resolve one complete registry-v5 tuple, preserving valid UTM precedence. */
+/**
+ * Resolve one complete registry-v5 tuple.
+ *
+ * Referrer inference is permitted only when no UTM field was attempted. Once a
+ * tagged attempt exists, an invalid tuple fails closed to unknown; falling
+ * through would silently credit a different channel for a broken/private tag.
+ */
 export function resolveAttribution({
   utmSource,
   utmMedium,
@@ -194,12 +207,17 @@ export function resolveAttribution({
   referrer,
   selfHost,
 } = {}) {
+  const hasTaggedAttempt = [utmSource, utmMedium, utmCampaign]
+    .some((value) => value !== null && value !== undefined);
   const tagged = normalizeAttributionTuple({
     source: utmSource,
     medium: utmMedium,
     campaign: utmCampaign,
   });
   if (tagged) return tagged;
+  if (hasTaggedAttempt) {
+    return { source: SOURCE_UNKNOWN, medium: null, campaign: null };
+  }
 
   return parsedReferrer(referrer, selfHost) ?? {
     source: SOURCE_UNKNOWN,

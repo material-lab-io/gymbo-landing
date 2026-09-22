@@ -134,6 +134,29 @@ test("resource RPC preserves every canonical v5 tuple after server revalidation"
   } finally { f.restore(); }
 });
 
+test("tuple plus both UUIDv4 IDs are atomic at the resource handler", async () => {
+  const { onRequestPost } = await import(MOD);
+  const f = stubFetch(rpcOk());
+  const variants = [
+    { ...VALID, funnel_visit_id: undefined },
+    { ...VALID, funnel_visit_id: "not-a-uuid" },
+    { ...VALID, anonymous_visitor_id: undefined },
+    { ...VALID, anonymous_visitor_id: "not-a-uuid" },
+  ];
+  try {
+    for (const variant of variants) await onRequestPost(ctx(variant));
+    assert.equal(f.calls.length, variants.length, "positive control: every valid lead reached the RPC");
+    for (const call of f.calls) {
+      for (const key of [
+        "p_source", "p_medium", "p_campaign",
+        "p_funnel_visit_id", "p_anonymous_visitor_id",
+      ]) {
+        assert.equal(call.body[key], null, `${key} must be NULL when either ID is missing/invalid`);
+      }
+    }
+  } finally { f.restore(); }
+});
+
 test("server boundary refuses valid-shape raw values instead of forwarding them", async () => {
   const { onRequestPost } = await import(MOD);
   const f = stubFetch(rpcOk());

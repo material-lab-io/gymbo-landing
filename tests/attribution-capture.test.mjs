@@ -5,6 +5,7 @@ import {
   getAttribution,
   getAttributionSource,
 } from "../src/lib/attribution.ts";
+import { onRequestPost as postWaitlist } from "../functions/api/waitlist.js";
 
 const storage = () => {
   const values = new Map();
@@ -60,9 +61,10 @@ test("first touch captures the complete v5 tuple and secure IDs, then wins", () 
   }
 });
 
-test("valid-shape forbidden UTM values resolve to unknown and are never retained", () => {
+test("invalid tagged input with a valid referrer reaches the handler only as atomic unknown", async () => {
   const realWindow = globalThis.window;
   const realDocument = globalThis.document;
+  const realFetch = globalThis.fetch;
   const sessionStorage = storage();
   const localStorage = storage();
   const ids = [
@@ -79,7 +81,7 @@ test("valid-shape forbidden UTM values resolve to unknown and are never retained
     },
     crypto: { randomUUID: () => ids.shift() },
   };
-  globalThis.document = { referrer: "" };
+  globalThis.document = { referrer: "https://www.google.co.in/search?q=gymbo" };
 
   try {
     captureAttribution();
@@ -94,8 +96,39 @@ test("valid-shape forbidden UTM values resolve to unknown and are never retained
     );
     assert.equal(JSON.stringify(attribution).includes("naveen_maharashi_06"), false);
     assert.equal(JSON.stringify(attribution).includes("summer20"), false);
+
+    let row = null;
+    globalThis.fetch = async (_url, init) => {
+      row = JSON.parse(init.body);
+      return new Response(null, { status: 409 });
+    };
+    const response = await postWaitlist({
+      request: {
+        json: async () => ({
+          name: "A Trainer",
+          email: "trainer@example.invalid",
+          ...attribution,
+        }),
+      },
+      env: {},
+      waitUntil: () => {},
+    });
+    assert.equal(response.status, 200);
+    assert.deepEqual(
+      {
+        source: row.source,
+        medium: row.medium,
+        campaign: row.campaign,
+        funnel_visit_id: row.funnel_visit_id,
+        anonymous_visitor_id: row.anonymous_visitor_id,
+        schema_version: row.schema_version,
+      },
+      attribution,
+      "the actual waitlist handler must receive a complete unknown tuple, never Google",
+    );
   } finally {
     globalThis.window = realWindow;
     globalThis.document = realDocument;
+    globalThis.fetch = realFetch;
   }
 });

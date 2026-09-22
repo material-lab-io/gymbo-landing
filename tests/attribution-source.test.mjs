@@ -104,9 +104,10 @@ test("crossed, partial, and raw referral tuples are refused", () => {
   for (const tuple of invalid) assert.equal(normalizeAttributionTuple(tuple), null);
 });
 
-test("RFC 4122 v4 IDs are accepted; decorative and wrong-version IDs are dropped", () => {
-  const valid = "7b9c3e1a-52d4-4f86-a7c8-91e2d5f0ab34";
-  assert.equal(visitId(valid), valid);
+test("RFC 4122 v4 IDs are atomic with the tuple; partial v5 payloads are refused", () => {
+  const funnelId = "7b9c3e1a-52d4-4f86-a7c8-91e2d5f0ab34";
+  const visitorId = "c4d8e2a1-79b5-4f03-8c6d-2a9e7b1f5034";
+  assert.equal(visitId(funnelId), funnelId);
   for (const invalid of [
     "11111111-1111-4111-8111-111111111111",
     "7b9c3e1a-52d4-3f86-a7c8-91e2d5f0ab34",
@@ -115,20 +116,30 @@ test("RFC 4122 v4 IDs are accepted; decorative and wrong-version IDs are dropped
   ]) {
     assert.equal(visitId(invalid), null);
   }
+  assert.equal(
+    normalizeAttributionPayload({
+      source: "unknown",
+      medium: null,
+      campaign: null,
+      funnel_visit_id: funnelId,
+      anonymous_visitor_id: "not-a-uuid",
+    }),
+    null,
+  );
   assert.deepEqual(
     normalizeAttributionPayload({
       source: "unknown",
       medium: null,
       campaign: null,
-      funnel_visit_id: valid,
-      anonymous_visitor_id: "not-a-uuid",
+      funnel_visit_id: funnelId,
+      anonymous_visitor_id: visitorId,
     }),
     {
       source: "unknown",
       medium: null,
       campaign: null,
-      funnel_visit_id: valid,
-      anonymous_visitor_id: null,
+      funnel_visit_id: funnelId,
+      anonymous_visitor_id: visitorId,
       schema_version: 5,
     },
   );
@@ -179,7 +190,7 @@ test("an explicit tag beats an inferred one", () => {
   );
 });
 
-test("an invalid explicit tuple cannot poison or outrank a valid referrer", () => {
+test("an attempted invalid UTM tuple fails closed instead of crediting a valid referrer", () => {
   assert.deepEqual(
     resolveAttribution({
       utmSource: "damini-rathi",
@@ -188,7 +199,7 @@ test("an invalid explicit tuple cannot poison or outrank a valid referrer", () =
       referrer: "https://www.google.co.in/search?q=gymbo",
       selfHost: "getgymbo.com",
     }),
-    { source: "google", medium: "organic", campaign: null },
+    { source: "unknown", medium: null, campaign: null },
   );
   assert.deepEqual(
     resolveAttribution({
