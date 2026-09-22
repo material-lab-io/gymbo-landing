@@ -21,6 +21,39 @@ const ignore = (t) =>
 
 const browser = await chromium.launch();
 const failures = [];
+// This gate checks our JS, not the availability of third-party telemetry or
+// font CDNs. Merely ignoring their console noise is insufficient: page.goto()
+// waits for the `load` event, so a stalled ignored request can still hold the
+// navigation open until its 30s deadline after every first-party asset has
+// loaded (gy-cbbdo, run 35691032310 attempts 1 and 2).
+//
+// Keep `waitUntil: "load"` for all first-party resources. Isolate only the
+// exact external hosts the gate already declares non-gating, so this does not
+// turn into a broader request filter or make our own bundle/assets optional.
+const ignoredThirdPartyHosts = new Set([
+  "analytics.getgymbo.com",
+  "fonts.googleapis.com",
+  "fonts.gstatic.com",
+]);
+const isolatedThirdPartyHosts = new Set();
+const baseOrigin = new URL(base).origin;
+
+const newCheckedPage = async () => {
+  const page = await browser.newPage();
+  await page.route("**/*", async (route) => {
+    const requestUrl = new URL(route.request().url());
+    if (
+      requestUrl.origin !== baseOrigin &&
+      ignoredThirdPartyHosts.has(requestUrl.hostname)
+    ) {
+      isolatedThirdPartyHosts.add(requestUrl.hostname);
+      await route.abort("blockedbyclient");
+      return;
+    }
+    await route.continue();
+  });
+  return page;
+};
 // gy-pvi8y: tracked separately from `failures`/`paths` on purpose. The
 // dark-seed check below is a single extra assertion, not one of the
 // sitemap routes -- folding its failure into `failures` while reporting
@@ -37,7 +70,7 @@ let darkSeedFailed = null;
 // still renders light — this is the one check that would have caught the
 // actual incident; a plain page-load check (no seeded storage) never would.
 {
-  const themePage = await browser.newPage();
+  const themePage = await newCheckedPage();
   await themePage.addInitScript(() => localStorage.setItem("theme", "dark"));
   await themePage.goto(base + "/", { waitUntil: "load", timeout: 30000 });
   await themePage.waitForTimeout(300);
@@ -58,7 +91,7 @@ let darkSeedFailed = null;
 }
 
 for (const p of paths) {
-  const page = await browser.newPage();
+  const page = await newCheckedPage();
   const errors = [];
   page.on("console", (m) => {
     if (m.type() === "error" && !ignore(m.text())) errors.push(m.text());
@@ -82,6 +115,11 @@ for (const p of paths) {
   }
 }
 await browser.close();
+
+if (isolatedThirdPartyHosts.size) {
+  const hosts = [...isolatedThirdPartyHosts].sort().join(", ");
+  console.log(`console-check: isolated non-gating third-party host(s): ${hosts}`);
+}
 
 if (darkSeedFailed) console.error(`\nconsole-check: dark-seed invariant FAILED (${darkSeedFailed})`);
 if (failures.length) {
