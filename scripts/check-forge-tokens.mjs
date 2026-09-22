@@ -31,7 +31,7 @@
  *
  * Exits 1 on drift, 0 when clean. `--list` prints the token table and exits 0.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, isAbsolute, sep } from 'node:path';
 import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
@@ -89,6 +89,73 @@ function walk(dir, out = []) {
     const p = join(dir, e);
     if (statSync(p).isDirectory()) walk(p, out);
     else if (EXT.test(p)) out.push(p);
+  }
+  return out;
+}
+
+// ============================================================================
+// COMMITTED IMAGE ASSETS — gy-rosvo. THE RULE HERE IS DELIBERATELY INVERTED.
+//
+// 🔴 THE GAP THIS CLOSES, and it was a DOUBLE blind, not the single one filed.
+// The bead reported that EXT excluded .svg. That was true and it was only half:
+// SCAN is [src, functions] and every committed .svg lives in public/. So the
+// brand marks were out of scope by EXTENSION *and* by DIRECTORY. Adding .svg to
+// EXT alone would have changed NOTHING while looking exactly like a fix — the
+// same fail-open shape as gy-swdgh and gy-aczn1 before it.
+//
+// 🔴 WHY THE SOURCE RULE CANNOT BE REUSED HERE, measured before it was written.
+// Above, a hex that EQUALS a token is the error ("use var(--token)"). Applying
+// that to these files would have emitted "#ff9800 is exactly --g-color-mark-amber
+// — use var(--g-color-mark-amber)" against all three SVGs. That advice is WRONG:
+// every one of them is referenced as a standalone file (src=/href= in App.tsx,
+// PageShell.tsx, CompareWellnessZ.tsx and index.html — checked, none is inlined),
+// and a CSS custom property does not resolve inside an SVG loaded that way. The
+// gate would have demanded a change that breaks the asset, gone red across the
+// asset tree on day one, and been switched off by the next person — which AC4 of
+// gy-rosvo names as worse than the gap.
+//
+// So for a standalone asset the polarity flips:
+//   a hex that EQUALS a current Forge token is CORRECT — it IS the brand value,
+//   pinned to the palette, and it is the only way an un-inlined SVG can express it;
+//   a hex that matches NO token is the DEFECT — the asset has drifted off the
+//   palette, or the palette moved and the asset did not follow.
+//
+// That second half is the protection the tree did not have. forge.css line 29-30
+// already declares the binding in prose ("Backs ... gymbo-mark-amber-ff9800.svg");
+// this makes the binding enforceable. Change --g-color-mark-amber in Forge and
+// these files stop matching, fail, and NAME THEMSELVES.
+//
+// The FILENAME is checked on the same rule, because gy-rosvo found the hex is
+// carried in both places (gymbo-mark-amber-ff9800.svg) and a filename that still
+// advertises a retired colour is a stale claim a reader will believe.
+//
+// 🔴 KNOWN COVERAGE LIMIT, stated because I tried to claim more and the gate
+// correctly refused me. The token table is keyed by HEX VALUE, not token name, so
+// this asks "is this colour still SOMEWHERE in the palette?" and not "is this the
+// specific token that backs this file?". The mark colour is deliberately declared
+// twice — --g-color-mark-amber in forge.css and --g-mark-on-dark in forge.dark.css,
+// same value by the FORGE §7 ground-naming rule. So:
+//   CAUGHT  — the value is retired from the palette entirely, or someone hand-edits
+//             an asset to an off-palette colour. Proven: retiring #ff9800 from both
+//             files fails the gate and names favicon.svg and the amber mark, both
+//             untouched, including the filename claim.
+//   NOT CAUGHT — a PARTIAL move where --g-color-mark-amber changes but the same hex
+//             survives under --g-mark-on-dark. The asset would then be pinned to a
+//             token that no longer backs it and this gate stays green.
+// Closing that needs a declared file->token binding, which forge.css currently
+// states only in prose ("Backs ... gymbo-mark-amber-ff9800.svg"). Deliberately not
+// invented here: that is a Forge authoring decision, and this gate has no authority
+// to assert one. A green here means "every asset colour is a live palette value",
+// never "every asset is pinned to its intended token".
+// ============================================================================
+const ASSET_SCAN = [join(ROOT, 'public')];
+const ASSET_EXT = /\.svg$/;
+
+function walkMatching(dir, re, out = []) {
+  for (const e of readdirSync(dir)) {
+    const p = join(dir, e);
+    if (statSync(p).isDirectory()) walkMatching(p, re, out);
+    else if (re.test(p)) out.push(p);
   }
   return out;
 }
@@ -218,6 +285,42 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
     }
   });
 }
+
+// --- COMMITTED ASSET SCAN (see the ASSET_SCAN block above for the inverted rule) ---
+const assetErrors = [];
+let assetFiles = 0;
+let assetHexOk = 0;
+for (const dir of ASSET_SCAN) {
+  if (!existsSync(dir)) continue;
+  for (const f of walkMatching(dir, ASSET_EXT)) {
+    assetFiles++;
+    const rel = relative(ROOT, f);
+    const lines = readFileSync(f, 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      for (const m of line.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) {
+        const hex = norm(m[0]);
+        if (tokens.has(hex)) assetHexOk++;
+        else
+          assetErrors.push(
+            `${rel}:${i + 1}  ${m[0]}  matches NO Forge token — a brand asset has drifted off the palette`,
+          );
+      }
+    });
+    // The filename carries the colour too (gymbo-mark-amber-ff9800.svg).
+    for (const m of (rel.split('/').pop() || '').matchAll(/\b[0-9a-fA-F]{6}\b/g)) {
+      if (!tokens.has(norm(m[0])))
+        assetErrors.push(
+          `${rel}  filename advertises ${m[0]}, which matches NO Forge token — stale colour in the name`,
+        );
+      else assetHexOk++;
+    }
+  }
+}
+console.log(
+  `\nCommitted assets scanned (${ASSET_EXT.source}) — ${assetFiles} file(s), ` +
+    `${assetHexOk} colour reference(s) pinned to a live token, ${assetErrors.length} off-palette.`,
+);
+if (assetErrors.length) for (const e of assetErrors) errors.push(e);
 
 if (advisory.length) {
   console.log(`\nAdvisory — ${advisory.length} literal(s) with no matching Forge token (NOT failing):`);
