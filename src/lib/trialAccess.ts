@@ -62,7 +62,7 @@ export const ACCESS_ROUTE_STEPS = [
 export const CANCEL_ROUTE = "through the App Store";
 export const DATA_EXPORT_ROUTE = "from the app";
 export const DATA_DELETION_ROUTE = "in the app or by contacting us";
-export const PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT = `Your ${TRIAL_DAYS}-day trial is free. After that, billing starts automatically through ${BILLING_CHANNEL} — ₹${PRICE_MONTHLY_INR}/month or ₹${PRICE_ANNUAL_INR_DISPLAY}/year, whichever you picked — and it renews each period until you cancel. Cancel anytime ${CANCEL_ROUTE}; your access continues until the end of the period you've already paid for. You can export your data ${DATA_EXPORT_ROUTE} whenever you like, and ask us to delete your account ${DATA_DELETION_ROUTE} — we remove or anonymise it within a reasonable period, except where we're required to keep some records by law.`;
+export const PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT = `Your ${TRIAL_DAYS}-day trial is free. After that, billing starts automatically through ${BILLING_CHANNEL} at ₹${PRICE_MONTHLY_INR}/month or ₹${PRICE_ANNUAL_INR_DISPLAY}/year, whichever you picked. It renews each period until you cancel. Cancel anytime ${CANCEL_ROUTE}; your access continues until the end of the period you've already paid for. You can export your data ${DATA_EXPORT_ROUTE} whenever you like and ask us to delete your account ${DATA_DELETION_ROUTE}. We remove or anonymise it within a reasonable period, except where we're required to keep some records by law.`;
 
 /** gm-t0e.3 — pricing-legibility line (gm-kkl item 2), shown once above the pricing cards. */
 export const PRICING_LEGIBILITY_LINE = "One price. No per-client fees.";

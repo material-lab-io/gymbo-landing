@@ -12,6 +12,8 @@
     "test:update": "playwright test --update-snapshots",
     "test:audit": "playwright test tests/audit.spec.ts",
     "test:audit:perf": "playwright test tests/audit-perf.spec.ts",
+    "test:copy-output": "node --test tests/no-em-dash.test.mjs",
+    "check:copy-output": "node scripts/check-no-em-dash.mjs",
     "typecheck": "tsc -b"
   },
   "dependencies": {
