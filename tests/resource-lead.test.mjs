@@ -18,12 +18,32 @@ const MOD = "../functions/api/resource-lead.js";
 const ENV = { SUPABASE_URL: "https://stub.invalid", SUPABASE_ANON_KEY: "stub-key" };
 
 const ctx = (body) => ({ request: { json: async () => body }, env: ENV });
+const ATTRIBUTION = {
+  source: "instagram",
+  medium: "organic_social",
+  campaign: "bio",
+  funnel_visit_id: "c4d8e2a1-79b5-4f03-8c6d-2a9e7b1f5034",
+  anonymous_visitor_id: "7b9c3e1a-52d4-4f86-a7c8-91e2d5f0ab34",
+  schema_version: 5,
+};
+const CANONICAL_TUPLES = [
+  { source: "instagram", medium: "organic_social", campaign: "bio" },
+  { source: "instagram", medium: "direct_message", campaign: "founder_outreach" },
+  { source: "instagram", medium: "organic_social", campaign: "android_referrer" },
+  { source: "unknown", medium: null, campaign: null },
+  ...["google", "bing", "duckduckgo", "yahoo", "yandex"]
+    .map((source) => ({ source, medium: "organic", campaign: null })),
+  { source: "referral", medium: "referral", campaign: "ref_0123456789abcdef0123456789abcdef" },
+  ...["softwaresuggest", "capterra", "getapp", "alternativeto", "saashub", "g2"]
+    .map((campaign) => ({ source: "directory", medium: "listing", campaign })),
+];
 const VALID = {
   resource_id: "workout-builder-starter-pack",
   email: "Trainer@Example.Invalid",
   name: "A Trainer",
   delivery_consent: true,
   delivery_consent_notice_version: "v1",
+  ...ATTRIBUTION,
 };
 
 /** Stub global fetch; returns the calls it saw so tests can assert on the payload. */
@@ -54,6 +74,83 @@ test("HAPPY PATH — a consented submission returns the gate and the opaque id",
     // reach the RPC. Without it, those tests would also pass if the handler were inert.
     assert.equal(f.calls.length, 1);
     assert.match(f.calls[0].url, /\/rest\/v1\/rpc\/resource_lead_submit$/);
+    assert.deepEqual(
+      {
+        source: f.calls[0].body.p_source,
+        medium: f.calls[0].body.p_medium,
+        campaign: f.calls[0].body.p_campaign,
+        funnel_visit_id: f.calls[0].body.p_funnel_visit_id,
+        anonymous_visitor_id: f.calls[0].body.p_anonymous_visitor_id,
+      },
+      {
+        source: ATTRIBUTION.source,
+        medium: ATTRIBUTION.medium,
+        campaign: ATTRIBUTION.campaign,
+        funnel_visit_id: ATTRIBUTION.funnel_visit_id,
+        anonymous_visitor_id: ATTRIBUTION.anonymous_visitor_id,
+      },
+      "the exact revalidated v5 payload must reach the RPC",
+    );
+  } finally { f.restore(); }
+});
+
+test("missing attribution forwards NULLs, never the forbidden landing default", async () => {
+  const { onRequestPost } = await import(MOD);
+  const f = stubFetch(rpcOk());
+  const noAttribution = Object.fromEntries(
+    Object.entries(VALID).filter(([key]) => !(key in ATTRIBUTION)),
+  );
+  try {
+    await onRequestPost(ctx(noAttribution));
+    assert.equal(f.calls.length, 1);
+    for (const key of [
+      "p_source", "p_medium", "p_campaign",
+      "p_funnel_visit_id", "p_anonymous_visitor_id",
+    ]) {
+      assert.equal(f.calls[0].body[key], null, `${key} must remain NULL`);
+    }
+    assert.equal(JSON.stringify(f.calls[0].body).includes("landing"), false);
+  } finally { f.restore(); }
+});
+
+test("resource RPC preserves every canonical v5 tuple after server revalidation", async () => {
+  const { onRequestPost } = await import(MOD);
+  const f = stubFetch(rpcOk());
+  try {
+    for (const tuple of CANONICAL_TUPLES) {
+      await onRequestPost(ctx({ ...VALID, ...tuple }));
+    }
+    assert.equal(f.calls.length, CANONICAL_TUPLES.length);
+    for (const [index, tuple] of CANONICAL_TUPLES.entries()) {
+      assert.deepEqual(
+        {
+          source: f.calls[index].body.p_source,
+          medium: f.calls[index].body.p_medium,
+          campaign: f.calls[index].body.p_campaign,
+        },
+        tuple,
+      );
+    }
+  } finally { f.restore(); }
+});
+
+test("server boundary refuses valid-shape raw values instead of forwarding them", async () => {
+  const { onRequestPost } = await import(MOD);
+  const f = stubFetch(rpcOk());
+  try {
+    for (const source of ["9876543210", "damini-rathi", "summer20", "naveen_maharashi_06"]) {
+      await onRequestPost(ctx({ ...VALID, source }));
+    }
+    assert.equal(f.calls.length, 4, "positive control: each valid lead reached the RPC");
+    for (const call of f.calls) {
+      assert.equal(call.body.p_source, null);
+      assert.equal(call.body.p_medium, null);
+      assert.equal(call.body.p_campaign, null);
+      const serialized = JSON.stringify(call.body);
+      for (const raw of ["9876543210", "damini-rathi", "summer20", "naveen_maharashi_06"]) {
+        assert.equal(serialized.includes(raw), false, `raw value escaped: ${raw}`);
+      }
+    }
   } finally { f.restore(); }
 });
 

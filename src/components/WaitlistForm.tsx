@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
-import { getAttributionSource } from "../lib/attribution";
+import { getAttribution } from "../lib/attribution";
 import { ACCESS_SUCCESS_MESSAGE } from "../lib/trialAccess";
 
 type Status = "idle" | "loading" | "done" | "error" | "needs-contact";
@@ -29,14 +29,17 @@ export function WaitlistForm() {
     }
     setStatus("loading");
     try {
+      const attribution = getAttribution();
       const res = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // gy-0v33y: the source is read from the session, not from the URL —
+        // gy-ufxgo.8: attribution is read from the session, not from the URL —
         // by now the visitor may be several client-side navigations past the
-        // tagged landing URL. The server re-normalises whatever we send; this
-        // value is client-asserted and is attribution, never authorisation.
-        body: JSON.stringify({ name, email, phone, source: getAttributionSource() }),
+        // tagged landing URL. The server revalidates the complete tuple and IDs;
+        // these values are client-asserted attribution, never authorisation.
+        // If capture was unavailable, omit the keys so the server preserves the
+        // legacy/non-form distinction as NULL rather than manufacturing unknown.
+        body: JSON.stringify({ name, email, phone, ...(attribution ?? {}) }),
       });
       if (!res.ok) throw new Error("bad status");
       // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).

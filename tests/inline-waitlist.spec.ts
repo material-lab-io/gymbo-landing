@@ -317,9 +317,13 @@ test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level
  */
 test('the revealed capture posts to the same endpoint as the footer one (item 4, AC6)', async ({ page }) => {
   await page.goto('/');
-  const posts: string[] = [];
+  const posts: Array<{ url: string; body: Record<string, unknown> }> = [];
   await page.route('**/api/waitlist', async (route) => {
-    posts.push(route.request().url());
+    const request = route.request();
+    posts.push({
+      url: request.url(),
+      body: request.postDataJSON() as Record<string, unknown>,
+    });
     await route.fulfill({ status: 200, body: '{}' });
   });
 
@@ -349,7 +353,16 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
     (e as Error).message += `\n${where}${await readScrollLog(page)}`;
     throw e;
   }
-  expect(new URL(posts[0]).pathname).toBe('/api/waitlist');
+  expect(new URL(posts[0].url).pathname).toBe('/api/waitlist');
+  expect(posts[0].body).toMatchObject({
+    source: 'unknown',
+    medium: null,
+    campaign: null,
+    schema_version: 5,
+  });
+  const uuidV4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+  expect(posts[0].body.funnel_visit_id).toMatch(uuidV4);
+  expect(posts[0].body.anonymous_visitor_id).toMatch(uuidV4);
   await expect(panel.getByText(/request received/i)).toBeVisible();
 });
 

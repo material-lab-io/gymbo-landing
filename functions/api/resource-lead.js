@@ -33,6 +33,8 @@
 // belongs in the delivery email's unsubscribe link, and handing a capability to the page
 // that the page has no use for is gratuitous exposure.
 
+import { normalizeAttributionPayload } from "../../src/lib/sourceSlug.mjs";
+
 const PROD_SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 // The public anon key — the same one /api/waitlist and the client bundle already ship.
 // Not a secret. It is powerless against resource_leads except through the RPC above.
@@ -73,7 +75,7 @@ export async function onRequestPost(context) {
     // gy-p3ebo AC7 requires it default false.
     const marketingConsent = body.marketing_consent === true;
     const marketingNotice = String(body.marketing_consent_notice_version || "").trim();
-    const source = String(body.source || "").trim();
+    const attribution = normalizeAttributionPayload(body);
 
     if (!resourceId) return refusal("resource_id required", 400);
     if (!email || !email.includes("@")) return refusal("valid email required", 400);
@@ -105,7 +107,14 @@ export async function onRequestPost(context) {
         p_delivery_consent_notice_version: deliveryNotice,
         p_marketing_consent: marketingConsent,
         p_marketing_consent_notice_version: marketingConsent ? marketingNotice : null,
-        p_source: source || "landing",
+        // Never restore the old forbidden "landing" guess. Missing/invalid
+        // client attribution is forwarded as NULL so the RPC owns its documented
+        // unknown fallback; valid values have passed the shared v5 contract.
+        p_source: attribution?.source ?? null,
+        p_medium: attribution?.medium ?? null,
+        p_campaign: attribution?.campaign ?? null,
+        p_funnel_visit_id: attribution?.funnel_visit_id ?? null,
+        p_anonymous_visitor_id: attribution?.anonymous_visitor_id ?? null,
       }),
     });
 

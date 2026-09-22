@@ -9,10 +9,10 @@
 // Do NOT add `Prefer: resolution=ignore-duplicates` or `return=representation` —
 // both require SELECT (401 by design) and representation would leak emails.
 // A duplicate returns 409, which we treat as success — see THE ORACLE below.
-// gy-0v33y — ONE definition of a legal source, shared with the browser. The
-// client is not trusted: whatever arrives is re-normalised here, and anything
-// that is not a clean slug becomes NULL rather than being stored as a channel.
-import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
+// gy-ufxgo.8 — ONE registry-v5 contract, shared with the browser. The client is
+// not trusted: the complete tuple and UUIDs are revalidated here, and invalid
+// input becomes NULL rather than entering analytics.
+import { normalizeAttributionPayload } from "../../src/lib/sourceSlug.mjs";
 
 const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
@@ -66,6 +66,7 @@ export async function onRequestPost(context) {
     const email = String(body.email || "").trim();
     const phone = String(body.phone || "").trim();
     const name = String(body.name || "").trim();
+    const attribution = normalizeAttributionPayload(body);
 
     // At least one identity, never neither — this mirrors the DB CHECK rather
     // than being stricter than it. Whichever is supplied must be plausible.
@@ -101,13 +102,15 @@ export async function onRequestPost(context) {
       name: name || null,
       email: email || null,
       phone: phone || null,
-      // gy-ufxgo v2: an ABSENT key stays NULL on purpose and is NOT promoted to
-      // "unknown". The client's resolver never returns null — it sends "unknown"
-      // when it looked and found nothing — so a missing source here means the
-      // visit was never classified at all (a client older than this change, or a
-      // POST that is not our form). Those are different facts about the lead and
-      // the column must keep them apart.
-      source: sourceSlug(body.source),
+      // An absent or invalid tuple stays NULL and is NOT promoted to "unknown".
+      // The browser resolver explicitly sends unknown for a measured arrival
+      // with no recognized signal, so NULL still means "not classified".
+      source: attribution?.source ?? null,
+      medium: attribution?.medium ?? null,
+      campaign: attribution?.campaign ?? null,
+      funnel_visit_id: attribution?.funnel_visit_id ?? null,
+      anonymous_visitor_id: attribution?.anonymous_visitor_id ?? null,
+      schema_version: attribution?.schema_version ?? null,
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {

@@ -9,29 +9,37 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
+  ATTRIBUTION_SOURCES,
   sourceSlug,
   sourceFromReferrer,
   resolveSource,
+  resolveAttribution,
+  normalizeAttributionTuple,
+  normalizeAttributionPayload,
+  visitId,
   SOURCE_MAX_LENGTH,
 } from "../src/lib/sourceSlug.mjs";
 
-test("the two emitters that actually exist today survive verbatim", () => {
-  // public/_redirects:4  /ig        → utm_source=instagram
-  // public/_redirects:9  /r/:token  → utm_source=referral
-  assert.equal(sourceSlug("instagram"), "instagram");
-  assert.equal(sourceSlug("referral"), "referral");
+test("the /ig entry point emits the exact registry-v5 bio tuple", () => {
+  const redirects = readFileSync(new URL("../public/_redirects", import.meta.url), "utf8");
+  assert.match(
+    redirects,
+    /^\/ig https:\/\/getgymbo\.com\/\?utm_source=instagram&utm_medium=organic_social&utm_campaign=bio 301$/m,
+  );
+  assert.doesNotMatch(redirects, /utm_medium=social/);
 });
 
-test("marketer's six channels all survive the shape rule", () => {
-  // gy-ufxgo, marketer 2026-09-12. Channels 3 (direct) and 2's medium are not
-  // sourced here — see the direct-traffic test and Phase B — but every value
-  // that IS written must round-trip unchanged, or the registry normalises a
-  // column full of near-misses.
-  for (const v of ["instagram", "direct", "google", "bing", "duckduckgo",
-                   "yahoo", "yandex", "referral", "directory"]) {
+test("AC1/AC3: exactly the registry-v5 sources survive the source-only API", () => {
+  assert.deepEqual(ATTRIBUTION_SOURCES, [
+    "instagram", "unknown", "referral", "directory",
+    "google", "bing", "duckduckgo", "yahoo", "yandex",
+  ]);
+  for (const v of ATTRIBUTION_SOURCES) {
     assert.equal(sourceSlug(v), v, `${v} must round-trip unchanged`);
   }
+  assert.equal(sourceSlug("direct"), null);
 });
 
 test("AC7: nothing measured stores NULL, never a placeholder", () => {
@@ -41,19 +49,89 @@ test("AC7: nothing measured stores NULL, never a placeholder", () => {
   }
 });
 
-test("AC5: a value is bounded in shape and length, so no query string or PII lands", () => {
-  assert.equal(sourceSlug("x?email=someone@example.com&z=2"), "x-email-someone-example-com-z-2");
-  assert.match(sourceSlug("x?email=someone@example.com&z=2"), /^[a-z0-9_-]+$/);
-  const long = sourceSlug("a".repeat(200));
-  assert.equal(long.length, SOURCE_MAX_LENGTH);
-  assert.match(long, /^[a-z0-9_-]+$/);
+test("AC2/AC3: valid-shape raw and PII-like values are refused, never slugged", () => {
+  for (const raw of [
+    "9876543210",
+    "damini-rathi",
+    "summer20",
+    "naveen_maharashi_06",
+    "x?email=someone@example.com&z=2",
+    "a".repeat(SOURCE_MAX_LENGTH),
+  ]) {
+    assert.equal(sourceSlug(raw), null, `${raw} must not become an analytics source`);
+    assert.equal(resolveSource({ utmSource: raw }), "unknown");
+  }
 });
 
-test("truncation cannot mint a second channel", () => {
-  // "instagram-" and "instagram" must not become two rows in a GROUP BY.
-  assert.equal(sourceSlug("instagram-"), "instagram");
+test("normalization is limited to casing and whitespace, never reshaping", () => {
+  assert.equal(sourceSlug("instagram-"), null);
   assert.equal(sourceSlug("Instagram"), "instagram");
   assert.equal(sourceSlug(" instagram "), "instagram");
+});
+
+test("AC8: every canonical registry-v5 tuple is accepted exactly", () => {
+  const referral = "ref_0123456789abcdef0123456789abcdef";
+  const fixtures = [
+    ["instagram", "organic_social", "bio"],
+    ["instagram", "direct_message", "founder_outreach"],
+    ["instagram", "organic_social", "android_referrer"],
+    ["unknown", null, null],
+    ...["google", "bing", "duckduckgo", "yahoo", "yandex"].map((source) => [source, "organic", null]),
+    ["referral", "referral", referral],
+    ...["softwaresuggest", "capterra", "getapp", "alternativeto", "saashub", "g2"]
+      .map((campaign) => ["directory", "listing", campaign]),
+  ];
+
+  for (const [source, medium, campaign] of fixtures) {
+    assert.deepEqual(
+      normalizeAttributionTuple({ source, medium, campaign }),
+      { source, medium, campaign },
+      `${source}/${medium}/${campaign} must survive exactly`,
+    );
+  }
+});
+
+test("crossed, partial, and raw referral tuples are refused", () => {
+  const invalid = [
+    { source: "instagram", medium: "social", campaign: "bio" },
+    { source: "instagram", medium: null, campaign: null },
+    { source: "google", medium: "organic_social", campaign: null },
+    { source: "unknown", medium: "organic", campaign: null },
+    { source: "referral", medium: "referral", campaign: "summer20" },
+    { source: "referral", medium: "referral", campaign: "priya-trainer" },
+    { source: "directory", medium: "listing", campaign: "summer20" },
+  ];
+  for (const tuple of invalid) assert.equal(normalizeAttributionTuple(tuple), null);
+});
+
+test("RFC 4122 v4 IDs are accepted; decorative and wrong-version IDs are dropped", () => {
+  const valid = "7b9c3e1a-52d4-4f86-a7c8-91e2d5f0ab34";
+  assert.equal(visitId(valid), valid);
+  for (const invalid of [
+    "11111111-1111-4111-8111-111111111111",
+    "7b9c3e1a-52d4-3f86-a7c8-91e2d5f0ab34",
+    "7b9c3e1a-52d4-4f86-77c8-91e2d5f0ab34",
+    "not-a-uuid",
+  ]) {
+    assert.equal(visitId(invalid), null);
+  }
+  assert.deepEqual(
+    normalizeAttributionPayload({
+      source: "unknown",
+      medium: null,
+      campaign: null,
+      funnel_visit_id: valid,
+      anonymous_visitor_id: "not-a-uuid",
+    }),
+    {
+      source: "unknown",
+      medium: null,
+      campaign: null,
+      funnel_visit_id: valid,
+      anonymous_visitor_id: null,
+      schema_version: 5,
+    },
+  );
 });
 
 test("organic search stores the ENGINE, not the hostname", () => {
@@ -88,6 +166,39 @@ test("an explicit tag beats an inferred one", () => {
   assert.equal(
     resolveSource({ utmSource: "instagram", referrer: "https://www.google.com/", selfHost: "getgymbo.com" }),
     "instagram",
+  );
+  assert.deepEqual(
+    resolveAttribution({
+      utmSource: "instagram",
+      utmMedium: "organic_social",
+      utmCampaign: "bio",
+      referrer: "https://www.google.com/",
+      selfHost: "getgymbo.com",
+    }),
+    { source: "instagram", medium: "organic_social", campaign: "bio" },
+  );
+});
+
+test("an invalid explicit tuple cannot poison or outrank a valid referrer", () => {
+  assert.deepEqual(
+    resolveAttribution({
+      utmSource: "damini-rathi",
+      utmMedium: "organic",
+      utmCampaign: "summer20",
+      referrer: "https://www.google.co.in/search?q=gymbo",
+      selfHost: "getgymbo.com",
+    }),
+    { source: "google", medium: "organic", campaign: null },
+  );
+  assert.deepEqual(
+    resolveAttribution({
+      utmSource: "damini-rathi",
+      utmMedium: "organic",
+      utmCampaign: "summer20",
+      referrer: "",
+      selfHost: "getgymbo.com",
+    }),
+    { source: "unknown", medium: null, campaign: null },
   );
 });
 
@@ -218,6 +329,13 @@ test("the Android Google app referrer is organic search, and lookalikes are not"
   assert.equal(sourceFromReferrer("android-app://com.google.android.googlequicksearchbox", H), "google");
   // Exact package match only — no pattern, no suffix matching.
   assert.equal(sourceFromReferrer("android-app://com.evil.googlequicksearchbox/", H), null);
+  assert.deepEqual(
+    resolveAttribution({
+      referrer: "android-app://com.google.android.googlequicksearchbox/",
+      selfHost: H,
+    }),
+    { source: "google", medium: "organic", campaign: null },
+  );
 });
 
 // marketer ruling 2026-09-18 (gy-ufxgo): the Instagram app's referrer IS credited.
@@ -231,4 +349,8 @@ test("the Android Instagram app referrer is instagram, and lookalikes are not", 
   assert.equal(sourceFromReferrer("android-app://com.instagram.lite/", H), null);
   assert.equal(sourceFromReferrer("android-app://com.evil.instagram.android/", H), null);
   assert.equal(sourceFromReferrer("android-app://com.instagram.android.evil/", H), null);
+  assert.deepEqual(
+    resolveAttribution({ referrer: "android-app://com.instagram.android/", selfHost: H }),
+    { source: "instagram", medium: "organic_social", campaign: "android_referrer" },
+  );
 });
