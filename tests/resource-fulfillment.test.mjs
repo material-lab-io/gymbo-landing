@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import {
   fulfillResourceLead,
   isGymboHttpsUrl,
+  isResourceBridgeToken,
+  RESOURCE_BRIDGE_FRAGMENT_KEY,
+  resourceBridgeUrl,
   STARTER_PACK_PREHEADER,
   STARTER_PACK_RESOURCE_ID,
   STARTER_PACK_SUBJECT,
@@ -12,6 +15,9 @@ import {
 const LEAD_ID = "11111111-2222-3333-4444-555555555555";
 const PACK_URL = "https://getgymbo.com/resources/workout-builder-starter-pack";
 const ACCESS_URL = "https://getgymbo.com/request-access";
+const BRIDGE_TOKEN = `rb_${"a".repeat(64)}`;
+const BRIDGED_PACK_URL = `${PACK_URL}#${RESOURCE_BRIDGE_FRAGMENT_KEY}=${BRIDGE_TOKEN}`;
+const BRIDGED_ACCESS_URL = `${ACCESS_URL}#${RESOURCE_BRIDGE_FRAGMENT_KEY}=${BRIDGE_TOKEN}`;
 
 const eligibleClaim = () => ({
   ok: true,
@@ -21,6 +27,7 @@ const eligibleClaim = () => ({
   resource_id: STARTER_PACK_RESOURCE_ID,
   email: "trainer@example.invalid",
   idempotency_key: `resource-fulfillment/${LEAD_ID}`,
+  attribution_bridge_token: BRIDGE_TOKEN,
   attempt_count: 1,
 });
 
@@ -83,6 +90,25 @@ test("only HTTPS getgymbo.com links are accepted", () => {
   }
 });
 
+test("the per-lead bridge is a distinct bounded token carried only in the URL fragment", () => {
+  assert.equal(isResourceBridgeToken(BRIDGE_TOKEN), true);
+  for (const bad of [
+    "",
+    LEAD_ID,
+    `rb_${"a".repeat(63)}`,
+    `rb_${"g".repeat(64)}`,
+    `rb_${"a".repeat(64)}@trainer.example`,
+  ]) assert.equal(isResourceBridgeToken(bad), false);
+
+  assert.equal(resourceBridgeUrl(PACK_URL, BRIDGE_TOKEN), BRIDGED_PACK_URL);
+  const url = new URL(BRIDGED_PACK_URL);
+  assert.equal(url.search, "", "the raw bridge must never enter the query string");
+  assert.equal(url.pathname, "/resources/workout-builder-starter-pack");
+  assert.equal(url.hash, `#${RESOURCE_BRIDGE_FRAGMENT_KEY}=${BRIDGE_TOKEN}`);
+  assert.equal(resourceBridgeUrl(`${PACK_URL}#existing-anchor`, BRIDGE_TOKEN), null,
+    "an existing fragment needs an explicit landing contract, not silent overwrite");
+});
+
 test("happy path sends exactly once with text+HTML and the database-owned idempotency key", async () => {
   const { calls, deps } = harness();
   const outcome = await fulfillResourceLead(input(), deps);
@@ -93,8 +119,12 @@ test("happy path sends exactly once with text+HTML and the database-owned idempo
   assert.deepEqual(calls.send[0].to, ["trainer@example.invalid"]);
   assert.equal(calls.send[0].subject, STARTER_PACK_SUBJECT);
   assert.equal(calls.send[0].idempotencyKey, `resource-fulfillment/${LEAD_ID}`);
-  assert.equal(calls.send[0].text.includes(PACK_URL), true);
-  assert.equal(calls.send[0].html.includes(PACK_URL), true);
+  assert.equal(calls.send[0].text.includes(BRIDGED_PACK_URL), true);
+  assert.equal(calls.send[0].html.includes(BRIDGED_PACK_URL), true);
+  assert.equal(calls.send[0].text.includes(BRIDGED_ACCESS_URL), true);
+  assert.equal(calls.send[0].html.includes(BRIDGED_ACCESS_URL), true);
+  assert.equal(calls.send[0].text.includes(LEAD_ID), false,
+    "the raw resource_lead_id is not the email bridge");
   assert.deepEqual(calls.record, [{
     resourceLeadId: LEAD_ID,
     outcome: "sent",
@@ -126,6 +156,24 @@ test("broken URL/provider configuration records a retryable failure and never re
   assert.equal(calls.send.length, 0);
   assert.equal(calls.record[0].outcome, "retryable");
   assert.equal(calls.record[0].errorCode, "delivery_url_not_configured");
+});
+
+test("a missing or malformed attribution bridge fails closed before provider send", async () => {
+  for (const attributionBridgeToken of [undefined, LEAD_ID, "rb_not_hex"]) {
+    const { calls, deps } = harness({
+      claim: async () => ({
+        ...eligibleClaim(),
+        attribution_bridge_token: attributionBridgeToken,
+      }),
+    });
+    const outcome = await fulfillResourceLead(input(), deps);
+    assert.equal(outcome.status, 503);
+    assert.deepEqual(outcome.body, { ok: false, error: "delivery_bridge_not_configured" });
+    assert.equal(calls.send.length, 0);
+    assert.equal(calls.record.length, 1);
+    assert.equal(calls.record[0].outcome, "retryable");
+    assert.equal(calls.record[0].errorCode, "attribution_bridge_not_available");
+  }
 });
 
 test("a malformed internal claim cannot send to an invented address", async () => {

@@ -2,6 +2,9 @@ export const STARTER_PACK_RESOURCE_ID = "workout-builder-starter-pack";
 export const STARTER_PACK_SUBJECT = "Your Workout Builder Starter Pack";
 export const STARTER_PACK_PREHEADER =
   "Open the guide with 868 exercises, step-by-step instructions, and images.";
+export const RESOURCE_BRIDGE_FRAGMENT_KEY = "resource_bridge";
+
+const RESOURCE_BRIDGE_TOKEN = /^rb_[0-9a-f]{64}$/;
 
 const esc = (value) => String(value)
   .replace(/&/g, "&amp;")
@@ -17,6 +20,27 @@ export function isGymboHttpsUrl(value) {
   } catch {
     return false;
   }
+}
+
+export function isResourceBridgeToken(value) {
+  return RESOURCE_BRIDGE_TOKEN.test(String(value || ""));
+}
+
+// The attribution bearer is deliberately distinct from resource_lead_id. It is
+// carried in the fragment so browsers do not send it in the HTTP request or a
+// Referrer header. The guide owns consuming and removing it before generic
+// analytics initializes (gy-35awp.2 AC9); the email owns never falling back to
+// a static-only CTA (gy-35awp.1 AC9).
+export function resourceBridgeUrl(baseUrl, bridgeToken) {
+  if (!isGymboHttpsUrl(baseUrl) || !isResourceBridgeToken(bridgeToken)) return null;
+
+  const url = new URL(baseUrl);
+  // A canonical URL with its own fragment has ambiguous consumption semantics:
+  // overwriting it may break navigation, while concatenating creates a second
+  // fragment grammar. Make landing provide a real path instead of guessing.
+  if (url.hash) return null;
+  url.hash = new URLSearchParams({ [RESOURCE_BRIDGE_FRAGMENT_KEY]: bridgeToken }).toString();
+  return url.toString();
 }
 
 export function starterPackEmail(starterPackUrl, requestAccessUrl) {
@@ -116,7 +140,21 @@ export async function fulfillResourceLead(input, deps) {
     return result(503, { ok: false, error: "delivery_not_configured" });
   }
 
-  const email = starterPackEmail(starterPackUrl, requestAccessUrl);
+  const bridgeToken = String(claim.attribution_bridge_token || "").trim();
+  const individualizedStarterPackUrl = resourceBridgeUrl(starterPackUrl, bridgeToken);
+  const individualizedRequestAccessUrl = resourceBridgeUrl(requestAccessUrl, bridgeToken);
+  if (!individualizedStarterPackUrl || !individualizedRequestAccessUrl) {
+    await deps.record({
+      resourceLeadId: leadId,
+      outcome: "retryable",
+      providerStatus: null,
+      providerMessageId: null,
+      errorCode: "attribution_bridge_not_available",
+    });
+    return result(503, { ok: false, error: "delivery_bridge_not_configured" });
+  }
+
+  const email = starterPackEmail(individualizedStarterPackUrl, individualizedRequestAccessUrl);
   let sent;
   try {
     sent = await deps.send({
