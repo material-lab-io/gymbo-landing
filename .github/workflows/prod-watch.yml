@@ -32,7 +32,15 @@ jobs:
         with:
           node-version: 22
 
-      - run: npm ci
+      - name: Bootstrap dependencies
+        # A self-hosted runner account can host concurrent runner services. The
+        # account-global ~/.npm/_cacache let those services race the same rename
+        # destination, leaving Prod Watch unable to evaluate production twice.
+        # The wrapper persists this run-owned value through GITHUB_ENV after a
+        # successful bootstrap so the later npx step uses the same isolation.
+        env:
+          npm_config_cache: ${{ runner.temp }}/gymbo-prod-watch/npm/${{ github.run_id }}/${{ github.run_attempt }}/${{ github.job }}
+        run: bash scripts/prod-watch-bootstrap.sh npm ci
 
       # --with-deps dropped deliberately: it shells out to apt-get and needs
       # root, which a self-hosted runner does not grant. The gt2 runners

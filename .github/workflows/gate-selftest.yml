@@ -71,6 +71,15 @@ jobs:
           fi
           echo "OK: runner guard correctly rejected windows-latest."
 
+  prod-watch-bootstrap-control:
+    name: Prod Watch bootstrap classification (offline)
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Positive cache-path and negative classification controls
+        run: bash scripts/test-prod-watch-bootstrap.sh
+
 
   # Decides whether the EXPENSIVE suite below needs to run. Kept out of
   # runner-policy so that job stays dependency-free and fast.
