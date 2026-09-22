@@ -143,6 +143,14 @@ jobs:
         # the referrer host instead of the engine slug, add a "direct"
         # fallback); each is caught.
 
+      - name: "gy-p3ebo / gy-35awp.1: consent-gated resource capture and one-email fulfillment"
+        run: node --test tests/resource-lead.test.mjs tests/resource-fulfillment.test.mjs
+        # The Pages handler may schedule fulfillment only after the RPC returns
+        # access_granted=true, and its internal request carries no contact PII.
+        # The pure transport tests then prove exact approved copy, both durable
+        # links, a stable provider idempotency key, no send for unconsented or
+        # duplicate claims, and fail-closed handling of provider/config errors.
+
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
         run: node --test tests/master-asset-drift.test.mjs
         # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git

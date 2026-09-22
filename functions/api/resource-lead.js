@@ -25,13 +25,12 @@
 // reopen the leak silently, which is why the shape is built once. See the companion
 // assertion in tests/resource-lead.test.mjs, which fails on ANY unexpected key.
 //
-// NOT WIRED HERE, ON PURPOSE: the delivery email. push ruled 2026-09-21 that the single
-// Starter Pack message is transactional fulfilment and may reuse the waitlist
-// confirmation transport, but that same ruling authorises no test send and no campaign.
-// Sending is a separate change with its own proof; this function stops at the durable
-// record and the gate. withdrawal_token is likewise NOT returned to the browser — it
-// belongs in the delivery email's unsubscribe link, and handing a capability to the page
-// that the page has no use for is gratuitous exposure.
+// gy-35awp.1: only AFTER that server gate returns true, schedule one transactional
+// fulfillment through the existing waitlist-notify transport. The internal call carries
+// only the opaque resource_lead_id + resource_id. The Edge Function re-reads the locked
+// lead row with service_role, claims a durable one-row delivery ledger, and is therefore
+// the only component that ever sees the address used for the send. Duplicate form submits
+// can schedule duplicate calls, but they cannot reserve or send a duplicate email.
 
 const PROD_SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 // The public anon key — the same one /api/waitlist and the client bundle already ship.
@@ -57,6 +56,43 @@ const responseFor = (rpc) =>
 // One refusal shape. Consent-absent and malformed-input both land here so the endpoint
 // cannot be used to distinguish them, and neither echoes the database's own error text.
 const refusal = (message, status) => Response.json({ ok: false, error: message }, { status });
+
+function scheduleResourceFulfillment(context, resourceLeadId, resourceId) {
+  const url = context.env?.WAITLIST_NOTIFY_URL;
+  const secret = context.env?.WAITLIST_NOTIFY_SECRET;
+  if (!url || !secret) {
+    console.error("[resource-lead] fulfillment transport not configured");
+    return;
+  }
+  if (typeof context.waitUntil !== "function") {
+    console.error("[resource-lead] waitUntil unavailable; fulfillment not scheduled");
+    return;
+  }
+
+  context.waitUntil((async () => {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-waitlist-secret": secret,
+        },
+        // No email/name/consent copy crosses this boundary. The service-role Edge
+        // Function resolves all contact data from the durable, consented lead row.
+        body: JSON.stringify({
+          mode: "resource_fulfillment",
+          resource_lead_id: resourceLeadId,
+          resource_id: resourceId,
+        }),
+      });
+      if (!response.ok) {
+        console.error("[resource-lead] fulfillment failed", response.status);
+      }
+    } catch {
+      console.error("[resource-lead] fulfillment request failed");
+    }
+  })());
+}
 
 export async function onRequestPost(context) {
   try {
@@ -139,6 +175,9 @@ export async function onRequestPost(context) {
       return refusal("submission refused", 502);
     }
 
+    // The server's true gate above is the sole trigger. No raw checkbox value can reach
+    // this call path on its own, and a malformed/false RPC response returned already.
+    scheduleResourceFulfillment(context, rpc.resource_lead_id, resourceId);
     return responseFor(rpc);
   } catch {
     return refusal("submission failed", 500);
