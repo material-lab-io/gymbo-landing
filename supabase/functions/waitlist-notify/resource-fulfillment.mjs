@@ -3,6 +3,8 @@ export const STARTER_PACK_SUBJECT = "Your Workout Builder Starter Pack";
 export const STARTER_PACK_PREHEADER =
   "Open the guide with 868 exercises, step-by-step instructions, and images.";
 export const RESOURCE_BRIDGE_FRAGMENT_KEY = "resource_bridge";
+export const STARTER_PACK_PATH = "/resources/workout-builder-starter-pack";
+export const REQUEST_ACCESS_PATH = "/request-access";
 
 const RESOURCE_BRIDGE_TOKEN = /^rb_[0-9a-f]{64}$/;
 
@@ -16,10 +18,20 @@ export function isGymboHttpsUrl(value) {
   try {
     const url = new URL(value);
     return url.protocol === "https:"
-      && (url.hostname === "getgymbo.com" || url.hostname === "www.getgymbo.com");
+      && (url.hostname === "getgymbo.com" || url.hostname === "www.getgymbo.com")
+      && url.username === ""
+      && url.password === ""
+      && url.port === "";
   } catch {
     return false;
   }
+}
+
+export function isCanonicalGymboUrl(value, expectedPath) {
+  if (!isGymboHttpsUrl(value)) return false;
+
+  const url = new URL(value);
+  return url.pathname === expectedPath && url.search === "" && url.hash === "";
 }
 
 export function isResourceBridgeToken(value) {
@@ -31,14 +43,10 @@ export function isResourceBridgeToken(value) {
 // Referrer header. The guide owns consuming and removing it before generic
 // analytics initializes (gy-35awp.2 AC9); the email owns never falling back to
 // a static-only CTA (gy-35awp.1 AC9).
-export function resourceBridgeUrl(baseUrl, bridgeToken) {
-  if (!isGymboHttpsUrl(baseUrl) || !isResourceBridgeToken(bridgeToken)) return null;
+export function resourceBridgeUrl(baseUrl, bridgeToken, expectedPath) {
+  if (!isCanonicalGymboUrl(baseUrl, expectedPath) || !isResourceBridgeToken(bridgeToken)) return null;
 
   const url = new URL(baseUrl);
-  // A canonical URL with its own fragment has ambiguous consumption semantics:
-  // overwriting it may break navigation, while concatenating creates a second
-  // fragment grammar. Make landing provide a real path instead of guessing.
-  if (url.hash) return null;
   url.hash = new URLSearchParams({ [RESOURCE_BRIDGE_FRAGMENT_KEY]: bridgeToken }).toString();
   return url.toString();
 }
@@ -129,7 +137,8 @@ export async function fulfillResourceLead(input, deps) {
 
   const starterPackUrl = String(input.starterPackUrl || "").trim();
   const requestAccessUrl = String(input.requestAccessUrl || "").trim();
-  if (!isGymboHttpsUrl(starterPackUrl) || !isGymboHttpsUrl(requestAccessUrl)) {
+  if (!isCanonicalGymboUrl(starterPackUrl, STARTER_PACK_PATH)
+      || !isCanonicalGymboUrl(requestAccessUrl, REQUEST_ACCESS_PATH)) {
     await deps.record({
       resourceLeadId: leadId,
       outcome: "retryable",
@@ -141,8 +150,8 @@ export async function fulfillResourceLead(input, deps) {
   }
 
   const bridgeToken = String(claim.attribution_bridge_token || "").trim();
-  const individualizedStarterPackUrl = resourceBridgeUrl(starterPackUrl, bridgeToken);
-  const individualizedRequestAccessUrl = resourceBridgeUrl(requestAccessUrl, bridgeToken);
+  const individualizedStarterPackUrl = resourceBridgeUrl(starterPackUrl, bridgeToken, STARTER_PACK_PATH);
+  const individualizedRequestAccessUrl = resourceBridgeUrl(requestAccessUrl, bridgeToken, REQUEST_ACCESS_PATH);
   if (!individualizedStarterPackUrl || !individualizedRequestAccessUrl) {
     await deps.record({
       resourceLeadId: leadId,

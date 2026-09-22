@@ -2,10 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   fulfillResourceLead,
+  isCanonicalGymboUrl,
   isGymboHttpsUrl,
   isResourceBridgeToken,
+  REQUEST_ACCESS_PATH,
   RESOURCE_BRIDGE_FRAGMENT_KEY,
   resourceBridgeUrl,
+  STARTER_PACK_PATH,
   STARTER_PACK_PREHEADER,
   STARTER_PACK_RESOURCE_ID,
   STARTER_PACK_SUBJECT,
@@ -85,9 +88,25 @@ You’re receiving this one email because you asked Gymbo to send you the Workou
 test("only HTTPS getgymbo.com links are accepted", () => {
   assert.equal(isGymboHttpsUrl(PACK_URL), true);
   assert.equal(isGymboHttpsUrl("https://www.getgymbo.com/request-access"), true);
-  for (const bad of ["", "http://getgymbo.com/x", "https://evil.example/x", "not-a-url"]) {
+  for (const bad of [
+    "",
+    "http://getgymbo.com/x",
+    "https://evil.example/x",
+    "https://user:password@getgymbo.com/request-access",
+    "https://getgymbo.com:444/request-access",
+    "not-a-url",
+  ]) {
     assert.equal(isGymboHttpsUrl(bad), false);
   }
+});
+
+test("each CTA accepts only its exact canonical base path with no query or fragment", () => {
+  assert.equal(isCanonicalGymboUrl(PACK_URL, STARTER_PACK_PATH), true);
+  assert.equal(isCanonicalGymboUrl(ACCESS_URL, REQUEST_ACCESS_PATH), true);
+  assert.equal(isCanonicalGymboUrl(ACCESS_URL, STARTER_PACK_PATH), false);
+  assert.equal(isCanonicalGymboUrl(`${PACK_URL}/`, STARTER_PACK_PATH), false);
+  assert.equal(isCanonicalGymboUrl(`${PACK_URL}?lead=raw`, STARTER_PACK_PATH), false);
+  assert.equal(isCanonicalGymboUrl(`${PACK_URL}#existing-anchor`, STARTER_PACK_PATH), false);
 });
 
 test("the per-lead bridge is a distinct bounded token carried only in the URL fragment", () => {
@@ -100,13 +119,15 @@ test("the per-lead bridge is a distinct bounded token carried only in the URL fr
     `rb_${"a".repeat(64)}@trainer.example`,
   ]) assert.equal(isResourceBridgeToken(bad), false);
 
-  assert.equal(resourceBridgeUrl(PACK_URL, BRIDGE_TOKEN), BRIDGED_PACK_URL);
+  assert.equal(resourceBridgeUrl(PACK_URL, BRIDGE_TOKEN, STARTER_PACK_PATH), BRIDGED_PACK_URL);
   const url = new URL(BRIDGED_PACK_URL);
   assert.equal(url.search, "", "the raw bridge must never enter the query string");
   assert.equal(url.pathname, "/resources/workout-builder-starter-pack");
   assert.equal(url.hash, `#${RESOURCE_BRIDGE_FRAGMENT_KEY}=${BRIDGE_TOKEN}`);
-  assert.equal(resourceBridgeUrl(`${PACK_URL}#existing-anchor`, BRIDGE_TOKEN), null,
+  assert.equal(resourceBridgeUrl(`${PACK_URL}#existing-anchor`, BRIDGE_TOKEN, STARTER_PACK_PATH), null,
     "an existing fragment needs an explicit landing contract, not silent overwrite");
+  assert.equal(resourceBridgeUrl(ACCESS_URL, BRIDGE_TOKEN, STARTER_PACK_PATH), null,
+    "the request-access URL cannot substitute for the starter-pack URL");
 });
 
 test("happy path sends exactly once with text+HTML and the database-owned idempotency key", async () => {
@@ -149,13 +170,20 @@ test("unconsented/not-eligible and already-sent claims never call the provider",
 });
 
 test("broken URL/provider configuration records a retryable failure and never reports success", async () => {
-  const { calls, deps } = harness();
-  const outcome = await fulfillResourceLead(input({ starterPackUrl: "" }), deps);
-  assert.equal(outcome.status, 503);
-  assert.deepEqual(outcome.body, { ok: false, error: "delivery_not_configured" });
-  assert.equal(calls.send.length, 0);
-  assert.equal(calls.record[0].outcome, "retryable");
-  assert.equal(calls.record[0].errorCode, "delivery_url_not_configured");
+  for (const badUrls of [
+    { starterPackUrl: "" },
+    { starterPackUrl: `${PACK_URL}?lead=raw` },
+    { starterPackUrl: ACCESS_URL },
+    { requestAccessUrl: `${ACCESS_URL}#existing-anchor` },
+  ]) {
+    const { calls, deps } = harness();
+    const outcome = await fulfillResourceLead(input(badUrls), deps);
+    assert.equal(outcome.status, 503);
+    assert.deepEqual(outcome.body, { ok: false, error: "delivery_not_configured" });
+    assert.equal(calls.send.length, 0);
+    assert.equal(calls.record[0].outcome, "retryable");
+    assert.equal(calls.record[0].errorCode, "delivery_url_not_configured");
+  }
 });
 
 test("a missing or malformed attribution bridge fails closed before provider send", async () => {
