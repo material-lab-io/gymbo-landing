@@ -116,6 +116,19 @@ export async function signedIpHeaders(request, env, nowSeconds = Math.floor(Date
 export const RETENTION_NOTICE =
   "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
 
+// gy-wwr2e.57 (gy-gu3pm) -- the IP-limiter disclosure, SENTENCE ONE only, in the words pm
+// approved on gy-gu3pm 2026-09-23. It is a SEPARATE paragraph on purpose: RETENTION_NOTICE
+// above is pinned word for word and must not be edited. The bound says "up to about an hour
+// and a half" because the real ledger bound is ~1h15m (rows older than 1 hour, purged every
+// 15 minutes).
+// SENTENCE TWO IS DELIBERATELY NOT HERE. pm's text ends "...in our general service logs,
+// described above", but nothing on this page is above it (no Technical data line, no link to
+// the privacy notice). The pointer awaits pm's ruling on gy-wwr2e.57; do not add it, and do
+// not "fix" it locally. Without it this sentence alone can be read as "my IP is gone after an
+// hour", which is exactly what sentence two exists to prevent.
+export const IP_LIMITER_NOTICE =
+  "To limit abuse of this form, we keep a scrambled (hashed) version of your IP address for up to about an hour and a half.";
+
 const FORM = (mediaId) => `<h1>Request removal of a video</h1>
 <p class="note">If you appear in a video shared through Gymbo, or you hold rights in
 one, use this form and we will take it down while we review your request. You do not
@@ -148,6 +161,7 @@ ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
 <label for="evidence">Anything that helps us check this — optional</label>
 <textarea id="evidence" name="evidence"></textarea>
 <p class="note">${RETENTION_NOTICE}</p>
+<p class="note">${IP_LIMITER_NOTICE}</p>
 <button type="submit">Send request</button>
 </form>`;
 

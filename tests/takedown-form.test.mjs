@@ -218,3 +218,37 @@ test("gy-wwr2e.8.1 AC4 NEG: no OTHER retention period is stated anywhere on the 
     assert.deepEqual(periods.filter((p) => !/^90\s*days$/i.test(p)), [], "only the approved 90 days may be stated");
   }
 });
+
+// gy-wwr2e.57 — the IP-limiter disclosure (sentence one, pm-approved on gy-gu3pm 2026-09-23).
+const LIMITER = "To limit abuse of this form, we keep a scrambled (hashed) version of your IP address for up to about an hour and a half.";
+
+test("gy-wwr2e.57: the form shows the approved limiter sentence verbatim, once, BEFORE the submit button", async () => {
+  const h = await html();
+  assert.equal(h.split(LIMITER).length - 1, 1, "exactly one occurrence, worded exactly as approved");
+  assert.ok(h.indexOf(LIMITER) < h.indexOf('type="submit"'), "disclosure comes before collection");
+});
+
+test("gy-wwr2e.57: it is its OWN paragraph, and the approved retention paragraph is byte-for-byte unchanged", async () => {
+  const h = await html();
+  assert.ok(h.includes(`<p class="note">${LIMITER}</p>`), "separate paragraph, not appended to another");
+  assert.ok(h.includes(`<p class="note">${APPROVED}</p>`), "RETENTION_NOTICE paragraph is intact and alone");
+  assert.ok(!h.includes(`${APPROVED} ${LIMITER}`) && !h.includes(`${APPROVED}${LIMITER}`), "not merged into the retention sentence");
+});
+
+test("gy-wwr2e.57 NEG: sentence two is NOT shipped while its pointer has nothing to point at", async () => {
+  const pages = [await html(), (await post()).h];
+  for (const h of pages) {
+    assert.ok(!/described above/i.test(h), "'described above' has nothing above it on this page; awaiting pm");
+    assert.ok(!/general service logs/i.test(h), "sentence two is not shipped alone or half-worded");
+  }
+});
+
+test("gy-wwr2e.57: the limiter sentence is on the FORM only until pm decides the confirmation page", async () => {
+  // Pinned so a silent spread to the confirmation page is a visible change, not drift.
+  assert.ok(!(await post()).h.includes(LIMITER));
+  assert.ok(!(await post({ rpc: { status: 200, body: "rate_limited" } })).h.includes(LIMITER));
+});
+
+test("gy-wwr2e.57: no em dash in the new copy", () => {
+  assert.ok(!LIMITER.includes("\u2014"));
+});
