@@ -14,6 +14,10 @@ import {
 
 const STORAGE_KEY = "gymbo.attribution.v2";
 const VISITOR_KEY = "gymbo.anonymousVisitor.v1";
+// State 3 (a signal that matched no registry entry) is remembered so first
+// touch still wins: without it a later untagged page view would look like a
+// measured no-signal visit and be stored as `unknown`.
+const UNMATCHED_KEY = "gymbo.attribution.unmatched.v1";
 
 type Stored = AttributionPayload & { at: string };
 
@@ -35,6 +39,22 @@ function readStore(): Stored | null {
     return { ...normalized, at: parsed.at };
   } catch {
     return null;
+  }
+}
+
+function hasUnmatchedMarker(): boolean {
+  try {
+    return window.sessionStorage.getItem(UNMATCHED_KEY) !== null;
+  } catch {
+    return false;
+  }
+}
+
+function writeUnmatchedMarker(): void {
+  try {
+    window.sessionStorage.setItem(UNMATCHED_KEY, new Date().toISOString());
+  } catch {
+    /* Storage can be unavailable in privacy modes; never break the form. */
   }
 }
 
@@ -68,7 +88,7 @@ function anonymousVisitorId(): string | null {
 
 /** Record the complete acquisition tuple for this session exactly once. */
 export function captureAttribution(): void {
-  if (typeof window === "undefined" || readStore()) return;
+  if (typeof window === "undefined" || readStore() || hasUnmatchedMarker()) return;
 
   let params = new URLSearchParams();
   try {
@@ -84,6 +104,13 @@ export function captureAttribution(): void {
     referrer: typeof document !== "undefined" ? document.referrer : null,
     selfHost: window.location.hostname,
   });
+  // A signal that matches no registry entry sends NO attribution (never
+  // `unknown`, never the raw value). The server stores it as all-NULL.
+  if (!tuple) {
+    writeUnmatchedMarker();
+    return;
+  }
+
   const funnelVisitId = newVisitId();
   const visitorId = anonymousVisitorId();
 
@@ -100,7 +127,10 @@ export function captureAttribution(): void {
   });
 }
 
-/** The complete revalidated payload to send with a lead, or null if uncaptured. */
+/**
+ * The complete revalidated payload to send with a lead, or null when there is
+ * nothing to send: uncaptured, or a signal that matched no registry entry.
+ */
 export function getAttribution(): AttributionPayload | null {
   if (typeof window === "undefined") return null;
   const stored = readStore();

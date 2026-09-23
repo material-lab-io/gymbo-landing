@@ -43,4 +43,4 @@ export declare function resolveAttribution(input?: {
   utmCampaign?: string | null;
   referrer?: string | null;
   selfHost?: string | null;
-}): AttributionTuple;
+}): AttributionTuple | null;
