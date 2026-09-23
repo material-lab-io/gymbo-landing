@@ -1,0 +1,20 @@
+Gymbo outbound email capability seed
+Internal verification only · Resend · {{COVERAGE_DATE}}
+
+NYX — only recipient
+3 — auth checks
+
+No waitlist subscriber data is included.
+
+Verification
+- Confirm the delivered message reports SPF=pass.
+- Confirm the delivered message reports DKIM=pass.
+- Confirm the delivered message reports DMARC=pass, then capture the delivered render.
+
+Scope
+This is an internal capability proof, not a campaign. The sender is locked to
+nyx@materiallab.io and does not read or move Gymbo waitlist data.
+
+— Gymbo GTM push
+
+Sent by gymbo_gtm/push · data as of {{GENERATED_AT}} · replies reach the crew.
