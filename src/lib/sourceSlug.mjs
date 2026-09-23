@@ -115,15 +115,33 @@ export function visitId(raw) {
 
 /**
  * Revalidate one atomic v5 payload and stamp the server-owned schema version.
- * A tuple without BOTH trustworthy visit IDs is not a v5 measurement. Returning
- * null makes both handlers null every attribution field together instead of
- * creating a partial row that falsely claims schema_version=5.
+ *
+ * Registry v5 has four lawful stored shapes, and schema_version is the
+ * discriminator (gy-ufxgo.8):
+ *   1. unmeasured                  null  (returned here as null)
+ *   2. measured, no signal         schema 5, source `unknown`, both visit IDs
+ *   3. matched                     schema 5, one canonical tuple, both visit IDs
+ *   4. signal present, no match    schema 5, source/medium/campaign NULL, both visit IDs
+ * Shape 4 is a tuple that is ENTIRELY absent plus both trustworthy visit IDs. A
+ * tuple that is present but invalid, or half present, is never promoted to shape
+ * 4: it returns null (shape 1) and the raw value is never stored. Only the
+ * browser classifies "signal present, matched nothing".
+ * A missing or malformed visit ID is not a v5 judgement of any shape, so both
+ * handlers null every attribution field together instead of creating a partial
+ * row that falsely claims schema_version=5.
  */
 export function normalizeAttributionPayload(input = {}) {
-  const tuple = normalizeAttributionTuple(input);
   const funnelVisitId = visitId(input.funnel_visit_id);
   const anonymousVisitorId = visitId(input.anonymous_visitor_id);
-  if (!tuple || !funnelVisitId || !anonymousVisitorId) return null;
+  if (!funnelVisitId || !anonymousVisitorId) return null;
+
+  const tupleAbsent = [input.source, input.medium, input.campaign]
+    .every((value) => cleanNullable(value) === null);
+  const tuple = tupleAbsent
+    ? { source: null, medium: null, campaign: null }
+    : normalizeAttributionTuple(input);
+  if (!tuple) return null;
+
   return {
     ...tuple,
     funnel_visit_id: funnelVisitId,

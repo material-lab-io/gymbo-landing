@@ -108,8 +108,10 @@ export async function onRequestPost(context) {
         p_marketing_consent: marketingConsent,
         p_marketing_consent_notice_version: marketingConsent ? marketingNotice : null,
         // Never restore the old forbidden "landing" guess. Missing/invalid
-        // client attribution is forwarded as NULL so the RPC owns its documented
-        // unknown fallback; valid values have passed the shared v5 contract.
+        // client attribution is forwarded as NULL (registry shape 1, unmeasured).
+        // A visit the browser judged as "signal present, matched nothing" arrives
+        // as an empty tuple WITH both visit ids (shape 4) and the RPC stores it at
+        // schema 5; valid values have passed the shared v5 contract.
         p_source: attribution?.source ?? null,
         p_medium: attribution?.medium ?? null,
         p_campaign: attribution?.campaign ?? null,

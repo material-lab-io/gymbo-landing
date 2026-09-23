@@ -4,9 +4,14 @@ export type AttributionTuple = {
   campaign: string | null;
 };
 
-export type AttributionPayload = AttributionTuple & {
-  funnel_visit_id: string | null;
-  anonymous_visitor_id: string | null;
+// source/medium/campaign are all null ONLY for registry shape 4 (signal present, matched
+// nothing); the visit IDs are always present on a payload.
+export type AttributionPayload = {
+  source: string | null;
+  medium: string | null;
+  campaign: string | null;
+  funnel_visit_id: string;
+  anonymous_visitor_id: string;
   schema_version: number;
 };
 

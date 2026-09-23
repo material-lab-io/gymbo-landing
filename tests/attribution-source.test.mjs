@@ -258,3 +258,26 @@ test("the Android Instagram app referrer is instagram, and lookalikes are not", 
     { source: "instagram", medium: "organic_social", campaign: "android_referrer" },
   );
 });
+
+// gy-ufxgo.8: registry shape 4 at the server boundary. A tuple that is ENTIRELY absent plus
+// both trustworthy visit ids is "judged, matched nothing" and is kept at schema 5. Anything
+// merely present-but-wrong stays null (shape 1): only the browser classifies state 3.
+test("server boundary: an empty tuple with both visit ids is shape 4, stored at schema 5", () => {
+  const ids = {
+    funnel_visit_id: "5d1c8e37-a2f4-4b69-8e10-3c7fa96b2d45",
+    anonymous_visitor_id: "e94b7a03-16cd-4f28-b5a1-d08c3e7f9126",
+  };
+  assert.deepEqual(normalizeAttributionPayload({ ...ids }), {
+    source: null, medium: null, campaign: null, ...ids, schema_version: 5,
+  });
+  assert.deepEqual(normalizeAttributionPayload({ source: "", medium: null, campaign: " ", ...ids }), {
+    source: null, medium: null, campaign: null, ...ids, schema_version: 5,
+  });
+  // Near-misses all degrade to null (shape 1), never to shape 4 and never to a stored raw value.
+  assert.equal(normalizeAttributionPayload({ source: "foo", medium: "bar", campaign: "baz", ...ids }), null);
+  assert.equal(normalizeAttributionPayload({ medium: "organic", ...ids }), null, "partial tuple");
+  assert.equal(normalizeAttributionPayload({ campaign: "bio", ...ids }), null, "partial tuple");
+  assert.equal(normalizeAttributionPayload({}), null, "no ids at all is unmeasured");
+  assert.equal(normalizeAttributionPayload({ funnel_visit_id: ids.funnel_visit_id }), null, "one id");
+  assert.equal(normalizeAttributionPayload({ ...ids, anonymous_visitor_id: "damini-rathi" }), null, "bad id");
+});
