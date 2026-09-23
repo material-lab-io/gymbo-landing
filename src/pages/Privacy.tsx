@@ -24,6 +24,9 @@ export function Privacy() {
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com: aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
             <li><strong>Product analytics in the app.</strong> We record how the app is used (screens opened, features used, and errors) with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier, plus, when an action is about a client, the class or payment amount involved, but never anything that identifies that client. Your clients' names, phone numbers, contact details, notes, and internal IDs are never sent. You control this under Settings → Privacy; when it is off, we send no usage events and none of your name, phone number, or activity. The app does still briefly contact PostHog's servers at launch to fetch configuration, which shares your device's IP address but no personal or usage data.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
+            {/* DEPENDANT: the takedown form (functions/m/takedown.js, gy-wwr2e.57) points readers HERE for
+                how service logs treat their IP address. Do not remove or reword this item so that it
+                stops naming IP address; tests/cross-page-references.test.mjs enforces it. */}
           </ul>
         </section>
 
