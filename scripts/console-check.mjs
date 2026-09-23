@@ -4,15 +4,88 @@
 // automatically. Third-party resource-load noise (fonts/analytics/CDN, favicon)
 // is filtered out so a CDN hiccup can't flake the deploy gate.
 // Usage: node scripts/console-check.mjs <base-url>
+import { isIP } from "node:net";
 import { chromium } from "playwright";
 
 const base = process.argv[2] || "http://127.0.0.1:8788";
+const baseUrl = new URL(base);
+const baseOrigin = baseUrl.origin;
+const defaultNavigationTimeoutMs = 30_000;
+const testTimeout = process.env.CONSOLE_CHECK_TEST_TIMEOUT_MS;
+let navigationTimeoutMs = defaultNavigationTimeoutMs;
 
-const sitemap = await fetch(`${base}/sitemap.xml`).then((r) => r.text());
+if (testTimeout !== undefined) {
+  const loopbackHosts = new Set(["127.0.0.1", "localhost", "[::1]", "::1"]);
+  const parsed = Number(testTimeout);
+  if (!loopbackHosts.has(baseUrl.hostname)) {
+    throw new Error("CONSOLE_CHECK_TEST_TIMEOUT_MS is restricted to loopback fixtures");
+  }
+  if (!Number.isInteger(parsed) || parsed < 100 || parsed > defaultNavigationTimeoutMs) {
+    throw new Error(
+      `CONSOLE_CHECK_TEST_TIMEOUT_MS must be an integer from 100 to ${defaultNavigationTimeoutMs}`,
+    );
+  }
+  navigationTimeoutMs = parsed;
+}
+
+const formatError = (error) => {
+  const parts = [];
+  let current = error;
+  const seen = new Set();
+  while (current && !seen.has(current)) {
+    seen.add(current);
+    const message = current instanceof Error ? current.message : String(current);
+    const facts = [];
+    if (current instanceof Error) facts.push(`name=${current.name}`);
+    if (typeof current === "object") {
+      if (current.code) facts.push(`code=${current.code}`);
+      if (current.errno) facts.push(`errno=${current.errno}`);
+      if (current.syscall) facts.push(`syscall=${current.syscall}`);
+      if (current.port) facts.push(`port=${current.port}`);
+    }
+
+    const explicitAddress =
+      typeof current === "object" && typeof current.address === "string"
+        ? current.address
+        : typeof current === "object" && typeof current.socket?.remoteAddress === "string"
+          ? current.socket.remoteAddress
+          : null;
+    const socketPort =
+      typeof current === "object" && Number.isInteger(current.socket?.remotePort)
+        ? current.socket.remotePort
+        : null;
+    const messageAddress =
+      message.match(/\[([0-9a-f:]+)\](?::\d+)?/i)?.[1] ??
+      message.match(/\b((?:\d{1,3}\.){3}\d{1,3})\b/)?.[1] ??
+      null;
+    const attemptedAddress = explicitAddress ?? messageAddress;
+    const addressFamily = attemptedAddress ? isIP(attemptedAddress) : 0;
+    if (attemptedAddress) facts.push(`attempted_address=${attemptedAddress}`);
+    if (addressFamily) facts.push(`address_family=IPv${addressFamily}`);
+    if (socketPort) facts.push(`attempted_port=${socketPort}`);
+    facts.push(`message=${JSON.stringify(message)}`);
+    parts.push(facts.join(" "));
+    current = typeof current === "object" ? current.cause : null;
+  }
+  return parts.join("; cause: ");
+};
+
+const sitemapUrl = `${base}/sitemap.xml`;
+let sitemap;
+try {
+  const response = await fetch(sitemapUrl);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  sitemap = await response.text();
+} catch (error) {
+  console.error(
+    `console-check: COULD-NOT-EVALUATE: phase=sitemap-fetch host=${baseUrl.host} url=${sitemapUrl} detail=${formatError(error)}`,
+  );
+  process.exit(2);
+}
 const paths = [...sitemap.matchAll(/<loc>https:\/\/getgymbo\.com(\/[^<]*)<\/loc>/g)].map((m) => m[1]);
 if (paths.length === 0) {
-  console.error("console-check: no routes found in sitemap — aborting");
-  process.exit(1);
+  console.error("console-check: COULD-NOT-EVALUATE: no routes found in sitemap — aborting");
+  process.exit(2);
 }
 
 // Ignore third-party / network noise — we only gate on our own JS errors.
@@ -36,10 +109,52 @@ const ignoredThirdPartyHosts = new Set([
   "fonts.gstatic.com",
 ]);
 const isolatedThirdPartyHosts = new Set();
-const baseOrigin = new URL(base).origin;
 
 const newCheckedPage = async () => {
   const page = await browser.newPage();
+  const pendingRequests = new Map();
+  const firstPartyFailures = new Map();
+
+  const detailsFor = (request) => {
+    const requestUrl = new URL(request.url());
+    return {
+      url: requestUrl.href,
+      host: requestUrl.host,
+      method: request.method(),
+      resourceType: request.resourceType(),
+      startedAt: Date.now(),
+    };
+  };
+
+  page.on("request", (request) => {
+    pendingRequests.set(request, detailsFor(request));
+  });
+  page.on("requestfinished", (request) => {
+    pendingRequests.delete(request);
+  });
+  page.on("requestfailed", (request) => {
+    const details = pendingRequests.get(request) ?? detailsFor(request);
+    pendingRequests.delete(request);
+    const isMainNavigation =
+      request.isNavigationRequest() && request.frame() === page.mainFrame();
+    if (new URL(details.url).origin === baseOrigin && !isMainNavigation) {
+      const reason = request.failure()?.errorText || "unknown network failure";
+      firstPartyFailures.set(
+        `request:${details.url}`,
+        `first-party request failed (${reason}) url=${details.url}`,
+      );
+    }
+  });
+  page.on("response", (response) => {
+    const requestUrl = new URL(response.url());
+    if (requestUrl.origin === baseOrigin && response.status() >= 400) {
+      firstPartyFailures.set(
+        `response:${requestUrl.href}`,
+        `first-party response HTTP ${response.status()} url=${requestUrl.href}`,
+      );
+    }
+  });
+
   await page.route("**/*", async (route) => {
     const requestUrl = new URL(route.request().url());
     if (
@@ -52,7 +167,58 @@ const newCheckedPage = async () => {
     }
     await route.continue();
   });
-  return page;
+  return {
+    page,
+    diagnostics: {
+      firstPartyFailures: () => [...firstPartyFailures.values()],
+      pendingRequests: () =>
+        [...pendingRequests.values()]
+          .map((request) => ({ ...request, ageMs: Date.now() - request.startedAt }))
+          .sort((a, b) => b.ageMs - a.ageMs || a.url.localeCompare(b.url)),
+    },
+  };
+};
+
+const couldNotEvaluate = [];
+
+const navigateToLoad = async ({ page, diagnostics }, url, label) => {
+  try {
+    const response = await page.goto(url, {
+      waitUntil: "load",
+      timeout: navigationTimeoutMs,
+    });
+    return { kind: "loaded", response };
+  } catch (error) {
+    let readyState = "unavailable";
+    try {
+      readyState = await page.evaluate(() => document.readyState);
+    } catch {
+      // Navigation may have failed before a document became inspectable.
+    }
+
+    const pending = diagnostics.pendingRequests();
+    couldNotEvaluate.push(label);
+    if (error?.name === "TimeoutError") {
+      console.error(
+        `COULD-NOT-EVALUATE: browser load did not complete route=${label} timeout_ms=${navigationTimeoutMs} wait_until=load load_event=not-fired document_ready_state=${readyState}`,
+      );
+    } else {
+      console.error(
+        `COULD-NOT-EVALUATE: browser navigation failed route=${label} host=${new URL(url).host} wait_until=load load_event=not-observed document_ready_state=${readyState}`,
+      );
+    }
+    if (pending.length === 0) {
+      console.error("     pending-request lifecycle=none-observed");
+    } else {
+      for (const request of pending) {
+        console.error(
+          `     pending-request lifecycle=pending age_ms=${request.ageMs} method=${request.method} resource_type=${request.resourceType} host=${request.host} url=${request.url}`,
+        );
+      }
+    }
+    console.error(`     navigation-error=${formatError(error)}`);
+    return { kind: "could-not-evaluate", error };
+  }
 };
 // gy-pvi8y: tracked separately from `failures`/`paths` on purpose. The
 // dark-seed check below is a single extra assertion, not one of the
@@ -70,47 +236,63 @@ let darkSeedFailed = null;
 // still renders light — this is the one check that would have caught the
 // actual incident; a plain page-load check (no seeded storage) never would.
 {
-  const themePage = await newCheckedPage();
+  const checkedThemePage = await newCheckedPage();
+  const { page: themePage, diagnostics } = checkedThemePage;
+  const themeErrors = [];
   await themePage.addInitScript(() => localStorage.setItem("theme", "dark"));
-  await themePage.goto(base + "/", { waitUntil: "load", timeout: 30000 });
-  await themePage.waitForTimeout(300);
-  const bg = await themePage.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  const htmlDark = await themePage.evaluate(() => document.documentElement.getAttribute("data-theme") === "dark");
+  const navigation = await navigateToLoad(checkedThemePage, base + "/", "/ (dark-seeded)");
+  let bg = "not-evaluated";
+  let htmlDark = false;
+  if (navigation.kind === "loaded") {
+    await themePage.waitForTimeout(300);
+    bg = await themePage.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    htmlDark = await themePage.evaluate(
+      () => document.documentElement.getAttribute("data-theme") === "dark",
+    );
+  }
+  themeErrors.push(...diagnostics.firstPartyFailures());
   await themePage.close();
-  // Light token is #FAFAF7 -> rgb(250, 250, 247). Allow the whole FAFAFx
-  // family (a couple of points of anti-aliasing/rounding slack) rather than
-  // an exact string match.
-  const m = bg.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-  const isLight = m && Number(m[1]) > 240 && Number(m[2]) > 240 && Number(m[3]) > 235;
-  if (htmlDark || !isLight) {
+
+  if (navigation.kind === "loaded") {
+    // Light token is #FAFAF7 -> rgb(250, 250, 247). Allow the whole FAFAFx
+    // family (a couple of points of anti-aliasing/rounding slack) rather than
+    // an exact string match.
+    const m = bg.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    const isLight = m && Number(m[1]) > 240 && Number(m[2]) > 240 && Number(m[3]) > 235;
+    if (htmlDark || !isLight) {
+      themeErrors.push(`rendered dark (bg=${bg}, data-theme dark=${htmlDark})`);
+    }
+  }
+
+  if (themeErrors.length) {
     darkSeedFailed = "/ (dark-seeded)";
-    console.error(`FAIL / with localStorage theme="dark" pre-seeded — rendered dark (bg=${bg}, data-theme dark=${htmlDark})`);
-  } else {
+    console.error('FAIL / with localStorage theme="dark" pre-seeded');
+    [...new Set(themeErrors)].forEach((error) => console.error(`     ${error}`));
+  } else if (navigation.kind === "loaded") {
     console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
   }
 }
 
 for (const p of paths) {
-  const page = await newCheckedPage();
+  const checkedPage = await newCheckedPage();
+  const { page, diagnostics } = checkedPage;
   const errors = [];
   page.on("console", (m) => {
     if (m.type() === "error" && !ignore(m.text())) errors.push(m.text());
   });
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
-  const resp = await page
-    .goto(base + p, { waitUntil: "load", timeout: 30000 })
-    .catch((e) => {
-      errors.push(`goto failed: ${e.message}`);
-      return null;
-    });
-  if (resp && resp.status() >= 400) errors.push(`HTTP ${resp.status()}`);
-  await page.waitForTimeout(700); // let hydration settle
+  const navigation = await navigateToLoad(checkedPage, base + p, p);
+  if (navigation.kind === "loaded") {
+    await page.waitForTimeout(700); // let hydration settle
+  }
+  errors.push(...diagnostics.firstPartyFailures());
   await page.close();
+
   if (errors.length) {
     failures.push(p);
     console.error(`FAIL ${p}`);
-    errors.forEach((e) => console.error(`     ${e}`));
-  } else {
+    [...new Set(errors)].forEach((error) => console.error(`     ${error}`));
+  } else if (navigation.kind === "loaded") {
     console.log(`OK   ${p}`);
   }
 }
@@ -123,7 +305,17 @@ if (isolatedThirdPartyHosts.size) {
 
 if (darkSeedFailed) console.error(`\nconsole-check: dark-seed invariant FAILED (${darkSeedFailed})`);
 if (failures.length) {
-  console.error(`console-check: ${failures.length}/${paths.length} page(s) have console errors → gate FAIL`);
+  console.error(
+    `console-check: ${failures.length}/${paths.length} page(s) have first-party or console error(s) → gate FAIL`,
+  );
+}
+if (couldNotEvaluate.length) {
+  console.error(
+    `console-check: COULD-NOT-EVALUATE: ${couldNotEvaluate.length} browser assertion(s) did not reach the load boundary; product verdict incomplete`,
+  );
 }
 if (darkSeedFailed || failures.length) process.exit(1);
+if (couldNotEvaluate.length) {
+  process.exit(2);
+}
 console.log(`\nconsole-check: all ${paths.length} pages clean, dark-seed invariant holds`);

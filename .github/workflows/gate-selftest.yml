@@ -135,6 +135,9 @@ jobs:
       - name: Install Chromium (console-check negative controls)
         run: npx playwright install chromium
 
+      - name: Console-check request lifecycle controls (offline)
+        run: node scripts/test-console-check-request-lifecycle.mjs
+
       - name: Sanity — the GOOD fixture must PASS both curl gates
         run: |
           set -e
