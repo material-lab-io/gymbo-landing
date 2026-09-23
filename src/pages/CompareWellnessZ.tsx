@@ -21,7 +21,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "The core job", gymbo: "punch a class in one tap; track payments & balances", wellnessz: "create & assign diet / meal plans", win: null },
   { label: "Entry price", gymbo: `₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual)`, wellnessz: "₹499/mo", win: "g" },
   { label: "Client limits", gymbo: "unlimited: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
-  { label: "Free trial", gymbo: `${TRIAL_DAYS} days`, wellnessz: "14 days", win: null },
+  { label: "Free trial", gymbo: `${TRIAL_DAYS} days for eligible subscribers`, wellnessz: "14 days", win: null },
   { label: "Class punches", gymbo: "one-tap punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
   { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
   { label: "Nutrition / meal plans", gymbo: "Workout builder + Ask Gymbo (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
@@ -371,7 +371,7 @@ export function CompareWellnessZ() {
                 Built for trainers. Try it free.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Request access and we'll be in touch with your access. Free for your first {TRIAL_DAYS} days.
+                Request access and we'll be in touch with your access. Eligible subscribers can try Gymbo free for {TRIAL_DAYS} days.
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
