@@ -295,7 +295,7 @@ None of these is training. All of them are the tax on being a one-person busines
 
 **1. Run everything from your phone, not five apps.** Your client list, schedule, session counts, and payments belong in one place you can open between sets, not spread across WhatsApp chats, a diary, your UPI history, and your memory.
 
-**2. Log the session the second it ends.** One tap, on the spot. A count you'll "update later" is a count you'll get wrong, and wrong counts are where trust and renewals leak.
+**2. Log the session the second it ends.** On the spot. A count you'll "update later" is a count you'll get wrong, and wrong counts are where trust and renewals leak.
 
 **3. Tie every payment to the client and package.** So the balance (paid minus used) is always current. Collect over **UPI**, which now runs more than **23 billion transactions a month in India** *(NPCI, May 2026)*; your clients already pay this way.
 
@@ -387,7 +387,7 @@ const trainSmarter: Post = {
   faq: [
     { q: "What does it mean to train clients smarter?", a: "For an independent trainer it means letting real patterns guide your coaching, especially attendance and consistency over time, rather than reacting only to the last session. Keeping a clear session history lets you spot a fading client early and adjust while it's still fixable. Your expertise writes the programme; the record tells you when to act." },
     { q: "How can I tell if a client is losing motivation?", a: "Watch the trend, not a single session. One missed session is normal; a cluster of gaps over a couple of weeks is an early warning. Trainers who track attendance can see the slide starting and re-engage the client before they've quietly decided to stop, which is far easier than winning them back afterwards." },
-    { q: "Do I need special software to track client progress?", a: "No, a diary works for a small roster. What you need is a session history you'll actually review. Software earns its place once you're juggling enough clients that keeping an accurate, glanceable record by hand becomes a chore you skip; then a single app that logs attendance for you keeps the pattern visible without extra work." },
+    { q: "Do I need special software to track client progress?", a: "No, a diary works for a small roster. What you need is a session history you'll actually review. Software earns its place once you're juggling enough clients that keeping an accurate, glanceable record by hand becomes a chore you skip; then a single app that tracks attendance for you keeps the pattern visible without extra work." },
     { q: "Does tracking attendance really improve results?", a: "Indirectly but strongly: results depend on consistency, and you can only support consistency you can see. Tracking attendance turns \"I think she's been coming\" into a clear pattern, so you catch drop-off early, keep clients on track, and protect the results (and renewals) that follow from showing up." },
     { q: "Can an app design my clients' workouts?", a: "Gymbo doesn't, and it's honest about that: it tracks sessions, attendance, and payments so your record is accurate, but the programming is yours. Be cautious of tools claiming to \"generate workouts\" for you; the coaching judgment for a real person's body and goals is exactly what an independent trainer is for." },
   ],
