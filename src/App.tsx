@@ -61,11 +61,11 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance you log, so you can see where each client stands.",
+    intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
     bullets: [
       "Every balance, clear: credit and classes left, updated the moment you punch a class.",
       "Get paid for every class you teach",
-      "Cash or UPI logged, so you don't lose track.",
+      "Cash or UPI recorded, so you don't lose track.",
     ],
     brief: "Record a payment: UPI or cash, and the balance clears.",
     dark: false,
@@ -152,7 +152,7 @@ const PRICING = [
 export const FAQ = [
   { q: "Is it free?", a: `${TRIAL_PRIMARY} Then Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}. ${TRIAL_ELIGIBILITY_DETAIL}` },
   { q: "What happens when my trial ends, and can I cancel or get my data out?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
-  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
+  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
   { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
   { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
