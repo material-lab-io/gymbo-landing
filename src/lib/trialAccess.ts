@@ -54,7 +54,7 @@ export const GYMBO_TRIAL_ROW = `${TRIAL_DAYS} days for eligible subscribers, App
  * surface — this one IS meant to be byte-identical, unlike the FAQ answer
  * below which restates the same facts in a different register.
  */
-export const TRIAL_LINE = `Gymbo is in ${STATUS_LANGUAGE.toLowerCase()}. Eligible subscribers can start with a ${TRIAL_DAYS}-day free trial once access is granted. Billed via ${BILLING_CHANNEL}.`;
+export const TRIAL_LINE = `Gymbo is in ${STATUS_LANGUAGE.toLowerCase()}. ${TRIAL_PRIMARY} Billed via ${BILLING_CHANNEL}.`;
 
 /** The 3-step access route (src/App.tsx, "what happens next"). */
 export const ACCESS_ROUTE_STEPS = [
