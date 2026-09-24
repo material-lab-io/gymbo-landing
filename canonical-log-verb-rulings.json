@@ -2,26 +2,6 @@
  "version": 1,
  "note": "Built by scripts/vendor-log-verb-rulings.mjs from live bd. Do not hand-edit; re-run it and review the diff.",
  "rulings": {
-  "01a0d4e9-e380-72c2-9b36-d86ee5c07c8c": {
-   "bead": "gy-uu7mt",
-   "author": "gymbo/gymbo-crew.pm",
-   "created_at": "2026-09-24T19:34:53Z",
-   "sha256": "bfefc4246d10d4bcb121e7e1f3d8eb28964cba5f84e17e5c0c905bb01a7ba33c",
-   "quotes": [
-    "ALLOWED editorial-advice sentences. The sentence is \"Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the ",
-    "ALLOWED editorial-advice sentences. The sentence is \"Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the roster weekly"
-   ]
-  },
-  "01a0d55e-3f15-7b0f-8c3f-0cc68e5862d4": {
-   "bead": "gy-uu7mt",
-   "author": "gymbo/gymbo-crew.content",
-   "created_at": "2026-09-24T21:41:59Z",
-   "sha256": "531467d825249b9261bf284cd2be2b6b32e64735ccd56ac9db7af2fde329fc86",
-   "quotes": [
-    "Gymbo records the payments you log between you and your clients. It does not process those payments or handle your ...' - RULED: ALLOWED, reason class LEGAL",
-    "Log the session the second it ends.** One tap, on the spot. A count you'll \"update later\" ...' - RULED: it stays as ADVICE"
-   ]
-  },
   "01a0d567-14be-7a0e-9120-930809246b95": {
    "bead": "gy-uu7mt",
    "author": "gymbo/gymbo-crew.content",
@@ -29,10 +9,53 @@
    "sha256": "45c12ad4c803c6f3459a551c328e1f3feb8b3b4bc29a31ffd9b42dc14b67b622",
    "quotes": [
     "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly",
-    "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly...'), work-smart meta description ('...from their phone, logging sessions, tracking payments",
-    "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly...'), work-smart meta description ('...from their phone, logging sessions, tracking payments...'), work-smart JSON-LD description ('...shrink admin: log sessions, track payments",
-    "Programming-led; logs workouts, not payments' - CONFIRMED, class competitor",
     "Standard logs (such as IP address...)' - CONFIRMED, class unrelated"
+   ]
+  },
+  "01a0d595-5767-79d7-b574-c06af40616e1": {
+   "bead": "gy-uu7mt",
+   "author": "gymbo/gymbo-crew.content",
+   "created_at": "2026-09-24T22:42:09Z",
+   "sha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f",
+   "quotes": [
+    "A payment logged only in your UPI app is money you'll have to reconstruct later. RULED advice",
+    "At a fixed time each day, log anything missed, glance at tomorrow, and note who owes or is due to renew. RULED advice",
+    "Do it in the moment: log the session as it ends, record the payment against the client and package as it lands, and the \"management\" is already done by the time the day is over. RULED advice",
+    "It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate. RULED advice",
+    "Keep one ledger current in the moment: log each session as it ends, record each payment against the client and package as it lands, and do a five-minute weekly scan of who's due to renew, who owes, and who's gone quiet. RULED advice",
+    "Log each session at the end, not in a weekly reconstruction. RULED advice",
+    "Log each session immediately RULED advice",
+    "Log each session the moment it ends, record every payment against the client and package, keep one schedule you actually trust, and batch the rest into a single five-minute daily review. RULED advice",
+    "Log each session the moment it ends, record every payment against the client and package, keep one schedule you trust, and batch the rest into a single five-minute daily review. RULED advice",
+    "Log each session the moment it happens, record every payment against a balance, and review the whole roster once a week. RULED advice",
+    "Log it immediately: sessions done and sessions remaining per client. RULED advice",
+    "Log sessions as they happen RULED advice",
+    "Log sessions as they happen, at the end of each session, not in a Sunday-night reconstruction. RULED advice",
+    "Log sessions done and sessions remaining per client immediately, so the count stays accurate. RULED advice",
+    "Managing is the ongoing rhythm on top of it: logging sessions and payments as they happen and reviewing the roster weekly so nothing slips. RULED advice",
+    "Practically, that's running your whole one-person business from one place on your phone, and logging sessions and payments as they happen rather than reconstructing them later. RULED advice",
+    "RULED advice-to-reader: Log each session the moment it happens",
+    "RULED advice-to-reader: Shrinking the admin around your training (session-counting, payment-chasing, scheduling, and reminders) so it takes minutes a day instead of hours, by running your one-person business from one place on your phone and logging sessions and payments as they happen",
+    "Same time each day: log anything you missed, glance at tomorrow, note who's due to renew or owes. RULED advice",
+    "That daily-log-plus-weekly-review loop is managing the business; everything else is training. RULED advice",
+    "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer. RULED advice",
+    "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer; the rest is training. RULED advice",
+    "quote: With Gymbo, I open the app, log the session, and move on.” RULED"
+   ]
+  },
+  "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7": {
+   "bead": "gy-uu7mt",
+   "author": "gymbo/gymbo-crew.content",
+   "created_at": "2026-09-24T22:49:19Z",
+   "sha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757",
+   "quotes": [
+    "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the roster weekly. RULED advice",
+    "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the whole roster once a week. RULED advice",
+    "How a solo fitness trainer in India runs a one-person business from their phone, logging sessions, tracking payments, scheduling, and renewing on time. RULED advice",
+    "How a solo personal trainer in India can run a one-person business from their phone and shrink admin: log sessions, track payments, schedule, batch admin, and renew on time. RULED advice",
+    "RULED advice-to-reader: Log the session the second it ends",
+    "RULED competitor-description: Programming-led; logs workouts, not payments",
+    "RULED legal-text: Gymbo records the payments you log between you and your clients"
    ]
   }
  }
