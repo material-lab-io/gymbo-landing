@@ -6,6 +6,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { discoverBuiltPages, pageSurfaces } from "./check-no-em-dash.mjs";
+import { matchable } from "./text-normalise.mjs";
 
 export const BANNED = [
   "AI assistant",
@@ -113,12 +114,7 @@ function gymboNearby(text, index, length) {
 }
 
 function normalise(value) {
-  return String(value)
-    .replace(/&#x27;|&#0*39;|&apos;|[‘’]/gi, "'")
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, "&")
-    .replace(/&nbsp;| /gi, " ")
-    .replace(/\s+/g, " ");
+  return matchable(value);
 }
 
 export function scanText(value, route, surface) {

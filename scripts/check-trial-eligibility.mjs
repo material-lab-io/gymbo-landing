@@ -7,6 +7,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { discoverBuiltPages, pageSurfaces } from "./check-no-em-dash.mjs";
+import { matchable } from "./text-normalise.mjs";
 
 const TEXT_ENDPOINTS = ["llms.txt", "pricing.md"];
 const TRIGGER_DAYS = /\b(?:7|seven)[- ]?days?\b/i;
@@ -14,13 +15,7 @@ const TRIGGER_FREE = /\b(?:free|trial)\b/i;
 const QUALIFIED = /eligib/i;
 
 function normalise(value) {
-  return String(value)
-    .replace(/&#x27;|&#0*39;|&apos;|[‘’]/gi, "'")
-    .replace(/&quot;/gi, '"')
-    .replace(/&amp;/gi, "&")
-    .replace(/&nbsp;| /gi, " ")
-    .replace(/[*_`]/g, "")
-    .replace(/\s+/g, " ");
+  return matchable(value).replace(/[*_`]/g, "");
 }
 
 export function scanText(value, route, surface) {
