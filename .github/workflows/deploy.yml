@@ -199,7 +199,7 @@ jobs:
       #   WARNS   a master that was already live and has merely aged. Annotation
       #           + job summary on every run — moving a gate must not delete an
       #           alarm, and this one was already silently fail-open 08-12 to
-      #           08-19 (see public/screens/MANIFEST.md).
+      #           08-19 (see ops/screens/MANIFEST.md).
       #
       # Do NOT re-flatten this by raising maxAgeDays, adding a bypass flag, or
       # backfilling manifest entries — pm ruled all three out. The staleness is

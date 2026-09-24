@@ -56,7 +56,9 @@ import { readFile } from "node:fs/promises";
 import { appendFileSync } from "node:fs";
 import { SCREENS } from "./screens-map.mjs";
 
-const MANIFEST_PATH = "public/screens/manifest.json";
+// gy-dwxbm: the manifest and its README are INTERNAL crew documents; they live under ops/, NOT
+// public/, so they are not served on getgymbo.com. SCREENS_DIR stays public/screens/ (the PNGs).
+const MANIFEST_PATH = "ops/screens/manifest.json";
 const SCREENS_DIR = "public/screens/";
 
 const argv = process.argv.slice(2);
@@ -196,7 +198,7 @@ if (integrityFailures.length || publishFailures.length) {
       (STRICT ? "(strict mode: age blocks unconditionally).\n" : "this change publishes.\n") +
       "Integrity failures (missing entry / unverified / invalid capturedAt) are properties of the\n" +
       "change and are always blocking. A stale artifact blocks only when this change touches it.\n" +
-      "See public/screens/MANIFEST.md for how the capture crew backfills a real entry (gy-5xmxm)."
+      "See ops/screens/MANIFEST.md for how the capture crew backfills a real entry (gy-5xmxm)."
   );
   process.exit(1);
 }
