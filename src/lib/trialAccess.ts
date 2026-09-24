@@ -46,7 +46,7 @@ export const TRIAL_PRIMARY = `Eligible subscribers can try Gymbo free for ${TRIA
 export const TRIAL_ELIGIBILITY_DETAIL = "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.";
 
 /** Gymbo's own comparison-table trial row (src/content/alternatives/pages.ts). */
-export const GYMBO_TRIAL_ROW = `${TRIAL_DAYS} days for eligible subscribers, card required`;
+export const GYMBO_TRIAL_ROW = `${TRIAL_DAYS} days for eligible subscribers, Apple payment method required`;
 
 /**
  * The house trial/access-timing line, verbatim wherever it appears above the

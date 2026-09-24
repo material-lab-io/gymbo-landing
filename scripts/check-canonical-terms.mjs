@@ -24,7 +24,16 @@ export const BANNED = [
   "payment logging",
   "classes you log",
   "back office",
+  "AI-powered",
 ];
+
+// gy-xmzqr.7 (content ruling 2026-09-24): "log sessions" is banned only where it
+// describes Gymbo in SEARCH/SHARE metadata: <meta> tags on every page, and JSON-LD on
+// the homepage. Body copy and guide-page JSON-LD also carry general editorial advice
+// and competitor language ("log sessions as they happen"), so a wider ban would need
+// exceptions for prose this gate must not touch.
+export const META_ONLY_BANNED = ["log sessions"];
+const isMetaSurface = (surface, route) => surface.startsWith("metadata ") || (route === "/" && surface.startsWith("JSON-LD "));
 
 // Deliberately narrow: each entry keeps ONE sentence whose subject is not Gymbo's
 // action. Nothing here may exempt a file or a route.
@@ -49,7 +58,8 @@ function normalise(value) {
 export function scanText(value, route, surface) {
   const text = normalise(value);
   const findings = [];
-  for (const term of BANNED) {
+  const terms = isMetaSurface(surface, route) ? [...BANNED, ...META_ONLY_BANNED] : BANNED;
+  for (const term of terms) {
     const pattern = new RegExp(`(?<![A-Za-z])${term.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}(?![A-Za-z])`, "gi");
     for (const match of text.matchAll(pattern)) {
       const window = text.slice(Math.max(0, match.index - 90), match.index + match[0].length + 60);
