@@ -144,7 +144,7 @@ jobs:
         # fallback); each is caught.
 
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
-        run: node --test tests/master-asset-drift.test.mjs
+        run: node --test tests/master-asset-drift.test.mjs tests/screenshot-freshness-relocation.test.mjs
         # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
         # repos with fixed dates and asserts the verdicts of
         # scripts/check-master-asset-drift.mjs. NOTHING in CI runs that script
@@ -224,14 +224,21 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags origin "${{ github.base_ref }}"
             git diff --name-only FETCH_HEAD...HEAD > /tmp/changed-files.txt
+            # gy-dwxbm: the SHA the change set was measured from (the merge-base, exactly what
+            # `A...B` diffs against), resolved NOW because FETCH_HEAD is rewritten by later
+            # fetches. The gate uses it to tell a RELOCATED manifest from an EDITED one.
+            echo "SCREENSHOT_BASE=$(git merge-base FETCH_HEAD HEAD)" >> "$GITHUB_ENV"
           else
             git diff --name-only HEAD^ HEAD > /tmp/changed-files.txt
+            echo "SCREENSHOT_BASE=$(git rev-parse HEAD^)" >> "$GITHUB_ENV"
           fi
           echo "change set ($(wc -l < /tmp/changed-files.txt) path(s)):"
           sed 's/^/  /' /tmp/changed-files.txt
 
       - name: Screenshot staleness gate
-        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt
+        # An unset/empty SCREENSHOT_BASE makes the gate treat a touched manifest as EDITED
+        # (fail-closed), so a broken step above can only make this stricter, never looser.
+        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt --base "${SCREENSHOT_BASE:-}"
 
       # Photoreal-device gate (gy-dyu6r.9): exact corrected hero identity, all
       # four demo/poster pairs, measured gallery mask geometry, and approved
