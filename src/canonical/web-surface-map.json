@@ -59,24 +59,12 @@
         {
           "route": "/compare/gymbo-vs-wellnessz/",
           "surface": "visible block",
-          "mode": "equals",
-          "waiver": {
-            "ref": "gy-uu7mt 2026-09-24 (content caveat 1)",
-            "expires": "2026-10-08",
-            "observed": "7 days for eligible subscribers",
-            "why": "CompareWellnessZ.tsx:24 hard-codes '${TRIAL_DAYS} days for eligible subscribers' and does not use GYMBO_TRIAL_ROW; the WellnessZ column says '14 days' with no payment clause."
-          }
+          "mode": "equals"
         },
         {
           "route": "/blog/best-apps-for-independent-personal-trainers-in-india-2026/",
           "surface": "visible block",
-          "mode": "equals",
-          "waiver": {
-            "ref": "gy-uu7mt 2026-09-24 (found by landing)",
-            "expires": "2026-10-08",
-            "observed": "7 days for eligible subscribers",
-            "why": "the best-apps blog table renders the Gymbo cell without the payment-method clause."
-          }
+          "mode": "equals"
         }
       ]
     },
