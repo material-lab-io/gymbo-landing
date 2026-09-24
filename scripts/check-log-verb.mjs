@@ -12,23 +12,27 @@
 //      the sentence (and the route it ships on); the entry's claim about itself is never
 //      believed. A predicate can only REFUTE a class, never prove it, so the ruling below
 //      is what covers the rest;
-//   2. its ruling RESOLVES: entry.ruling = {bead, comment, quote}. The comment id must be in
-//      canonical-log-verb-rulings.json, a snapshot that scripts/vendor-log-verb-rulings.mjs
-//      built from the LIVE bead (author must be content or pm, and the quote must be text
-//      in that comment). The gate is offline in CI; `--verify` re-checks the snapshot
-//      against live bd. The TIE is sentence-specific (pm 22:37Z: a comment that MENTIONS a
-//      class is not a ruling that ASSIGNS it): the quote must contain THIS entry's sentence
-//      (or a 25+ char identifying piece of it that no other registry sentence contains),
-//      a ruling word (RULED / ALLOWED / CONFIRMED / ACCEPTED), and this entry's class.
+//   2. CONTENT RULED THIS SENTENCE, in a file content owns. src/canonical/gymbo-sentence-
+//      rulings.json is vendored VERBATIM from Gymbo-v1 (sha256 recorded in
+//      SENTENCE-RULINGS-SOURCE.json, byte-checked here exactly as canonical strings are), and
+//      each of its entries records the normalised sentence, the class, the bead AND the exact
+//      bead comment it came from. A registry entry must match one of them on class + sentence
+//      + comment id + bead, and that comment must be by content or pm. There is no fuzzy tie:
+//      a comment that only MENTIONS a class cannot rule a sentence (pm 22:37Z). CI never calls
+//      bd (a Dolt hiccup must not become a public deploy outage): a scheduled Gas City order
+//      runs content's docs/rulings/vendor_sentence_rulings.py --verify against the LIVE beads
+//      and catches the vendored copy going stale. Gate = this check; drift detector = that.
 // Guards against silent growth stay: reviewed repo file, entry count printed every run,
 // stale entries fail, editing a sentence re-opens it, kind and route are part of the key.
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scanDist, walk, routeOfFile } from "./copy-change-detector.mjs";
 
 export const REGISTRY_FILE = "canonical-log-verb-registry.json";
-export const RULINGS_FILE = "canonical-log-verb-rulings.json";
+export const RULINGS_FILE = "src/canonical/gymbo-sentence-rulings.json";
+export const RULINGS_SOURCE_FILE = "src/canonical/SENTENCE-RULINGS-SOURCE.json";
 export const REASONS = ["advice-to-reader", "attributed-quote", "competitor-description", "unrelated-log", "legal-text"];
 export const KINDS = ["visible", "metadata", "json-ld", "attribute", "served-text"];
 export const RULING_AUTHORS = ["gymbo/gymbo-crew.content", "gymbo/gymbo-crew.pm"];
@@ -149,46 +153,17 @@ export function occurrencesIn(surfaces) {
   return found;
 }
 
-// ---- the sentence-specific tie ----
 const loose = (x) => normalise(x).toLowerCase().replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[\s"'.!?]+$/g, "").trim();
-const RULING_WORD = /\b(?:RULED|ALLOWED|CONFIRMED|ACCEPTED)\b/;
-const CLASS_WORD = {
-  "advice-to-reader": /advice/i, "attributed-quote": /attributed|testimonial|quote/i,
-  "competitor-description": /competitor/i, "unrelated-log": /unrelated|server logs?/i, "legal-text": /legal/i,
-};
-const MIN_PIECE = 25;
-// The longest piece of the sentence (>= 25 chars, holding the log verb) that the quote contains.
-export function identifyingPiece(quote, sentence) {
-  const q = loose(quote), t = loose(sentence);
-  if (t && q.includes(t)) return t;
-  for (let len = t.length - 1; len >= MIN_PIECE; len--) {
-    for (let i = 0; i + len <= t.length; i++) {
-      const piece = t.slice(i, i + len);
-      if (LOG_VERB.test(piece) && q.includes(piece)) return piece;
-    }
-  }
-  return null;
-}
-export function tieProblem(quote, sentence, reason, entries) {
-  const piece = identifyingPiece(quote, sentence);
-  if (!piece) return `the quote contains neither the sentence nor a ${MIN_PIECE}+ char piece of it that holds the log verb (a comment that only names the class rules nothing)`;
-  if (piece !== loose(sentence)) {
-    const owners = new Set(entries.filter((x) => typeof x?.sentence === "string" && loose(x.sentence).includes(piece)).map((x) => loose(x.sentence)));
-    if (owners.size > 1) return `the quoted piece "${piece.slice(0, 50)}" also occurs in ${owners.size - 1} other registry sentence(s), so it does not identify this one`;
-  }
-  if (!RULING_WORD.test(quote)) return "the quote carries no ruling word (RULED, ALLOWED, CONFIRMED, ACCEPTED): a sentence merely quoted in a comment is not a ruling";
-  if (!CLASS_WORD[reason].test(quote)) return `the quote does not assign the class '${reason}'`;
-  return null;
-}
+const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
 
 export function validateRegistry(registry, rulings) {
   const problems = [];
   if (!registry || registry.version !== 1 || !Array.isArray(registry.entries)) {
     return [{ kind: "invalid-registry", detail: 'expected {"version":1,"entries":[...]}' }];
   }
-  if (!rulings || rulings.version !== 1 || typeof rulings.rulings !== "object" || !rulings.rulings) {
-    return [{ kind: "invalid-registry", detail: `the rulings snapshot must be {"version":1,"rulings":{...}} (${RULINGS_FILE})` }];
-  }
+  if (!rulings || !Array.isArray(rulings.entries)) return [{ kind: "invalid-registry", detail: `no rulings file loaded (${RULINGS_FILE})` }];
+  problems.push(...(rulings.problems ?? []));
+  if (problems.length) return problems;   // a rulings file that fails its own checks rules nothing
   const seen = new Set();
   registry.entries.forEach((e, i) => {
     const sentence = typeof e?.sentence === "string" ? normalise(e.sentence) : undefined;
@@ -201,18 +176,20 @@ export function validateRegistry(registry, rulings) {
     // 1. the class must be TRUE of the sentence, tested, whatever the entry claims
     const why = PREDICATES[e.reason](sentence, e.route);
     if (why) return bad(`not ${e.reason}: ${why}`);
-    // 2. the ruling must RESOLVE
+    // 2. CONTENT must have ruled THIS sentence, in this class, in a specific comment
     const ru = e.ruling;
-    if (!ru || typeof ru !== "object" || typeof ru.bead !== "string" || typeof ru.comment !== "string" || typeof ru.quote !== "string") {
-      return bad("ruling must be {bead, comment, quote} naming a real bead comment; free text is not a reference");
+    if (!ru || typeof ru !== "object" || typeof ru.bead !== "string" || typeof ru.comment !== "string") {
+      return bad("ruling must be {bead, comment}: the exact bead comment content ruled this sentence in; free text is not a reference");
     }
-    const snap = rulings.rulings[ru.comment];
-    if (!snap) return bad(`ruling comment ${ru.comment} is not in ${RULINGS_FILE}: it does not resolve to a real comment (run scripts/vendor-log-verb-rulings.mjs where bd is available)`);
-    if (snap.bead !== ru.bead) return bad(`ruling comment ${ru.comment} belongs to ${snap.bead}, not ${ru.bead}`);
-    if (!RULING_AUTHORS.includes(snap.author)) return bad(`ruling comment ${ru.comment} was written by ${snap.author}; only ${RULING_AUTHORS.join(" or ")} can rule`);
-    if (ru.quote.trim().length < 20 || !Array.isArray(snap.quotes) || !snap.quotes.includes(ru.quote)) return bad("ruling quote (20+ chars) must be text the vendor script verified in that comment");
-    const tie = tieProblem(ru.quote, sentence, e.reason, registry.entries);
-    if (tie) return bad(`ruling does not rule THIS sentence: ${tie}`);
+    const ofSentence = rulings.entries.filter((v) => typeof v?.sentence === "string" && loose(v.sentence) === loose(sentence));
+    if (!ofSentence.length) return bad("content has not ruled this sentence: it is not in the vendored rulings file (a comment that merely mentions a class rules nothing)");
+    const ofClass = ofSentence.filter((v) => v.class === e.reason);
+    if (!ofClass.length) return bad(`content ruled this sentence as ${[...new Set(ofSentence.map((v) => v.class))].join("/")}, not ${e.reason}`);
+    const v = ofClass.find((x) => x.commentId === ru.comment);
+    if (!v) return bad(`content's ruling for this sentence is comment ${ofClass.map((x) => x.commentId).join(", ")}, not ${ru.comment}`);
+    if (v.bead !== ru.bead) return bad(`comment ${ru.comment} is on ${v.bead}, not ${ru.bead}`);
+    if (v.ruling !== "RULED") return bad(`the vendored ruling is '${v.ruling}', not RULED`);
+    if (!RULING_AUTHORS.includes(v.commentAuthor)) return bad(`comment ${ru.comment} was written by ${v.commentAuthor}; only ${RULING_AUTHORS.join(" or ")} can rule`);
     for (const kind of e.kinds) {
       const key = keyOf(e.route, kind, sentence);
       if (seen.has(key)) bad(`duplicate of another entry for ${kind}`);
@@ -253,7 +230,24 @@ const load = (path, what) => {
   return JSON.parse(readFileSync(path, "utf8"));
 };
 export const loadRegistry = (path = REGISTRY_FILE) => load(path, "registry");
-export const loadRulings = (path = RULINGS_FILE) => load(path, "rulings snapshot");
+// The vendored rulings file is byte-checked against its recorded sha256, exactly as content's
+// canonical strings are. Any problem here is reported as a finding, so a modified file makes the
+// whole gate red rather than being skipped.
+export function loadRulings(path = RULINGS_FILE, sourcePath = RULINGS_SOURCE_FILE) {
+  for (const [p, what] of [[path, "vendored rulings file"], [sourcePath, "rulings provenance record"]]) {
+    if (!existsSync(p)) throw new Error(`${resolve(p)} is missing; refusing to run without the ${what}`);
+  }
+  const bytes = readFileSync(path);
+  const source = JSON.parse(readFileSync(sourcePath, "utf8"));
+  const doc = JSON.parse(bytes.toString("utf8"));
+  const problems = [];
+  if (typeof source.sha256 !== "string" || sha256(bytes) !== source.sha256) {
+    problems.push({ kind: "rulings-file-modified", detail: `${path} sha256 ${sha256(bytes).slice(0, 12)} differs from the recorded ${String(source.sha256).slice(0, 12)}: the file is vendored VERBATIM from content and is never hand-edited; re-vendor it with a new content ruling` });
+  }
+  if (doc.version !== 1 || !Array.isArray(doc.entries)) problems.push({ kind: "invalid-registry", detail: "the rulings file must be {version: 1, entries: [...]}" });
+  else if (!doc.entries.length) problems.push({ kind: "invalid-registry", detail: "the rulings file has no entries; an empty file proves nothing" });
+  return { entries: Array.isArray(doc.entries) ? doc.entries : [], problems, source, sha: sha256(bytes) };
+}
 
 export function collectSurfaces(root) {
   const { surfaces, unclassified, code } = scanDist(root);
@@ -272,23 +266,23 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
     const { surfaces, unclassified, code } = collectSurfaces(opt("--root", "dist"));
     const registry = loadRegistry(opt("--registry", REGISTRY_FILE));
-    const rulings = loadRulings(opt("--rulings", RULINGS_FILE));
+    const rulings = loadRulings(opt("--rulings", RULINGS_FILE), opt("--rulings-source", RULINGS_SOURCE_FILE));
     const r = checkLogVerbs(surfaces, registry, rulings, { unclassified });
-    const summary = `log-verb registry: ${r.entries} entr${r.entries === 1 ? "y" : "ies"} (${Object.entries(r.byReason).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}); ${r.occurrences} log-verb sentence(s) shipped; ${code.length} code file(s) NOT scanned (named gap: strings that exist only in a JS/CSS bundle).`;
+    const summary = `log-verb registry: ${r.entries} entr${r.entries === 1 ? "y" : "ies"} (${Object.entries(r.byReason).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}); ${r.occurrences} log-verb sentence(s) shipped; rulings ${rulings.sha.slice(0, 12)} from ${rulings.source.mergedToMain ? "Gymbo-v1 main" : "an OPEN Gymbo-v1 PR (not on main yet)"} ${String(rulings.source.commit).slice(0, 8)}; ${code.length} code file(s) NOT scanned (named gap: strings that exist only in a JS/CSS bundle).`;
     if (args.includes("--propose")) {
       // Authoring aid only: never writes the registry. reason + ruling must come from a real ruling.
       const skeleton = r.findings.filter((f) => f.kind === "unjustified-log-verb")
-        .map((f) => ({ route: f.route, kinds: [f.surface], sentence: f.sentence, reason: "", ruling: { bead: "", comment: "", quote: "" } }));
+        .map((f) => ({ route: f.route, kinds: [f.surface], sentence: f.sentence, reason: "", ruling: { bead: "", comment: "" } }));
       console.log(JSON.stringify(skeleton, null, 2));
       console.error(summary);
     } else if (r.findings.length) {
       console.error(`FAIL: ${r.findings.length} log-verb finding(s). ${summary}`);
       for (const f of r.findings.slice(0, 60)) console.error(`  ${f.kind} ${f.route ?? ""}${f.surface ? ` [${f.surface}]` : ""}: ${f.sentence ? f.sentence.slice(0, 170) : ""}${f.detail ? ` (${f.detail})` : ""}`);
       if (r.findings.length > 60) console.error(`  ... ${r.findings.length - 60} more`);
-      console.error("A new log verb is either copy to fix (Voice Guide sec 5: punch, not log) or a sentence content has RULED allowed. An entry must satisfy its class predicate AND cite a real content/pm comment; neither can be asserted.");
+      console.error("A new log verb is either copy to fix (Voice Guide sec 5: punch, not log) or a sentence content has RULED allowed. An entry must satisfy its class predicate AND match a sentence-level ruling content vendored (class + sentence + comment id); neither can be asserted.");
       process.exitCode = 1;
     } else {
-      console.log(`OK: every log verb the site ships is justified by a class the gate verified and a ruling that resolves. ${summary}`);
+      console.log(`OK: every log verb the site ships is justified by a class the gate verified and a sentence-level ruling content vendored. ${summary}`);
     }
   } catch (error) {
     console.error(`COULD NOT EVALUATE log-verb gate: ${error.message}`);
