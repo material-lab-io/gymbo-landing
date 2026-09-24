@@ -1164,11 +1164,8 @@
       ["visible block","your practice is nutrition and meal planning first.","observed"]
     ],
     "/favicon.svg": [
-      ["served line","(1) viewBox cropped to the mark's actual bounding box (was roughly 10","observed"],
-      ["served line","(S6a): darkorange on a light tab UI, amber on a dark one, via","observed"],
       ["served line","}","observed"],
       ["served line","@media (prefers-color-scheme: dark) {","observed"],
-      ["served line","<!-- getgymbo.com favicon (gy-ue4dq). Exported from the ratified GYMBO monogram","observed"],
       ["served line","<?xml version=\"1.0\" encoding=\"UTF-8\"?>","observed"],
       ["served line","</style>","observed"],
       ["served line","</svg>","observed"],
@@ -1181,17 +1178,8 @@
       ["served line","<path class=\"cls-1\" d=\"M861,186.93l-61.29,211.9-72.03-246.33-3.5,28.81-4.12,28.81-4.94,28.61-5.76,28.4-6.59,28.4-7.2,27.99-8.03,27.99-8.85,27.78-9.47,27.37-10.5,27.16-10.91,26.75-11.73,26.55h-54.95l12.14-25.72,11.32-26.14,10.7-26.55,9.88-26.75,9.26-27.16,8.44-27.37,7.61-27.37,6.79-27.78,6.17-27.99,5.14-27.99,4.53-28.19,3.7-28.4,2.88-28.4,2.06-28.61h82.93l34.78,118.33,32.72-113.8c52.68,14.82,89.11,62.87,89.11,117.61v300.15c-.89-.79-1.78-1.54-2.68-2.33-4.6-3.94-9.43-7.55-14.51-10.87-10.08-6.69-20.96-12.11-32.41-16.15V224.83c0-13.38-3.7-26.51-10.74-37.9Z\"/>","observed"],
       ["served line","<style>","observed"],
       ["served line","<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"90 90 844 844\">","observed"],
-      ["served line","16x16/32x32 box; (2) a matching stroke added on top of the fill to","observed"],
-      ["served line","allows \"simplify strokes if needed, but it must still be the same mark\"):","observed"],
-      ["served line","browser tab downsampling. Ground-aware like every other mark surface","observed"],
-      ["served line","bulk up the thin wordmark strokes so they do not disappear under","observed"],
-      ["served line","docs/FORGE-DESIGN-SYSTEM.md S6a), same geometry as the nav mark, not a","observed"],
-      ["served line","new/hand-drawn glyph. Two adjustments for tab-size legibility (S6a/AC2","observed"],
       ["served line","path { fill: #9d3900; stroke: #9d3900; stroke-width: 22; stroke-linejoin: round; }","observed"],
-      ["served line","path { fill: #ff9800; stroke: #ff9800; }","observed"],
-      ["served line","percent padding on all sides) to make it render larger inside the","observed"],
-      ["served line","prefers-color-scheme, the same on-light/on-dark pair already ratified. -->","observed"],
-      ["served line","SSOT (brand-logo/gymbo-mark-{amber-ff9800,darkorange-9d3900}.svg,","observed"]
+      ["served line","path { fill: #ff9800; stroke: #ff9800; }","observed"]
     ],
     "/guide/": [
       ["accessibility aria-label","Footer navigation","observed"],
