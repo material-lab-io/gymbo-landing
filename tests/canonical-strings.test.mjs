@@ -95,8 +95,8 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "493c7354cc79f41c715268eb692cf158dc6ce15b79356e59cc9aa59b79e3bfd9");
-  assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 7);
+  assert.equal(c.sha, "f74dd05a322d6ad3790f8bd5cf5d73714fc1f9e9c60e75a5e66022d0d573c768");
+  assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 10);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });
 
@@ -182,6 +182,13 @@ test("CLI end to end: a price-change drill. The constants-file check stays GREEN
   assert.doesNotMatch(r.stdout, /price pin/i, "the gate must not call itself a price pin");
 });
 
+// Build the JSON object whose string sits at a surface path like "$.mainEntity[].acceptedAnswer.text".
+function jsonAt(path, text) {
+  const segs = path.replace(/^\$\.?/, "").split(".").filter(Boolean); let node = text;
+  for (const s of segs.reverse()) { const arr = s.endsWith("[]"); const key = arr ? s.slice(0, -2) : s; node = { [key]: arr ? [node] : node }; }
+  return node;
+}
+
 // A fixture dist built from the REAL vendored strings and the REAL map, so this test needs no
 // build (test:copy-output runs before `npm run build` in deploy.yml).
 function fixtureDist(canon) {
@@ -192,7 +199,7 @@ function fixtureDist(canon) {
     const text = t.waiver ? t.waiver.observed : byId.get(id);
     const page = pages.get(t.route) || { head: [], body: [], lines: [] }; pages.set(t.route, page);
     if (t.surface.startsWith("metadata ")) { const n = t.surface.slice(9); page.head.push(`<meta ${n.includes(":") && n.startsWith("og") ? "property" : "name"}="${n}" content="${text}">`); }
-    else if (t.surface.startsWith("JSON-LD ")) page.head.push(`<script type="application/ld+json">${JSON.stringify({ description: text })}</script>`);
+    else if (t.surface.startsWith("JSON-LD ")) page.head.push(`<script type="application/ld+json">${JSON.stringify(jsonAt(t.surface.slice(8), text))}</script>`);
     else if (t.surface === "served line") page.lines.push(text);
     else page.body.push(`<p>${text}</p>`);
   }

@@ -1,6 +1,6 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 3,
+  "version": 4,
   "guideVersion": "v15",
   "updated": "2026-09-24",
   "terms": {
@@ -156,6 +156,27 @@
       "surface": "secondary action label",
       "text": "Contact support",
       "source": "gy-0ejch"
+    },
+    {
+      "id": "site.home.revenue.intro",
+      "surface": "home '/', 'Track your revenue' card intro paragraph (App.tsx PILLARS[revenue].intro)",
+      "text": "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2a); applied on gymbo-landing PR 217 d40ab7fb",
+      "match": "equals"
+    },
+    {
+      "id": "site.home.revenue.bullet3",
+      "surface": "home '/', 'Track your revenue' card, third bullet (PILLARS[revenue].bullets[2])",
+      "text": "Cash or UPI recorded, so you don't lose track.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2b); PR 217 d40ab7fb",
+      "match": "equals"
+    },
+    {
+      "id": "site.home.faq.clientsDownload.answer",
+      "surface": "home '/', FAQ 'Do my clients need to download anything?' answer, visible AND FAQPage JSON-LD (same string)",
+      "text": "No. Gymbo is for you, the trainer. Your clients just train. You punch the class.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2c); PR 217 d40ab7fb",
+      "match": "equals"
     }
   ],
   "facts": {
@@ -169,6 +190,7 @@
   "changelog": {
     "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
     "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",
-    "v1": "2026-09-24: initial 19 strings."
+    "v1": "2026-09-24: initial 19 strings.",
+    "v4": "2026-09-24: added 3 site.home.* pins (gy-afarz.2 C2 a/b/c). Existing strings and facts unchanged from v3."
   }
 }
