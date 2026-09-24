@@ -217,16 +217,6 @@ export function sourceFromReferrer(referrer, selfHost) {
 }
 
 /**
- * Source-only compatibility API. A valid explicit source wins; otherwise an
- * allowlisted referrer wins; otherwise the measured result is `unknown`.
- * NOT used by the capture path: it cannot tell "no signal" from "signal that
- * matched nothing" (see resolveAttribution).
- */
-export function resolveSource({ utmSource, referrer, selfHost } = {}) {
-  return sourceSlug(utmSource) ?? sourceFromReferrer(referrer, selfHost) ?? SOURCE_UNKNOWN;
-}
-
-/**
  * Resolve one complete registry-v5 tuple, or null.
  *
  * Three mutually exclusive outcomes (marketer ruling 2026-09-23, gy-ufxgo.8):

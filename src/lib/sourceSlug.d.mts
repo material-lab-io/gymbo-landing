@@ -37,11 +37,6 @@ export declare function sourceFromReferrer(
   referrer: string | null | undefined,
   selfHost?: string | null,
 ): string | null;
-export declare function resolveSource(input?: {
-  utmSource?: string | null;
-  referrer?: string | null;
-  selfHost?: string | null;
-}): string;
 export declare function resolveAttribution(input?: {
   utmSource?: string | null;
   utmMedium?: string | null;

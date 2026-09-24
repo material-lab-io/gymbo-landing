@@ -14,7 +14,6 @@ import {
   ATTRIBUTION_SOURCES,
   sourceSlug,
   sourceFromReferrer,
-  resolveSource,
   resolveAttribution,
   normalizeAttributionTuple,
   normalizeAttributionPayload,
@@ -59,7 +58,10 @@ test("AC2/AC3: valid-shape raw and PII-like values are refused, never slugged", 
     "a".repeat(SOURCE_MAX_LENGTH),
   ]) {
     assert.equal(sourceSlug(raw), null, `${raw} must not become an analytics source`);
-    assert.equal(resolveSource({ utmSource: raw }), "unknown");
+    // A signal that matches nothing is state 3: NO attribution (null), never the explicit
+    // `unknown` tuple. The legacy resolver asserted "unknown" here, which pinned the very
+    // coercion gy-ufxgo.8 exists to remove.
+    assert.equal(resolveAttribution({ utmSource: raw }), null, `${raw} is a signal that matched nothing: send no attribution`);
   }
 });
 
@@ -174,10 +176,6 @@ test("our own pages are not a referral to ourselves", () => {
 });
 
 test("an explicit tag beats an inferred one", () => {
-  assert.equal(
-    resolveSource({ utmSource: "instagram", referrer: "https://www.google.com/", selfHost: "getgymbo.com" }),
-    "instagram",
-  );
   assert.deepEqual(
     resolveAttribution({
       utmSource: "instagram",
@@ -280,4 +278,13 @@ test("server boundary: an empty tuple with both visit ids is shape 4, stored at 
   assert.equal(normalizeAttributionPayload({}), null, "no ids at all is unmeasured");
   assert.equal(normalizeAttributionPayload({ funnel_visit_id: ids.funnel_visit_id }), null, "one id");
   assert.equal(normalizeAttributionPayload({ ...ids, anonymous_visitor_id: "damini-rathi" }), null, "bad id");
+});
+
+test("the legacy fall-through resolver is GONE, so it cannot be called or re-pinned (gy-ufxgo.8, marketer condition 2026-09-22)", async () => {
+  const mod = await import("../src/lib/sourceSlug.mjs");
+  assert.equal(mod.resolveSource, undefined, "resolveSource coerced 'signal that matched nothing' to 'unknown'");
+  assert.equal(typeof mod.resolveAttribution, "function", "liveness: the module loaded and exports the real resolver");
+  // and an unmatched signal still never becomes the explicit unknown tuple
+  assert.equal(mod.resolveAttribution({ utmSource: "summer20" }), null);
+  assert.deepEqual(mod.resolveAttribution({}), { source: "unknown", medium: null, campaign: null }, "state 2: no signal at all is the explicit unknown tuple");
 });
