@@ -37,11 +37,15 @@ function site(files = {}, { home = page(), llms = "Punch a class in one tap.\n" 
 }
 
 // A snapshot with a real-looking content ruling, a pm ruling, and one by LANDING (which must not count).
-const QUOTE = "Log the session as it ends. reason advice-to-reader ratified";
+const QUOTE = "RULED advice-to-reader: Log the session as it ends.";
+const TAXONOMY = "RULED classes: advice-to-reader / attributed-quote / competitor-description / unrelated-log / legal-text";
+const EXAMPLE = "a sentence quoted as a defect example: Log the session as it ends. passes the gate";
+const WRONGCLASS = "RULED legal-text: Log the session as it ends.";
+const PIECE = "RULED advice: log the session as it ends, then review";
 const RULINGS = {
   version: 1,
   rulings: {
-    "c-content": { bead: "gy-uu7mt", author: "gymbo/gymbo-crew.content", created_at: "2026-09-24T21:41:59Z", sha256: "x", quotes: [QUOTE, "advice-to-reader / attributed-quote / competitor-description", "legal-text ruled here for the Terms sentence"] },
+    "c-content": { bead: "gy-uu7mt", author: "gymbo/gymbo-crew.content", created_at: "2026-09-24T21:41:59Z", sha256: "x", quotes: [QUOTE, TAXONOMY, EXAMPLE, WRONGCLASS, PIECE, "RULED advice: keep one ledger current in the moment", "RULED advice: log it in the moment", "RULED advice-to-reader: A payment logged only in your UPI app is money you'll have to reconstruct later."] },
     "c-pm": { bead: "gy-uu7mt", author: "gymbo/gymbo-crew.pm", created_at: "2026-09-24T21:44:26Z", sha256: "y", quotes: [QUOTE] },
     "c-landing": { bead: "gy-uu7mt", author: "gymbo/gymbo-crew.landing", created_at: "2026-09-24T21:40:00Z", sha256: "z", quotes: [QUOTE] },
     "c-other-bead": { bead: "gy-zzzzz", author: "gymbo/gymbo-crew.content", created_at: "2026-09-24T21:40:00Z", sha256: "w", quotes: [QUOTE] },
@@ -50,7 +54,7 @@ const RULINGS = {
 const files = { rulings: null };
 function write(name, obj) { const p = join(scratch, `${name}-${++serial}.json`); writeFileSync(p, JSON.stringify(obj)); return p; }
 
-const ok = { bead: "gy-uu7mt", comment: "c-content", quote: "advice-to-reader / attributed-quote / competitor-description" };
+const ok = { bead: "gy-uu7mt", comment: "c-content", quote: QUOTE };
 const entry = (over = {}) => ({
   route: "/guide/x/", kinds: ["visible"], sentence: "Log the session as it ends.",
   reason: "advice-to-reader", ruling: ok, ...over,
@@ -180,7 +184,7 @@ test("REQUIREMENT 1: content's ruled TOOL sentences cannot be classed as advice,
 
 test("REQUIREMENT 1: advice that is NOT about a tool still passes (a UPI app is the place, not the subject)", () => {
   const s = "A payment logged only in your UPI app is money you'll have to reconstruct later.";
-  const r = run(guide(s), registry([entry({ sentence: s })]));
+  const r = run(guide(s), registry([entry({ sentence: s, ruling: { bead: "gy-uu7mt", comment: "c-content", quote: `RULED advice-to-reader: ${s}` } })]));
   assert.equal(r.status, 0, r.stderr || r.stdout);
 });
 
@@ -202,7 +206,7 @@ test("REQUIREMENT 2: a ruling that does not RESOLVE is refused (unknown comment,
     "written by landing, who cannot rule": { ...ok, comment: "c-landing", quote: QUOTE },
     "quote not in that comment": { ...ok, quote: "Log the session as it ends. invented ruling text" },
     "quote unrelated and not in that comment": { ...ok, quote: "a quote that appears nowhere in the ruling comment" },
-    "quote too short": { ...ok, quote: "advice-to-reader" },
+    "quote too short": { ...ok, quote: "RULED advice-to-reader" },
     "free text": "content 2026-09-24 21:51Z gy-uu7mt confirmed",
     "missing": undefined,
   };
@@ -213,12 +217,54 @@ test("REQUIREMENT 2: a ruling that does not RESOLVE is refused (unknown comment,
   }
 });
 
-test("REQUIREMENT 2: a pm comment resolves; the quote must tie to THIS entry (a 3-word run or the class)", () => {
-  const root = guide("Log the session as it ends.");
-  assert.equal(run(root, registry([entry({ ruling: { bead: "gy-uu7mt", comment: "c-pm", quote: QUOTE } })])).status, 0);
-  const r = run(root, registry([entry({ ruling: { bead: "gy-uu7mt", comment: "c-content", quote: "legal-text ruled here for the Terms sentence" } })]));
+test("REQUIREMENT 2: a pm comment resolves", () => {
+  const r = run(guide("Log the session as it ends."), registry([entry({ ruling: { bead: "gy-uu7mt", comment: "c-pm", quote: QUOTE } })]));
+  assert.equal(r.status, 0, r.stderr || r.stdout);
+});
+
+// pm 22:37Z: "a document that MENTIONS a class is not a ruling that ASSIGNS that class to a sentence".
+test("THE TIE IS SENTENCE-SPECIFIC: a real comment that only lists the classes rules NOTHING, for any sentence and any class", () => {
+  const cases = [
+    ["/guide/x/", "advice-to-reader", "You log it."], ["/guide/x/", "advice-to-reader", "Log a class and the package balance drops by one."],
+    ["/guide/x/", "advice-to-reader", "Log every class in the app."], ["/", "attributed-quote", "\u201CI log it,\u201D said Sam."],
+    ["/alternatives/x/", "competitor-description", "Logs workouts."], ["/privacy/", "unrelated-log", "We keep server logs."], ["/terms/", "legal-text", "You log payments here."],
+  ];
+  for (const [r0, reason, sentence] of cases) {
+    const root = site({ [`${r0.slice(1)}index.html`]: page({ body: `<p>${sentence}</p>` }) }, r0 === "/" ? { home: page({ body: `<p>${sentence}</p>` }) } : {});
+    const res = run(root, registry([entry({ route: r0, reason, sentence, ruling: { bead: "gy-uu7mt", comment: "c-content", quote: TAXONOMY } })]));
+    assert.equal(res.status, 1, `${reason}: ${sentence}`);
+    assert.match(res.stderr, /does not rule THIS sentence/, sentence);
+  }
+});
+
+test("THE TIE: a sentence merely QUOTED in a comment (no ruling word) is not a ruling", () => {
+  const r = run(guide("Log the session as it ends."), registry([entry({ ruling: { bead: "gy-uu7mt", comment: "c-content", quote: EXAMPLE } })]));
   assert.equal(r.status, 1);
-  assert.match(r.stderr, /names neither this sentence/);
+  assert.match(r.stderr, /no ruling word/);
+});
+
+test("THE TIE: a ruling that assigns a DIFFERENT class to that sentence does not rule this entry", () => {
+  const r = run(guide("Log the session as it ends."), registry([entry({ ruling: { bead: "gy-uu7mt", comment: "c-content", quote: WRONGCLASS } })]));
+  assert.equal(r.status, 1);
+  assert.match(r.stderr, /does not assign the class 'advice-to-reader'/);
+});
+
+test("THE TIE: a partial quote must be 25+ chars, hold the verb, and identify ONE registry sentence", () => {
+  const long = "Log the session as it ends, then review the whole roster once a week.";
+  const root = guide(long);
+  const partial = { bead: "gy-uu7mt", comment: "c-content", quote: PIECE };
+  assert.equal(run(root, registry([entry({ sentence: long, ruling: partial })])).status, 0);
+  // the same piece also sits in a second registry sentence: it no longer identifies either
+  const other = "Log the session as it ends, then review the diary.";
+  const rootTwo = site({ "guide/x/index.html": page({ body: `<p>${long}</p>` }), "guide/y/index.html": page({ body: `<p>${other}</p>` }) });
+  const two = run(rootTwo, registry([entry({ sentence: long, ruling: partial }), entry({ route: "/guide/y/", sentence: other, ruling: partial })]));
+  assert.equal(two.status, 1);
+  assert.match(two.stderr, /does not identify this one/);
+  // too short a piece
+  const short = run(guide("Log it in the moment."), registry([entry({ sentence: "Log it in the moment.", ruling: { bead: "gy-uu7mt", comment: "c-content", quote: "RULED advice: log it in the moment" } })]));
+  assert.equal(short.status, 0, "the whole sentence is inside the quote, so length is not the test");
+  const tooShort = run(guide("Please log it now and then."), registry([entry({ sentence: "Please log it now and then.", ruling: { bead: "gy-uu7mt", comment: "c-content", quote: "RULED advice: log it in the moment" } })]));
+  assert.equal(tooShort.status, 1);
 });
 
 test("EDITING a justified sentence re-opens the question: unjustified AND the old entry is stale", () => {

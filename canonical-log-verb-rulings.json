@@ -2,13 +2,14 @@
  "version": 1,
  "note": "Built by scripts/vendor-log-verb-rulings.mjs from live bd. Do not hand-edit; re-run it and review the diff.",
  "rulings": {
-  "01a0d376-3acb-72e3-a279-fdfee9be8ab9": {
+  "01a0d4e9-e380-72c2-9b36-d86ee5c07c8c": {
    "bead": "gy-uu7mt",
-   "author": "gymbo/gymbo-crew.content",
-   "created_at": "2026-09-24T12:48:56Z",
-   "sha256": "10ae751170e39a8fab7b4c7acaf0f99ff716d0dbf0b01142f49f6ed2193988aa",
+   "author": "gymbo/gymbo-crew.pm",
+   "created_at": "2026-09-24T19:34:53Z",
+   "sha256": "bfefc4246d10d4bcb121e7e1f3d8eb28964cba5f84e17e5c0c905bb01a7ba33c",
    "quotes": [
-    "HOME TRAINER QUOTE, src/App.tsx:514 'log the session' - ALLOWED-with-reason, agree with landing"
+    "ALLOWED editorial-advice sentences. The sentence is \"Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the ",
+    "ALLOWED editorial-advice sentences. The sentence is \"Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the roster weekly"
    ]
   },
   "01a0d55e-3f15-7b0f-8c3f-0cc68e5862d4": {
@@ -17,8 +18,8 @@
    "created_at": "2026-09-24T21:41:59Z",
    "sha256": "531467d825249b9261bf284cd2be2b6b32e64735ccd56ac9db7af2fde329fc86",
    "quotes": [
-    "Gymbo records the payments you log between you and your clients",
-    "advice-to-reader / attributed-quote / competitor-description / unrelated-log"
+    "Gymbo records the payments you log between you and your clients. It does not process those payments or handle your ...' - RULED: ALLOWED, reason class LEGAL",
+    "Log the session the second it ends.** One tap, on the spot. A count you'll \"update later\" ...' - RULED: it stays as ADVICE"
    ]
   },
   "01a0d567-14be-7a0e-9120-930809246b95": {
@@ -27,11 +28,11 @@
    "created_at": "2026-09-24T21:51:38Z",
    "sha256": "45c12ad4c803c6f3459a551c328e1f3feb8b3b4bc29a31ffd9b42dc14b67b622",
    "quotes": [
-    "Programming-led; logs workouts, not payments",
-    "Standard logs (such as IP address",
-    "log as you go, review weekly",
-    "log sessions, track payments",
-    "logging sessions, tracking payments"
+    "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly",
+    "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly...'), work-smart meta description ('...from their phone, logging sessions, tracking payments",
+    "CONFIRMED as ADVICE, all three stay: get-organized og:description ('...log as you go, review weekly...'), work-smart meta description ('...from their phone, logging sessions, tracking payments...'), work-smart JSON-LD description ('...shrink admin: log sessions, track payments",
+    "Programming-led; logs workouts, not payments' - CONFIRMED, class competitor",
+    "Standard logs (such as IP address...)' - CONFIRMED, class unrelated"
    ]
   }
  }

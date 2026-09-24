@@ -11,6 +11,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { REGISTRY_FILE, RULINGS_FILE, RULING_AUTHORS } from "./check-log-verb.mjs";
 
+const PENDING = "PENDING-CONTENT-RULING";
 const ws = (s) => String(s).replace(/\s+/g, " ").trim();
 const sha = (s) => createHash("sha256").update(s).digest("hex");
 const args = process.argv.slice(2);
@@ -19,8 +20,12 @@ const verify = args.includes("--verify");
 try {
   const registry = JSON.parse(readFileSync(REGISTRY_FILE, "utf8"));
   const wanted = new Map();   // comment id -> {bead, quotes:Set}
+  let pending = 0;
   for (const e of registry.entries) {
     const { bead, comment, quote } = e.ruling ?? {};
+    // An entry still waiting for content's sentence-level ruling is NOT vendored and NOT valid:
+    // the gate refuses it (its comment is not in the snapshot), so the gap stays red, never hidden.
+    if (comment === PENDING) { pending++; continue; }
     if (!bead || !comment || !quote) throw new Error(`entry for ${e.route} "${String(e.sentence).slice(0, 50)}" has no {bead, comment, quote} ruling`);
     const w = wanted.get(comment) ?? { bead, quotes: new Set() };
     if (w.bead !== bead) throw new Error(`comment ${comment} cited under two beads (${w.bead}, ${bead})`);
@@ -46,10 +51,10 @@ try {
   if (verify) {
     const committed = JSON.parse(readFileSync(RULINGS_FILE, "utf8"));
     if (JSON.stringify(committed.rulings) !== JSON.stringify(rulings)) { console.error("FAIL: the committed rulings snapshot differs from live bd (a comment changed or vanished, or the snapshot was hand-edited)."); process.exit(1); }
-    console.log(`OK: ${Object.keys(rulings).length} ruling comment(s) re-verified against live bd (author, quote, sha256).`);
+    console.log(`OK: ${Object.keys(rulings).length} ruling comment(s) re-verified against live bd (author, quote, sha256).${pending ? ` ${pending} entr${pending === 1 ? "y is" : "ies are"} PENDING a content ruling (not vendored, refused by the gate).` : ""}`);
   } else {
     writeFileSync(RULINGS_FILE, JSON.stringify(snapshot, null, 1) + "\n");
-    console.log(`wrote ${RULINGS_FILE}: ${Object.keys(rulings).length} ruling comment(s), every one verified against live bd.`);
+    console.log(`wrote ${RULINGS_FILE}: ${Object.keys(rulings).length} ruling comment(s), every one verified against live bd.${pending ? ` ${pending} entr${pending === 1 ? "y is" : "ies are"} PENDING a content ruling (not vendored, refused by the gate).` : ""}`);
   }
 } catch (error) {
   console.error(`COULD NOT VERIFY rulings: ${error.message}`);

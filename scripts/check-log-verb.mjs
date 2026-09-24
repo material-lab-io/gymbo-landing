@@ -16,8 +16,10 @@
 //      canonical-log-verb-rulings.json, a snapshot that scripts/vendor-log-verb-rulings.mjs
 //      built from the LIVE bead (author must be content or pm, and the quote must be text
 //      in that comment). The gate is offline in CI; `--verify` re-checks the snapshot
-//      against live bd. The quote must tie to the entry (a 3-word run of the sentence, or
-//      the reason class named in the ruling).
+//      against live bd. The TIE is sentence-specific (pm 22:37Z: a comment that MENTIONS a
+//      class is not a ruling that ASSIGNS it): the quote must contain THIS entry's sentence
+//      (or a 25+ char identifying piece of it that no other registry sentence contains),
+//      a ruling word (RULED / ALLOWED / CONFIRMED / ACCEPTED), and this entry's class.
 // Guards against silent growth stay: reviewed repo file, entry count printed every run,
 // stale entries fail, editing a sentence re-opens it, kind and route are part of the key.
 import { existsSync, readFileSync } from "node:fs";
@@ -147,11 +149,36 @@ export function occurrencesIn(surfaces) {
   return found;
 }
 
-const words = (s) => normalise(s).toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/(?<![a-z])'|'(?![a-z])/g, " ").split(/\s+/).filter(Boolean);
-export function sharesRun(a, b, n = 3) {
-  const A = words(a), B = ` ${words(b).join(" ")} `;
-  for (let i = 0; i + n <= A.length; i++) if (B.includes(` ${A.slice(i, i + n).join(" ")} `)) return true;
-  return false;
+// ---- the sentence-specific tie ----
+const loose = (x) => normalise(x).toLowerCase().replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[\s"'.!?]+$/g, "").trim();
+const RULING_WORD = /\b(?:RULED|ALLOWED|CONFIRMED|ACCEPTED)\b/;
+const CLASS_WORD = {
+  "advice-to-reader": /advice/i, "attributed-quote": /attributed|testimonial|quote/i,
+  "competitor-description": /competitor/i, "unrelated-log": /unrelated|server logs?/i, "legal-text": /legal/i,
+};
+const MIN_PIECE = 25;
+// The longest piece of the sentence (>= 25 chars, holding the log verb) that the quote contains.
+export function identifyingPiece(quote, sentence) {
+  const q = loose(quote), t = loose(sentence);
+  if (t && q.includes(t)) return t;
+  for (let len = t.length - 1; len >= MIN_PIECE; len--) {
+    for (let i = 0; i + len <= t.length; i++) {
+      const piece = t.slice(i, i + len);
+      if (LOG_VERB.test(piece) && q.includes(piece)) return piece;
+    }
+  }
+  return null;
+}
+export function tieProblem(quote, sentence, reason, entries) {
+  const piece = identifyingPiece(quote, sentence);
+  if (!piece) return `the quote contains neither the sentence nor a ${MIN_PIECE}+ char piece of it that holds the log verb (a comment that only names the class rules nothing)`;
+  if (piece !== loose(sentence)) {
+    const owners = new Set(entries.filter((x) => typeof x?.sentence === "string" && loose(x.sentence).includes(piece)).map((x) => loose(x.sentence)));
+    if (owners.size > 1) return `the quoted piece "${piece.slice(0, 50)}" also occurs in ${owners.size - 1} other registry sentence(s), so it does not identify this one`;
+  }
+  if (!RULING_WORD.test(quote)) return "the quote carries no ruling word (RULED, ALLOWED, CONFIRMED, ACCEPTED): a sentence merely quoted in a comment is not a ruling";
+  if (!CLASS_WORD[reason].test(quote)) return `the quote does not assign the class '${reason}'`;
+  return null;
 }
 
 export function validateRegistry(registry, rulings) {
@@ -184,9 +211,8 @@ export function validateRegistry(registry, rulings) {
     if (snap.bead !== ru.bead) return bad(`ruling comment ${ru.comment} belongs to ${snap.bead}, not ${ru.bead}`);
     if (!RULING_AUTHORS.includes(snap.author)) return bad(`ruling comment ${ru.comment} was written by ${snap.author}; only ${RULING_AUTHORS.join(" or ")} can rule`);
     if (ru.quote.trim().length < 20 || !Array.isArray(snap.quotes) || !snap.quotes.includes(ru.quote)) return bad("ruling quote (20+ chars) must be text the vendor script verified in that comment");
-    if (!sharesRun(ru.quote, sentence) && !normalise(ru.quote).toLowerCase().includes(e.reason)) {
-      return bad(`ruling quote names neither this sentence (3-word run) nor the class '${e.reason}'`);
-    }
+    const tie = tieProblem(ru.quote, sentence, e.reason, registry.entries);
+    if (tie) return bad(`ruling does not rule THIS sentence: ${tie}`);
     for (const kind of e.kinds) {
       const key = keyOf(e.route, kind, sentence);
       if (seen.has(key)) bad(`duplicate of another entry for ${kind}`);
