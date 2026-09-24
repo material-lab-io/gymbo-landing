@@ -57,6 +57,18 @@ test("FAIL CLOSED: a DANGLING reference (page names a font that is not in dist/f
   assert.throws(() => hashFontAssets(dist({ page: `<link rel="stylesheet" href="/fonts/fonts.css"><link rel="preload" href="/fonts/missing.woff2">` })), /dangling: .*\/fonts\/missing\.woff2.*no such file/);
 });
 
+test("FAIL CLOSED (pm's control): a font the CSS and the homepage NAME but that is MISSING from dist/fonts fails the build", () => {
+  const d = dist(); rmSync(join(d, "fonts/a-variable.woff2"));
+  assert.ok(!existsSync(join(d, "fonts/a-variable.woff2")), "the mutation must have applied");
+  assert.throws(() => hashFontAssets(d), /dangling: .*a-variable\.woff2.*no such file/);
+  const ctl = dist(); assert.doesNotThrow(() => hashFontAssets(ctl), "control: the same dist WITH the font passes");
+});
+
+test("FAIL CLOSED: a stylesheet the pages name but that is MISSING from dist/fonts fails the build, naming a page", () => {
+  const d = dist(); rmSync(join(d, "fonts/fonts.css"));
+  assert.throws(() => hashFontAssets(d), /dangling: \/(index|guide\/x\/index)\.html references \/fonts\/fonts\.css/);
+});
+
 test("FAIL CLOSED: a reference the rewrite could not match (a query string is fine, an odd form is not) is caught as leftover/dangling, not shipped", () => {
   const d = dist({ page: `<link rel="stylesheet" href="/fonts/fonts.css?v=1"><link rel="stylesheet" href="/fonts/fonts.css">` });
   hashFontAssets(d); assert.match(readFileSync(join(d, "guide/x/index.html"), "utf8"), /\/fonts\/fonts\.[0-9a-f]{10}\.css\?v=1/, "a query string is preserved");
