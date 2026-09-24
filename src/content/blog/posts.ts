@@ -2,7 +2,7 @@
 // by src/routes.ts (→ rollup inputs + sitemap), and by vite.config (→ RSS).
 // Each post's body is markdown (rendered with `marked`); the FAQ drives BOTH the
 // visible FAQ and the FAQPage JSON-LD, so they can't drift. Single H1 = `title`.
-import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../../lib/trialAccess";
+import { GYMBO_TRIAL_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../../lib/trialAccess";
 
 export interface FAQ {
   q: string;
@@ -169,7 +169,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 | App | Best for | Built for the solo trainer? | India-native (UPI/GST/WhatsApp) | Platform | Entry price | Free trial |
 |---|---|---|---|---|---|---|
-| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${TRIAL_DAYS} days for eligible subscribers |
+| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${GYMBO_TRIAL_ROW} |
 | **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | from **₹89/mo*** | Not stated |
 | **WellnessZ** | Dietitians & nutrition-led coaches | ➖ Nutrition-first, not session-first | ✅ Yes | iPhone, Android, web | **₹499/mo** (40 clients) | 14 days |
 | **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo (~₹750), 2 clients | 30 days |
