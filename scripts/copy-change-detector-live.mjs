@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyBlocks, servedTextBlocks } from "./copy-blocks.mjs";
-import { diffAgainstLock, maskEmails, routeOfFile, LOCK_FILE } from "./copy-lock.mjs";
+import { diffAgainstLock, maskEmails, routeOfFile, BASELINE_FILE } from "./copy-change-detector.mjs";
 import { fetchLive, internalLinks, routeOf } from "./crawl-surfaces.mjs";
 
 export async function liveSurfaces(origin, lock) {
@@ -26,7 +26,7 @@ export async function liveSurfaces(origin, lock) {
   }
   // The 404 fallback is only served for a path that does not exist, so ask for one.
   if (lock.routes["/404.html"]) {
-    const r = await fetchLive(origin, `/__copy-lock-probe-${Date.now()}/`);
+    const r = await fetchLive(origin, `/__copy-change-detector-probe-${Date.now()}/`);
     if (r.status === 404 && r.body.includes("<html")) surfaces.set("/404.html", copyBlocks(r.body, "/404.html"));
     else unreachable.push(`/404.html fallback (probe returned HTTP ${r.status})`);
   }
@@ -43,7 +43,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const args = process.argv.slice(2);
     const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
     const origin = opt("--origin", "https://getgymbo.com");
-    const lock = JSON.parse(readFileSync(opt("--lock", LOCK_FILE), "utf8"));
+    const lock = JSON.parse(readFileSync(opt("--baseline", BASELINE_FILE), "utf8"));
     const { surfaces, unreachable } = await liveSurfaces(origin, lock);
     if (!surfaces.size) throw new Error(`nothing reachable at ${origin}; refusing a vacuous pass`);
     const notCrawled = Object.keys(lock.routes).filter((r) => !surfaces.has(r));

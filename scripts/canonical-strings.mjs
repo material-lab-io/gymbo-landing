@@ -1,13 +1,13 @@
 // gy-uu7mt: content's canonical strings, VENDORED verbatim (src/canonical/), and what the
 // built site must do with them. A pin a human retypes is a pin that drifts, so this module
 // never contains a string: it reads content's JSON, checks it is byte-identical to the
-// recorded source, and turns it into ruled entries for the copy lock plus presence checks.
+// recorded source, and turns it into ruled entries for the copy baseline plus presence checks.
 //
-// WHAT THIS PROTECTS, stated so a green is not over-read (content's caveat 2): it pins the
-// LISTED web surfaces: home meta description, og/JSON-LD description, twitter description,
+// WHAT THIS CHECKS, stated so a green is not over-read (content's caveat 2): it checks the
+// LISTED web surfaces for PRESENCE IN THE DOCUMENT, not visibility to a reader (gy-vawlh): home meta description, og/JSON-LD description, twitter description,
 // the gallery caption, the trial line, the trial detail and the comparison row. 'Ask Gymbo'
 // and 'punch' are pinned as TERMS only. Free-form sentences that use them are pinned only
-// by the copy-lock as `observed`. So green here is NOT "no retired wording anywhere".
+// by the copy-change-detector as `observed`. So green here is NOT "no retired wording anywhere".
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -29,7 +29,7 @@ export function loadCanonical(dir = CANON_DIR) {
 
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
 
-// Ruled entries for the copy lock: every NON-waived target of every mapped web string.
+// Ruled entries for the copy baseline: every NON-waived target of every mapped web string.
 export function canonicalRuled({ doc, source, map }) {
   const byId = new Map(doc.strings.map((s) => [s.id, s]));
   const out = [];
