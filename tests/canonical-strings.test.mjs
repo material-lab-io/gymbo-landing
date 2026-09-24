@@ -4,10 +4,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findHandTypedPrices, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -149,23 +149,37 @@ test("REAL FILES: the vendored facts equal the site's REAL constants, and every 
   }
 });
 
-test("SCOPE DISCLOSURE: hand-typed rupee amounts outside the constants file are FOUND and named, so the green cannot be read as 'every price is pinned'", () => {
-  const root = mkdtempSync(join(scratch, "src-")); mkdirSync(join(root, "src/lib"), { recursive: true }); mkdirSync(join(root, "src/pages"), { recursive: true });
-  writeFileSync(join(root, "src/lib/trialAccess.ts"), "export const PRICE_MONTHLY_INR = 399; // \u20b9399 here is the constants file, excluded\n");
-  writeFileSync(join(root, "src/pages/Clean.tsx"), "const p = `\u20b9${PRICE_MONTHLY_INR}/month`; // template, no literal\n");
-  assert.deepEqual(findHandTypedPrices(root), [], "constants file and template-only usage are not reported");
-  writeFileSync(join(root, "src/pages/Terms.tsx"), "<p>Monthly at \u20b9399/month and annual at \u20b92,999 per year</p>");
-  writeFileSync(join(root, "index.html"), "<meta content=\"from \u20b9250/month\">");
-  assert.deepEqual(findHandTypedPrices(root), [{ file: "index.html", count: 1 }, { file: "src/pages/Terms.tsx", count: 2 }]);
-  assert.ok(findHandTypedPrices(new URL("..", import.meta.url).pathname).some((f) => f.file === "src/pages/Terms.tsx"), "the REAL tree's Terms.tsx literals are found");
+test("F2 DECOY: a comment that QUOTES the old declaration is not read as the constant; a duplicate declaration fails closed", () => {
+  // tester's F2 form: the old declaration on its OWN LINE inside a block comment, ahead of the real one.
+  const decoy = `/*\nexport const PRICE_MONTHLY_INR = 399;\n*/\n${TS({ PRICE_MONTHLY_INR: "449" })}`;
+  assert.deepEqual(fkinds(FDOC, FMAP, decoy), ["fact-mismatch"], "the real 449 is read, not the quoted 399");
+  assert.deepEqual(fkinds(FDOC, FMAP, `/** doc\n * old:\nexport const PRICE_MONTHLY_INR = 399;\n */\n${TS({ PRICE_MONTHLY_INR: "449" })}`), ["fact-mismatch"]);
+  assert.deepEqual(fkinds(FDOC, FMAP, `/*\nexport const PRICE_MONTHLY_INR = 449;\n*/\n${TS()}`), [], "a commented-out WRONG value must not fail a correct file");
+  assert.deepEqual(fkinds(FDOC, FMAP, `${TS()}\nexport const PRICE_MONTHLY_INR = 449;`), ["cannot-read-constant"], "declared twice: fail closed");
+  assert.deepEqual(fkinds(FDOC, FMAP, TS()), [], "control: the clean file still passes");
 });
 
-test("CLI end to end: the green output NAMES the files it does not read", () => {
+test("SCOPE DISCLOSURE: built files that state a rupee amount are FOUND and named, including public/ text files no source scan can see", () => {
+  const root = mkdtempSync(join(scratch, "built-")); mkdirSync(join(root, "alternatives/akton"), { recursive: true });
+  writeFileSync(join(root, "index.html"), "<p>no price here</p>");
+  assert.deepEqual(findBuiltPrices(root), [], "a dist with no rupee amount reports none");
+  writeFileSync(join(root, "alternatives/akton/index.html"), "<p>\u20b9399/month</p><script type=\"application/ld+json\">{\"price\":\"\u20b92,999\"}</script>");
+  writeFileSync(join(root, "pricing.md"), "| Monthly | \u20b9399 / month |\n- Annual \u20b92,999\n");
+  writeFileSync(join(root, "llms.txt"), "Monthly: \u20b9399/month\n");
+  writeFileSync(join(root, "app.js"), "const x = '\u20b9399'"); // bundles are a NAMED gap, not scanned
+  assert.deepEqual(findBuiltPrices(root), [{ file: "alternatives/akton/", count: 2 }, { file: "llms.txt", count: 1 }, { file: "pricing.md", count: 2 }]);
+  assert.throws(() => findBuiltPrices(join(root, "nope")), /does not exist/, "a missing dist is an error, not an empty list");
+});
+
+test("CLI end to end: a price-change drill. The constants-file check stays GREEN while built files carry the old price, and its output NAMES those files", () => {
   const dist = fixtureDist(loadCanonical(REAL));
+  const add = (f, extra) => { mkdirSync(join(dist, f, ".."), { recursive: true }); const p = join(dist, f); writeFileSync(p, (existsSync(p) ? readFileSync(p, "utf8") : "") + extra); } // keep the mapped strings; only ADD a stale price
+  add("pricing.md", "\nMonthly \u20b9399/month\n"); add("llms.txt", "\nMonthly \u20b9399/month\n"); add("alternatives/akton/index.html", "<p>\u20b9399</p>");
   const r = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr + r.stdout);
-  assert.match(r.stdout, /NOT READ by the price check: \d+ file\(s\).*src\/pages\/Terms\.tsx x\d/);
-  assert.match(r.stdout, /that file ONLY/);
+  assert.match(r.stdout, /NOT READ by the constants-file check: \d+ BUILT file\(s\).*alternatives\/akton\/ x1.*llms\.txt x1.*pricing\.md x1/);
+  assert.match(r.stdout, /CONSTANTS FILE ONLY/); assert.match(r.stdout, /NOT a check on prices in built pages/);
+  assert.doesNotMatch(r.stdout, /price pin/i, "the gate must not call itself a price pin");
 });
 
 // A fixture dist built from the REAL vendored strings and the REAL map, so this test needs no

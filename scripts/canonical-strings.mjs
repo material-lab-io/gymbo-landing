@@ -27,7 +27,8 @@ export function loadCanonical(dir = CANON_DIR) {
   return { doc, source, map, sha: sha256(raw) };
 }
 
-// v3 `facts`: content rules the NUMBERS; the site's constants (src/lib/trialAccess.ts) must EQUAL them.
+// CONSTANTS-FILE CHECK (v3 `facts`): content rules the NUMBERS; src/lib/trialAccess.ts must EQUAL them.
+// It is NOT a price check on the built site: see findBuiltPrices for what it does not read.
 // Price sentences are worded per surface and are deliberately not string-pinned, so this is the
 // only thing that ties the constants to what content ruled. It covers the CONSTANTS FILE only:
 // a price typed by hand in Terms.tsx or index.html is not read here (copy-facts.spec.ts and the
@@ -38,11 +39,18 @@ export function loadFactsMap(dir = CANON_DIR) {
   return JSON.parse(readFileSync(f, "utf8"));
 }
 
+// Strip comments BEFORE matching (a block comment quoting the old declaration was read as the constant:
+// tester F2) and require EXACTLY ONE declaration. Both are regex-on-source, so this is still a heuristic
+// for "what tsc will compile": it fails closed (cannot-read-constant) whenever it is not sure.
+const stripTsComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
 export function readConstants(src, names) {
+  const code = stripTsComments(src);
   const out = {};
   for (const n of names) {
-    const m = src.match(new RegExp(`^export const ${n}\\s*=\\s*(-?\\d+)\\s*;`, "m"));
-    if (m) out[n] = Number(m[1]);
+    const all = [...code.matchAll(new RegExp(`^\\s*export const ${n}\\s*=\\s*([^;\\n]*);`, "gm"))];
+    if (all.length !== 1) continue;
+    const m = all[0][1].trim().match(/^-?\d+$/);
+    if (m) out[n] = Number(m[0]);
   }
   return out;
 }
@@ -59,28 +67,34 @@ export function checkFacts(doc, factsMap, tsSource) {
   const got = readConstants(tsSource, names);
   for (const [k, name] of Object.entries(factsMap.map)) {
     if (!keys.includes(k)) continue;
-    if (!(name in got)) { findings.push({ kind: "cannot-read-constant", id: k, detail: `${name} is not a plain \`export const ${name} = <integer>;\` in ${factsMap.file}; fail closed rather than skip` }); continue; }
+    if (!(name in got)) { findings.push({ kind: "cannot-read-constant", id: k, detail: `${name} is not declared exactly once, outside comments, as a plain \`export const ${name} = <integer>;\` in ${factsMap.file}; fail closed rather than skip` }); continue; }
     if (got[name] !== facts[k]) findings.push({ kind: "fact-mismatch", id: k, detail: `${name} = ${got[name]} in ${factsMap.file}, content ruled ${facts[k]}` });
   }
   return findings;
 }
 
-// Files that type a rupee price BY HAND. checkFacts reads only the constants file, so these are the
-// surfaces it does NOT read; the gate prints them on every green so "price pin OK" is never read as
-// "every price on the site is pinned" (pm, gy-uu7mt 17:0xZ). Informational, never a failure.
-export function findHandTypedPrices(root = ".", exclude = ["src/lib/trialAccess.ts"]) {
+// BUILT files that state a rupee amount. The facts check compares NONE of them to content's ruled
+// numbers (it reads only the constants file), so on every green the gate names them: a price change
+// can leave every one of these stale with all gates OK (tester's 399->449 drill left eight stale:
+// 3 alternatives, 2 blogs, the compare page, llms.txt, pricing.md). This scans dist/, the thing that
+// ships, not src/, because src cannot see public/ files or generated JSON-LD. It reads html, md, txt,
+// xml and json only: text inside the .js bundles is NOT scanned, and neither are images.
+// Informational, never a failure. Includes competitor prices and constant-derived text on purpose:
+// the point is which files the check does not verify, not which are wrong.
+export function findBuiltPrices(root = "dist") {
   const out = [];
   const walk = (d) => {
     for (const e of readdirSync(join(root, d))) {
-      const rel = d ? `${d}/${e}` : e; const st = statSync(join(root, rel));
-      if (st.isDirectory()) { if (e !== "node_modules") walk(rel); continue; }
-      if (exclude.includes(rel) || !/\.(tsx?|html)$/.test(e)) continue;
+      const rel = d ? `${d}/${e}` : e;
+      if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
+      if (!/\.(html?|md|txt|xml|json)$/i.test(e)) continue;
       const n = (readFileSync(join(root, rel), "utf8").match(/\u20b9\s?\d/g) || []).length;
-      if (n) out.push({ file: rel, count: n });
+      if (n) out.push({ file: rel.replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
     }
   };
-  walk("src"); if (existsSync(join(root, "index.html")) && !exclude.includes("index.html")) { const n = (readFileSync(join(root, "index.html"), "utf8").match(/\u20b9\s?\d/g) || []).length; if (n) out.push({ file: "index.html", count: n }); }
-  return out.sort((a, b) => a.file.localeCompare(b.file));
+  if (!existsSync(root)) throw new Error(`${root} does not exist; cannot list the built files the price check does not read`);
+  walk("");
+  return out.sort((x, y) => x.file.localeCompare(y.file));
 }
 
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
