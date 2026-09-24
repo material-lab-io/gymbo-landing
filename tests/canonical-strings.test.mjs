@@ -59,6 +59,13 @@ test("EQUALS means equals: the pinned string buried inside a longer block does N
   assert.deepEqual(kinds(checkCanonical(canon(), padded, T)), ["canonical-string-missing"]);
 });
 
+test("MATCH CONTROL: content's own `match` field must agree with landing's mapped mode", () => {
+  const doc = { strings: [...DOC.strings.filter((x) => x.id !== "site.meta.twitter"), { id: "site.meta.twitter", text: "Built for independent personal trainers.", match: "contains" }] };
+  assert.deepEqual(kinds(checkCanonical(canon({ doc }), site(), T)), ["match-mode-disagrees"]);
+  const ok = { strings: [...DOC.strings.filter((x) => x.id !== "trial.line"), { id: "trial.line", text: "Eligible subscribers can try Gymbo free for 7 days.", match: "contains" }] };
+  assert.deepEqual(kinds(checkCanonical(canon({ doc: ok }), site(), T)), []);
+});
+
 test("HASH CONTROL: a hand-edited vendored file (or a re-vendor without SOURCE.json) fails", () => {
   assert.deepEqual(kinds(checkCanonical(canon({ sha: "tampered" }), site(), T)), ["canonical-hash-mismatch"]);
 });
@@ -88,7 +95,7 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "fcb4a7f6c9db249159a4d82ad6cb21535f2401a3af9b713dc00ea6fe4b45868c");
+  assert.equal(c.sha, "a92f1665eaf5a351add38906f416a837eb1bb082cbd122ad0b15b1690c557a42");
   assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 7);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });
@@ -118,7 +125,7 @@ test("CLI end to end: tampering with the vendored file, or deleting it, is caugh
   const dir = join(scratch, "canon"); cpSync(REAL, dir, { recursive: true });
   const dist = fixtureDist(loadCanonical(REAL));
   const run = () => spawnSync(process.execPath, [SCRIPT, "--canon", dir, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
-  const ok = run(); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /3 waived divergence/);
+  const ok = run(); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /2 waived divergence/);
   const f = join(dir, "gymbo-canonical-strings.json"); const orig = readFileSync(f, "utf8");
   writeFileSync(f, orig.replace("Your week, tap to punch", "Your week, one tap to punch"));
   assert.notEqual(sha256(readFileSync(f)), sha256(orig));

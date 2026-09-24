@@ -1,24 +1,125 @@
 {
   "_comment": "LANDING-OWNED. Where each web-surface canonical string (ids starting site. or trial.) must appear in the BUILT site. mode equals = a whole block equals the string byte for byte; contains = the string is a sentence inside a larger block (the trial line is never a block on its own). A target with `waiver` records a KNOWN DIVERGENCE: the canonical string is absent there and the site carries `observed` instead. A waiver is reported on every run, its observed text must still be present (so it cannot drift further), it fails as STALE if the canonical string appears, and it fails after `expires`. app-side ids (app., cta., finePrint., disclosure., success.) are not this gate's.",
   "map": {
-    "trial.line": { "targets": [ { "route": "/", "surface": "visible block", "mode": "contains" }, { "route": "/terms/", "surface": "visible block", "mode": "contains" }, { "route": "/pricing.md", "surface": "served line", "mode": "contains" } ] },
-    "trial.detail": { "targets": [ { "route": "/", "surface": "visible block", "mode": "contains",
-      "waiver": { "ref": "gy-uu7mt 2026-09-24 (landing) asks content", "expires": "2026-10-08",
-        "observed": "Then Gymbo Pro is ₹399/month, or ₹250/month effective on the annual plan, billed through the App Store. Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
-        "why": "canonical says 'Then ₹399/month or ₹2,999/year. Apple determines...'; the home FAQ carries a longer price sentence and /terms/ words it a third way. Which is right is content's ruling; landing may not change copy under the 14:2xZ grant." } } ] },
-    "trial.comparisonRow": { "targets": [
-      { "route": "/alternatives/akton/", "surface": "visible block", "mode": "equals" },
-      { "route": "/alternatives/trainerize/", "surface": "visible block", "mode": "equals" },
-      { "route": "/alternatives/truecoach/", "surface": "visible block", "mode": "equals" },
-      { "route": "/compare/gymbo-vs-wellnessz/", "surface": "visible block", "mode": "equals",
-        "waiver": { "ref": "gy-uu7mt 2026-09-24 (content caveat 1)", "expires": "2026-10-08", "observed": "7 days for eligible subscribers",
-          "why": "CompareWellnessZ.tsx:24 hard-codes '${TRIAL_DAYS} days for eligible subscribers' and does not use GYMBO_TRIAL_ROW; the WellnessZ column says '14 days' with no payment clause." } },
-      { "route": "/blog/best-apps-for-independent-personal-trainers-in-india-2026/", "surface": "visible block", "mode": "equals",
-        "waiver": { "ref": "gy-uu7mt 2026-09-24 (found by landing)", "expires": "2026-10-08", "observed": "7 days for eligible subscribers",
-          "why": "the best-apps blog table renders the Gymbo cell without the payment-method clause." } } ] },
-    "site.meta.description": { "targets": [ { "route": "/", "surface": "metadata description", "mode": "equals" } ] },
-    "site.meta.og": { "targets": [ { "route": "/", "surface": "metadata og:description", "mode": "equals" }, { "route": "/", "surface": "JSON-LD $.description", "mode": "equals" } ] },
-    "site.meta.twitter": { "targets": [ { "route": "/", "surface": "metadata twitter:description", "mode": "equals" } ] },
-    "site.gallery.schedule.caption": { "targets": [ { "route": "/", "surface": "visible block", "mode": "equals" } ] }
+    "trial.line": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "contains"
+        },
+        {
+          "route": "/terms/",
+          "surface": "visible block",
+          "mode": "contains"
+        },
+        {
+          "route": "/pricing.md",
+          "surface": "served line",
+          "mode": "contains"
+        }
+      ]
+    },
+    "trial.eligibilityNote": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "contains"
+        },
+        {
+          "route": "/terms/",
+          "surface": "visible block",
+          "mode": "contains"
+        },
+        {
+          "route": "/pricing.md",
+          "surface": "served line",
+          "mode": "contains"
+        }
+      ]
+    },
+    "trial.comparisonRow": {
+      "targets": [
+        {
+          "route": "/alternatives/akton/",
+          "surface": "visible block",
+          "mode": "equals"
+        },
+        {
+          "route": "/alternatives/trainerize/",
+          "surface": "visible block",
+          "mode": "equals"
+        },
+        {
+          "route": "/alternatives/truecoach/",
+          "surface": "visible block",
+          "mode": "equals"
+        },
+        {
+          "route": "/compare/gymbo-vs-wellnessz/",
+          "surface": "visible block",
+          "mode": "equals",
+          "waiver": {
+            "ref": "gy-uu7mt 2026-09-24 (content caveat 1)",
+            "expires": "2026-10-08",
+            "observed": "7 days for eligible subscribers",
+            "why": "CompareWellnessZ.tsx:24 hard-codes '${TRIAL_DAYS} days for eligible subscribers' and does not use GYMBO_TRIAL_ROW; the WellnessZ column says '14 days' with no payment clause."
+          }
+        },
+        {
+          "route": "/blog/best-apps-for-independent-personal-trainers-in-india-2026/",
+          "surface": "visible block",
+          "mode": "equals",
+          "waiver": {
+            "ref": "gy-uu7mt 2026-09-24 (found by landing)",
+            "expires": "2026-10-08",
+            "observed": "7 days for eligible subscribers",
+            "why": "the best-apps blog table renders the Gymbo cell without the payment-method clause."
+          }
+        }
+      ]
+    },
+    "site.meta.description": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "metadata description",
+          "mode": "equals"
+        }
+      ]
+    },
+    "site.meta.og": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "metadata og:description",
+          "mode": "equals"
+        },
+        {
+          "route": "/",
+          "surface": "JSON-LD $.description",
+          "mode": "equals"
+        }
+      ]
+    },
+    "site.meta.twitter": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "metadata twitter:description",
+          "mode": "equals"
+        }
+      ]
+    },
+    "site.gallery.schedule.caption": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "equals"
+        }
+      ]
+    }
   }
 }

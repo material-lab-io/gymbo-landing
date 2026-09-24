@@ -57,6 +57,9 @@ export function checkCanonical({ doc, source, map, sha }, surfaces, today = new 
     const s = byId.get(id); if (!s) continue;
     for (const t of m.targets) {
       const where = `${t.route} [${t.surface}]`;
+      // v2 adds `match` to a string that is a sentence inside larger blocks. Landing's map must
+      // agree with content's own statement of how the string is matched, or it is a finding.
+      if (s.match && s.match !== t.mode) findings.push({ kind: "match-mode-disagrees", id, route: t.route, surface: t.surface, detail: `content says match:${s.match}, web-surface-map.json says ${t.mode}` });
       const present = has(t, s.text);
       if (!t.waiver) { if (!present) findings.push({ kind: "canonical-string-missing", id, route: t.route, surface: t.surface, text: norm(s.text), detail: `${t.mode} on ${where}` }); continue; }
       if (present) { findings.push({ kind: "stale-waiver", id, route: t.route, surface: t.surface, detail: `the canonical string IS present on ${where}; remove the waiver` }); continue; }

@@ -9,11 +9,6 @@
       "ref": "pm B' ruling gy-xmzqr.7 2026-09-24T13:38Z: hero note built from the canonical string"
     },
     {
-      "id": "trial-eligibility-detail",
-      "contains": "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
-      "ref": "marketer brief gy-xmzqr.7, checked against appstore's written rule 2026-09-24T12:27Z"
-    },
-    {
       "id": "wellnessz-session-first",
       "route": "/compare/gymbo-vs-wellnessz/",
       "contains": "Gymbo is session-first (one-tap class punches, automatic balance math, payment tracking) for independent personal trainers.",

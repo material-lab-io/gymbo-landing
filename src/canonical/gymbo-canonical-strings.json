@@ -1,6 +1,6 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 1,
+  "version": 2,
   "guideVersion": "v15",
   "updated": "2026-09-24",
   "terms": {
@@ -34,10 +34,12 @@
       "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
     },
     {
-      "id": "trial.detail",
-      "surface": "public site detail line",
-      "text": "Then ₹399/month or ₹2,999/year. Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
-      "source": "gy-xmzqr.7 brief"
+      "id": "trial.eligibilityNote",
+      "surface": "public site: home FAQ, /terms/, pricing.md (a sentence inside larger blocks; match by contains)",
+      "text": "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
+      "source": "gy-xmzqr.7 brief; shipped byte-identical on home, /terms/ and pricing.md",
+      "match": "contains",
+      "notes": "The price half of the earlier trial.detail varies by surface on purpose (home FAQ, terms and pricing.md word the price differently), so only this eligibility sentence is pinned."
     },
     {
       "id": "trial.comparisonRow",
