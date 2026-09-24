@@ -198,7 +198,7 @@ const getOrganized: Post = {
   faq: [
     { q: "How do I get organized as a personal trainer?", a: "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the whole roster once a week." },
     { q: "What's the best way to track personal training clients?", a: "Track each client against a running balance, sessions delivered minus sessions paid for, so you always know who owes what and who's due, without relying on memory." },
-    { q: "Can I run my training business on a spreadsheet?", a: "You can, but spreadsheets don't log sessions with one tap, send reminders, or reconcile UPI payments on the go. Trainers work on their feet, so a phone-first tool fits better." },
+    { q: "Can I run my training business on a spreadsheet?", a: "You can, but spreadsheets don't update a client's balance in one tap, send reminders, or reconcile UPI payments on the go. Trainers work on their feet, so a phone-first tool fits better." },
     { q: "How often should I review my client roster?", a: "A 15-minute weekly review covering low balances, outstanding dues, and inactive clients is enough to keep an independent practice fully under control." },
     { q: "What records do I need for GST as a trainer?", a: "Clean, exportable per-client statements of sessions and payments. Keep them current from day one so tax season is a download, not a reconstruction. Confirm specifics with a CA." },
     { q: "How do I manage my personal training business day to day?", a: "Keep one ledger current in the moment: log each session as it ends, record each payment against the client and package as it lands, and do a five-minute weekly scan of who's due to renew, who owes, and who's gone quiet. That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer; the rest is training. Most start on a diary and UPI, then move to a single app once holding the ledger by hand gets heavy, around 15 clients." },
@@ -228,7 +228,7 @@ You don't need to be a spreadsheet person. You need the four things that define 
 ## how to get organized, step by step
 
 1. **Put every client in one list**: name, contact, package, rate. No more "which chat was that?"
-2. **Log sessions as they happen**: one tap at the end of each session, not a Sunday-night reconstruction.
+2. **Log sessions as they happen**, at the end of each session, not in a Sunday-night reconstruction.
 3. **Record every payment against a balance**: the moment UPI hits, so the balance is always honest.
 4. **Keep exportable statements**: per client, ready for the client to see and for GST season.
 5. **Do a weekly 15-minute review**: who's low on sessions, who owes, who's gone quiet. Act on all three.
@@ -237,7 +237,7 @@ That weekly review is the habit that separates organized trainers from merely bu
 
 ## why not just a spreadsheet?
 
-A spreadsheet can hold this, but it doesn't log a session with one tap between clients, it doesn't send a reminder, and it won't reconcile a UPI payment against a balance while you're mid-day on the gym floor. Spreadsheets are for people at desks. Trainers work on their feet, phone in hand. The tool has to match how you actually work.
+A spreadsheet can hold this, but it doesn't update a balance in one tap between clients, it doesn't send a reminder, and it won't reconcile a UPI payment against a balance while you're mid-day on the gym floor. Spreadsheets are for people at desks. Trainers work on their feet, phone in hand. The tool has to match how you actually work.
 
 ## where Gymbo fits
 
