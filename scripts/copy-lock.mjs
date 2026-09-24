@@ -28,6 +28,7 @@ import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "
 import { extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyBlocks, servedTextBlocks, norm } from "./copy-blocks.mjs";
+import { loadCanonical, canonicalRuled, CANON_DIR } from "./canonical-strings.mjs";
 
 export const LOCK_FILE = "copy-lock.json";
 export const RULED_FILE = "copy-lock-ruled.json";
@@ -172,7 +173,11 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const args = process.argv.slice(2);
     const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
     const root = opt("--root", "dist"), lockPath = opt("--lock", LOCK_FILE), ruledPath = opt("--ruled", RULED_FILE);
-    const ruled = loadRuled(ruledPath);
+    // Ruled strings come from TWO places: content's vendored canonical strings (derived, never
+    // retyped) and copy-lock-ruled.json (landing-cited rulings content has not yet added to
+    // its file). `--canon none` is for fixtures.
+    const canonDir = opt("--canon", CANON_DIR);
+    const ruled = [...(canonDir === "none" ? [] : canonicalRuled(loadCanonical(canonDir))), ...loadRuled(ruledPath)];
     const { surfaces, unclassified, code } = scanDist(root);
     if (args.includes("--write")) {
       const next = toLock(surfaces, ruled);

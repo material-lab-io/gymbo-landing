@@ -31,7 +31,7 @@ function fixture(files = {}) {
   writeFileSync(join(dir, "ruled.json"), JSON.stringify(RULED));
   return dir;
 }
-const cli = (dir, ...a) => spawnSync(process.execPath, [SCRIPT, "--root", join(dir, "dist"), "--lock", join(dir, "lock.json"), "--ruled", join(dir, "ruled.json"), ...a], { encoding: "utf8" });
+const cli = (dir, ...a) => spawnSync(process.execPath, [SCRIPT, "--root", join(dir, "dist"), "--lock", join(dir, "lock.json"), "--ruled", join(dir, "ruled.json"), "--canon", "none", ...a], { encoding: "utf8" });
 const locked = () => { const d = fixture(); assert.equal(cli(d, "--write").status, 0); return d; };
 const edit = (d, file, from, to) => { const p = join(d, "dist", file); const s = readFileSync(p, "utf8"); assert.ok(s.includes(from), `${from} not in ${file}`); writeFileSync(p, s.replace(from, to)); };
 

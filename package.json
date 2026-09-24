@@ -12,8 +12,8 @@
     "test:update": "playwright test --update-snapshots",
     "test:audit": "playwright test tests/audit.spec.ts",
     "test:audit:perf": "playwright test tests/audit-perf.spec.ts",
-    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-lock.test.mjs",
-    "check:copy-output": "node scripts/check-no-em-dash.mjs && node scripts/check-canonical-terms.mjs && node scripts/check-trial-eligibility.mjs && node scripts/copy-lock.mjs",
+    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-lock.test.mjs tests/canonical-strings.test.mjs",
+    "check:copy-output": "node scripts/check-no-em-dash.mjs && node scripts/check-canonical-terms.mjs && node scripts/check-trial-eligibility.mjs && node scripts/check-canonical-strings.mjs && node scripts/copy-lock.mjs",
     "copy-lock:write": "node scripts/copy-lock.mjs --write",
     "copy-lock:live": "node scripts/copy-lock-live.mjs",
     "typecheck": "tsc -b"

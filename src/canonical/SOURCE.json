@@ -1,0 +1,12 @@
+{
+  "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
+  "repo": "material-lab-io/Gymbo-v1",
+  "path": "docs/GYMBO-CANONICAL-STRINGS.json",
+  "branch": "content/gy-xmzqr8-trial-eligibility (PR 1426, not on main at vendoring time)",
+  "commit": "91c956c84c46f82433ffe31c9a2c4dce0ce92fd0",
+  "sha256": "fcb4a7f6c9db249159a4d82ad6cb21535f2401a3af9b713dc00ea6fe4b45868c",
+  "guideVersion": "v15",
+  "vendoredAt": "2026-09-24",
+  "vendoredBy": "gymbo/landing, from content's comment on gy-uu7mt",
+  "webSurfaceIdPrefixes": ["site.", "trial."]
+}

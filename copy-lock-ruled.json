@@ -1,38 +1,6 @@
 {
-  "source": "SEEDED by landing from durable bead rulings on 2026-09-24. content's machine-readable list supersedes this file; add an entry only with a ref to a ruling that survives a session restart.",
+  "source": "Rulings landing could cite from durable beads that are NOT yet in content's canonical strings file (which supplies the rest via src/canonical/). Add an entry only with a ref that survives a session restart; move it to content's file when content adds it.",
   "ruled": [
-    {
-      "id": "home-meta-description",
-      "route": "/",
-      "surface": "metadata description",
-      "equals": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients. From ₹399/mo, 7-day free trial for eligible subscribers.",
-      "ref": "content ruling gy-xmzqr.7 / gy-afarz.1, 2026-09-24T12:34Z"
-    },
-    {
-      "id": "home-og-description",
-      "route": "/",
-      "surface": "metadata og:description",
-      "equals": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients.",
-      "ref": "content ruling gy-afarz.1, 2026-09-24T12:34Z"
-    },
-    {
-      "id": "home-twitter-description",
-      "route": "/",
-      "surface": "metadata twitter:description",
-      "equals": "Built for independent personal trainers.",
-      "ref": "content ruling gy-afarz.1, 2026-09-24T12:34Z"
-    },
-    {
-      "id": "home-jsonld-description",
-      "route": "/",
-      "contains": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients.",
-      "ref": "content ruling gy-afarz.1, 2026-09-24T12:34Z (JSON-LD description)"
-    },
-    {
-      "id": "trial-primary",
-      "contains": "Eligible subscribers can try Gymbo free for 7 days.",
-      "ref": "content 2026-09-24T13:23Z on gy-xmzqr.7: the ONE ruled public trial string (Guide v15 sec 5, Paywall/ASO spec 1d)"
-    },
     {
       "id": "home-hero-note",
       "route": "/",
@@ -44,13 +12,6 @@
       "id": "trial-eligibility-detail",
       "contains": "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
       "ref": "marketer brief gy-xmzqr.7, checked against appstore's written rule 2026-09-24T12:27Z"
-    },
-    {
-      "id": "home-gallery-caption",
-      "route": "/",
-      "surface": "visible block",
-      "equals": "Your week, tap to punch",
-      "ref": "content ruling gy-uu7mt 2026-09-24T13:04Z"
     },
     {
       "id": "wellnessz-session-first",
