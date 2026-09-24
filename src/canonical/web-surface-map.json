@@ -108,6 +108,38 @@
           "mode": "equals"
         }
       ]
+    },
+    "site.home.revenue.intro": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "equals"
+        }
+      ]
+    },
+    "site.home.revenue.bullet3": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "equals"
+        }
+      ]
+    },
+    "site.home.faq.clientsDownload.answer": {
+      "targets": [
+        {
+          "route": "/",
+          "surface": "visible block",
+          "mode": "equals"
+        },
+        {
+          "route": "/",
+          "surface": "JSON-LD $.mainEntity[].acceptedAnswer.text",
+          "mode": "equals"
+        }
+      ]
     }
   }
 }

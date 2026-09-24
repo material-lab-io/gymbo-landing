@@ -2,20 +2,20 @@
   "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
   "repo": "material-lab-io/Gymbo-v1",
   "path": "docs/GYMBO-CANONICAL-STRINGS.json",
-  "branch": "main (PR 1426 merged 16:31Z, PR 1449 merged after; blob on main equals this file)",
-  "commit": "15437a9398e38a96e88a35f201d4c41822583fa3",
-  "sha256": "493c7354cc79f41c715268eb692cf158dc6ce15b79356e59cc9aa59b79e3bfd9",
+  "branch": "content/gy-afarz-canonical-home-pins-v4 (Gymbo-v1 PR 1454, OPEN and not on main at vendoring time: the sha256 is the durable identity, the commit vanishes if that branch is amended or rebased)",
+  "commit": "2cf1055e77a71ccb26c60b0f541526134e4c041e",
+  "sha256": "f74dd05a322d6ad3790f8bd5cf5d73714fc1f9e9c60e75a5e66022d0d573c768",
   "guideVersion": "v15",
-  "vendoredAt": "2026-09-24 (v3)",
+  "vendoredAt": "2026-09-24 (v4)",
   "vendoredBy": "gymbo/landing, from content's comment on gy-uu7mt",
   "webSurfaceIdPrefixes": [
     "site.",
     "trial."
   ],
-  "version": 3,
+  "version": 4,
   "supersedes": {
-    "commit": "db1b6c266b5ace2f37a9faca1600050758ed10d5",
-    "sha256": "a92f1665eaf5a351add38906f416a837eb1bb082cbd122ad0b15b1690c557a42",
-    "change": "v3 adds a top-level `facts` block (trialDays, monthlyINR, annualINR, annualMonthlyEquivalentINR, annualSavingsPercent); `strings` and `terms` are byte-identical to v2 (content compared programmatically)"
+    "commit": "15437a9398e38a96e88a35f201d4c41822583fa3",
+    "sha256": "493c7354cc79f41c715268eb692cf158dc6ce15b79356e59cc9aa59b79e3bfd9",
+    "change": "v4 adds three web pins (site.home.revenue.intro, site.home.revenue.bullet3, site.home.faq.clientsDownload.answer); the 19 v3 strings and the facts block are byte-identical (content compared programmatically; landing re-verified)"
   }
 }
