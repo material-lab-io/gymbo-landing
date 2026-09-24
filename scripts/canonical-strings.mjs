@@ -9,7 +9,7 @@
 // and 'punch' are pinned as TERMS only. Free-form sentences that use them are pinned only
 // by the copy-change-detector as `observed`. So green here is NOT "no retired wording anywhere".
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { norm } from "./copy-blocks.mjs";
 
@@ -25,6 +25,76 @@ export function loadCanonical(dir = CANON_DIR) {
   const map = JSON.parse(readFileSync(need[2], "utf8")).map;
   if (!Array.isArray(doc.strings) || !doc.strings.length) throw new Error("canonical strings file has no strings; refusing a vacuous pass");
   return { doc, source, map, sha: sha256(raw) };
+}
+
+// CONSTANTS-FILE CHECK (v3 `facts`): content rules the NUMBERS; src/lib/trialAccess.ts must EQUAL them.
+// It is NOT a price check on the built site: see findBuiltPrices for what it does not read.
+// Price sentences are worded per surface and are deliberately not string-pinned, so this is the
+// only thing that ties the constants to what content ruled. It covers the CONSTANTS FILE only:
+// a price typed by hand in Terms.tsx or index.html is not read here (copy-facts.spec.ts and the
+// copy-change-detector are what watch those).
+export function loadFactsMap(dir = CANON_DIR) {
+  const f = join(dir, "facts-map.json");
+  if (!existsSync(f)) throw new Error(`${f} is missing; the facts-to-constants map is part of the gate`);
+  return JSON.parse(readFileSync(f, "utf8"));
+}
+
+// Strip comments BEFORE matching (a block comment quoting the old declaration was read as the constant:
+// tester F2) and require EXACTLY ONE declaration. Both are regex-on-source, so this is still a heuristic
+// for "what tsc will compile": it fails closed (cannot-read-constant) whenever it is not sure.
+const stripTsComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+export function readConstants(src, names) {
+  const code = stripTsComments(src);
+  const out = {};
+  for (const n of names) {
+    const all = [...code.matchAll(new RegExp(`^\\s*export const ${n}\\s*=\\s*([^;\\n]*);`, "gm"))];
+    if (all.length !== 1) continue;
+    const m = all[0][1].trim().match(/^-?\d+$/);
+    if (m) out[n] = Number(m[0]);
+  }
+  return out;
+}
+
+export function checkFacts(doc, factsMap, tsSource) {
+  const findings = [];
+  const facts = doc.facts;
+  if (!facts || typeof facts !== "object") return [{ kind: "facts-missing", detail: "the vendored canonical file has no `facts` block; refusing a vacuous pass" }];
+  const keys = Object.keys(facts).filter((k) => !k.startsWith("_"));
+  if (!keys.length) return [{ kind: "facts-missing", detail: "the `facts` block is empty; refusing a vacuous pass" }];
+  for (const k of keys) if (!factsMap.map[k]) findings.push({ kind: "unmapped-fact", id: k, detail: "content added a fact that facts-map.json does not tie to a constant; map it" });
+  for (const k of Object.keys(factsMap.map)) if (!keys.includes(k)) findings.push({ kind: "unknown-fact-mapping", id: k, detail: "facts-map.json names a fact that is not in the vendored file" });
+  const names = Object.values(factsMap.map);
+  const got = readConstants(tsSource, names);
+  for (const [k, name] of Object.entries(factsMap.map)) {
+    if (!keys.includes(k)) continue;
+    if (!(name in got)) { findings.push({ kind: "cannot-read-constant", id: k, detail: `${name} is not declared exactly once, outside comments, as a plain \`export const ${name} = <integer>;\` in ${factsMap.file}; fail closed rather than skip` }); continue; }
+    if (got[name] !== facts[k]) findings.push({ kind: "fact-mismatch", id: k, detail: `${name} = ${got[name]} in ${factsMap.file}, content ruled ${facts[k]}` });
+  }
+  return findings;
+}
+
+// BUILT files that state a rupee amount. The facts check compares NONE of them to content's ruled
+// numbers (it reads only the constants file), so on every green the gate names them: a price change
+// can leave every one of these stale with all gates OK (tester's 399->449 drill left eight stale:
+// 3 alternatives, 2 blogs, the compare page, llms.txt, pricing.md). This scans dist/, the thing that
+// ships, not src/, because src cannot see public/ files or generated JSON-LD. It reads html, md, txt,
+// xml and json only: text inside the .js bundles is NOT scanned, and neither are images.
+// Informational, never a failure. Includes competitor prices and constant-derived text on purpose:
+// the point is which files the check does not verify, not which are wrong.
+export function findBuiltPrices(root = "dist") {
+  const out = [];
+  const walk = (d) => {
+    for (const e of readdirSync(join(root, d))) {
+      const rel = d ? `${d}/${e}` : e;
+      if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
+      if (!/\.(html?|md|txt|xml|json)$/i.test(e)) continue;
+      const n = (readFileSync(join(root, rel), "utf8").match(/\u20b9\s?\d/g) || []).length;
+      if (n) out.push({ file: rel.replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
+    }
+  };
+  if (!existsSync(root)) throw new Error(`${root} does not exist; cannot list the built files the price check does not read`);
+  walk("");
+  return out.sort((x, y) => x.file.localeCompare(y.file));
 }
 
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
