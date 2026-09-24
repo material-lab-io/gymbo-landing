@@ -25,6 +25,7 @@ export const BANNED = [
   "classes you log",
   "back office",
   "AI-powered",
+  "chat assistant",
 ];
 
 // gy-xmzqr.7 (content ruling 2026-09-24): "log sessions" is banned only where it

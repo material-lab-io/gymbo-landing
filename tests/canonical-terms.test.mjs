@@ -119,3 +119,10 @@ test("the ruled homepage meta is clean", () => {
   const head = '<meta name="description" content="Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients. From ₹399/mo, 7-day free trial for eligible subscribers.">';
   assert.equal(scanHtmlTerms(page("<p>Clean.</p>", head), "/").length, 0);
 });
+
+test("POSITIVE CONTROL: the blog sentence that shipped ('a builder plus voice/paste import and a chat assistant') fails; the ruled one passes", () => {
+  const shipped = "For a solo trainer it gives you a builder plus voice/paste import and a chat assistant.";
+  assert.deepEqual(scanText(shipped, "/blog/x/", "visible text").map((f) => f.term), ["chat assistant"]);
+  const ruled = "it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments.";
+  assert.equal(scanText(ruled, "/blog/x/", "visible text").length, 0);
+});
