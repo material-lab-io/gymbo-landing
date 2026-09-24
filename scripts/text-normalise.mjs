@@ -21,6 +21,7 @@ export function matchable(value) {
     .normalize("NFKC")
     .replace(INVISIBLES, "")
     .replace(/[аеорсхуіј]/g, (c) => HOMOGLYPHS[c])
+    .replace(/[\u2010\u2011\u2212]/g, "-")   // hyphen, non-breaking hyphen, minus sign: NFKC leaves them as U+2010/U+2212
     .replace(/[‘’]/g, "'")
     .replace(/[“”]/g, '"')
     .replace(/\s+/g, " ");
