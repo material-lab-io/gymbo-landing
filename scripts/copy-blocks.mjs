@@ -8,8 +8,16 @@ import { pageSurfaces } from "./check-no-em-dash.mjs";
 
 const BLOCK_TAGS = "address|article|aside|blockquote|button|caption|dd|details|dialog|div|dl|dt|figcaption|figure|footer|form|h[1-6]|header|hr|label|li|main|nav|ol|option|p|pre|section|summary|table|tbody|td|tfoot|th|thead|tr|ul|a|img|svg|select|textarea|input";
 
+// Named entities that are invisible or spacing characters. Decoded to the real character so
+// the pin sees them; folding them away for MATCHING is text-normalise.mjs's job.
+const NAMED = {
+  shy: "\u00AD", ZeroWidthSpace: "\u200B", NegativeThinSpace: "\u200B", zwnj: "\u200C", zwj: "\u200D",
+  lrm: "\u200E", rlm: "\u200F", NoBreak: "\u2060", WordJoiner: "\u2060",
+  ensp: "\u2002", emsp: "\u2003", thinsp: "\u2009", hairsp: "\u200A", NonBreakingSpace: "\u00A0",
+};
 export function decodeEntities(s) {
   return String(s)
+    .replace(/&(shy|ZeroWidthSpace|NegativeThinSpace|zwnj|zwj|lrm|rlm|NoBreak|WordJoiner|ensp|emsp|thinsp|hairsp|NonBreakingSpace);/g, (_, n) => NAMED[n])
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16)))
     .replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
     .replace(/&nbsp;/g, " ").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
