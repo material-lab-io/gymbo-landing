@@ -17,7 +17,7 @@ export function Terms() {
 
         <section className="flex flex-col gap-3">
           <h2>The service</h2>
-          <p>Gymbo is software for independent personal trainers to log sessions, track payments and balances, schedule, and manage their clients. It's available on iOS and is in active development, so features may be added, changed, or removed.</p>
+          <p>Gymbo is software for independent personal trainers to punch classes, track payments and balances, schedule, and manage their clients. It's available on iOS and is in active development, so features may be added, changed, or removed.</p>
         </section>
 
         <section className="flex flex-col gap-3">

@@ -171,7 +171,9 @@ jobs:
         run: npm run test:copy-output
         # Proves the scanner distinguishes visitor-visible copy from inert
         # source: visible paragraph and metadata-title mutations fail, while
-        # em dashes in HTML/CSS/script comments pass.
+        # em dashes in HTML/CSS/script comments pass. gy-afarz.1 adds the
+        # canonical-terms controls: seeded generic-AI and log-a-session copy
+        # must fail, and a missing llms.txt / pricing.md must not pass.
 
       # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
       #
@@ -245,7 +247,9 @@ jobs:
         # Scans every route emitted in dist/sitemap.xml plus /auth/callback/
         # and the real 404. Titles, metadata, JSON-LD, visible text and explicit
         # accessibility text are checked; comments and script/style source are
-        # intentionally inert.
+        # intentionally inert. Also runs the gy-afarz.1 canonical-terms gate
+        # (Ask Gymbo / class punches) over the same pages plus llms.txt and
+        # pricing.md.
 
       # gy-a2xps.9 — runs AFTER the build because it scans the built bundle, and
       # BEFORE the deploy because its whole job is to stop one.

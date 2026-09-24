@@ -19,7 +19,7 @@ export function Privacy() {
           <h2>What we collect</h2>
           <ul>
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
-            <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you log, and the payments and balances you record. You enter this information, and you decide what to add.</li>
+            <li><strong>Data you enter about your clients.</strong> Client names, contact details, the classes you punch, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist.</strong> If you join the waitlist on getgymbo.com, the name and the phone number and/or email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com: aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
             <li><strong>Product analytics in the app.</strong> We record how the app is used (screens opened, features used, and errors) with PostHog. So we can tell one trainer's sessions apart, this includes <strong>your own</strong> name and phone number as your account identifier, plus, when an action is about a client, the class or payment amount involved, but never anything that identifies that client. Your clients' names, phone numbers, contact details, notes, and internal IDs are never sent. You control this under Settings → Privacy; when it is off, we send no usage events and none of your name, phone number, or activity. The app does still briefly contact PostHog's servers at launch to fetch configuration, which shares your device's IP address but no personal or usage data.</li>
@@ -49,7 +49,7 @@ export function Privacy() {
           <h2>AI features and the providers behind them</h2>
           <p>Some Gymbo features are powered by specialist AI providers. When you use these features, a limited amount of your data is sent to the provider so they can return a result. We only send what the feature needs, not your whole client list. Here is exactly who we use, for what, and what we send them.</p>
 
-          <h3>AI assistant (chat): Anthropic (Claude)</h3>
+          <h3>Ask Gymbo (AI chat): Anthropic (Claude)</h3>
           <ul>
             <li><strong>What it does:</strong> answers your questions about your business inside the app.</li>
             <li><strong>What we send:</strong> your typed question, plus a fixed context snippet attached to every question you ask the assistant: a short summary of your top few clients (their name and class counts, ordered by outstanding balance) and today's session client names (everyone on today's schedule, however many that is), so the assistant can answer usefully. This snippet is the same on every question; it isn't tailored to what you actually asked. We do <strong>not</strong> send your full roster.</li>

@@ -66,19 +66,21 @@ function jsonStrings(value, path = "$", rows = []) {
   return rows;
 }
 
-export function scanHtml(html, route = "unknown") {
-  const findings = [];
+// Every visitor-facing string on a built page, labelled by surface. Shared with
+// check-canonical-terms.mjs so both gates read exactly the same text.
+export function pageSurfaces(html, route = "unknown") {
+  const rows = [];
   const uncommented = withoutComments(html);
 
   for (const match of uncommented.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/gi)) {
-    addFinding(findings, route, "document title", match[1]);
+    rows.push({ surface: "document title", value: match[1] });
   }
 
   for (const match of uncommented.matchAll(/<meta\b[^>]*>/gi)) {
     const attrs = attributes(match[0]);
     if (!attrs.has("content")) continue;
     const label = attrs.get("property") || attrs.get("name") || attrs.get("itemprop") || "unnamed";
-    addFinding(findings, route, `metadata ${label}`, attrs.get("content"));
+    rows.push({ surface: `metadata ${label}`, value: attrs.get("content") });
   }
 
   for (const match of uncommented.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
@@ -90,20 +92,25 @@ export function scanHtml(html, route = "unknown") {
     } catch (error) {
       throw new Error(`${route}: could not parse JSON-LD: ${error.message}`);
     }
-    for (const [path, value] of jsonStrings(data)) addFinding(findings, route, `JSON-LD ${path}`, value);
+    for (const [path, value] of jsonStrings(data)) rows.push({ surface: `JSON-LD ${path}`, value });
   }
 
   const renderedMarkup = withoutInertSource(uncommented);
   for (const match of renderedMarkup.matchAll(/<[a-z][^>]*>/gi)) {
     const attrs = attributes(match[0]);
     for (const [name, value] of attrs) {
-      if (ACCESSIBLE_ATTRIBUTES.has(name)) addFinding(findings, route, `accessibility ${name}`, value);
+      if (ACCESSIBLE_ATTRIBUTES.has(name)) rows.push({ surface: `accessibility ${name}`, value });
     }
   }
 
   const body = renderedMarkup.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i)?.[1] ?? renderedMarkup;
-  const visibleText = body.replace(/<[^>]+>/g, " ");
-  addFinding(findings, route, "visible text", visibleText);
+  rows.push({ surface: "visible text", value: body.replace(/<[^>]+>/g, " ") });
+  return rows;
+}
+
+export function scanHtml(html, route = "unknown") {
+  const findings = [];
+  for (const { surface, value } of pageSurfaces(html, route)) addFinding(findings, route, surface, value);
   return findings;
 }
 
