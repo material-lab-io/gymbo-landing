@@ -20,8 +20,11 @@
 //      + comment id + bead, and that comment must be by content or pm. There is no fuzzy tie:
 //      a comment that only MENTIONS a class cannot rule a sentence (pm 22:37Z). CI never calls
 //      bd (a Dolt hiccup must not become a public deploy outage): a scheduled Gas City order
-//      runs content's docs/rulings/vendor_sentence_rulings.py --verify against the LIVE beads
-//      and catches the vendored copy going stale. Gate = this check; drift detector = that.
+//      must run content's docs/rulings/vendor_sentence_rulings.py --verify against the LIVE
+//      beads to catch the vendored copy going stale. THAT ORDER DOES NOT EXIST YET (pm owes it,
+//      to be created when the file is on Gymbo-v1 main; gy-uu7mt). Until it does, the forgery
+//      gap is real: the file and its sha256 record can be edited together in one PR and this
+//      gate will accept it. Gate = this check; drift detector = that order, once it exists.
 // Guards against silent growth stay: reviewed repo file, entry count printed every run,
 // stale entries fail, editing a sentence re-opens it, kind and route are part of the key.
 import { createHash } from "node:crypto";
@@ -29,6 +32,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { scanDist, walk, routeOfFile } from "./copy-change-detector.mjs";
+import { matchable } from "./text-normalise.mjs";
 
 export const REGISTRY_FILE = "canonical-log-verb-registry.json";
 export const RULINGS_FILE = "src/canonical/gymbo-sentence-rulings.json";
@@ -37,13 +41,13 @@ export const REASONS = ["advice-to-reader", "attributed-quote", "competitor-desc
 export const KINDS = ["visible", "metadata", "json-ld", "attribute", "served-text"];
 export const RULING_AUTHORS = ["gymbo/gymbo-crew.content", "gymbo/gymbo-crew.pm"];
 
-// Invisible characters and look-alikes are removed BEFORE matching, so a soft hyphen or
-// zero-width space inside the verb is the verb. Latin-for-Cyrillic covers the a e o p c x
-// homoglyphs; the site is English so nothing legitimate is lost.
-const HOMOGLYPHS = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x" };
-export const normalise = (s) =>
-  String(s).normalize("NFKC").replace(/[­​-‍⁠﻿]/g, "")
-    .replace(/[аеорсх]/g, (c) => HOMOGLYPHS[c]).replace(/\s+/g, " ").trim();
+// ONE normaliser (scripts/text-normalise.mjs, PR 223): entities decoded, NFKC, invisibles stripped,
+// look-alikes and hyphen forms folded. This gate used to carry its own copy, which is exactly how
+// the copy gates ended up disagreeing about what "the same text" is (tester, PR 222: after 223
+// decodes &lrm; to U+200E a private list that omits it misses it). Its known residue (unlisted
+// entities, Default_Ignorable code points, wider look-alikes) is listed on gy-illzd and is fixed
+// there ONCE, for every gate.
+export const normalise = (s) => matchable(s).trim();
 
 // The verb and its variants (logbook, relog, loggers). "blog", "catalog", "login", "logo"
 // have a letter before or after and never match.
@@ -93,8 +97,9 @@ export const PREDICATES = {
       : TOOL_SUBJECT.test(s) ? "a tool is the subject of the log verb"
       : null,
   // A testimonial is a person speaking in the first person inside quotation marks.
-  "attributed-quote": (s) =>
-    !FIRST_PERSON.test(s) ? "not first person: a testimonial is a person speaking"
+  "attributed-quote": (s, r) =>
+    r !== "/" ? "the ruled testimonial lives on the home page only; content's ruling names a sentence, not a route, so any other route needs its own ruling and a widened predicate (tester, PR 222)"
+      : !FIRST_PERSON.test(s) ? "not first person: a testimonial is a person speaking"
       : !QUOTE_MARK.test(s) ? "no quotation mark: not marked as a quoted testimonial"
       : null,
   // Server logs in a privacy or terms notice: "log" is a NOUN, and no verb-object follows.
@@ -268,7 +273,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const registry = loadRegistry(opt("--registry", REGISTRY_FILE));
     const rulings = loadRulings(opt("--rulings", RULINGS_FILE), opt("--rulings-source", RULINGS_SOURCE_FILE));
     const r = checkLogVerbs(surfaces, registry, rulings, { unclassified });
-    const summary = `log-verb registry: ${r.entries} entr${r.entries === 1 ? "y" : "ies"} (${Object.entries(r.byReason).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}); ${r.occurrences} log-verb sentence(s) shipped; rulings ${rulings.sha.slice(0, 12)} from ${rulings.source.mergedToMain ? "Gymbo-v1 main" : "an OPEN Gymbo-v1 PR (not on main yet)"} ${String(rulings.source.commit).slice(0, 8)}; ${code.length} code file(s) NOT scanned (named gap: strings that exist only in a JS/CSS bundle).`;
+    const summary = `log-verb registry: ${r.entries} entr${r.entries === 1 ? "y" : "ies"} (${Object.entries(r.byReason).map(([k, v]) => `${k} ${v}`).join(", ") || "none"}); ${r.occurrences} log-verb sentence(s) shipped; rulings ${rulings.sha.slice(0, 12)} from ${rulings.source.mergedToMain ? "Gymbo-v1 main" : "an OPEN Gymbo-v1 PR (not on main yet)"} ${String(rulings.source.commit).slice(0, 8)}; drift order: ${rulings.source.driftOrder?.exists ? "declared to exist (this gate cannot check that)" : "NOT YET CREATED, so a rulings file and its sha256 record forged together in one PR pass this gate (gy-uu7mt)"}; ${code.length} code file(s) NOT scanned (named gap: strings that exist only in a JS/CSS bundle).`;
     if (args.includes("--propose")) {
       // Authoring aid only: never writes the registry. reason + ruling must come from a real ruling.
       const skeleton = r.findings.filter((f) => f.kind === "unjustified-log-verb")

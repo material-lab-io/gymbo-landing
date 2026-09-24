@@ -70,6 +70,7 @@ test("NEGATIVE CONTROL: a site with no log verb passes, is read, and prints its 
   assert.match(r.stdout, /log-verb registry: 0 entries/);
   assert.match(r.stdout, /0 log-verb sentence\(s\) shipped/);
   assert.match(r.stdout, /an OPEN Gymbo-v1 PR \(not on main yet\)/);
+  assert.match(r.stdout, /drift order: NOT YET CREATED/, "the gate must print, every run, the control it depends on that does not exist yet");
 });
 
 // ---------- (1) an unlisted verb, on every surface kind ----------
@@ -332,4 +333,50 @@ test("THE REAL RULINGS FILE: every entry is RULED by content or pm, on gy-uu7mt,
     assert.match(v.commentSha256, /^[0-9a-f]{64}$/);
     assert.ok(REASONS.includes(v.class));
   }
+});
+
+// ---- gy-illzd / PR 223: this gate uses the ONE shared normaliser ----
+test("HIDDEN CHARACTERS through the whole gate: named and numeric entities hide nothing (&shy; &zwj; &zwnj; &ZeroWidthSpace; &NoBreak; &lrm; &rlm;)", () => {
+  for (const hide of ["&shy;", "&#173;", "&zwj;", "&zwnj;", "&ZeroWidthSpace;", "&#8203;", "&NoBreak;", "&lrm;", "&rlm;"]) {
+    const r = run(site({}, { home: page({ body: `<p>Trainers lo${hide}g it.</p>` }) }), empty());
+    assert.equal(r.status, 1, hide);
+    assert.match(r.stderr, /unjustified-log-verb/, hide);
+  }
+});
+
+test("HIDDEN HYPHEN forms of a compound verb form are folded (non-breaking hyphen)", () => {
+  assert.ok(hasLogVerb("Keep a re‑log of it."));
+});
+
+test("ONE NORMALISER: this gate imports the shared matchable() and defines no private fold list of its own", () => {
+  const src = readFileSync(SCRIPT, "utf8");
+  assert.match(src, /import \{ matchable \} from "\.\/text-normalise\.mjs"/);
+  assert.doesNotMatch(src, /HOMOGLYPHS|INVISIBLES\s*=|\\u200B-\\u200D/, "a second normaliser is how the copy gates ended up disagreeing");
+  assert.equal(normalise("lo&lrm;g"), "log");
+});
+
+test("ATTRIBUTED QUOTE is home-only: content's ruling names a sentence, not a route, so the same sentence on /guide/ is refused", () => {
+  const q = "With Gymbo, I open the app, log the session, and move on.”";
+  const rul = rulingsFor([ruled({ sentence: q, class: "attributed-quote" })]);
+  const home = run(site({}, { home: page({ body: `<p>${q}</p>` }) }), registry([entry({ route: "/", sentence: q, reason: "attributed-quote" })]), [], rul);
+  assert.equal(home.status, 0, home.stderr || home.stdout);
+  const guideRoute = run(guide(q), registry([entry({ route: "/guide/x/", sentence: q, reason: "attributed-quote" })]), [], rul);
+  assert.equal(guideRoute.status, 1);
+  assert.match(guideRoute.stderr, /home page only/);
+});
+
+// ---- the provenance record must not overstate its own guarantees (pm 23:12Z, gy-ab757's defect) ----
+test("THE PROVENANCE RECORD TELLS THE TRUTH: the drift order is NOT claimed to run, the closed PR is not called open, and the forgery gap is stated", () => {
+  const src = JSON.parse(readFileSync(ROOT + "src/canonical/SENTENCE-RULINGS-SOURCE.json", "utf8"));
+  assert.equal(src.driftOrder.exists, false);
+  assert.equal(src.driftOrder.owner, "pm");
+  assert.match(src._comment, /DOES NOT EXIST YET/);
+  assert.match(src._comment, /edited together in ONE PR/);
+  assert.doesNotMatch(src._comment + src.branch, /a scheduled order runs/i, "an artefact that says a control runs when it does not is the defect this bead exists to remove");
+  assert.match(src.branch, /1457 first carried this file and is CLOSED/);
+  assert.doesNotMatch(src.branch, /1457[^.]*\bOPEN\b(?! and NOT MERGED)/);
+  assert.equal(src.mergedToMain, false);
+  const gate = readFileSync(SCRIPT, "utf8");
+  assert.match(gate, /THAT ORDER DOES NOT EXIST YET/);
+  assert.doesNotMatch(gate, /a scheduled Gas City order\s*\n?\/\/\s*runs content/);
 });

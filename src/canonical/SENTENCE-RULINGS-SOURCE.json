@@ -1,8 +1,8 @@
 {
-  "_comment": "Provenance of gymbo-sentence-rulings.json. That file is VENDORED VERBATIM from content's sentence-level log-verb rulings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a new content ruling + a new commit + a new sha256 here, in one change. scripts/check-log-verb.mjs fails if the file's sha256 differs from this record. The file is only as current as content's last refresh; a scheduled order runs content's docs/rulings/vendor_sentence_rulings.py --verify against the LIVE beads and files on divergence (exit 1) or on 'could not look' (exit 2).",
+  "_comment": "Provenance of gymbo-sentence-rulings.json. That file is VENDORED VERBATIM from content's sentence-level log-verb rulings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a new content ruling + a new commit + a new sha256 here, in one change. scripts/check-log-verb.mjs fails if the file's sha256 differs from this record. WHAT THIS DOES NOT PROTECT: the file and this record can be edited together in ONE PR and the gate accepts it (tester, PR 222). The only defence against that is a DRIFT ORDER that compares the file to the LIVE bead comments by running content's docs/rulings/vendor_sentence_rulings.py --verify (exit 1 = divergence, exit 2 = could not verify; both must file a bead). THAT ORDER DOES NOT EXIST YET. It is owed by pm, who is creating it when the file is on Gymbo-v1 main (tracked on gy-uu7mt). Until it exists this gap is documented, not defended. The file is only as current as content's last refresh.",
   "repo": "material-lab-io/Gymbo-v1",
   "path": "docs/rulings/GYMBO-SENTENCE-RULINGS.json",
-  "branch": "OPEN PR, NOT MERGED: Gymbo-v1 PR 1455 (branch content/gy-uu7mt-guide-v16-generic-ai-labels, docs-only, held for the Mac lane). Content folded PR 1457 into 1455 (1457 CLOSED as superseded) so there is one merge and one macOS trigger. This commit is on the PR branch and will NOT survive a squash-merge; re-vendor from the merged commit on main after PR 1455 merges (the bytes are expected to be identical, so the sha256 below should not change).",
+  "branch": "Gymbo-v1 PR 1455 (branch content/gy-uu7mt-guide-v16-generic-ai-labels), OPEN and NOT MERGED. Gymbo-v1 PR 1457 first carried this file and is CLOSED, superseded into PR 1455. This commit is on a PR branch and will NOT survive a squash-merge, so this record is NOT final: PR 222 must not merge until the file is re-vendored from the MERGED commit on Gymbo-v1 main (pm ruling 2026-09-24T23:02Z). The bytes are expected to be identical, so the sha256 below should not change.",
   "mergedToMain": false,
   "commit": "159fb59e5525eb5f4aff22b7fce6dc0b9512ddde",
   "sha256": "8e53ebc1dd52572598dd9cad3383b91c6471929d0a477cc63159b2edbcd40792",
@@ -13,5 +13,11 @@
     "commit": "e5fe8153ea9b1dba653556f6e4cfdc84092345e4",
     "sha256": "8e53ebc1dd52572598dd9cad3383b91c6471929d0a477cc63159b2edbcd40792",
     "change": "same bytes: Gymbo-v1 PR 1457 was closed and its file moved to PR 1455's branch; the blob sha256 is unchanged (checked on GitHub at both commits)"
+  },
+  "driftOrder": {
+    "exists": false,
+    "owner": "pm",
+    "tracked": "gy-uu7mt",
+    "createWhen": "the rulings file is on Gymbo-v1 main"
   }
 }
