@@ -187,7 +187,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 
-**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import and a chat assistant. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
+**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
 
 ### Akton: for gyms and multi-branch studios
 

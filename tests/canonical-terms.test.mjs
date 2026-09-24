@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { scanHtmlTerms, scanText, BANNED } from "../scripts/check-canonical-terms.mjs";
+import { scanHtmlTerms, scanText, BANNED, META_ONLY_BANNED } from "../scripts/check-canonical-terms.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-terms.mjs", import.meta.url).pathname;
 const scratch = mkdtempSync(join(tmpdir(), "gymbo-canonical-terms-"));
@@ -82,4 +82,47 @@ test("a missing text endpoint is COULD-NOT-EVALUATE (exit 2), never a pass", () 
   const result = run(fixture(page("<p>Clean.</p>"), { llms: null }));
   assert.equal(result.status, 2, result.stdout);
   assert.match(result.stderr, /COULD NOT EVALUATE/);
+});
+
+test("POSITIVE CONTROL: the homepage meta shape that shipped ('AI-powered ... Log sessions') fails on every field", () => {
+  const head = [
+    '<meta name="description" content="AI-powered business app for trainers. Log sessions, track payments.">',
+    '<meta property="og:description" content="AI-powered business app for trainers. Log sessions, track payments.">',
+    '<meta name="twitter:description" content="AI-powered business app for independent personal trainers.">',
+    '<script type="application/ld+json">{"description":"AI-powered business app. Log sessions, track payments."}</script>',
+  ].join("");
+  const found = scanHtmlTerms(page("<p>Clean.</p>", head), "/").map(({ surface, term }) => `${surface}|${term}`).sort();
+  assert.deepEqual(found, [
+    "JSON-LD $.description|AI-powered",
+    "JSON-LD $.description|log sessions",
+    "metadata description|AI-powered",
+    "metadata description|log sessions",
+    "metadata og:description|AI-powered",
+    "metadata og:description|log sessions",
+    "metadata twitter:description|AI-powered",
+  ].sort());
+});
+
+test("NEGATIVE CONTROL: 'log sessions' in a guide page's JSON-LD (general editorial advice) still passes", () => {
+  const head = '<script type="application/ld+json">{"name":"Log sessions as they happen"}</script>';
+  assert.equal(scanHtmlTerms(page("<p>Clean.</p>", head), "/guide/get-organized-personal-trainer/").length, 0);
+  assert.equal(scanHtmlTerms(page("<p>Clean.</p>", head), "/").length, 1);
+});
+
+test("NEGATIVE CONTROL: 'log sessions' is banned in metadata only, so general editorial body copy still passes", () => {
+  assert.ok(META_ONLY_BANNED.includes("log sessions"));
+  assert.equal(scanText("Log sessions as they happen, one tap at the end of each session.", "/guide/x/", "visible text").length, 0);
+  assert.equal(scanText("Log sessions as they happen.", "/", "metadata description").length, 1);
+});
+
+test("the ruled homepage meta is clean", () => {
+  const head = '<meta name="description" content="Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients. From ₹399/mo, 7-day free trial for eligible subscribers.">';
+  assert.equal(scanHtmlTerms(page("<p>Clean.</p>", head), "/").length, 0);
+});
+
+test("POSITIVE CONTROL: the blog sentence that shipped ('a builder plus voice/paste import and a chat assistant') fails; the ruled one passes", () => {
+  const shipped = "For a solo trainer it gives you a builder plus voice/paste import and a chat assistant.";
+  assert.deepEqual(scanText(shipped, "/blog/x/", "visible text").map((f) => f.term), ["chat assistant"]);
+  const ruled = "it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments.";
+  assert.equal(scanText(ruled, "/blog/x/", "visible text").length, 0);
 });
