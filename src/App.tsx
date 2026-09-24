@@ -23,6 +23,8 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
 import {
   TRIAL_DAYS,
+  TRIAL_PRIMARY,
+  TRIAL_ELIGIBILITY_DETAIL,
   BILLING_CHANNEL,
   PLATFORM,
   PLATFORM_ONLY_CLAUSE,
@@ -148,7 +150,7 @@ const PRICING = [
 
 /* ── FAQ ── */
 export const FAQ = [
-  { q: "Is it free?", a: `Your first ${TRIAL_DAYS} days are free on every plan. After that, Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}.` },
+  { q: "Is it free?", a: `${TRIAL_PRIMARY} Then Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}. ${TRIAL_ELIGIBILITY_DETAIL}` },
   { q: "What happens when my trial ends, and can I cancel or get my data out?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
   { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
@@ -579,7 +581,7 @@ export default function App() {
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS} days free · billed via {BILLING_CHANNEL}.</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS}-day free trial for eligible subscribers · billed via {BILLING_CHANNEL}.</p>
             </Reveal>
           </div>
         </section>
