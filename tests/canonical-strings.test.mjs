@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findHandTypedPrices, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -147,6 +147,25 @@ test("REAL FILES: the vendored facts equal the site's REAL constants, and every 
     assert.notEqual(mutated, ts, `${name} mutation applied`);
     assert.deepEqual(checkFacts(c.doc, fm, mutated).map((f) => f.kind), ["fact-mismatch"], `${name} drift must fail`);
   }
+});
+
+test("SCOPE DISCLOSURE: hand-typed rupee amounts outside the constants file are FOUND and named, so the green cannot be read as 'every price is pinned'", () => {
+  const root = mkdtempSync(join(scratch, "src-")); mkdirSync(join(root, "src/lib"), { recursive: true }); mkdirSync(join(root, "src/pages"), { recursive: true });
+  writeFileSync(join(root, "src/lib/trialAccess.ts"), "export const PRICE_MONTHLY_INR = 399; // \u20b9399 here is the constants file, excluded\n");
+  writeFileSync(join(root, "src/pages/Clean.tsx"), "const p = `\u20b9${PRICE_MONTHLY_INR}/month`; // template, no literal\n");
+  assert.deepEqual(findHandTypedPrices(root), [], "constants file and template-only usage are not reported");
+  writeFileSync(join(root, "src/pages/Terms.tsx"), "<p>Monthly at \u20b9399/month and annual at \u20b92,999 per year</p>");
+  writeFileSync(join(root, "index.html"), "<meta content=\"from \u20b9250/month\">");
+  assert.deepEqual(findHandTypedPrices(root), [{ file: "index.html", count: 1 }, { file: "src/pages/Terms.tsx", count: 2 }]);
+  assert.ok(findHandTypedPrices(new URL("..", import.meta.url).pathname).some((f) => f.file === "src/pages/Terms.tsx"), "the REAL tree's Terms.tsx literals are found");
+});
+
+test("CLI end to end: the green output NAMES the files it does not read", () => {
+  const dist = fixtureDist(loadCanonical(REAL));
+  const r = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr + r.stdout);
+  assert.match(r.stdout, /NOT READ by the price check: \d+ file\(s\).*src\/pages\/Terms\.tsx x\d/);
+  assert.match(r.stdout, /that file ONLY/);
 });
 
 // A fixture dist built from the REAL vendored strings and the REAL map, so this test needs no

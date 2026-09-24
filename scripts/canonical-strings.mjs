@@ -9,7 +9,7 @@
 // and 'punch' are pinned as TERMS only. Free-form sentences that use them are pinned only
 // by the copy-change-detector as `observed`. So green here is NOT "no retired wording anywhere".
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { norm } from "./copy-blocks.mjs";
 
@@ -63,6 +63,24 @@ export function checkFacts(doc, factsMap, tsSource) {
     if (got[name] !== facts[k]) findings.push({ kind: "fact-mismatch", id: k, detail: `${name} = ${got[name]} in ${factsMap.file}, content ruled ${facts[k]}` });
   }
   return findings;
+}
+
+// Files that type a rupee price BY HAND. checkFacts reads only the constants file, so these are the
+// surfaces it does NOT read; the gate prints them on every green so "price pin OK" is never read as
+// "every price on the site is pinned" (pm, gy-uu7mt 17:0xZ). Informational, never a failure.
+export function findHandTypedPrices(root = ".", exclude = ["src/lib/trialAccess.ts"]) {
+  const out = [];
+  const walk = (d) => {
+    for (const e of readdirSync(join(root, d))) {
+      const rel = d ? `${d}/${e}` : e; const st = statSync(join(root, rel));
+      if (st.isDirectory()) { if (e !== "node_modules") walk(rel); continue; }
+      if (exclude.includes(rel) || !/\.(tsx?|html)$/.test(e)) continue;
+      const n = (readFileSync(join(root, rel), "utf8").match(/\u20b9\s?\d/g) || []).length;
+      if (n) out.push({ file: rel, count: n });
+    }
+  };
+  walk("src"); if (existsSync(join(root, "index.html")) && !exclude.includes("index.html")) { const n = (readFileSync(join(root, "index.html"), "utf8").match(/\u20b9\s?\d/g) || []).length; if (n) out.push({ file: "index.html", count: n }); }
+  return out.sort((a, b) => a.file.localeCompare(b.file));
 }
 
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));

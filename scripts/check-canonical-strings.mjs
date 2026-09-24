@@ -4,7 +4,7 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, CANON_DIR } from "./canonical-strings.mjs";
+import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findHandTypedPrices, CANON_DIR } from "./canonical-strings.mjs";
 import { scanDist } from "./copy-change-detector.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -17,10 +17,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const factsMap = loadFactsMap(opt("--canon", CANON_DIR));
     findings.push(...checkFacts(canon.doc, factsMap, readFileSync(opt("--constants", factsMap.file), "utf8")));
     for (const n of notes) console.log(`  ${n}`);
+    const typed = findHandTypedPrices(opt("--src-root", "."), [factsMap.file]);
     if (findings.length) {
       console.error(`FAIL: ${findings.length} canonical-string finding(s):`);
       for (const f of findings) console.error(`  ${f.kind}${f.id ? ` ${f.id}` : ""}${f.route ? ` ${f.route} [${f.surface}]` : ""}${f.text ? `: ${f.text.slice(0, 120)}` : ""}${f.detail ? ` (${f.detail})` : ""}`);
       process.exitCode = 1;
-    } else console.log(`OK: content's canonical strings (${canon.source.commit.slice(0, 8)}, sha256 ${canon.sha.slice(0, 12)}) are byte-identical to the record and present on every mapped surface, and the ${Object.keys(factsMap.map).length} ruled facts equal the constants in ${factsMap.file}; ${notes.length} waived divergence(s) listed above. Checks the LISTED surfaces for PRESENCE in the document only (not visibility to a reader: gy-vawlh).`);
+    } else {
+      console.log(`  NOT READ by the price check: ${typed.length} file(s) that type a rupee amount by hand (Gymbo's or a competitor's) (${typed.map((f) => `${f.file} x${f.count}`).join(", ") || "none"}). The facts check reads ONLY ${factsMap.file}; a Gymbo price typed in those files can drift from content's ruled numbers with this gate green.`);
+      console.log(`OK: content's canonical strings (${canon.source.commit.slice(0, 8)}, sha256 ${canon.sha.slice(0, 12)}) are byte-identical to the record and present on every mapped surface, and the ${Object.keys(factsMap.map).length} ruled facts equal the constants in ${factsMap.file} (that file ONLY, see NOT READ above); ${notes.length} waived divergence(s) listed above. Checks the LISTED surfaces for PRESENCE in the document only (not visibility to a reader: gy-vawlh).`);
+    }
   } catch (error) { console.error(`COULD NOT EVALUATE canonical strings: ${error.message}`); process.exitCode = 2; }
 }
