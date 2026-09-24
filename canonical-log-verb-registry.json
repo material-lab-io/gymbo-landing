@@ -17,7 +17,7 @@
    ],
    "sentence": "Programming-led; logs workouts, not payments",
    "reason": "competitor-description",
-   "ruling": "content 2026-09-24 21:41Z gy-uu7mt registry-design ruling: competitor-description class ratified; entry LISTED to content for confirmation"
+   "ruling": "content 2026-09-24 21:51Z gy-uu7mt registry confirmation 1: CONFIRMED competitor-description (accurate competitor language preserved, addendum 2)"
   },
   {
    "route": "/guide/",
@@ -298,7 +298,7 @@
    ],
    "sentence": "Standard logs (such as IP address and device or browser type) used to keep the service secure and working.",
    "reason": "unrelated-log",
-   "ruling": "content 2026-09-24 21:41Z gy-uu7mt registry-design ruling: unrelated-log class ratified; entry LISTED to content for confirmation"
+   "ruling": "content 2026-09-24 21:51Z gy-uu7mt registry confirmation 2: CONFIRMED unrelated-log (server logs in a privacy notice, no edit)"
   },
   {
    "route": "/terms/",

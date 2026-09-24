@@ -29,6 +29,8 @@ export const KINDS = ["visible", "metadata", "json-ld", "attribute", "served-tex
 // "log in / log out / login / logo / catalog" are not the attendance verb.
 const LOG_VERB = /(?<![A-Za-z])(?:log|logs|logged|logging|logger)(?![A-Za-z])(?!-?\s*(?:in|out|on|off)\b)/i;
 
+export const ADVICE_FORBIDDEN = /\bGymbo\b|\bone[- ]tap\b/i;
+
 export const kindOf = (surface) => {
   if (surface === "visible block") return "visible";
   if (surface === "served line") return "served-text";
@@ -71,6 +73,10 @@ export function validateRegistry(registry) {
     if (typeof e.sentence !== "string" || !LOG_VERB.test(e.sentence)) return bad("sentence must be the exact normalised sentence and contain a log verb");
     if (!Array.isArray(e.kinds) || !e.kinds.length || e.kinds.some((k) => !KINDS.includes(k))) return bad(`kinds must be a non-empty subset of ${KINDS.join("|")}`);
     if (!REASONS.includes(e.reason)) return bad(`reason must be one of ${REASONS.join("|")}`);
+    // content's condition (2026-09-24 21:51Z): the ADVICE carve-out is only for sentences that
+    // describe how a trainer works. One that names Gymbo or says "one tap" is describing the
+    // product, so it can never be registered as advice, whatever the sentence says.
+    if (e.reason === "advice-to-reader" && ADVICE_FORBIDDEN.test(e.sentence)) return bad("an advice-to-reader sentence must not name Gymbo or say 'one tap'; it describes the product, so it is not advice");
     if (typeof e.ruling !== "string" || e.ruling.trim().length < 12) return bad("ruling must cite the content ruling that allows this sentence; an entry without one is refused");
     for (const kind of e.kinds) {
       const key = keyOf(e.route, kind, e.sentence);

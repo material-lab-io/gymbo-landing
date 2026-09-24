@@ -195,3 +195,17 @@ test("DEFAULT registry is the checked-in file: with no --registry the gate reads
   assert.equal(r.status, 1);
   assert.match(r.stderr, new RegExp(`log-verb registry: ${n} entries`));
 });
+
+test("CLASS is re-tested, not just the sentence: an advice-to-reader entry that names Gymbo or says one tap is REFUSED", () => {
+  for (const sentence of ["Gymbo lets you log the session as it ends.", "Log the session in one tap.", "Log the session in ONE-TAP.", "Log it with Gymbo."]) {
+    const root = site({ home: page({ body: `<p>${sentence}</p>` }) });
+    const r = run(root, registry([entry({ sentence })]));
+    assert.equal(r.status, 1, sentence);
+    assert.match(r.stderr, /invalid-entry/);
+    assert.match(r.stderr, /unjustified-log-verb/, "the refused entry must not still justify it");
+  }
+  // The same sentence under a reason that legitimately describes Gymbo is not refused by this rule.
+  const quote = "With Gymbo, I open the app, log the session, and move on.";
+  const ok = run(site({ home: page({ body: `<p>${quote}</p>` }) }), registry([entry({ sentence: quote, reason: "attributed-quote" })]));
+  assert.equal(ok.status, 0, ok.stderr || ok.stdout);
+});
