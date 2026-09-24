@@ -1,6 +1,6 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 2,
+  "version": 3,
   "guideVersion": "v15",
   "updated": "2026-09-24",
   "terms": {
@@ -157,5 +157,18 @@
       "text": "Contact support",
       "source": "gy-0ejch"
     }
-  ]
+  ],
+  "facts": {
+    "_comment": "Ruled numbers (spec 1c/1d, guide sec 4). Consumers assert their own constants EQUAL these; they do not pin price sentences, which are worded per surface. Numbers are integers (INR) or a whole percent.",
+    "trialDays": 7,
+    "monthlyINR": 399,
+    "annualINR": 2999,
+    "annualMonthlyEquivalentINR": 250,
+    "annualSavingsPercent": 37
+  },
+  "changelog": {
+    "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
+    "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",
+    "v1": "2026-09-24: initial 19 strings."
+  }
 }

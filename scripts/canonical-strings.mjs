@@ -27,6 +27,44 @@ export function loadCanonical(dir = CANON_DIR) {
   return { doc, source, map, sha: sha256(raw) };
 }
 
+// v3 `facts`: content rules the NUMBERS; the site's constants (src/lib/trialAccess.ts) must EQUAL them.
+// Price sentences are worded per surface and are deliberately not string-pinned, so this is the
+// only thing that ties the constants to what content ruled. It covers the CONSTANTS FILE only:
+// a price typed by hand in Terms.tsx or index.html is not read here (copy-facts.spec.ts and the
+// copy-change-detector are what watch those).
+export function loadFactsMap(dir = CANON_DIR) {
+  const f = join(dir, "facts-map.json");
+  if (!existsSync(f)) throw new Error(`${f} is missing; the facts-to-constants map is part of the gate`);
+  return JSON.parse(readFileSync(f, "utf8"));
+}
+
+export function readConstants(src, names) {
+  const out = {};
+  for (const n of names) {
+    const m = src.match(new RegExp(`^export const ${n}\\s*=\\s*(-?\\d+)\\s*;`, "m"));
+    if (m) out[n] = Number(m[1]);
+  }
+  return out;
+}
+
+export function checkFacts(doc, factsMap, tsSource) {
+  const findings = [];
+  const facts = doc.facts;
+  if (!facts || typeof facts !== "object") return [{ kind: "facts-missing", detail: "the vendored canonical file has no `facts` block; refusing a vacuous pass" }];
+  const keys = Object.keys(facts).filter((k) => !k.startsWith("_"));
+  if (!keys.length) return [{ kind: "facts-missing", detail: "the `facts` block is empty; refusing a vacuous pass" }];
+  for (const k of keys) if (!factsMap.map[k]) findings.push({ kind: "unmapped-fact", id: k, detail: "content added a fact that facts-map.json does not tie to a constant; map it" });
+  for (const k of Object.keys(factsMap.map)) if (!keys.includes(k)) findings.push({ kind: "unknown-fact-mapping", id: k, detail: "facts-map.json names a fact that is not in the vendored file" });
+  const names = Object.values(factsMap.map);
+  const got = readConstants(tsSource, names);
+  for (const [k, name] of Object.entries(factsMap.map)) {
+    if (!keys.includes(k)) continue;
+    if (!(name in got)) { findings.push({ kind: "cannot-read-constant", id: k, detail: `${name} is not a plain \`export const ${name} = <integer>;\` in ${factsMap.file}; fail closed rather than skip` }); continue; }
+    if (got[name] !== facts[k]) findings.push({ kind: "fact-mismatch", id: k, detail: `${name} = ${got[name]} in ${factsMap.file}, content ruled ${facts[k]}` });
+  }
+  return findings;
+}
+
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
 
 // Ruled entries for the copy baseline: every NON-waived target of every mapped web string.
