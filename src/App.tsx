@@ -133,6 +133,24 @@ const demoPoster = (id: string): ClipMap => ({
    photoreal frame. Pillar visuals use the approved animated demo scenes. Source
    files: public/screens/real/* → optimized via scripts/optimize-gallery.mjs
    (gy-9bmwm.4, gy-dyu6r.6). ── */
+/* ── gy-3mpvo (a): the four content HUBS, and only the hubs.
+   NAMES ARE NOT MINE TO CHANGE. designer ruled one new noun for this work —
+   "Resources" — and the four hubs keep the names they already carry in the
+   footer and in the nav of the content pages. gy-7vbmn is open precisely
+   because one action already wears three names on this site; renaming a hub
+   here to read better in a card would make that bead worse.
+   🔴 HUBS ONLY, NO LEAVES. /guide/ alone has 10 inbound internal links and the
+   estate is densely interlinked, so four links restore the whole of it. Listing
+   leaves would rebuild the flat link run that caused this bead.
+   The blurbs are mine and are descriptive, not promotional — content owns copy
+   on this site and should replace them if they want a voice pass. ── */
+const RESOURCE_HUBS: { label: string; href: string; blurb: string }[] = [
+  { label: "Guides", href: "/guide/", blurb: "How to price, schedule, get clients and take payments as an independent trainer in India." },
+  { label: "Blog", href: "/blog/", blurb: "What we are learning about how independent trainers actually run their businesses." },
+  { label: "Research", href: "/research/state-of-indias-independent-trainers-2026/", blurb: "State of India's Independent Trainers 2026 — our own dataset, free to read and cite." },
+  { label: "Gymbo vs WellnessZ", href: "/compare/gymbo-vs-wellnessz/", blurb: "An honest side-by-side, including what WellnessZ does better." },
+];
+
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
   { slug: "schedule", caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
@@ -270,6 +288,11 @@ export default function App() {
             { label: "Why Gymbo", id: "why" },
             { label: "Pricing", id: "pricing" },
             { label: "FAQ", id: "faq" },
+            // gy-3mpvo (b) — a SAME-PAGE ANCHOR, deliberately, not a link to /guide/.
+            // Every other nav item is an in-page anchor, so a cross-page item would be
+            // the first control that leaves the page. Anchoring to the Resources section
+            // keeps that invariant and still gives the content estate a nav-level entry.
+            { label: "Resources", id: "resources" },
           ].map((l) => (
             <button key={l.id} onClick={() => scrollToId(l.id)} className="text-[14px] transition-colors" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 500 }}>
               {l.label}
@@ -476,7 +499,7 @@ export default function App() {
 
             <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel mt-6 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery" aria-describedby="gallery-position">
               {SCREENS.map((s, index) => (
-                <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
+                <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center gy-focus-ring-dark">
                   <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
                   <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
@@ -618,6 +641,54 @@ export default function App() {
           </div>
         </section>
 
+        {/* ───────── resources (gy-3mpvo) ─────────
+            WHY THIS SECTION EXISTS, because "we already linked them" was true and still
+            wrong: the four content hubs WERE reachable from the footer since 2026-09-07
+            09:51Z, and at ~16:50Z THE SAME DAY Damini browsed the live site and reported
+            "there's no ingress for these guides from the landing page". The links were
+            there and did not register.
+            designer's diagnosis (ruling 05:54Z) is that this was a CATEGORISATION failure,
+            not a depth one: the footer run is flat and unlabelled, so content sat INSIDE
+            the legal treatment, and Privacy/Terms/Contact is the universal signal for
+            boilerplate. She skipped a run that announced itself as obligations.
+            🔴 SO THE FIX IS NOT "MAKE IT LOUDER". Position here is the highest-intent slot
+            (post-FAQ, pre-CTA) and it classifies the estate as CONTENT rather than moving
+            the same mis-filed link up the page.
+            HUBS ONLY — four links, never leaves. The footer is already a link farm and a
+            second one here would reproduce the defect in a new location. */}
+        <section id="resources" aria-label="Resources" style={{ background: F.beigeCard }}>
+          <div className="max-w-[800px] mx-auto px-5 md:px-12 py-16 md:py-24">
+            <Reveal className="text-center mb-10">
+              <Eyebrow>Resources</Eyebrow>
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
+                Written for independent trainers.
+              </h2>
+            </Reveal>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {RESOURCE_HUBS.map((r) => (
+                <Reveal key={r.href}>
+                  {/* gy-focus-ring-light is NOT decoration here. gy-mtlt0 landed in this
+                      same file because two controls declared a ring without a colour
+                      source and painted at 1.04:1. A new focusable control ships with a
+                      token-backed ring or it repeats that defect on day one. */}
+                  <a
+                    href={r.href}
+                    className="group flex h-full flex-col gap-1.5 rounded-xl p-5 transition-transform duration-150 hover:-translate-y-px gy-focus-ring-light"
+                    style={{ background: F.beige, border: "1px solid var(--c-line)" }}
+                  >
+                    <span className="text-[15px] md:text-[16px] font-bold" style={{ color: F.ink, fontFamily: SANS }}>
+                      {r.label} <span aria-hidden="true">→</span>
+                    </span>
+                    <span className="text-[13px] md:text-[14px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.5 }}>
+                      {r.blurb}
+                    </span>
+                  </a>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ───────── final cta ───────── */}
         <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
@@ -647,28 +718,58 @@ export default function App() {
             <span className="text-[13px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
               <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
             </span>
-            <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-              {/* App Review 1.5: "Support" leads to the support CONTACT below, not to the
-                  waitlist form. getgymbo.com is the app's Support URL. */}
-              <a href="#support" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</a>
-              <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
-              {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
-                  18-page content estate that had ZERO inbound links from the reachable
-                  site: sitemap.xml carries 22 URLs and the rendered homepage linked only
-                  /compare, /privacy and /terms, so 18 pages were crawlable from the
-                  sitemap alone and unreachable by a human. The estate is densely
-                  interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is one
-                  disconnected component rather than 18 loose orphans — which is why three
-                  hub links restore all 22. Measured: /blog/ alone also reconnects all 22,
-                  but leaves the guides 3-5 clicks deep behind our thinnest page (92 words);
-                  these three cap the deepest page at 3 and put 18 of 22 within 2. */}
-              <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
-              <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
-              <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
-              <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
-              <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
-              <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
-            </nav>
+            {/* gy-3mpvo (c) — GROUPED AND LABELLED, and this is the ROOT-CAUSE fix.
+                Until now this was ONE flat unlabelled run: Support, Gymbo vs WellnessZ,
+                Guides, Blog, Research, Privacy, Terms, Contact — all 13px grey together.
+                Content therefore sat INSIDE the legal treatment, and Privacy/Terms/Contact
+                is the universal signal for boilerplate, so a reader scanning for content
+                correctly skips the whole run. That is what happened: these links went live
+                2026-09-07 09:51Z and Damini reported "no ingress" from the live site at
+                ~16:50Z the SAME DAY. The links were present and read as obligations.
+                🔴 KEEP THE GROUPS LABELLED. An unlabelled regroup looks tidier and does
+                nothing — the defect is that content and legal were indistinguishable, so
+                the labels ARE the fix. Headings are <h2> for a real accessible structure,
+                visually small but not sr-only: a sighted scanner needs them most.
+                "Resources" matches the nav item and the in-page section heading exactly
+                (designer: one new noun, and the four hubs keep their existing names). */}
+            <div className="flex flex-wrap gap-x-10 gap-y-6">
+              <nav aria-label="Resources" className="flex flex-col gap-2">
+                <h2 className="text-[11px] font-bold uppercase" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em" }}>Resources</h2>
+                {/* gy-2393h — internal ingress. These are the ENTRY POINTS to an 18-page
+                    content estate that had ZERO inbound links from the reachable site:
+                    sitemap.xml carries 22 URLs and the rendered homepage linked only
+                    /compare, /privacy and /terms, so 18 pages were crawlable from the
+                    sitemap alone and unreachable by a human. The estate is densely
+                    interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is
+                    one disconnected component rather than 18 loose orphans — which is why
+                    these hub links restore all 22. Measured: /blog/ alone also reconnects
+                    all 22, but leaves the guides 3-5 clicks deep behind our thinnest page
+                    (92 words); these cap the deepest page at 3 and put 18 of 22 within 2.
+                    gy-3mpvo re-verified the whole set: 22 of 22 reachable, max 3 clicks. */}
+                <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
+                <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
+                <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
+                <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
+              </nav>
+              {/* "Help", not "Company" (designer, 05:38Z). Company promises an about-us
+                  category we do not have — About, Careers, Press — while this column holds
+                  Support and Contact, which are both help-seeking routes; a user wanting
+                  help does not scan for "Company". And not "Support" either, by the same
+                  test that rejected "Guides" as the content group's name: a group must not
+                  be named after one of its own members. */}
+              <nav aria-label="Help" className="flex flex-col gap-2">
+                <h2 className="text-[11px] font-bold uppercase" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em" }}>Help</h2>
+                {/* App Review 1.5: "Support" leads to the support CONTACT below, not to the
+                    waitlist form. getgymbo.com is the app's Support URL. */}
+                <a href="#support" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</a>
+                <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
+              </nav>
+              <nav aria-label="Legal" className="flex flex-col gap-2">
+                <h2 className="text-[11px] font-bold uppercase" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.08em" }}>Legal</h2>
+                <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
+                <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
+              </nav>
+            </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
             {/* App Review guideline 1.5 (pm, 2026-09-18): the Support URL (getgymbo.com)
@@ -734,16 +835,26 @@ function BrandMarquee() {
             ))}
           </div>
         ) : (
+          // gy-mtlt0 AC-1b: the ring CANNOT live on .marquee-mask. Its mask box is the
+          // border box, and an outline at outline-offset sits OUTSIDE that box where the
+          // mask has no coverage, so alpha is 0 along all four sides. Measured on prod:
+          // ring computed correctly as 2px solid rgb(240,240,235) and painted ZERO pixels;
+          // the same ring with mask-image:none painted 390px per row across x 0..778. So
+          // the focus target and the ring move to this unmasked wrapper, which hugs the
+          // strip -- NOT to the existing padded parent, which is 232px tall around a 44px
+          // strip and would be a focus indicator that fails to indicate.
           <div
             role="region"
             aria-label="Brand touchpoints"
             tabIndex={0}
-            className="marquee-mask relative overflow-hidden"
+            className="gy-marquee gy-focus-ring-dark"
           >
-            <div className="marquee-track flex gap-2 w-max">
-              {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
-                <MarqueeChip key={`${c.name}-${i}`} t={c} />
-              ))}
+            <div className="marquee-mask relative overflow-hidden">
+              <div className="marquee-track flex gap-2 w-max">
+                {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
+                  <MarqueeChip key={`${c.name}-${i}`} t={c} />
+                ))}
+              </div>
             </div>
           </div>
         )}

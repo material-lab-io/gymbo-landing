@@ -251,7 +251,12 @@ const FORGE_CSS = `
         @keyframes g-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
         .marquee-mask{-webkit-mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent)}
         .marquee-track{animation:g-marquee 38s linear infinite}
-        .marquee-mask:hover .marquee-track,.marquee-mask:focus-within .marquee-track{animation-play-state:paused}
+        /* gy-mtlt0 AC-1c: the focus-within arm MUST track the focus target. The focusable
+           element is now .gy-marquee (the unmasked ring wrapper), so .marquee-mask:focus-within
+           would no longer match and the KEYBOARD pause would silently die -- a WCAG 2.2.2
+           regression that no focus-ring test would catch. :hover stays on .marquee-mask
+           because pointer users hover the visible strip, not the wrapper. */
+        .marquee-mask:hover .marquee-track,.gy-marquee:focus-within .marquee-track{animation-play-state:paused}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}

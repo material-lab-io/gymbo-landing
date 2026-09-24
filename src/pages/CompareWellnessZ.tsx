@@ -337,6 +337,43 @@ export function CompareWellnessZ() {
           </div>
         </section>
 
+        {/* ───────── other comparisons (gy-3mpvo) ─────────
+            🔴 THIS FIXES A SINGLE POINT OF FAILURE, not a browsing nicety. Measured
+            2026-09-20: /alternatives/akton/, /trainerize/ and /truecoach/ were reachable
+            from EXACTLY ONE parent — the best-apps blog post. Five other plausible parents
+            (/guide/, /blog/, the other blog leaf, a guide leaf, and this page) linked them
+            ZERO times. One edit to one post orphaned three pages, and nothing would have
+            reported it.
+            designer ruled (05:54Z) that the second route belongs HERE rather than in the
+            homepage Resources section: comparison-intent belongs under /compare/, and the
+            landing section links hubs only or it becomes the link farm that caused
+            gy-3mpvo in the first place. */}
+        <section aria-label="Other comparisons" style={{ background: F.charcoal }}>
+          <div className="max-w-[800px] mx-auto px-5 md:px-12 py-14 md:py-20">
+            <Reveal>
+              <h2 className="text-[clamp(22px,3vw,32px)] font-black mb-5" style={{ fontFamily: SERIF, color: F.bone, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                Comparing something else?
+              </h2>
+              <div className="flex flex-col gap-3">
+                {[
+                  { href: "/alternatives/trainerize/", label: "Gymbo vs Trainerize" },
+                  { href: "/alternatives/truecoach/", label: "Gymbo vs TrueCoach" },
+                  { href: "/alternatives/akton/", label: "Gymbo vs Akton" },
+                ].map((alt) => (
+                  <a
+                    key={alt.href}
+                    href={alt.href}
+                    className="text-[15px] md:text-[16px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80 gy-focus-ring-dark"
+                    style={{ color: F.marigold, fontFamily: SANS }}
+                  >
+                    {alt.label} <span aria-hidden="true">→</span>
+                  </a>
+                ))}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
         {/* ───────── faq ───────── */}
         <section id="faq" aria-label="Frequently asked questions" style={{ background: F.beige }}>
           <div className="max-w-[800px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
