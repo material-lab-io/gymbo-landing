@@ -6,8 +6,8 @@
 // A "surface" is a place copy travels that a human reading the page does not necessarily
 // see: <title>, every <meta content>, every JSON-LD string (by path), accessibility text,
 // plus the visible text of a page and the served text endpoints. The inventory is a list
-// of `route|surface` keys. The pin gate (check-pinned-strings.mjs) uses it to prove that
-// every such surface is either pinned to a ruled string or knowingly not pinned.
+// of `route|surface` keys. The copy change-detector (check-canonical-strings.mjs and copy-change-detector.mjs) uses it to prove that
+// every such surface is either in the baseline (changes are visible in review) or knowingly not covered.
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";

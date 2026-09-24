@@ -23,8 +23,8 @@
     {
       "id": "privacy-ask-gymbo-processor",
       "route": "/privacy/",
-      "contains": "Ask Gymbo (AI chat): Anthropic (Claude)",
-      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z ('Ask Gymbo (AI chat)' is the ruled processor heading)"
+      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z ('Ask Gymbo (AI chat)' is the ruled processor heading)",
+      "equals": "Ask Gymbo (AI chat): Anthropic (Claude)"
     }
   ]
 }

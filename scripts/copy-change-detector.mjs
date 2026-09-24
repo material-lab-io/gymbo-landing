@@ -1,37 +1,41 @@
-// gy-uu7mt: a POSITIVE PIN over everything the built site ships as copy.
+// gy-uu7mt: a COPY CHANGE-DETECTOR over the built site. NOT a positive pin of every block, and
+// it must not be described as one (pm ruling 2026-09-24T15:4xZ, after tester's attack).
 //
-// The canonical-terms gate is a DENYLIST: it asks "is this one of the wrong things?" and
-// a paraphrase always walks around it (measured 2026-09-24: 1 of 10 unseen paraphrases
-// caught). This gate asks the other question: "is this exactly the copy we approved?"
-// A paraphrase cannot pass it, because a paraphrase simply is not the pinned string.
+// WHAT IT DOES. copy-baseline.json is a reviewed snapshot of the blocks of copy in dist/ (html
+// and text files), per route, sorted, one entry per line so a change is a reviewable diff. The
+// check fails on: a block that ships but is not in the baseline (unapproved-copy), a baselined
+// block that no longer ships (removed-copy), an html/text file in no baseline
+// (unbaselined-surface), a file type it does not classify (fail closed), and a RULED string
+// (copy-ruled-strings.json + content's vendored file) that is missing from the document.
+// Enumeration is from the FILESYSTEM, not sitemap.xml. It made a paraphrase of any baselined
+// block visible: 10 of 10 unseen paraphrases (a denylist caught 1 of 10).
 //
-// copy-lock.json is a snapshot of every block of copy in dist/, per route, sorted, one
-// entry per line so a change is reviewable as a diff. The check fails on:
-//   - a block that ships but is not in the lock        (unapproved copy)
-//   - a block in the lock that no longer ships         (removed copy)
-//   - an html/text file that ships but is not in the lock (UNPINNED SURFACE: coverage)
-//   - a file whose type this script does not classify  (fail closed, not skipped)
-//   - a RULED string (copy-lock-ruled.json) that is missing from the site
-// Coverage is enumerated from the FILESYSTEM of the artifact, not from sitemap.xml, so a
-// page that ships but is not in the sitemap is still a surface (the existing gates find
-// pages through the sitemap only).
+// WHAT IT DOES NOT DO, so nobody reads green as more than it is:
+//   1. PRESENCE, NOT VISIBILITY. A ruled string hidden with display:none still passes: the check
+//      reads the document, not the page a person sees (gy-vawlh, P1).
+//   2. STRUCTURE-BLIND. Blocks are a SET per route and surface: swapping two FAQ answers in the
+//      JSON-LD, or moving or repeating a baselined block, passes.
+//   3. NOT READ: <script type=json>-style data, strings that exist only in .js/.css bundles,
+//      text inside images, function-rendered pages, outbound e-mail (gy-ylbzu).
+//   4. Live parity masks e-mail addresses (Cloudflare rewrites them), so it cannot see an
+//      address change on the deployed site. The LOCAL check does not mask them.
+//   5. `--write` regenerates the baseline from dist and can rubber-stamp a bad change exactly as a
+//      visual-baseline refresh can. The defence is the printed diff and the diff in the PR.
+//   6. Gate self-test: tester's adversarial mutants of this gate were caught 7 of 10 (mine, 10 of
+//      10, were mutants I chose). Two survivors are fixed here; treat 7/10 as the honest headline.
 //
-// Every entry carries provenance: `ruled` (matches a string content ruled) or `observed`
-// (a snapshot of what shipped, pinned so it cannot change unreviewed, but NOT vouched
-// for). `observed` is honest debt: it is reported, never hidden.
-//
-// LIMIT, stated so it is not rediscovered: `--write` regenerates the lock from dist, and a
-// regenerate can rubber-stamp a bad change exactly as a visual-baseline refresh can. The
-// defence is that the lock diff is printed, is in the PR, and `ruled` strings cannot be
-// changed by regenerating (they are checked against copy-lock-ruled.json separately).
+// PROVENANCE. `ruled:<id>` is stamped ONLY on a block that is BYTE-EQUAL to a ruled string. A
+// block that merely CONTAINS one is `observed+mentions:<id>`: stamping ruled: on a contains-match
+// would launder an unreviewed sentence appended to a reviewed one through a reviewed label.
+// `observed` is a snapshot of what shipped, not a judgement that it is right.
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { extname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyBlocks, servedTextBlocks, norm } from "./copy-blocks.mjs";
 import { loadCanonical, canonicalRuled, CANON_DIR } from "./canonical-strings.mjs";
 
-export const LOCK_FILE = "copy-lock.json";
-export const RULED_FILE = "copy-lock-ruled.json";
+export const BASELINE_FILE = "copy-baseline.json";
+export const RULED_FILE = "copy-ruled-strings.json";
 
 // Every file type dist can hold is classified. An unknown extension FAILS the check, so a
 // new kind of shipped file cannot slip through as "not something we look at".
@@ -40,7 +44,7 @@ export const TEXT = new Set([".txt", ".md", ".json", ".xml", ".svg", ".webmanife
 export const TEXT_NAMES = new Set(["_headers", "_redirects"]);
 export const BINARY = new Set([".png", ".webp", ".jpg", ".jpeg", ".gif", ".avif", ".ico", ".mp4", ".webm", ".woff", ".woff2", ".ttf", ".otf"]);
 // Bundled code. Runtime-only strings (form errors, modal text) live here and are NOT
-// pinned; that is a named gap (gy-uu7mt), not an oversight.
+// covered; that is a named gap (gy-uu7mt), not an oversight.
 export const CODE = new Set([".js", ".mjs", ".css"]);
 
 export function walk(root, dir = root, out = []) {
@@ -92,18 +96,24 @@ export function toLock(surfaces, ruled = []) {
 }
 
 export function provenanceOf(route, surface, text, ruled) {
-  const ids = [];
+  const equal = [], mention = [];
   for (const r of ruled) {
     if (r.route && r.route !== route) continue;
     if (r.surface && r.surface !== surface) continue;
-    if (r.equals !== undefined ? norm(r.equals) === text : r.contains !== undefined && text.includes(norm(r.contains))) ids.push(r.id);
+    if (r.equals !== undefined) { if (norm(r.equals) === text) equal.push(r.id); }
+    else if (r.contains !== undefined && text.includes(norm(r.contains))) {
+      // A contains-match says the block MENTIONS a ruled string. It says nothing about the
+      // rest of the block, so it can never make the block `ruled`.
+      if (norm(r.contains) === text) equal.push(r.id); else mention.push(r.id);
+    }
   }
-  return ids.length ? `ruled:${ids.join("+")}` : "observed";
+  const tail = mention.length ? `+mentions:${mention.join("+")}` : "";
+  return equal.length ? `ruled:${equal.join("+")}${tail}` : `observed${tail}`;
 }
 
 export function serialiseLock(lock) {
   const lines = ['{', '  "version": 1,',
-    '  "note": "Positive pin over every block of copy the built site ships (gy-uu7mt). Regenerate with npm run copy-lock:write and REVIEW THE DIFF; provenance ruled:<id> = matches copy-lock-ruled.json, observed = pinned but not vouched for.",',
+    '  "note": "Reviewed snapshot of the copy blocks the built site ships (gy-uu7mt); a COPY CHANGE-DETECTOR, not a positive pin (see scripts/copy-change-detector.mjs for what it does not cover). Regenerate with npm run copy-baseline:write and REVIEW THE DIFF. Provenance: ruled:<id> = byte-equal to a ruled string; observed = snapshot, not vouched for; +mentions:<id> = the block contains a ruled string.",',
     '  "routes": {'];
   const routes = Object.keys(lock.routes);
   routes.forEach((route, i) => {
@@ -119,8 +129,8 @@ export function diffAgainstLock(surfaces, lock, { mask = (s) => s } = {}) {
   const findings = [];
   const shipped = new Set(surfaces.keys());
   const locked = new Set(Object.keys(lock.routes));
-  for (const route of [...shipped].sort()) if (!locked.has(route)) findings.push({ kind: "unpinned-surface", route, detail: `${surfaces.get(route).length} block(s) ship on a file/page that has no pin` });
-  for (const route of [...locked].sort()) if (!shipped.has(route)) findings.push({ kind: "removed-surface", route, detail: "pinned file/page no longer ships" });
+  for (const route of [...shipped].sort()) if (!locked.has(route)) findings.push({ kind: "unbaselined-surface", route, detail: `${surfaces.get(route).length} block(s) ship on a file/page that is in no baseline` });
+  for (const route of [...locked].sort()) if (!shipped.has(route)) findings.push({ kind: "removed-surface", route, detail: "baselined file/page no longer ships" });
   for (const route of [...shipped].filter((r) => locked.has(r)).sort()) {
     const have = new Map(surfaces.get(route).map(({ surface, text }) => [entryKey(surface, mask(text)), { surface, text }]));
     const pinned = new Map(lock.routes[route].map(([surface, text]) => [entryKey(surface, mask(text)), { surface, text }]));
@@ -161,10 +171,10 @@ function report(findings, limit = 40) {
   const lines = [];
   const by = {};
   for (const f of findings) by[f.kind] = (by[f.kind] || 0) + 1;
-  lines.push(`FAIL: ${findings.length} copy-lock finding(s): ${Object.entries(by).map(([k, v]) => `${k} x${v}`).join(", ")}`);
+  lines.push(`FAIL: ${findings.length} copy-change-detector finding(s): ${Object.entries(by).map(([k, v]) => `${k} x${v}`).join(", ")}`);
   for (const f of findings.slice(0, limit)) lines.push(`  ${f.kind} ${f.route}${f.surface ? ` [${f.surface}]` : ""}${f.text ? `: ${f.text.slice(0, 150)}` : ""}${f.detail ? ` (${f.detail})` : ""}`);
   if (findings.length > limit) lines.push(`  ... ${findings.length - limit} more`);
-  lines.push("A change to shipped copy is intended? Rebuild, run `npm run copy-lock:write`, and REVIEW the printed diff and the lock diff in the PR. It is not a way to turn this red green.");
+  lines.push("A change to shipped copy is intended? Rebuild, run `npm run copy-baseline:write`, and REVIEW the printed diff and the lock diff in the PR. It is not a way to turn this red green.");
   return lines.join("\n");
 }
 
@@ -172,9 +182,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   try {
     const args = process.argv.slice(2);
     const opt = (n, d) => { const i = args.indexOf(n); return i >= 0 ? args[i + 1] : d; };
-    const root = opt("--root", "dist"), lockPath = opt("--lock", LOCK_FILE), ruledPath = opt("--ruled", RULED_FILE);
+    const root = opt("--root", "dist"), lockPath = opt("--baseline", BASELINE_FILE), ruledPath = opt("--ruled", RULED_FILE);
     // Ruled strings come from TWO places: content's vendored canonical strings (derived, never
-    // retyped) and copy-lock-ruled.json (landing-cited rulings content has not yet added to
+    // retyped) and copy-ruled-strings.json (landing-cited rulings content has not yet added to
     // its file). `--canon none` is for fixtures.
     const canonDir = opt("--canon", CANON_DIR);
     const ruled = [...(canonDir === "none" ? [] : canonicalRuled(loadCanonical(canonDir))), ...loadRuled(ruledPath)];
@@ -183,28 +193,28 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const next = toLock(surfaces, ruled);
       const prev = existsSync(lockPath) ? JSON.parse(readFileSync(lockPath, "utf8")) : { routes: {} };
       const findings = diffAgainstLock(surfaces, prev);
-      console.log(`copy-lock --write: ${Object.keys(next.routes).length} route/file(s); changes vs the previous lock: ${findings.length}`);
+      console.log(`copy-change-detector --write: ${Object.keys(next.routes).length} route/file(s); changes vs the previous lock: ${findings.length}`);
       for (const f of findings.slice(0, 60)) console.log(`  ${f.kind} ${f.route}${f.surface ? ` [${f.surface}]` : ""}${f.text ? `: ${f.text.slice(0, 140)}` : ""}`);
-      if (unclassified.length) throw new Error(`unclassified file type(s), classify them in copy-lock.mjs before writing: ${unclassified.join(", ")}`);
+      if (unclassified.length) throw new Error(`unclassified file type(s), classify them in copy-change-detector.mjs before writing: ${unclassified.join(", ")}`);
       writeFileSync(lockPath, serialiseLock(next));
       const prov = {}; for (const r of Object.values(next.routes)) for (const [, , p] of r) { const k = p.startsWith("ruled") ? "ruled" : p; prov[k] = (prov[k] || 0) + 1; }
       console.log(`wrote ${lockPath}: ${JSON.stringify(prov)}`);
     } else if (opt("--origin")) {
-      throw new Error("live parity is run by scripts/copy-lock-live.mjs");
+      throw new Error("live parity is run by scripts/copy-change-detector-live.mjs");
     } else {
-      if (!existsSync(lockPath)) throw new Error(`${lockPath} is missing; refusing a vacuous pass (run npm run copy-lock:write and review it)`);
+      if (!existsSync(lockPath)) throw new Error(`${lockPath} is missing; refusing a vacuous pass (run npm run copy-baseline:write and review it)`);
       const lock = JSON.parse(readFileSync(lockPath, "utf8"));
       if (!lock.routes || !Object.keys(lock.routes).length) throw new Error(`${lockPath} pins nothing; refusing a vacuous pass`);
       const findings = [
-        ...unclassified.map((f) => ({ kind: "unclassified-file-type", route: f, detail: "classify this extension in copy-lock.mjs (pin it, or list it as binary/code)" })),
+        ...unclassified.map((f) => ({ kind: "unclassified-file-type", route: f, detail: "classify this extension in copy-change-detector.mjs (pin it, or list it as binary/code)" })),
         ...diffAgainstLock(surfaces, lock),
         ...checkRuled(surfaces, ruled),
       ];
       if (findings.length) { console.error(report(findings)); process.exitCode = 1; }
-      else console.log(`OK: every block of shipped copy is pinned: ${Object.keys(lock.routes).length} route/file(s), ${Object.values(lock.routes).reduce((n, r) => n + r.length, 0)} block(s), ${ruled.length} ruled string(s) present; ${code.length} code file(s) not pinned (runtime-only strings, named gap).`);
+      else console.log(`OK: no change to shipped copy since the reviewed baseline: ${Object.keys(lock.routes).length} route/file(s), ${Object.values(lock.routes).reduce((n, r) => n + r.length, 0)} block(s), ${ruled.length} ruled string(s) present; ${code.length} code file(s) NOT covered (runtime-only strings, named gap gy-ylbzu). (ruled strings are checked for PRESENCE in the document, not visibility: gy-vawlh; see the header for what this does not cover)`);
     }
   } catch (error) {
-    console.error(`COULD NOT EVALUATE copy lock: ${error.message}`);
+    console.error(`COULD NOT EVALUATE copy change-detector: ${error.message}`);
     process.exitCode = 2;
   }
 }

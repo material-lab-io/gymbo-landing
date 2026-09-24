@@ -4,7 +4,7 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadCanonical, checkCanonical, CANON_DIR } from "./canonical-strings.mjs";
-import { scanDist } from "./copy-lock.mjs";
+import { scanDist } from "./copy-change-detector.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
@@ -18,6 +18,6 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       console.error(`FAIL: ${findings.length} canonical-string finding(s):`);
       for (const f of findings) console.error(`  ${f.kind}${f.id ? ` ${f.id}` : ""}${f.route ? ` ${f.route} [${f.surface}]` : ""}${f.text ? `: ${f.text.slice(0, 120)}` : ""}${f.detail ? ` (${f.detail})` : ""}`);
       process.exitCode = 1;
-    } else console.log(`OK: content's canonical strings (${canon.source.commit.slice(0, 8)}, sha256 ${canon.sha.slice(0, 12)}) are byte-identical to the record and present on every mapped surface; ${notes.length} waived divergence(s) listed above. Pins the LISTED surfaces only.`);
+    } else console.log(`OK: content's canonical strings (${canon.source.commit.slice(0, 8)}, sha256 ${canon.sha.slice(0, 12)}) are byte-identical to the record and present on every mapped surface; ${notes.length} waived divergence(s) listed above. Checks the LISTED surfaces for PRESENCE in the document only (not visibility to a reader: gy-vawlh).`);
   } catch (error) { console.error(`COULD NOT EVALUATE canonical strings: ${error.message}`); process.exitCode = 2; }
 }
