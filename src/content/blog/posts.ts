@@ -39,7 +39,7 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "Why not just use a spreadsheet?",
-      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool keeps logging to one tap and reconciles automatically.",
+      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool makes each class one tap and reconciles automatically.",
     },
     {
       q: "Are international coaching apps like Trainerize or TrueCoach good for Indian trainers?",
