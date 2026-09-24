@@ -32,7 +32,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
 
 const FAQ: { q: string; a: string }[] = [
   { q: "Is Gymbo a good WellnessZ alternative?", a: `For personal trainers, yes, Gymbo is built around class punches, payments, and scheduling at a flat ₹${PRICE_MONTHLY_INR}/month. WellnessZ is better if your core service is nutrition and meal planning.` },
-  { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class logging, automatic balance math, payment tracking) for independent personal trainers." },
+  { q: "What's the main difference between Gymbo and WellnessZ?", a: "Focus. WellnessZ is nutrition-first (diet plans, verified meal database, nutrition AI). Gymbo is session-first (one-tap class punches, automatic balance math, payment tracking) for independent personal trainers." },
   { q: "Is Gymbo cheaper than WellnessZ?", a: `Gymbo is ₹${PRICE_MONTHLY_INR}/month (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120.` },
   { q: "Can I move my clients from WellnessZ to Gymbo?", a: "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number." },
   { q: "Does Gymbo do diet/meal plans?", a: "Gymbo focuses on training: one-tap class punches, payments, scheduling, a workout builder, and Ask Gymbo. For deep nutrition and meal-database tooling, WellnessZ is the stronger fit." },

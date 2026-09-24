@@ -43,9 +43,74 @@ export const EXCEPTIONS = [
     reason: "guide/get-organized: spreadsheet comparison, not Gymbo's action",
     context: /a spreadsheet can hold this, but it doesn't log a session with one tap between clients/i,
   },
+  {
+    reason: "home: attributed trainer quote, the trainer's own words (content addendum 2, 2026-09-22)",
+    context: /I open the app, log the session, and move on/i,
+  },
 ];
 
 const TEXT_ENDPOINTS = ["llms.txt", "pricing.md"];
+
+// gy-uu7mt: the exact-phrase list above is a CLOSED vocabulary policing an OPEN one, so
+// it only ever confirms the paraphrases its author already thought of. These FAMILIES
+// match the retired CONCEPT instead: the logging verb applied to a class or session, in
+// either order, and the generic-AI labels (Voice Guide v14 lexicon: Ask Gymbo, never
+// chatbot / virtual assistant / copilot; content ruling 2026-09-24 extends this to
+// "AI-powered", "AI assistant", "chat assistant"). A family match is skipped where an
+// exact-phrase finding already covers the same span, so nothing is reported twice.
+// "AI chat" alone is NOT a family member: "Ask Gymbo (AI chat)" is the canonical
+// processor heading on /privacy/.
+const VERB = "(?:log|logs|logged|logging)";
+const NOUN = "(?:class|classes|session|sessions)";
+export const FAMILIES = [
+  {
+    name: "attendance-logging",
+    // On editorial routes (guide/research) "log sessions as they happen" is general
+    // advice to any trainer, so only text that also names Gymbo NEARBY counts there.
+    gymboSentenceOnlyOnEditorialRoutes: true,
+    patterns: [
+      new RegExp(`\\b${VERB}\\b,?(?:\\s+[\\w'’-]+,?){0,3}?\\s+${NOUN}\\b`, "gi"),
+      new RegExp(`\\b${NOUN}\\b,?(?:\\s+[\\w'’-]+,?){0,2}?\\s+${VERB}\\b`, "gi"),
+      /\b(?:class|classes|session|sessions)[- ]log(?:s|ging)?\b/gi,
+    ],
+  },
+  {
+    name: "generic-ai-label",
+    patterns: [
+      /\bAI[- ](?:powered|driven|assistants?|helpers?|copilots?|companions?|agents?|bots?|chatbots?|chat (?:assistants?|helpers?|bots?))\b/gi,
+      /\b(?:chat ?bots?|chat (?:assistants?|helpers?)|virtual assistants?|digital assistants?|copilots?)\b/gi,
+    ],
+  },
+];
+
+// An exception excuses only the span its own pattern matches, never its neighbours: a
+// window test would let a quoted sentence excuse a real violation in the next sentence.
+function excepted(text, start, end) {
+  return EXCEPTIONS.some(({ context }) => {
+    const flags = context.flags.includes("g") ? context.flags : `${context.flags}g`;
+    for (const m of text.matchAll(new RegExp(context.source, flags))) {
+      if (start >= m.index && end <= m.index + m[0].length) return true;
+    }
+    return false;
+  });
+}
+
+// A sentence test missed the pronoun case ("Gymbo does X. It gives you ... logging
+// sessions"), which is exactly how the shipped blog misdescription was shaped. 150 chars
+// either side is a tuned number, not a principle: measured on the real built site, 150
+// adds no false positive over sentence scope, 250 adds two guide sentences.
+const GYMBO_CONTEXT_CHARS = 150;
+
+// /blog/ is NOT here on purpose. Blog posts compare products section by section and refer
+// back with a pronoun ("Be aware: It's iPhone-only ... it gives you ... a chat assistant"),
+// with the product named only in a heading hundreds of characters earlier, so no proximity
+// test can tell Gymbo's paragraph from a competitor's. It has zero family hits today; a
+// future false positive gets a reasoned EXCEPTION rather than a blind spot.
+const EDITORIAL_ROUTE = /^\/(?:guide|research)(?:\/|$)/;
+
+function gymboNearby(text, index, length) {
+  return /\bGymbo\b/.test(text.slice(Math.max(0, index - GYMBO_CONTEXT_CHARS), index + length + GYMBO_CONTEXT_CHARS));
+}
 
 function normalise(value) {
   return String(value)
@@ -59,13 +124,29 @@ function normalise(value) {
 export function scanText(value, route, surface) {
   const text = normalise(value);
   const findings = [];
+  const spans = [];
   const terms = isMetaSurface(surface, route) ? [...BANNED, ...META_ONLY_BANNED] : BANNED;
   for (const term of terms) {
     const pattern = new RegExp(`(?<![A-Za-z])${term.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")}(?![A-Za-z])`, "gi");
     for (const match of text.matchAll(pattern)) {
       const window = text.slice(Math.max(0, match.index - 90), match.index + match[0].length + 60);
-      if (EXCEPTIONS.some((exception) => exception.context.test(window))) continue;
+      if (excepted(text, match.index, match.index + match[0].length)) continue;
+      spans.push([match.index, match.index + match[0].length]);
       findings.push({ route, surface, term, snippet: window.trim() });
+    }
+  }
+  for (const family of FAMILIES) {
+    for (const pattern of family.patterns) {
+      for (const match of text.matchAll(pattern)) {
+        const end = match.index + match[0].length;
+        if (spans.some(([a, b]) => match.index < b && end > a)) continue;
+        if (family.gymboSentenceOnlyOnEditorialRoutes && EDITORIAL_ROUTE.test(route)
+            && !gymboNearby(text, match.index, match[0].length)) continue;
+        const window = text.slice(Math.max(0, match.index - 90), end + 60);
+        if (excepted(text, match.index, end)) continue;
+        spans.push([match.index, end]);
+        findings.push({ route, surface, term: `${family.name}: ${match[0]}`, snippet: window.trim() });
+      }
     }
   }
   return findings;

@@ -135,7 +135,7 @@ const demoPoster = (id: string): ClipMap => ({
    (gy-9bmwm.4, gy-dyu6r.6). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
-  { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
+  { slug: "schedule", caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
   { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
   { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
   { slug: "ai", caption: "Ask Gymbo anything", alt: "Ask Gymbo, ready to answer questions about your training business" },

@@ -126,3 +126,75 @@ test("POSITIVE CONTROL: the blog sentence that shipped ('a builder plus voice/pa
   const ruled = "it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments.";
   assert.equal(scanText(ruled, "/blog/x/", "visible text").length, 0);
 });
+
+// ---- gy-uu7mt: the gate polices the CONCEPT, not a list of phrases ----------------
+// Every seed below is a paraphrase that is on NO exact-phrase list. Before the families
+// existed, all of these passed on real built output (measured 2026-09-24, 8314c9df).
+const SEEDS = {
+  "attendance-logging": ["an app for logging sessions and payments", "an app that logs your sessions", "log your sessions in one tap", "class logging with automatic balances", "your classes, logged in seconds"],
+  "generic-ai-label": ["an AI chat helper for trainers", "an AI-driven trainer app", "an AI companion for scheduling", "a friendly chatbot", "your virtual assistant", "a copilot for your business"],
+};
+
+test("POSITIVE CONTROL: none of the seeded paraphrases is on the exact-phrase list (so a pass would prove nothing)", () => {
+  for (const seeds of Object.values(SEEDS)) for (const seed of seeds) {
+    const lower = seed.toLowerCase();
+    assert.ok(!BANNED.some((term) => lower.includes(term.toLowerCase())), `${seed} contains an exact banned phrase`);
+  }
+});
+
+test("POSITIVE CONTROL: every family goes RED on every surface class, seeded with a paraphrase", () => {
+  for (const [family, seeds] of Object.entries(SEEDS)) {
+    for (const seed of seeds) {
+      const sentence = `Gymbo is ${seed}.`;
+      const surfaces = {
+        "visible text": scanHtmlTerms(page(`<p>${sentence}</p>`), "/"),
+        "metadata": scanHtmlTerms(page("<p>Clean.</p>", `<meta name="description" content="${sentence}">`), "/"),
+        "JSON-LD": scanHtmlTerms(page("<p>Clean.</p>", `<script type="application/ld+json">{"description":"${sentence}"}</script>`), "/"),
+        "accessibility alt": scanHtmlTerms(page(`<img alt="${sentence}" src="x.png"><p>Clean.</p>`), "/"),
+        "served text": scanText(sentence, "/llms.txt", "served text"),
+      };
+      for (const [surface, findings] of Object.entries(surfaces)) {
+        assert.ok(findings.some((f) => f.term.startsWith(`${family}:`)), `${family} missed "${seed}" in ${surface} (got ${JSON.stringify(findings.map((f) => f.term))})`);
+      }
+    }
+  }
+});
+
+test("POSITIVE CONTROL: a paraphrase fails the real CLI end to end, in llms.txt and pricing.md too", () => {
+  const cli = run(fixture(page("<p>Clean.</p>"), { llms: "Gymbo is an AI-driven trainer app.", pricing: "Gymbo lets you log your sessions." }));
+  assert.equal(cli.status, 1, cli.stdout);
+  assert.match(cli.stderr, /\/llms\.txt \[served text\] "generic-ai-label: AI-driven"/);
+  assert.match(cli.stderr, /\/pricing\.md \[served text\] "attendance-logging: log your sessions"/);
+});
+
+test("NEGATIVE CONTROL: the canonical vocabulary still passes, including the /privacy/ processor heading", () => {
+  for (const clean of [
+    "Punch a class in one tap. Record a payment. Ask Gymbo answers questions about your business.",
+    "Ask Gymbo (AI chat): Anthropic (Claude). What it does: answers questions about your clients.",
+    "Sign in to see who owes you. Class history and payment records, all in one place.",
+    "Gymbo does not generate workouts with AI.",
+  ]) assert.equal(scanText(clean, "/", "visible text").length, 0, clean);
+});
+
+test("NEGATIVE CONTROL: on a guide/research route only text that names Gymbo nearby counts", () => {
+  const general = "Log sessions as they happen, one tap at the end of each session.";
+  assert.equal(scanText(general, "/guide/get-organized-personal-trainer/", "visible text").length, 0);
+  assert.equal(scanText(general, "/", "visible text").length, 1, "the same sentence on a marketing route must fail");
+  assert.ok(scanText("With Gymbo you log your sessions in one tap.", "/guide/x/", "visible text").length >= 1);
+  // proximity, not sentence: advice sitting within GYMBO_CONTEXT_CHARS of a Gymbo mention counts too
+  assert.equal(scanText(`With Gymbo you punch a class. ${general}`, "/guide/x/", "visible text").length, 1);
+  assert.equal(scanText(`With Gymbo you punch a class. ${"Filler sentence about pricing and plans. ".repeat(8)}${general}`, "/guide/x/", "visible text").length, 0);
+  // blog is scanned in full: its product paragraphs refer back by pronoun, so no proximity test is safe
+  assert.equal(scanText("It gives you a builder, and an app for logging sessions.", "/blog/x/", "visible text").length, 1);
+});
+
+test("the attributed trainer quote is one sentence, not a licence for logging copy", () => {
+  const quote = "With Gymbo, I open the app, log the session, and move on.";
+  assert.equal(scanText(quote, "/", "visible text").length, 0);
+  assert.equal(scanText(`${quote} Gymbo lets you log your sessions.`, "/", "visible text").length, 1);
+});
+
+test("an exact-phrase hit is reported once, not again by the family that also matches it", () => {
+  const findings = scanText("One-tap session logging for trainers.", "/", "visible text");
+  assert.deepEqual(findings.map((f) => f.term), ["session logging"]);
+});
