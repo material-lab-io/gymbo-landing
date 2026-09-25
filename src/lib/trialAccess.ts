@@ -63,7 +63,7 @@ export const TRIAL_LINE = `Gymbo is in ${STATUS_LANGUAGE.toLowerCase()}. ${TRIAL
 
 /** The 3-step access route (src/App.tsx, "what happens next"). */
 export const ACCESS_ROUTE_STEPS = [
-  `${ACCESS_CTA_LABEL}. Leave your email or phone number.`,
+  `${ACCESS_CTA_LABEL}. Leave your WhatsApp number or email.`,
   "We reach out with your access.",
   "Install, add your clients, and punch your first class.",
 ];
