@@ -469,6 +469,148 @@ test('a generic server failure keeps the existing error state and its mailto fal
   await expect(form.getByText(/doesn't look right/i)).toHaveCount(0);
 });
 
+/**
+ * gy-e60uc.7 — a refused submit must be SEEN. tester at 89f7dfb4: on a 375x740 phone the inline error rendered
+ * UNDER the fixed sticky CTA bar, and on a 900px-tall desktop below the fold, so a failed submit looked like
+ * nothing had happened. On an invalid submit the error, and the field it is about, must be inside the visible
+ * viewport and not covered by the sticky bar. The bar is `md:hidden`, so only the phone case has one to hit.
+ * /api/waitlist is intercepted (stub 200): no row is created, nothing is sent.
+ */
+for (const [label, project, viewport] of [
+  ['375x740 phone', 'mobile', { width: 375, height: 740 }],
+  ['1280x900 desktop', 'desktop', { width: 1280, height: 900 }],
+] as const) {
+  for (const [what, fill, expected] of [
+    ['a malformed email', { email: 'a@b' }, /doesn't look right/i],
+    ['neither email nor phone', {}, /Add a WhatsApp number or an email/i],
+  ] as const) {
+    test(`the refusal is visible and not covered by the sticky bar: ${what} at ${label} (gy-e60uc.7)`, async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== project, `the ${label} case runs in the ${project} project`);
+      await page.setViewportSize(viewport);
+      await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+      await page.goto('/');
+      // Lazy images above the footer reflow the page after load; measure only once they have.
+      await page.waitForLoadState('networkidle');
+      const form = page.locator('form:has(input[name="phone"])').last();
+      await form.scrollIntoViewIfNeeded();
+      // POSITION THE FORM DETERMINISTICALLY: put the submit button's bottom edge just above the fold (on a phone,
+      // just above where the sticky bar starts). That is the reported situation, and it is where a 20px error
+      // beneath the button lands UNDER the bar / below the fold unless something scrolls it into view. Without
+      // this the outcome depended on where scrollIntoViewIfNeeded happened to leave the page, and the control
+      // was flaky in both directions.
+      // Wait for scrollIntoViewIfNeeded's own (possibly smooth) scroll to finish, THEN move instantly, then wait
+      // for the position to stop changing. Measuring while a smooth scroll is still in flight put the button
+      // ~19px off target in an earlier draft.
+      const settle = async () => {
+        let last = -1;
+        await expect.poll(async () => { const y = await page.evaluate(() => window.scrollY); const same = y === last; last = y; return same; }, { intervals: [100, 100, 100, 100], timeout: 5000 }).toBe(true);
+      };
+      await settle();
+      await page.evaluate((target) => {
+        const forms = document.querySelectorAll('form');
+        const btn = [...forms].filter((f) => f.querySelector('input[name="phone"]')).pop()!.querySelector('button[type="submit"]')!;
+        window.scrollBy({ top: btn.getBoundingClientRect().bottom - target, behavior: 'instant' });
+      }, project === 'mobile' ? viewport.height - 100 : viewport.height - 8);
+      await settle();
+      if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
+      await form.locator('button[type="submit"]').click();
+      const alert = form.getByRole('alert');
+      await expect(alert).toHaveText(expected);
+      // Let any scroll settle before measuring where things ended up.
+      await page.waitForTimeout(600);
+      const bar = page.locator('[data-fixed-chrome="sticky-cta"]');
+      const barTop = (await bar.isVisible()) ? (await bar.boundingBox())!.y : viewport.height;
+      const vh = page.viewportSize()!.height;
+      for (const [name, loc] of [['the error', alert], ['the submit button', form.locator('button[type="submit"]')]] as const) {
+        const box = (await loc.boundingBox())!;
+        expect(box.y, `${name} starts above the top of the viewport`).toBeGreaterThanOrEqual(0);
+        expect(box.y + box.height, `${name} ends below the viewport (${vh}px)`).toBeLessThanOrEqual(vh);
+        expect(box.y + box.height, `${name} is covered by the sticky bar (bar top ${barTop}px)`).toBeLessThanOrEqual(barTop + 0.5);
+      }
+      // The bar's own hit-test: the point at the error's centre must be the error, not the bar.
+      const eb = (await alert.boundingBox())!;
+      const topmost = await page.evaluate(([x, y]) => (document.elementFromPoint(x, y) as HTMLElement | null)?.closest('[data-fixed-chrome]')?.getAttribute('data-fixed-chrome') ?? null, [eb.x + eb.width / 2, eb.y + eb.height / 2] as const);
+      expect(topmost, 'the topmost element at the error is the sticky bar').toBeNull();
+    });
+  }
+}
+
+// The OTHER places the same form appears (gy-e60uc.7): the revealed panels under the hero and pricing CTAs, and the
+// sticky bar's own capture, which expands UPWARD inside a fixed container. Same rule: a refused submit is visible
+// and the sticky bar does not cover it. Phone-sized only, because that is where the bar exists.
+async function expectRefusalSeen(page: import('@playwright/test').Page, form: import('@playwright/test').Locator, bad: string) {
+  await form.locator('input[type="email"]').fill(bad);
+  await form.locator('button[type="submit"]').click();
+  const alert = form.getByRole('alert');
+  await expect(alert).toHaveText(/doesn't look right/i);
+  await page.waitForTimeout(600);
+  const vh = page.viewportSize()!.height;
+  const bar = page.locator('[data-fixed-chrome="sticky-cta"]');
+  const insideBar = await alert.evaluate((el) => !!el.closest('[data-fixed-chrome]'));
+  const barTop = !insideBar && (await bar.isVisible()) ? (await bar.boundingBox())!.y : vh;
+  const box = (await alert.boundingBox())!;
+  expect(box.y, 'the error starts above the viewport').toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height, `the error is covered by the sticky bar (bar top ${barTop}px) or below the fold (${vh}px)`).toBeLessThanOrEqual(Math.min(barTop, vh) + 0.5);
+}
+
+for (const [label, prepare] of [
+  ['the hero panel', async (page: import('@playwright/test').Page) => {
+    await page.locator(WAITLIST_CTA('hero')).click();
+    return page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
+  }],
+  ['the pricing panel', async (page: import('@playwright/test').Page) => {
+    const cta = page.locator(WAITLIST_CTA('pricing')).first();
+    await cta.scrollIntoViewIfNeeded();
+    await cta.click();
+    return page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
+  }],
+  ["the sticky bar's own capture", async (page: import('@playwright/test').Page) => {
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
+    const bar = page.locator('[data-fixed-chrome="sticky-cta"]');
+    await expect(bar).toBeVisible();
+    await bar.locator('[data-cta="waitlist"]').click();
+    return bar.locator('form');
+  }],
+] as const) {
+  test(`a refused submit is seen in ${label} at 375x740 (gy-e60uc.7)`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'the sticky bar only exists on a phone');
+    await page.setViewportSize({ width: 375, height: 740 });
+    await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const form = await prepare(page);
+    await expect(form).toBeVisible();
+    await expectRefusalSeen(page, form, 'a@b');
+  });
+}
+
+test('the error is named as the description of the field it is about (gy-e60uc.7)', async ({ page }) => {
+  await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  const email = form.locator('input[type="email"]');
+  const before = await email.getAttribute('aria-describedby');
+  await email.fill('a@b');
+  await form.locator('button[type="submit"]').click();
+  const alert = form.getByRole('alert');
+  await expect(alert).toBeVisible();
+  const errorId = await alert.getAttribute('id');
+  expect(errorId, 'the error needs an id to be referenced').toBeTruthy();
+  // The contact-rule hint stays, and the error is ADDED to the description, on the field that is wrong.
+  const during = await email.getAttribute('aria-describedby');
+  expect(during).toContain(before!);
+  expect(during!.split(' ')).toContain(errorId!);
+  // The accessible description resolves to both texts (it is computed from the referenced nodes).
+  const desc = await email.evaluate((el) => (el.getAttribute('aria-describedby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent?.trim()).join(' | '));
+  expect(desc).toMatch(/either one is enough/);
+  expect(desc).toMatch(/doesn't look right/);
+  // Editing the field clears the error and drops it from the description.
+  await email.fill('a@b.co');
+  await expect(alert).toHaveCount(0);
+  expect(await email.getAttribute('aria-describedby')).toBe(before);
+});
+
 test('LIVENESS: a well-formed email passes the shape check and posts (gy-e60uc.2)', async ({ page }) => {
   await page.goto('/');
   const posts: string[] = [];

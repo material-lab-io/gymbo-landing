@@ -221,7 +221,10 @@ test('the failure alert is visually distinct from the permanent hint, and clears
     const alert = form.querySelector('[role="alert"]');
     if (!alert) return null;
     const email = form.querySelector('input[type="email"]') as HTMLInputElement;
-    const hint = document.getElementById(email.getAttribute('aria-describedby')!)!;
+    // gy-e60uc.7: while the alert is showing, aria-describedby is a LIST (the permanent hint first, then the alert),
+    // so the hint is its FIRST id. It used to be the only one, and passing the whole string to getElementById
+    // returned null.
+    const hint = document.getElementById(email.getAttribute('aria-describedby')!.split(' ')[0])!;
     let bg: string | null = null;
     let n: Element | null = alert;
     while (n && n !== document.documentElement) {
