@@ -107,7 +107,7 @@ const PILLARS = [
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
-    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains. Ask Gymbo is grounded in your real client and payment data, so it answers 'who owes me?' or 'who's due this week?' in a tap.",
+    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains.",
     bullets: [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",

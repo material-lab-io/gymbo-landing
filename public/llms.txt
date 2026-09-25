@@ -10,7 +10,6 @@ Gymbo is built for the independent personal trainer, not a gym chain or dietitia
 - Payment and balance tracking (cash or UPI), GST invoices, colour-coded reminders
 - Scheduling and your full client roster in one place
 - Workout builder with a template library + voice/paste import (build and assign workouts)
-- Ask Gymbo for answers about your training business
 - A shareable QR profile card and branded PDF statements
 - Passwordless sign-in (Apple + Face ID); works offline and syncs when back online
 
