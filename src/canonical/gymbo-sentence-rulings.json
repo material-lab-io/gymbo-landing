@@ -1,0 +1,328 @@
+{
+ "_comment": "Content-owned, byte-checked copy of sentence-level log-verb rulings. Source of truth is the bd comment named by commentId on the named bead; each entry is valid only while that comment still exists, is by content, contains the exact line 'RULED <class>: <sentence>' (whitespace-normalised) and its sha256 matches. Regenerate with docs/rulings/vendor_sentence_rulings.py; never hand-edit. A scheduled order compares this file to live beads and files on divergence.",
+ "version": 1,
+ "updated": "2026-09-25",
+ "bead": "gy-uu7mt",
+ "entries": [
+  {
+   "sentence": "A payment logged only in your UPI app is money you'll have to reconstruct later.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "At a fixed time each day, log anything missed, glance at tomorrow, and note who owes or is due to renew.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the roster weekly.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the whole roster once a week.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Do it in the moment: log the session as it ends, record the payment against the client and package as it lands, and the \"management\" is already done by the time the day is over.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "How a solo fitness trainer in India runs a one-person business from their phone, logging sessions, tracking payments, scheduling, and renewing on time.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "How a solo personal trainer in India can run a one-person business from their phone and shrink admin: log sessions, track payments, schedule, batch admin, and renew on time.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Keep one ledger current in the moment: log each session as it ends, record each payment against the client and package as it lands, and do a five-minute weekly scan of who's due to renew, who owes, and who's gone quiet.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session at the end, not in a weekly reconstruction.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session immediately",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session the moment it ends, record every payment against the client and package, keep one schedule you actually trust, and batch the rest into a single five-minute daily review.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session the moment it ends, record every payment against the client and package, keep one schedule you trust, and batch the rest into a single five-minute daily review.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session the moment it happens",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log each session the moment it happens, record every payment against a balance, and review the whole roster once a week.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log it immediately: sessions done and sessions remaining per client.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log sessions as they happen",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log sessions as they happen, at the end of each session, not in a Sunday-night reconstruction.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log sessions done and sessions remaining per client immediately, so the count stays accurate.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Log the session the second it ends.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Managing is the ongoing rhythm on top of it: logging sessions and payments as they happen and reviewing the roster weekly so nothing slips.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "One source of truth for clients, sessions, balances, and payments, log as you go, review weekly, and stop running the business from memory.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Practically, that's running your whole one-person business from one place on your phone, and logging sessions and payments as they happen rather than reconstructing them later.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Same time each day: log anything you missed, glance at tomorrow, note who's due to renew or owes.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Shrinking the admin around your training (session-counting, payment-chasing, scheduling, and reminders) so it takes minutes a day instead of hours, by running your one-person business from one place on your phone and logging sessions and payments as they happen.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "That daily-log-plus-weekly-review loop is managing the business; everything else is training.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer; the rest is training.",
+   "class": "advice-to-reader",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "With Gymbo, I open the app, log the session, and move on.”",
+   "class": "attributed-quote",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d595-5767-79d7-b574-c06af40616e1",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:42:09Z",
+   "commentSha256": "c9ac4f14902a0a77b59e2c85ad223edb125736e1c945475d9acc8b34cada2a3f"
+  },
+  {
+   "sentence": "Programming-led; logs workouts, not payments",
+   "class": "competitor-description",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Gymbo records the payments you log between you and your clients.",
+   "class": "legal-text",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  },
+  {
+   "sentence": "Standard logs (such as IP address and device or browser type) used to keep the service secure and working.",
+   "class": "unrelated-log",
+   "ruling": "RULED",
+   "bead": "gy-uu7mt",
+   "commentId": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7",
+   "commentAuthor": "gymbo/gymbo-crew.content",
+   "commentCreatedAt": "2026-09-24T22:49:19Z",
+   "commentSha256": "d75854968d6551a5e549c89c545c8088a57cc565eaaf3032a28d0af058f08757"
+  }
+ ]
+}
