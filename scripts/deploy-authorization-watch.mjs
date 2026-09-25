@@ -104,28 +104,40 @@ export async function run({ request, env, now = Date.now() }) {
   const prs = issues.filter((issue) => issue.pull_request);
   const rows = [];
   const actions = [];
+  const actionErrors = [];
 
   for (const issue of prs) {
     const events = await request(`${api}/issues/${issue.number}/events?per_page=100`);
     const row = classifyPending(issue, events, now, thresholdMs);
     rows.push(row);
     if (row.state !== 'overdue') continue;
+    // The label and the comment are the HUMAN-facing record; the RED run is the signal an agent reads. A failure
+    // in either must therefore never stop the evaluation below: on 2026-09-25 the very first real overdue PR
+    // (control PR 227) made the label POST return 403 ('Resource not accessible by integration', the token had
+    // issues:write but a PR needs pull-requests:write), which threw out of main() BEFORE evaluate(), so the run
+    // went red for a reason that was not the one it exists to report. Each action is now attempted on its own,
+    // its failure recorded and reported, and the OVERDUE error is emitted regardless.
+    const attempt = async (name, doit) => {
+      try { await doit(); actions.push(`${name}:${issue.number}`); }
+      catch (error) { actionErrors.push(`could not ${name} #${issue.number}: ${error.message}`); }
+    };
     if (!issue.labels.some((label) => label.name === OVERDUE_LABEL)) {
-      await request(`${api}/issues/${issue.number}/labels`, {
+      await attempt('label', () => request(`${api}/issues/${issue.number}/labels`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ labels: [OVERDUE_LABEL] }),
-      });
-      actions.push(`label:${issue.number}`);
+      }));
     }
     if (shouldNotify(issue, row)) {
-      await request(`${api}/issues/${issue.number}/comments`, {
+      await attempt('comment', () => request(`${api}/issues/${issue.number}/comments`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: `@kaushikNaarayan this public-site PR has awaited deployment authorisation for over one hour. Please authorise and perform (or name the performer of) the merge. This is not a delegation of the merge.\n\nTracking: \`${PENDING_LABEL}\` → \`${OVERDUE_LABEL}\` (gy-e9wa6). This run is also RED until it is resolved.` }),
-      });
-      actions.push(`comment:${issue.number}`);
+      }));
     }
   }
 
   const evaluation = evaluate(rows, { thresholdMs });
+  // A failed label/comment is reported, and does not change the verdict: the run is already RED for OVERDUE.
+  for (const message of actionErrors) evaluation.errors.push(message);
+  if (actionErrors.length) evaluation.exitCode = 1;
   if (note) evaluation.notes.push(note);
   let unlabelledNote = null;
   try {
