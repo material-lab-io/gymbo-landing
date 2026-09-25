@@ -121,6 +121,10 @@ export function Privacy() {
                 'To raise a privacy question or grievance, contact Kaushik at <!--email_off--><a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a><!--/email_off-->. We aim to respond within 30 days.',
             }}
           />
+          <p>
+            If you appear in an exercise video shown in Gymbo, or you hold rights in one, you can ask us to remove it with our{" "}
+            <a href="/m/takedown">video removal request form</a>, and we hide that video from the app and from its public link while we review your request.
+          </p>
         </section>
       </Prose>
     </PageShell>
