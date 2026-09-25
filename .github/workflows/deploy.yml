@@ -143,6 +143,18 @@ jobs:
         # the referrer host instead of the engine slug, add a "direct"
         # fallback); each is caught.
 
+      # gy-rh2rj (2): the waitlist ENUMERATION ORACLE stays closed. POST /api/waitlist must answer a new signup
+      # and a duplicate byte-identically (status, headers, body), or an anonymous caller can probe whether any
+      # phone number or e-mail is on our waitlist (DPDP-relevant). scripts/verify-waitlist-oracle.mjs proved that
+      # once and then ran NOWHERE (0 references in 12 workflows), so a later edit adding a field to one branch
+      # would have reopened the oracle silently. Static, no network, no deps: it runs before the build.
+      # The second command is the CONTROL ON THE CONTROL: it plants four defects in copies of the handler and
+      # requires the verifier to go RED on each, so this step cannot pass only because it is blind.
+      - name: "gy-rh2rj: the waitlist enumeration oracle stays closed (verifier + its forced red)"
+        run: |
+          node scripts/verify-waitlist-oracle.mjs
+          node --test tests/waitlist-oracle-verifier.test.mjs
+
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
         run: node --test tests/master-asset-drift.test.mjs tests/screenshot-freshness-relocation.test.mjs
         # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
