@@ -16,7 +16,25 @@
 // No network, no deps: Supabase is stubbed so 201 (new) and 409 (duplicate) are
 // produced on demand.
 
-import { onRequestPost } from "../functions/api/waitlist.js";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
+
+// The handler under test. WAITLIST_HANDLER exists ONLY so tests/waitlist-oracle-verifier.test.mjs can
+// point this script at a copy with a planted defect and require it to go RED (gy-rh2rj: a verifier
+// that has only ever been seen green proves nothing). A handler that cannot be LOADED is exit 2,
+// never a pass: "I could not look" must not read as "the oracle is closed".
+const HANDLER_URL = process.env.WAITLIST_HANDLER
+  ? pathToFileURL(resolve(process.env.WAITLIST_HANDLER)).href
+  : new URL("../functions/api/waitlist.js", import.meta.url).href;
+let onRequestPost;
+try {
+  ({ onRequestPost } = await import(HANDLER_URL));
+  if (typeof onRequestPost !== "function") throw new Error("the module has no onRequestPost export");
+} catch (error) {
+  console.error(`COULD NOT LOAD the handler under test (${HANDLER_URL}): ${error.message}`);
+  process.exit(2);
+}
+console.log(`handler under test: ${HANDLER_URL}`);
 
 // The pre-fix handler, reproduced verbatim in its observable behaviour. This is
 // the instrument's calibration weight, not dead code: it is the shape we are
