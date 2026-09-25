@@ -294,3 +294,26 @@ test('the hero WhatsApp CTA is a real anchor, and the hero waitlist stays a full
   expect(box, 'waitlist CTA must render a real box, not inline text').not.toBeNull();
   expect(box!.height, 'waitlist CTA must keep a full-size hit target, not become a text link').toBeGreaterThanOrEqual(44);
 });
+
+/**
+ * gy-e9h9y — THE TWO WHATSAPP CTAs ON THE HOME PAGE MUST SAY THE SAME THING.
+ *
+ * The hero read "Talk to us" while the footer read "Talk to the founder": one
+ * button, two names, and "us" does not say who answers. Content ruled the label
+ * (spec on gy-e9h9y, 2026-09-21). This asserts PARITY, not the wording, on
+ * purpose: the words are content-owned and will change again, and pinning them
+ * here is what turned two smoke assertions red the first time CI ever ran this
+ * file (gy-w7x93). What must never happen is the two drifting apart silently.
+ */
+test('the hero and footer WhatsApp CTAs carry the same label (gy-e9h9y)', async ({ page }) => {
+  await page.goto('/');
+  const hero = page.locator('[data-cta="whatsapp"][data-cta-location="hero"]');
+  const footer = page.locator('[data-cta="whatsapp"][data-cta-location="cta-section"]');
+  // Both must exist, or "equal" below would be comparing two empty locators.
+  await expect(hero).toHaveCount(1);
+  await expect(footer).toHaveCount(1);
+  const label = async (l: typeof hero) => ((await l.textContent()) ?? '').replace(/\s+/g, ' ').trim();
+  const heroLabel = await label(hero);
+  expect(heroLabel.length, 'the hero WhatsApp CTA must carry a visible label').toBeGreaterThan(0);
+  expect(heroLabel).toBe(await label(footer));
+});
