@@ -280,3 +280,60 @@ test('the hero WhatsApp CTA is a real anchor, and the hero waitlist stays a full
   expect(box, 'waitlist CTA must render a real box, not inline text').not.toBeNull();
   expect(box!.height, 'waitlist CTA must keep a full-size hit target, not become a text link').toBeGreaterThanOrEqual(44);
 });
+
+/**
+ * EVERY CTA THAT SENDS SOMEONE TO THE WAITLIST MUST BE COUNTED (gy-e9h9y AC6).
+ *
+ * 🔴 WHY THIS IS AN ENUMERATION AND NOT A LIST OF KNOWN BUTTONS. gy-e9h9y's
+ * wrappers make `location` a required prop "so no CTA can ship untracked" — but
+ * that invariant only binds CTAs that go THROUGH a wrapper, and nothing forces
+ * anyone to use one. Five hand-rolled <button onClick={() => scrollToId("cta")}>
+ * shipped past it (sticky nav, both pricing cards, the sub-page shell, the
+ * compare-page nav). Measured on production 2026-09-12: every WhatsApp CTA fired
+ * an event and those five fired nothing, so waitlist clicks were undercounted
+ * against a fully-counted WhatsApp — a bias in the exact direction that would
+ * make promoting WhatsApp look successful. The comparative number this bead
+ * exists to produce was unusable, and no test could have noticed.
+ *
+ * So the discriminating move is to find the CTAs by their BEHAVIOUR (they send
+ * you to #cta) rather than by a list someone has to remember to extend, and
+ * require tracking of each. A sixth hand-rolled one fails this test on the day
+ * it is written.
+ */
+for (const path of ['/', '/compare/gymbo-vs-wellnessz/']) {
+  test(`every waitlist-bound CTA on ${path} carries tracking (gy-e9h9y AC6)`, async ({ page }) => {
+    await page.goto(path);
+
+    const untracked = await page.evaluate(() => {
+      const bad: string[] = [];
+      document.querySelectorAll('a, button').forEach((el) => {
+        const href = el.getAttribute('href') || '';
+        const goesToWaitlist =
+          href.endsWith('#cta') ||
+          // a scroll CTA has no href; React strips the handler, so the rendered
+          // marker is what we can see from here
+          (el.tagName === 'BUTTON' && /get gymbo|request access|join waitlist/i.test((el as HTMLElement).innerText || ''));
+        if (!goesToWaitlist) return;
+        // the waitlist FORM's own submit is the completed conversion
+        // (umami waitlist_signup) and is deliberately not a click CTA
+        if (el.getAttribute('type') === 'submit' || el.closest('form')) return;
+        if (!el.getAttribute('data-cta')) bad.push(`${el.tagName} "${((el as HTMLElement).innerText || '').trim().slice(0, 30)}"`);
+      });
+      return bad;
+    });
+
+    expect(untracked, 'these waitlist CTAs fire no analytics event — route them through a CTA wrapper or call trackCta').toEqual([]);
+
+    // POSITIVE CONTROL: the enumeration must actually be finding CTAs. A pass on
+    // an empty list would be the same blindness in a new costume.
+    const found = await page.locator('[data-cta="waitlist"]').count();
+    expect(found, 'found no tracked waitlist CTAs at all — the enumeration is looking at the wrong thing').toBeGreaterThan(0);
+
+    // and every tracked one names its placement, or "primary" cannot be compared
+    // per placement, which is the whole point of the location dimension
+    const locations = await page.locator('[data-cta]').evaluateAll((els) =>
+      els.map((el) => el.getAttribute('data-cta-location'))
+    );
+    expect(locations.filter((l) => !l), 'a tracked CTA with no location').toEqual([]);
+  });
+}

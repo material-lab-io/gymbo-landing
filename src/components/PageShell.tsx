@@ -1,4 +1,4 @@
-import { F, SHADOW, SERIF, SANS, ForgeStyle, WHATSAPP_PLAIN } from "../forge-ui";
+import { F, SHADOW, SERIF, SANS, ForgeStyle, WHATSAPP_PLAIN, trackCta } from "../forge-ui";
 
 /* ============================================================================
    PageShell — shared chrome (nav + footer) for standalone content pages
@@ -68,7 +68,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <a href={`${HOME}#cta`} className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+          <a href={`${HOME}#cta`} onClick={() => trackCta("waitlist_cta_click", "nav")} data-cta="waitlist" data-cta-location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
             Get Gymbo
           </a>
         </div>

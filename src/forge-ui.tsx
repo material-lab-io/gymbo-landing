@@ -267,7 +267,7 @@ export function Eyebrow({ children, dark }: { children: React.ReactNode; dark?: 
 /** Where a CTA sits. Measured inventory, not a guess — designer's design named
  * "hero / mid-page / footer" but flagged it as an intended taxonomy they had not
  * checked against the code. The real placements are these five. */
-export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compare";
+export type CtaLocation = "hero" | "nav" | "gallery" | "pricing" | "cta-section" | "footer" | "compare";
 
 /**
  * Fire a CTA click event.
