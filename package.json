@@ -12,7 +12,7 @@
     "test:update": "playwright test --update-snapshots",
     "test:audit": "playwright test tests/audit.spec.ts",
     "test:audit:perf": "playwright test tests/audit-perf.spec.ts",
-    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-change-detector.test.mjs tests/canonical-strings.test.mjs tests/internal-comments.test.mjs tests/hash-font-assets.test.mjs tests/step-order.test.mjs tests/shifted-clock-control.test.mjs tests/text-normalise.test.mjs tests/log-verb.test.mjs",
+    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-change-detector.test.mjs tests/canonical-strings.test.mjs tests/internal-comments.test.mjs tests/hash-font-assets.test.mjs tests/step-order.test.mjs tests/shifted-clock-control.test.mjs tests/text-normalise.test.mjs tests/log-verb.test.mjs tests/deploy-authorization-watch.test.mjs",
     "check:copy-output": "node scripts/check-no-em-dash.mjs && node scripts/check-canonical-terms.mjs && node scripts/check-trial-eligibility.mjs && node scripts/check-canonical-strings.mjs && node scripts/check-no-internal-comments.mjs && node scripts/copy-change-detector.mjs && node scripts/check-step-order.mjs && node scripts/check-log-verb.mjs",
     "check:time-fuse": "node scripts/shifted-clock-control.mjs --self-test",
     "copy-baseline:write": "node scripts/copy-change-detector.mjs --write",
