@@ -32,7 +32,7 @@
  * Exits 1 on drift, 0 when clean. `--list` prints the token table and exits 0.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { ROOT, VENDORED, PIN, FILES, producerDir, readAtPin } from './forge-producer.mjs';
 
 
@@ -144,7 +144,18 @@ for (const f of SCAN.flatMap((d) => walk(d))) {
   // sourced from the producer checkout, which lives outside this tree entirely,
   // so a startsWith(SSOT) test would no longer exempt src/forge/ and the gate
   // would flag the design system for being the design system.
-  if (f.startsWith(VENDORED)) continue;
+  //
+  // 🔴 THIS IS A DIRECTORY TEST, NOT A STRING PREFIX — gy-swdgh.
+  // It read `f.startsWith(VENDORED)` until 2026-09-12. VENDORED is
+  // <root>/src/forge, so a bare prefix test also exempted every SIBLING PATH
+  // that merely begins with those characters — and one exists: src/forge-ui.tsx,
+  // which is THE FILE THIS GATE WAS WRITTEN TO CATCH. See the header note about
+  // the parallel palette it declares. The gate named the file in its own
+  // rationale and then could not see it, reporting OK over its motivating case
+  // for as long as it existed. Appending the separator is the whole fix: only
+  // paths INSIDE the directory are exempt. tests/forge-gate.spec.mjs holds the
+  // control — same bytes under a non-'forge' filename must fail.
+  if (f.startsWith(VENDORED + sep)) continue;
   if (f === GENERATED) continue;    // generated FROM the SSOT; drift caught by --check
   const rel = relative(ROOT, f);
   const lines = blankComments(readFileSync(f, 'utf8')).split('\n');
