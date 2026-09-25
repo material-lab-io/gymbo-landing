@@ -305,7 +305,16 @@ export function WaitlistForm() {
           // reader, where the two sentences are still near-duplicates — that is
           // content's restring, and colour must never be the sole carrier of an
           // error (WCAG 1.4.1). role="alert" already carries it non-visually.
-          style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
+          style={{
+            color: "var(--g-color-status-destructive-dark)",
+            fontFamily: "var(--font-sans)",
+            // gy-e60uc.7 (designer): scrollIntoView({block:"nearest"}) stops the moment the error is
+            // inside the viewport, which on a tall desktop left its last pixel FLUSH with the viewport
+            // edge and read as cut off. scroll-margin-bottom gives that scroll breathing room; nearest
+            // honours it exactly as it honours the root's scroll-padding for the sticky bar. A Forge
+            // spacing token (24px), not a second hard-coded constant.
+            scrollMarginBottom: "var(--g-space-6)",
+          }}
         >
           Add a WhatsApp number or an email so we can reach you.
         </span>
@@ -319,7 +328,16 @@ export function WaitlistForm() {
           // reasons: leading-5 keeps the row an integer height, and colour is never the only carrier
           // (role="alert" announces it).
           className="text-[13px] leading-5"
-          style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
+          style={{
+            color: "var(--g-color-status-destructive-dark)",
+            fontFamily: "var(--font-sans)",
+            // gy-e60uc.7 (designer): scrollIntoView({block:"nearest"}) stops the moment the error is
+            // inside the viewport, which on a tall desktop left its last pixel FLUSH with the viewport
+            // edge and read as cut off. scroll-margin-bottom gives that scroll breathing room; nearest
+            // honours it exactly as it honours the root's scroll-padding for the sticky bar. A Forge
+            // spacing token (24px), not a second hard-coded constant.
+            scrollMarginBottom: "var(--g-space-6)",
+          }}
         >
           {badEmailHadPhone ? EMAIL_SHAPE_ERROR_WITH_PHONE : EMAIL_SHAPE_ERROR}
         </span>
