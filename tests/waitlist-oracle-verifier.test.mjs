@@ -26,6 +26,7 @@ const run = (handler) => spawnSync(process.execPath, [VERIFIER], { encoding: "ut
 function copyWith(mutate) {
   let src = readFileSync(REAL, "utf8");
   src = src.replace('"../../src/lib/sourceSlug.mjs"', JSON.stringify(pathToFileURL(join(ROOT, "src/lib/sourceSlug.mjs")).href));
+  src = src.replace('"../../src/lib/emailShape.mjs"', JSON.stringify(pathToFileURL(join(ROOT, "src/lib/emailShape.mjs")).href));
   const out = mutate(src);
   const file = join(scratch, `handler-${++n}.mjs`);
   writeFileSync(file, out);
@@ -68,6 +69,17 @@ for (const [name, mutate] of Object.entries(MUTANTS)) {
     assert.match(r.stdout, /CHECK\(S\) FAILED/);
   });
 }
+
+test("FORCED RED (gy-e60uc.2): a handler that only checks for an '@' accepts 'a@b' -> the verifier exits 1 on the malformed-email line", () => {
+  const file = copyWith((s) => {
+    const out = s.replace("if (email && !looksLikeEmail(email)) {", 'if (email && !email.includes("@")) {');
+    assert.notEqual(out, s, "the mutation did not change the handler; the control would be blind");
+    return out;
+  });
+  const r = run(file);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stdout, /FAIL\s+gy-e60uc\.2 — malformed email 'a@b' is REFUSED with 400/);
+});
 
 test("A handler that cannot be LOADED is exit 2, never a pass (I could not look != the oracle is closed)", () => {
   for (const bad of [join(scratch, "does-not-exist.mjs")]) {

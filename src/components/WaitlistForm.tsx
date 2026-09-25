@@ -1,10 +1,16 @@
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
 import { getAttributionSource } from "../lib/attribution";
-import { ACCESS_SUCCESS_MESSAGE_EMAIL, ACCESS_SUCCESS_MESSAGE_PHONE_ONLY } from "../lib/trialAccess";
+import {
+  ACCESS_SUCCESS_MESSAGE_EMAIL,
+  ACCESS_SUCCESS_MESSAGE_PHONE_ONLY,
+  EMAIL_SHAPE_ERROR,
+  EMAIL_SHAPE_ERROR_WITH_PHONE,
+} from "../lib/trialAccess";
+import { looksLikeEmail } from "../lib/emailShape.mjs";
 
-type Status = "idle" | "loading" | "done" | "error" | "needs-contact";
+type Status = "idle" | "loading" | "done" | "error" | "needs-contact" | "bad-email";
 
 export function WaitlistForm() {
   const [status, setStatus] = useState<Status>("idle");
@@ -14,10 +20,22 @@ export function WaitlistForm() {
   // Which follow-up the visitor is told to expect. Set at submit from what they TYPED, never from
   // anything the server said, so it cannot become a membership signal.
   const [phoneOnly, setPhoneOnly] = useState(false);
+  // Whether a phone was given when the email was refused, so the error can offer the way out. Captured at
+  // submit, so the text does not change under the visitor while they edit.
+  const [badEmailHadPhone, setBadEmailHadPhone] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
   // Per-INSTANCE id for the contact-rule hint. See the comment at the <span>:
   // this form renders more than once per document, and a literal id would make
   // one instance describe its inputs with another instance's node.
   const contactRuleId = useId();
+
+  // Shared by the client check and a server 400. Keeps every typed value (nothing is cleared) and moves
+  // focus to the field that needs fixing, so a keyboard or screen-reader user lands on it.
+  function refuseEmail(hadPhone: boolean) {
+    setBadEmailHadPhone(hadPhone);
+    setStatus("bad-email");
+    emailRef.current?.focus();
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +46,13 @@ export function WaitlistForm() {
     // browser cannot enforce "email or phone" for us; this does.
     if (!email.trim() && !phone.trim()) {
       setStatus("needs-contact");
+      return;
+    }
+    // gy-e60uc.2: an email that is not name@domain.tld is REFUSED here, even when a phone was also
+    // given. Accepting it would tell the visitor to check an inbox we cannot send to (row 29). The
+    // server re-applies the same rule (functions/api/waitlist.js); this is the inline half.
+    if (email.trim() && !looksLikeEmail(email.trim())) {
+      refuseEmail(phone.trim() !== "");
       return;
     }
     // Decided before the request: the fields stay editable while it is in flight.
@@ -43,7 +68,16 @@ export function WaitlistForm() {
         // value is client-asserted and is attribution, never authorisation.
         body: JSON.stringify({ name, email, phone, source: getAttributionSource() }),
       });
-      if (!res.ok) throw new Error("bad status");
+      if (!res.ok) {
+        // The server applies the same shape rule. If it refused the email, say so exactly as the form
+        // would; never surface a status code or the server's wording. Anything else is a real failure
+        // and keeps the error state and the mailto fallback.
+        if (res.status === 400 && (await res.json().catch(() => null))?.error === "valid email required") {
+          refuseEmail(phone.trim() !== "");
+          return;
+        }
+        throw new Error("bad status");
+      }
       // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).
       if (typeof window !== "undefined" && (window as any).umami) {
         (window as any).umami.track("waitlist_signup");
@@ -136,16 +170,18 @@ export function WaitlistForm() {
         style={fieldStyle}
       />
       <input
+        ref={emailRef}
         type="email"
         name="email"
         autoComplete="email"
         aria-label="Your email"
         aria-describedby={contactRuleId}
+        aria-invalid={status === "bad-email" ? true : undefined}
         placeholder="Your email"
         value={email}
         onChange={(e) => {
           setEmail(e.target.value);
-          if (status === "needs-contact") setStatus("idle");
+          if (status === "needs-contact" || status === "bad-email") setStatus("idle");
         }}
         className={field}
         style={fieldStyle}
@@ -245,6 +281,18 @@ export function WaitlistForm() {
           style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
         >
           Add a WhatsApp number or an email so we can reach you.
+        </span>
+      )}
+      {status === "bad-email" && (
+        <span
+          role="alert"
+          // Same shape and the same destructive colour as the needs-contact error above, for the same
+          // reasons: leading-5 keeps the row an integer height, and colour is never the only carrier
+          // (role="alert" announces it).
+          className="text-[13px] leading-5"
+          style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
+        >
+          {badEmailHadPhone ? EMAIL_SHAPE_ERROR_WITH_PHONE : EMAIL_SHAPE_ERROR}
         </span>
       )}
       {status === "error" && (

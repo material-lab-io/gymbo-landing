@@ -38,6 +38,12 @@ export const ACCESS_CTA_LABEL = "Request access";
 // things: an email gets the confirmation mail (waitlist-notify), a phone-only lead gets a WhatsApp
 // message from the team. Keyed on the email being non-empty, so someone who gives BOTH is told about
 // the email. Wording ratified by content; the channel named is the one the founder ruled on.
+// Shown under the button when an email was typed but is not name@domain.tld (gy-e60uc.2), whether the
+// form or the server caught it. It refuses the submit even if a phone was also given: the success line
+// for anyone who typed an email says "check your inbox", so an address we cannot send to must not get
+// that line. The second string gives the way out in the same sentence. Wording ratified by content.
+export const EMAIL_SHAPE_ERROR = "That email doesn't look right. Check it and try again.";
+export const EMAIL_SHAPE_ERROR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it to use your WhatsApp number.";
 export const ACCESS_SUCCESS_MESSAGE_EMAIL = "Request received. Check your inbox for a confirmation.";
 export const ACCESS_SUCCESS_MESSAGE_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
 

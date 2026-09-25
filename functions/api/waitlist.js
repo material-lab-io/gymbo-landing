@@ -13,6 +13,8 @@
 // client is not trusted: whatever arrives is re-normalised here, and anything
 // that is not a clean slug becomes NULL rather than being stored as a channel.
 import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
+// gy-e60uc.2 — the same name@domain.tld rule the form applies, re-applied here because the client is not trusted.
+import { looksLikeEmail } from "../../src/lib/emailShape.mjs";
 
 const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
@@ -72,7 +74,7 @@ export async function onRequestPost(context) {
     if (!email && !phone) {
       return Response.json({ error: "email or phone required" }, { status: 400 });
     }
-    if (email && !email.includes("@")) {
+    if (email && !looksLikeEmail(email)) {
       return Response.json({ error: "valid email required" }, { status: 400 });
     }
     if (phone && !looksLikePhone(phone)) {

@@ -125,6 +125,19 @@ for (const [label, payload] of [
   check("gy-ds3fn — a supplied but implausible phone is REJECTED", JSON.parse(badPhone).status === 400, badPhone);
 }
 
+// --- gy-e60uc.2: a malformed email must be REFUSED before insert, not stored and never mailed -------
+// Row 29 was accepted by an "@"-only check, then Resend 422'd it, so the visitor was told to check an
+// inbox we could not send to. The refusal is 400 and is decided BEFORE the database is touched, so it
+// cannot depend on whether the address is already on the list (it is not an oracle).
+for (const bad of ["a@b", "a@gmail", "a@gmail,com"]) {
+  const r = await runCurrent(201, { name: "A", email: bad });
+  check(`gy-e60uc.2 — malformed email '${bad}' is REFUSED with 400`, JSON.parse(r).status === 400, r);
+}
+{
+  const r = await runCurrent(201, { name: "A", email: "trainer@example.com" });
+  check("gy-e60uc.2 — a well-formed email is still ACCEPTED (liveness: the refusal is not a blanket 400)", JSON.parse(r).status === 200, r);
+}
+
 // --- the empty-string trap -----------------------------------------------------
 // lower('') is a real value under waitlist_email_idx, so sending "" instead of
 // NULL would make the SECOND phone-only signup collide with the first.

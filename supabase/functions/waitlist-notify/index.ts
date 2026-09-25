@@ -23,6 +23,20 @@
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails"
 
+// gy-e60uc.2 -- WHAT A SENDABLE ADDRESS LOOKS LIKE. A BYTE-IDENTICAL COPY of src/lib/emailShape.mjs (the
+// form and the Pages Function import that file); tests/email-shape.test.mjs compares the two blocks so
+// they cannot drift. It is copied rather than imported because this function is deployed by hand and
+// cannot safely import from outside supabase/. Row 29 reached Resend as an address with no valid domain
+// and came back 422 'Invalid to field', so the confirmation was lost AND reported as a bare 502.
+// EMAIL_SHAPE-BEGIN
+export const EMAIL_MAX_LENGTH = 254;
+const EMAIL_BAD = "\\s@,;:<>()\\[\\]\\\\\"";
+export const EMAIL_SHAPE = new RegExp("^[^" + EMAIL_BAD + "]+@(?:[^" + EMAIL_BAD + ".]+\\.)+[^" + EMAIL_BAD + ".]{2,}$");
+export function looksLikeEmail(value) {
+  return typeof value === "string" && value.length <= EMAIL_MAX_LENGTH && EMAIL_SHAPE.test(value);
+}
+// EMAIL_SHAPE-END
+
 // gy-if6mq AC2 point 1: a CONFIG VALUE, not a literal. Kaushik set 10/day today and
 // said the number moves once real volume exists.
 const THRESHOLD = Number(Deno.env.get("WAITLIST_ALERT_THRESHOLD") ?? "10")
@@ -183,12 +197,17 @@ function rowsTable(rows: Row[]): string {
   ).join("")
 }
 
-function teamHtml(rows: Row[], digest: boolean): string {
+function teamHtml(rows: Row[], digest: boolean, confirmationSkippedBadEmail = false): string {
   const lead = digest
     ? `<p style="font-size:14px;">${rows.length} new waitlist signups. Grouped because the last ${FLAP_WINDOW_DAYS} days went over the ${THRESHOLD}/day threshold.</p>`
     : `<p style="font-size:14px;">A new waitlist signup on getgymbo.com.</p>`
+  // gy-e60uc.2: say so in the alert, or the lead reads as confirmed when it was not.
+  const note = confirmationSkippedBadEmail
+    ? `<p style="font-size:14px;color:#b00020;">No confirmation email was sent: the address does not look valid. Reach this lead another way.</p>`
+    : ""
   return `<!DOCTYPE html><html><body style="font-family:system-ui,sans-serif;color:#222;">
 ${lead}
+${note}
 <table cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-top:12px;">
 <tr><th align="left" style="padding:6px 10px;border-bottom:2px solid #333;font-size:12px;">id</th>
 <th align="left" style="padding:6px 10px;border-bottom:2px solid #333;font-size:12px;">name</th>
@@ -289,9 +308,20 @@ Deno.serve(async (req: Request) => {
       // AC1 IS ALWAYS INDIVIDUAL AND IMMEDIATE. pm was explicit: the threshold governs
       // the TEAM alert only. You cannot batch a confirmation addressed to different
       // people, so "group into a single email" must never leak into this send.
-      const conf = email
-        ? await sendMail([email], "your gymbo access request", confirmationHtml(name))
-        : { ok: true as const, status: 0, id: undefined, skipped: "no_email_phone_only" }
+      //
+      // gy-e60uc.2: VALIDATE BEFORE CALLING RESEND. A malformed address used to go to Resend, come back
+      // 422 and surface as a bare 502 with nothing naming the cause. It now short-circuits to a NAMED
+      // outcome, 'invalid-email', without calling the provider; the team alert below still goes out so
+      // the lead is not lost (the form also collects a phone). The address itself is never logged.
+      const emailInvalid = email !== "" && !looksLikeEmail(email)
+      if (emailInvalid) {
+        console.error("[waitlist-notify] outcome=invalid-email: confirmation NOT sent, Resend not called (address failed the name@domain.tld shape check)")
+      }
+      const conf = emailInvalid
+        ? { ok: false as const, status: 0, error: "invalid-email" as const, detail: undefined }
+        : email
+          ? await sendMail([email], "your gymbo access request", confirmationHtml(name))
+          : { ok: true as const, status: 0, id: undefined, skipped: "no_email_phone_only" }
 
       // The team half. Over threshold we send nothing now and leave the row unmarked;
       // the sweep groups it. That is how a signup lands in exactly ONE notification.
@@ -305,7 +335,7 @@ Deno.serve(async (req: Request) => {
         const lookup = await db(`waitlist?select=*&${match}&order=created_at.desc&limit=1`)
         const found = lookup.ok ? await lookup.json() as Row[] : []
         if (found.length > 0) {
-          team = await sendMail(TEAM, `gymbo waitlist: ${found[0].email}`, teamHtml(found, false))
+          team = await sendMail(TEAM, `gymbo waitlist: ${contactOf(found[0])}`, teamHtml(found, false, emailInvalid))
           if (team.ok) { await markAlerted([found[0].id]); alerted = 1 }
         }
       }
@@ -321,9 +351,11 @@ Deno.serve(async (req: Request) => {
       const teamOk = team ? team.ok : true
       return json({
         ok: confOk && teamOk, mode: "signup", digest_mode: digest,
+        // Named, so a reader of the response or the log sees WHY and not just a status code.
+        ...(emailInvalid ? { outcome: "invalid-email" } : {}),
         confirmation: "skipped" in conf
           ? { sent: false, skipped: conf.skipped }
-          : { sent: conf.ok, status: conf.status, id: conf.ok ? conf.id : undefined },
+          : { sent: conf.ok, status: conf.status, id: conf.ok ? conf.id : undefined, ...(emailInvalid ? { outcome: "invalid-email" } : {}) },
         // Be explicit about WHY no team alert went out. "deferred_to_digest:false"
         // was ambiguous -- it read as a state rather than a reason.
         team_alert: team
@@ -332,7 +364,7 @@ Deno.serve(async (req: Request) => {
             ? { sent: false, reason: "deferred_to_digest" }
             : { sent: false, reason: "no_matching_row" },
         alerted,
-      }, conf.ok ? 200 : 502)
+      }, conf.ok ? 200 : emailInvalid ? 422 : 502)
     }
 
     if (mode === "sweep") {
