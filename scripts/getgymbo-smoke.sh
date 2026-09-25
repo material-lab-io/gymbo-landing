@@ -122,6 +122,79 @@ else
   log "WARN product-contract.json or jq unavailable — skipping contract assertions"
 fi
 
+# --- 5. THE PROD DATA PATH (gy-gcr22) -------------------------------------
+# WHY THIS EXISTS, and it is not a nice-to-have: /w/<token> and /m/<id> are
+# server-rendered from the database with the service_role key. On 2026-09-11 that
+# key was found to be ABSENT from the Cloudflare Pages PRODUCTION environment, so
+# every read 401'd and BOTH surfaces had been returning their refusal page to
+# every visitor since the day they shipped. Nothing went red. Nothing could:
+#
+#   the refusal is DELIBERATELY uniform (malformed, unknown, revoked and expired
+#   all return the same bytes, so a token-guesser learns nothing) -- and that same
+#   property makes a TOTAL OUTAGE indistinguishable from a correct refusal.
+#
+# Every check we had was a refusal check or a key-absence grep, and all of them
+# pass perfectly on a page that cannot reach the database at all. A control that
+# cannot fail is not a control. This section is the one that can fail.
+#
+# It works by opening a PERMANENT canary link on production and requiring a real
+# row to come back through the whole chain: Pages Function -> env binding ->
+# PostgREST -> rendered HTML. The canary is dummy data owned by the dummy QA
+# trainer (share link 321c7425, workout e98c5182); the token is published here on
+# purpose, because a check whose input is a secret is a check that goes quiet when
+# the secret goes missing.
+CANARY_TOKEN="gymbo-prod-canary-DO-NOT-DELETE"
+# CANARY_ORIGIN exists so this section can be proven to go GREEN as well as red.
+# A gate that has only ever been seen to fail is half a gate, and the section
+# cannot be exercised against production until the binding is restored -- so
+# gate-selftest.yml points it at a local fixture instead. Production is the
+# default and nothing in CI overrides it except the self-test.
+CANARY_ORIGIN="${CANARY_ORIGIN:-https://getgymbo.com}"
+case "$URL" in
+  "$CANARY_ORIGIN"|"$CANARY_ORIGIN"/|https://www.getgymbo.com|https://www.getgymbo.com/)
+    CANARY_FILE="$(mktemp)"; REFUSAL_FILE="$(mktemp)"
+    CCODE="$(curl -sL --compressed --max-time 20 -o "$CANARY_FILE" -w '%{http_code}' "$URL/w/$CANARY_TOKEN" 2>/dev/null)"
+    RCODE="$(curl -sL --compressed --max-time 20 -o "$REFUSAL_FILE" -w '%{http_code}' "$URL/w/not-a-token" 2>/dev/null)"
+
+    if [ "$CCODE" = "200" ] && grep -q "CANARY" "$CANARY_FILE"; then
+      log "OK   data path: canary link renders from the database (200)"
+    else
+      fail "DATA PATH DEAD: /w/$CANARY_TOKEN returned HTTP $CCODE and no canary row. Either SUPABASE_SERVICE_ROLE_KEY is missing from the Pages PRODUCTION env (gy-gcr22 -- every DB read 401s and /m/ is dead too), or the canary rows were deleted. Check the binding FIRST; deleting the rows is the rarer cause."
+    fi
+
+    # The attribution block is rendered from exercise_media FIELDS, so this string
+    # proves the media join survived too -- not just that some HTML came back.
+    if grep -q "wger.de" "$CANARY_FILE"; then
+      log "OK   data path: CC-BY-SA attribution rendered from exercise_media"
+    else
+      fail "data path: canary page has no wger attribution -- the media join or the fail-closed attribution gate is refusing"
+    fi
+
+    # 🔴 THE CONTROL THAT WAS IMPOSSIBLE TO FAIL BEFORE THIS SECTION EXISTED.
+    # A valid token and a malformed one must NOT produce the same bytes. When the
+    # binding was missing they were byte-identical, and that is exactly what no
+    # other check in this repo could see.
+    if [ "$RCODE" = "404" ]; then
+      log "OK   control: a malformed token is still refused (404)"
+    else
+      fail "control: /w/not-a-token returned HTTP $RCODE, expected 404 -- the refusal path itself is wrong"
+    fi
+    if cmp -s "$CANARY_FILE" "$REFUSAL_FILE"; then
+      fail "🔴 a VALID token and a MALFORMED one returned BYTE-IDENTICAL responses -- this is the gy-gcr22 signature: the page is serving its refusal to everyone"
+    else
+      log "OK   control: valid and malformed tokens differ"
+    fi
+    rm -f "$CANARY_FILE" "$REFUSAL_FILE"
+    ;;
+  *)
+    # ATTRIBUTABLE SKIP, not a silent one. Preview deployments carry no production
+    # env vars by design, so running the canary there would fail every deploy for
+    # the wrong reason. prod-watch.yml runs this file against https://getgymbo.com
+    # hourly, which is where the check is meant to bite.
+    log "SKIP data path canary: $URL is not the production origin (runs hourly via prod-watch)"
+    ;;
+esac
+
 echo "=== getgymbo smoke ($URL) ==="
 echo "$OUT"
 if [ "$FAIL" = "1" ]; then echo "RESULT: FAIL (gate would block deploy)"; exit 1; else echo "RESULT: PASS"; exit 0; fi

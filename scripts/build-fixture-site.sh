@@ -10,7 +10,11 @@
 #
 # Usage: build-fixture-site.sh <outdir> <mode>
 # Modes: good | no-title | missing-pricing | robots-disallow-claudebot |
-#        js-error | dark-theme-leak
+#        js-error | dark-theme-leak | data-path-dead
+#
+# data-path-dead (gy-gcr22) reproduces the production failure exactly: the
+# canary link and a malformed token both return the SAME refusal. Serve the
+# fixture and run the smoke with CANARY_ORIGIN pointed at it.
 set -euo pipefail
 
 OUT="${1:?usage: build-fixture-site.sh <outdir> <mode>}"
@@ -77,5 +81,25 @@ cat > "$OUT/sitemap.xml" <<'SITEMAP'
 <url><loc>https://getgymbo.com/</loc></url>
 </urlset>
 SITEMAP
+
+# --- the /w/ canary surface (gy-gcr22) -------------------------------------
+# `good` serves a rendered workout page carrying the two strings the data-path
+# check looks for: the canary row's name (proves the page reached the database)
+# and a wger source URL (proves the exercise_media join and the attribution
+# render survived). `data-path-dead` serves NOTHING at either path, so both the
+# canary and the malformed control 404 with the SAME body -- which is precisely
+# what production does when SUPABASE_SERVICE_ROLE_KEY is missing.
+mkdir -p "$OUT/w"
+if [ "$MODE" != "data-path-dead" ]; then
+  cat > "$OUT/w/gymbo-prod-canary-DO-NOT-DELETE" <<'CANARY'
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>CANARY — gy-gcr22 prod data-path check — DO NOT DELETE</title></head><body>
+<h1>CANARY — gy-gcr22 prod data-path check — DO NOT DELETE</h1>
+<div class="ex"><h2>Dumbbell Bench Press</h2>
+<p class="attr">Goulart · <a href="https://wger.de/en/exercise/73/view/">wger</a> ·
+<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en">CC BY-SA 4.0</a></p></div>
+</body></html>
+CANARY
+fi
 
 echo "Fixture '$MODE' built at $OUT"
