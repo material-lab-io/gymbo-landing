@@ -63,6 +63,13 @@ export function routeOfFile(path) {
 
 // Cloudflare rewrites e-mail addresses to "[email protected]" on the deployed site, so a
 // live comparison must mask addresses on BOTH sides. The lock itself keeps the real one.
+// BUILD METADATA is not copy. vite.config.ts stamps every sitemap <lastmod> with the build
+// date, so pinning it made the detector go red for every deploy from 00:00Z on the day after
+// the baseline was written (origin/main 0b0c0419 failed on 2026-09-25 with no change of any
+// kind). The tag stays pinned (removing it, or changing a <loc>, <priority> or <changefreq>,
+// is still a finding); only the DATE VALUE inside it is masked, in the lock and on compare.
+export const maskVolatile = (s) => String(s).replace(/<lastmod>\s*\d{4}-\d{2}-\d{2}(?:T[\d:.+Z-]*)?\s*<\/lastmod>/gi, "<lastmod>DATE</lastmod>");
+
 export const maskEmails = (s) => String(s).replace(/\[email\s*protected\]/gi, "<email>").replace(/[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g, "<email>");
 
 export function collectBlocks(read, files) {
@@ -73,7 +80,7 @@ export function collectBlocks(read, files) {
     const ext = extname(path).toLowerCase();
     const name = path.split("/").pop();
     if (HTML.has(ext)) surfaces.set(routeOfFile(path), copyBlocks(read(path), routeOfFile(path)));
-    else if (TEXT.has(ext) || TEXT_NAMES.has(name)) surfaces.set(path, servedTextBlocks(read(path)));
+    else if (TEXT.has(ext) || TEXT_NAMES.has(name)) surfaces.set(path, servedTextBlocks(maskVolatile(read(path))));
     else if (BINARY.has(ext)) continue;
     else if (CODE.has(ext)) code.push(path);
     else unclassified.push(path);
@@ -125,7 +132,7 @@ export function serialiseLock(lock) {
   return lines.join("\n");
 }
 
-export function diffAgainstLock(surfaces, lock, { mask = (s) => s } = {}) {
+export function diffAgainstLock(surfaces, lock, { mask = maskVolatile } = {}) {
   const findings = [];
   const shipped = new Set(surfaces.keys());
   const locked = new Set(Object.keys(lock.routes));
