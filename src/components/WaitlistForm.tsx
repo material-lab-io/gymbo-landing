@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
 import { getAttributionSource } from "../lib/attribution";
@@ -24,10 +24,26 @@ export function WaitlistForm() {
   // submit, so the text does not change under the visitor while they edit.
   const [badEmailHadPhone, setBadEmailHadPhone] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  // The inline error (needs-contact or bad-email; only one is ever shown). Ref: to bring it into view.
+  // Id: so the field(s) it is about can name it as their description, not just rely on the live region.
+  const errorRef = useRef<HTMLSpanElement>(null);
+  const errorId = useId();
   // Per-INSTANCE id for the contact-rule hint. See the comment at the <span>:
   // this form renders more than once per document, and a literal id would make
   // one instance describe its inputs with another instance's node.
   const contactRuleId = useId();
+
+  // gy-e60uc.7: A REFUSED SUBMIT MUST BE SEEN. The error renders under the button, and on a phone the fixed
+  // sticky CTA bar covered it (tester, 375x740), while on a tall desktop it sat below the fold, so a failed
+  // submit looked like nothing had happened. Focus moves to the field, but focus only scrolls the FIELD into
+  // view, not the error beneath the button. block:"nearest" scrolls the least it must, and it honours the root's
+  // scroll-padding-bottom (theme.css --gy-sticky-bar-clearance), so the error stops ABOVE the bar. That
+  // clearance is the one definition of "the space the bar covers"; do not hard-code a second one here.
+  useEffect(() => {
+    if (status === "bad-email" || status === "needs-contact") {
+      errorRef.current?.scrollIntoView({ block: "nearest" });
+    }
+  }, [status]);
 
   // Shared by the client check and a server 400. Keeps every typed value (nothing is cleared) and moves
   // focus to the field that needs fixing, so a keyboard or screen-reader user lands on it.
@@ -168,7 +184,7 @@ export function WaitlistForm() {
         autoComplete="tel"
         inputMode="tel"
         aria-label="Your WhatsApp phone number"
-        aria-describedby={contactRuleId}
+        aria-describedby={status === "needs-contact" ? `${contactRuleId} ${errorId}` : contactRuleId}
         placeholder="Your WhatsApp phone number"
         value={phone}
         onChange={(e) => {
@@ -184,7 +200,7 @@ export function WaitlistForm() {
         name="email"
         autoComplete="email"
         aria-label="Your email"
-        aria-describedby={contactRuleId}
+        aria-describedby={status === "needs-contact" || status === "bad-email" ? `${contactRuleId} ${errorId}` : contactRuleId}
         aria-invalid={status === "bad-email" ? true : undefined}
         placeholder="Your email"
         value={email}
@@ -262,6 +278,8 @@ export function WaitlistForm() {
       </button>
       {status === "needs-contact" && (
         <span
+          ref={errorRef}
+          id={errorId}
           role="alert"
           // Same shape as the hint above, so the same fix: without leading-5
           // this row is 19.5px and re-introduces a fractional height the moment
@@ -294,6 +312,8 @@ export function WaitlistForm() {
       )}
       {status === "bad-email" && (
         <span
+          ref={errorRef}
+          id={errorId}
           role="alert"
           // Same shape and the same destructive colour as the needs-contact error above, for the same
           // reasons: leading-5 keeps the row an integer height, and colour is never the only carrier
