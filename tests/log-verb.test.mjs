@@ -375,8 +375,24 @@ test("THE PROVENANCE RECORD TELLS THE TRUTH: the drift order is NOT claimed to r
   assert.doesNotMatch(src._comment + src.branch, /a scheduled order runs/i, "an artefact that says a control runs when it does not is the defect this bead exists to remove");
   assert.match(src.branch, /1457 first carried this file and is CLOSED/);
   assert.doesNotMatch(src.branch, /1457[^.]*\bOPEN\b(?! and NOT MERGED)/);
-  assert.equal(src.mergedToMain, false);
+  // provenance must be a commit that exists on main, never a PR-branch head that a squash-merge orphans
+  assert.equal(src.mergedToMain, true);
+  assert.match(src.commit, /^[0-9a-f]{40}$/);
+  assert.match(src.branch, new RegExp(`squash-merged .* as ${src.commit}`));
+  assert.doesNotMatch(src.branch, /NOT MERGED|will NOT survive/);
   const gate = readFileSync(SCRIPT, "utf8");
   assert.match(gate, /THAT ORDER DOES NOT EXIST YET/);
   assert.doesNotMatch(gate, /a scheduled Gas City order\s*\n?\/\/\s*runs content/);
+});
+
+test("PROVENANCE BANNER: a record marked merged prints Gymbo-v1 main, an unmerged one prints the OPEN-PR warning", () => {
+  const dir = join(scratch, `prov-${++serial}`);
+  mkdirSync(dir, { recursive: true });
+  const [rul, src] = rulingsFor([ruled()]);
+  const rec = JSON.parse(readFileSync(src, "utf8"));
+  writeFileSync(join(dir, "merged.json"), JSON.stringify({ ...rec, mergedToMain: true, commit: "b5942e02b832" }));
+  const merged = run(site(), empty(), [], [rul, join(dir, "merged.json")]);
+  assert.match(merged.stdout, /from Gymbo-v1 main b5942e02/);
+  assert.doesNotMatch(merged.stdout, /OPEN Gymbo-v1 PR/);
+  assert.match(run(site(), empty(), [], [rul, src]).stdout, /OPEN Gymbo-v1 PR/);
 });
