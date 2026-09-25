@@ -138,7 +138,7 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "schedule", caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
   { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
   { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
-  { slug: "ai", caption: "Ask Gymbo anything", alt: "Ask Gymbo, ready to answer questions about your training business" },
+  { slug: "ai", caption: "Ask Gymbo", alt: "The Ask Gymbo chat screen" },
   { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
 ];
 
