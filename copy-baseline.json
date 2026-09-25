@@ -2964,7 +2964,7 @@
       ["served line","<changefreq>monthly</changefreq>","observed"],
       ["served line","<changefreq>weekly</changefreq>","observed"],
       ["served line","<changefreq>yearly</changefreq>","observed"],
-      ["served line","<lastmod>2026-09-24</lastmod>","observed"],
+      ["served line","<lastmod>DATE</lastmod>","observed"],
       ["served line","<loc>https://getgymbo.com/</loc>","observed"],
       ["served line","<loc>https://getgymbo.com/alternatives/akton/</loc>","observed"],
       ["served line","<loc>https://getgymbo.com/alternatives/trainerize/</loc>","observed"],
