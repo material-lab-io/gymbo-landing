@@ -135,7 +135,16 @@ export function WaitlistForm() {
   } as const;
 
   return (
-    <form onSubmit={onSubmit} className="w-full max-w-[440px] flex flex-col gap-3">
+    <form
+      onSubmit={onSubmit}
+      // gy-e60uc.2 (content's ruling): ONE ERROR, ONE VOICE. Without this the browser's own type=email check
+      // refuses shapes it dislikes (e.g. "a@gmail,com") with ITS tooltip in ITS wording, while "a@b" and
+      // "a@gmail" reach our ratified text: the same mistake would read two ways depending on the typo.
+      // The form already does its own email-or-phone and shape checks, so nothing native is relied on.
+      // type=email / autocomplete stay on the input, so the mobile keyboard and autofill are unchanged.
+      noValidate
+      className="w-full max-w-[440px] flex flex-col gap-3"
+    >
       <input
         type="text"
         name="name"
