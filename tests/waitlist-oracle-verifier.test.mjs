@@ -50,14 +50,25 @@ test("HARNESS CONTROL: an UNMODIFIED copy passes, so a red below is the planted 
   assert.equal(r.status, 0, r.stdout + r.stderr);
 });
 
-const MUTANTS = {
-  "a duplicate (409) answers with the pre-fix shape {ok, already}": (s) => insertAfter(s, "if (res.status === 201) {", "").replace("if (res.status === 201) {", 'if (res.status === 409) return Response.json({ ok: true, already: true }, { status: 200 });\n    if (res.status === 201) {'),
-  "a field is added to the NEW-INSERT branch only (the exact regression the verifier's header warns about)": (s) => s.replace("if (res.status === 201) {", 'if (res.status === 201) {\n      return Response.json({ ok: true, id: 1 }, { status: 200 });'),
-  "a duplicate returns a different STATUS (202)": (s) => s.replace("if (res.status === 201) {", "if (res.status === 409) return Response.json({ ok: true }, { status: 202 });\n    if (res.status === 201) {"),
-  "a duplicate carries an extra HEADER": (s) => s.replace("if (res.status === 201) {", 'if (res.status === 409) return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json", "x-existing": "1" } });\n    if (res.status === 201) {'),
+const SEND = "context.waitUntil(notifyReceipt(context, receipt));";
+const ANSWER = "return successResponse();";
+const replaceOnce = (s, from, to) => {
+  assert.ok(s.split(from).length === 2, `mutation anchor must occur exactly once in the handler: ${from}`);
+  return s.replace(from, to);
 };
-for (const [name, mutate] of Object.entries(MUTANTS)) {
-  test(`FORCED RED: ${name} -> the verifier exits 1 on a NEGATIVE CONTROL line`, () => {
+// Each entry: [what the planted defect is, how to plant it, the verifier line that must go RED].
+const MUTANTS = [
+  ["the receipt leaks into the visitor's answer (a NEW signup and a KNOWN contact now differ)", (s) => replaceOnce(s, `${SEND}\n      ${ANSWER}`, `${SEND}\n      return Response.json({ ok: true, receipt }, { status: 200 });`), /FAIL\s+NEGATIVE CONTROL — (email-only|phone-only|both): known-absent and known-present are byte-identical/],
+  ["a KNOWN contact gets a different STATUS (the exact regression the verifier's header warns about)", (s) => replaceOnce(s, SEND, `${SEND}\n      if (receipt.startsWith("b")) return Response.json({ ok: true }, { status: 202 });`), /FAIL\s+NEGATIVE CONTROL — (email-only|phone-only|both): known-absent and known-present are byte-identical/],
+  ["a KNOWN contact carries an extra HEADER", (s) => replaceOnce(s, SEND, `${SEND}\n      if (receipt.startsWith("b")) return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json", "x-existing": "1" } });`), /FAIL\s+NEGATIVE CONTROL — (email-only|phone-only|both): known-absent and known-present are byte-identical/],
+  ["waitlist-notify is AWAITED before answering (a timing oracle: a new signup's Resend call is slower than a duplicate's no-op)", (s) => replaceOnce(s, SEND, "await notifyReceipt(context, receipt);"), /FAIL\s+gy-rh2rj — NO TIMING ORACLE: the answer to a (NEW signup|KNOWN contact) does not wait on waitlist-notify/],
+  ["the notify body carries the visitor's email (the function must read the contact from the ROW)", (s) => replaceOnce(s, 'JSON.stringify({ mode: "signup", receipt })', 'JSON.stringify({ mode: "signup", receipt, email: "leak@example.com" })'), /FAIL\s+gy-rh2rj — waitlist-notify is fired on a (NEW signup|KNOWN contact), with EXACTLY/],
+  ["waitlist-notify is never fired", (s) => replaceOnce(s, SEND, "void notifyReceipt;"), /FAIL\s+gy-rh2rj — waitlist-notify is fired on a (NEW signup|KNOWN contact), with EXACTLY/],
+  ["ANY 400 from join_waitlist is shown as a visitor error (P0001 'waitlist unavailable' is OUR failure)", (s) => replaceOnce(s, 'if (err && err.code === "22023") {', "if (err) {"), /FAIL\s+gy-rh2rj — P0001 .* is a 502, never a visitor error/],
+  ["a handler that only checks for an '@' accepts 'a@b' (gy-e60uc.2)", (s) => replaceOnce(s, "if (email && !looksLikeEmail(email)) {", 'if (email && !email.includes("@")) {'), /FAIL\s+gy-e60uc\.2 — malformed email 'a@b' is REFUSED with 400/],
+];
+for (const [name, mutate, expectedLine] of MUTANTS) {
+  test(`FORCED RED: ${name} -> the verifier exits 1 on the intended line`, () => {
     const file = copyWith((s) => {
       const out = mutate(s);
       assert.notEqual(out, s, "the mutation did not change the handler; the control would be blind");
@@ -65,21 +76,10 @@ for (const [name, mutate] of Object.entries(MUTANTS)) {
     });
     const r = run(file);
     assert.equal(r.status, 1, r.stdout + r.stderr);
-    assert.match(r.stdout, /FAIL\s+NEGATIVE CONTROL — (email-only|phone-only|both): known-absent and known-present are byte-identical/);
+    assert.match(r.stdout, expectedLine);
     assert.match(r.stdout, /CHECK\(S\) FAILED/);
   });
 }
-
-test("FORCED RED (gy-e60uc.2): a handler that only checks for an '@' accepts 'a@b' -> the verifier exits 1 on the malformed-email line", () => {
-  const file = copyWith((s) => {
-    const out = s.replace("if (email && !looksLikeEmail(email)) {", 'if (email && !email.includes("@")) {');
-    assert.notEqual(out, s, "the mutation did not change the handler; the control would be blind");
-    return out;
-  });
-  const r = run(file);
-  assert.equal(r.status, 1, r.stdout + r.stderr);
-  assert.match(r.stdout, /FAIL\s+gy-e60uc\.2 — malformed email 'a@b' is REFUSED with 400/);
-});
 
 test("A handler that cannot be LOADED is exit 2, never a pass (I could not look != the oracle is closed)", () => {
   for (const bad of [join(scratch, "does-not-exist.mjs")]) {

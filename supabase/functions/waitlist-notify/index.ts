@@ -15,7 +15,9 @@
 // send-trainer-reminder-email does.
 //
 // TWO MODES, ONE FUNCTION:
-//   {mode:"signup", name, email}  fired from waitlist.js on its 201 branch only.
+//   {mode:"signup", receipt}     fired from waitlist.js on EVERY successful join_waitlist call
+//                                 (gy-rh2rj step 2). The receipt is an opaque uuid; the contact is read
+//                                 from THE ROW it resolves to, never from the body.
 //   {mode:"sweep"}                the daily reconciliation. Sends the digest when we are
 //                                 over threshold, AND -- crucially -- picks up any signup
 //                                 whose individual alert failed. That sweep is what stops
@@ -264,6 +266,34 @@ async function markAlerted(ids: number[]): Promise<void> {
   }
 }
 
+// gy-rh2rj step 2 (pm conditions 2 and 3): THE ATOMIC CLAIM. One UPDATE both decides whether this call may
+// send the confirmation and returns the contact to send it to:
+//   UPDATE waitlist SET confirmation_claimed_at = now()
+//    WHERE signup_receipt = $receipt AND confirmation_claimed_at IS NULL RETURNING id, name, email, ...
+// Two calls with the same receipt cannot both get a row back, so a race or a retry sends AT MOST ONE mail.
+// A duplicate signup's receipt is stored nowhere, so it matches no row. confirmation_claimed_at is dedicated
+// to the confirmation: team_alerted_at belongs to the team alert and the daily sweep, and sharing it would
+// let whichever ran first suppress the other. A claim whose send then fails is NOT retried: at most once is
+// the rule for mail to a person (the same as before this change, when nothing retried a confirmation).
+async function claimConfirmation(receipt: string): Promise<Row | null> {
+  const res = await db(
+    `waitlist?signup_receipt=eq.${receipt}&confirmation_claimed_at=is.null&select=id,name,email,phone,created_at`,
+    {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify({ confirmation_claimed_at: new Date().toISOString() }),
+    },
+  )
+  if (!res.ok) {
+    console.error("[waitlist-notify] claim_failed", res.status)
+    throw new Error(`claim_failed_${res.status}`)
+  }
+  const rows = await res.json() as Row[]
+  return rows[0] ?? null
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 Deno.serve(async (req: Request) => {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405)
 
@@ -273,19 +303,27 @@ Deno.serve(async (req: Request) => {
     return json({ error: "unauthorized" }, 401)
   }
 
-  let body: { mode?: string; name?: string; email?: string; phone?: string }
+  let body: { mode?: string; receipt?: string }
   try { body = await req.json() } catch { return json({ error: "bad_json" }, 400) }
   const mode = body.mode ?? "signup"
 
   try {
     if (mode === "signup") {
-      const email = String(body.email ?? "").trim()
-      const phone = String(body.phone ?? "").trim()
-      // gy-ds3fn makes email optional and phone the priority field, so "no email" is a
-      // VALID signup, not a bad request. Reject only a row with neither, mirroring the
-      // CHECK constraint coach is adding.
-      if (!email && !phone) return json({ error: "phone or email required" }, 400)
-      const name = String(body.name ?? "").trim()
+      // gy-rh2rj step 2. THE BODY IS {mode, receipt} AND NOTHING ELSE IS READ FROM IT (pm condition 3): a
+      // name, email or phone in the body is IGNORED, so holding the shared secret does not let a caller make
+      // this function mail an address of their choosing. The contact comes from the row the receipt resolves
+      // to, via service_role.
+      //
+      // ANYTHING THAT IS NOT AN UNCLAIMED, REAL RECEIPT IS A SILENT NO-OP (condition 4): a malformed value,
+      // an unknown receipt, a duplicate signup's receipt (stored nowhere), a receipt already claimed (a
+      // retry or a race), and the LEGACY body {name, email, phone} with no receipt. All answer the same 200
+      // with the same body and mail nobody, so the caller cannot use this function to learn which is which.
+      const receipt = String(body.receipt ?? "").trim()
+      const claimed = UUID_RE.test(receipt) ? await claimConfirmation(receipt) : null
+      if (!claimed) return json({ ok: true, mode: "signup" })
+      const email = String(claimed.email ?? "").trim()
+      const phone = String(claimed.phone ?? "").trim()
+      const name = String(claimed.name ?? "").trim()
 
       // === ANSWERING COACH'S OPEN CROSS-BEAD QUESTION ON gy-ds3fn ===
       // "A phone-only row has no email to send that confirmation to ... a placeholder
@@ -329,15 +367,9 @@ Deno.serve(async (req: Request) => {
       let team: Awaited<ReturnType<typeof sendMail>> | null = null
       let alerted = 0
       if (!digest) {
-        const match = email
-          ? `email=eq.${encodeURIComponent(email)}`
-          : `phone=eq.${encodeURIComponent(phone)}`
-        const lookup = await db(`waitlist?select=*&${match}&order=created_at.desc&limit=1`)
-        const found = lookup.ok ? await lookup.json() as Row[] : []
-        if (found.length > 0) {
-          team = await sendMail(TEAM, `gymbo waitlist: ${contactOf(found[0])}`, teamHtml(found, false, emailInvalid))
-          if (team.ok) { await markAlerted([found[0].id]); alerted = 1 }
-        }
+        // The claimed row IS the row: no lookup by email/phone (which could match a different, older row).
+        team = await sendMail(TEAM, `gymbo waitlist: ${contactOf(claimed)}`, teamHtml([claimed], false, emailInvalid))
+        if (team.ok) { await markAlerted([claimed.id]); alerted = 1 }
       }
       // AC5 / AC2 point 4: the row is the asset. This function NEVER deletes or
       // rolls back a signup, and waitlist.js ignores this response entirely.
@@ -362,7 +394,7 @@ Deno.serve(async (req: Request) => {
           ? { sent: team.ok, status: team.status }
           : digest
             ? { sent: false, reason: "deferred_to_digest" }
-            : { sent: false, reason: "no_matching_row" },
+            : { sent: false, reason: "not_sent" },
         alerted,
       }, conf.ok ? 200 : emailInvalid ? 422 : 502)
     }
