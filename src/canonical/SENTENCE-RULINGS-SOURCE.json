@@ -1,0 +1,23 @@
+{
+  "_comment": "Provenance of gymbo-sentence-rulings.json. That file is VENDORED VERBATIM from content's sentence-level log-verb rulings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a new content ruling + a new commit + a new sha256 here, in one change. scripts/check-log-verb.mjs fails if the file's sha256 differs from this record. WHAT THIS DOES NOT PROTECT: the file and this record can be edited together in ONE PR and the gate accepts it (tester, PR 222). The only defence against that is a DRIFT ORDER that compares the file to the LIVE bead comments by running content's docs/rulings/vendor_sentence_rulings.py --verify (exit 1 = divergence, exit 2 = could not verify; both must file a bead). THAT ORDER DOES NOT EXIST YET. It is owed by pm, who creates it now that the file is on Gymbo-v1 main (tracked on gy-uu7mt). Until it exists this gap is documented, not defended. The file is only as current as content's last refresh.",
+  "repo": "material-lab-io/Gymbo-v1",
+  "path": "docs/rulings/GYMBO-SENTENCE-RULINGS.json",
+  "branch": "Gymbo-v1 main. Gymbo-v1 PR 1455 (content/gy-uu7mt-guide-v16-generic-ai-labels) squash-merged 2026-09-25T00:12:00Z as b5942e02b832c6479b428b36284583aff2618313, and that commit IS main's tip and carries this file at docs/rulings/GYMBO-SENTENCE-RULINGS.json (checked on GitHub: compare main...b5942e02 identical; blob sha256 identical to the bytes vendored here). Gymbo-v1 PR 1457 first carried this file and is CLOSED, superseded into PR 1455.",
+  "mergedToMain": true,
+  "commit": "b5942e02b832c6479b428b36284583aff2618313",
+  "sha256": "8e53ebc1dd52572598dd9cad3383b91c6471929d0a477cc63159b2edbcd40792",
+  "vendoredAt": "2026-09-25 (re-vendored from the MERGED commit on main after PR 1455 landed; the bytes did not change)",
+  "vendoredBy": "gymbo/landing, from content's comment on gy-uu7mt (22:51Z)",
+  "version": 1,
+  "supersedes": {
+    "commit": "159fb59e5525eb5f4aff22b7fce6dc0b9512ddde",
+    "sha256": "8e53ebc1dd52572598dd9cad3383b91c6471929d0a477cc63159b2edbcd40792",
+    "change": "same bytes: this was the head of PR 1455 before its squash-merge, which mints a new commit; the earlier PR 1457 head e5fe8153ea9b1dba653556f6e4cfdc84092345e4 carried the same bytes and is a closed PR's commit"
+  },
+  "driftOrder": {
+    "exists": false,
+    "owner": "pm",
+    "tracked": "gy-uu7mt",
+    "createWhen": "the rulings file is on Gymbo-v1 main"
+  }
+}
