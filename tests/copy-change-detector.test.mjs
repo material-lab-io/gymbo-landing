@@ -160,3 +160,60 @@ test("PROVENANCE: an `equals` rule stamps ruled: only on a byte-equal block, nev
   assert.equal(provenanceOf("/", "metadata description", "Built for independent personal trainers. Plus a smart assistant.", rules), "observed");
   assert.equal(provenanceOf("/", "visible block", "Built for independent personal trainers.", rules), "observed", "wrong surface");
 });
+
+// ---- gy-uu7mt / sitemap lastmod: build METADATA must not read as a copy change ----
+const SITEMAP = (date, extra = "") => `<?xml version="1.0"?>\n<urlset>\n  <url>\n    <loc>https://getgymbo.com/</loc>\n    <lastmod>${date}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>1.0</priority>\n  </url>${extra}\n</urlset>\n`;
+
+import { maskVolatile } from "../scripts/copy-change-detector.mjs";
+
+test("SITEMAP LASTMOD (the time bomb): the build date moving by a day is NOT a copy change", () => {
+  const d = fixture({ "sitemap.xml": SITEMAP("2026-09-24") });
+  assert.equal(cli(d, "--write").status, 0);
+  for (const later of ["2026-09-25", "2027-01-01", "2026-09-24T10:11:12.000Z"]) {
+    edit(d, "sitemap.xml", /<lastmod>[^<]*<\/lastmod>/.exec(readFileSync(join(d, "dist", "sitemap.xml"), "utf8"))[0], `<lastmod>${later}</lastmod>`);
+    const r = cli(d);
+    assert.equal(r.status, 0, `${later}: ${r.stderr}`);
+  }
+});
+
+test("SITEMAP LASTMOD: the lock stores a placeholder, so refreshing it on another day changes no line", () => {
+  const d = fixture({ "sitemap.xml": SITEMAP("2026-09-24") });
+  assert.equal(cli(d, "--write").status, 0);
+  const lock = readFileSync(join(d, "lock.json"), "utf8");
+  assert.match(lock, /<lastmod>DATE<\/lastmod>/);
+  assert.doesNotMatch(lock, /2026-09-24/);
+});
+
+test("SITEMAP STAYS PINNED: a changed <loc>, <priority>, <changefreq>, a removed <lastmod>, and a NEW url each still fail", () => {
+  for (const [what, from, to] of [
+    ["loc", "<loc>https://getgymbo.com/</loc>", "<loc>https://getgymbo.com/secret/</loc>"],
+    ["priority", "<priority>1.0</priority>", "<priority>0.1</priority>"],
+    ["changefreq", "<changefreq>weekly</changefreq>", "<changefreq>daily</changefreq>"],
+    ["lastmod removed", "    <lastmod>2026-09-24</lastmod>\n", ""],
+    ["lastmod emptied", "<lastmod>2026-09-24</lastmod>", "<lastmod></lastmod>"],
+    ["lastmod not a date", "<lastmod>2026-09-24</lastmod>", "<lastmod>tomorrow</lastmod>"],
+  ]) {
+    const d = fixture({ "sitemap.xml": SITEMAP("2026-09-24") });
+    assert.equal(cli(d, "--write").status, 0);
+    edit(d, "sitemap.xml", from, to);
+    const r = cli(d);
+    assert.equal(r.status, 1, what);
+    assert.match(r.stderr, /unapproved-copy|removed-copy/, what);
+  }
+});
+
+test("maskVolatile masks only the DATE inside <lastmod>, nothing else", () => {
+  assert.equal(maskVolatile("<lastmod>2026-09-24</lastmod>"), "<lastmod>DATE</lastmod>");
+  assert.equal(maskVolatile("<lastmod> 2026-09-24T01:02:03+05:30 </lastmod>"), "<lastmod>DATE</lastmod>");
+  assert.equal(maskVolatile("<loc>https://getgymbo.com/2026-09-24/</loc>"), "<loc>https://getgymbo.com/2026-09-24/</loc>");
+  assert.equal(maskVolatile("Updated 2026-09-24"), "Updated 2026-09-24");
+});
+
+test("LEGACY LOCK: a baseline written BEFORE this fix (real date in the lock) still compares equal on any later day", () => {
+  const d = fixture({ "sitemap.xml": SITEMAP("2026-09-24") });
+  assert.equal(cli(d, "--write").status, 0);
+  const lockPath = join(d, "lock.json");
+  writeFileSync(lockPath, readFileSync(lockPath, "utf8").replace("<lastmod>DATE</lastmod>", "<lastmod>2026-09-24</lastmod>"));
+  edit(d, "sitemap.xml", "<lastmod>2026-09-24</lastmod>", "<lastmod>2026-09-25</lastmod>");
+  assert.equal(cli(d).status, 0);
+});
