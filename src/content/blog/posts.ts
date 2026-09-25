@@ -114,7 +114,7 @@ We're not the right tool for a gym chain or a remote coach billing in dollars. W
 // We-authored roundup (gy-k2543.4). The honesty/disclosure framing is
 // intentional + load-bearing for trust + AI-citability — do not strip it.
 // Competitor pricing matches the live re-verify (2026-06-23) + Akton researcher
-// profile (2026-06-24). AI-claim guardrail applied (workout builder + AI assistant).
+// profile (2026-06-24). Ask Gymbo capability claims are held until gy-fa0na resolves.
 const roundupBestApps: Post = {
   slug: "best-apps-for-independent-personal-trainers-in-india-2026",
   title: "best apps for independent personal trainers in india (2026)",
@@ -183,11 +183,11 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from an iPhone.
 
-**What it does (honestly):** Punch a class in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; Ask Gymbo for answers about your business; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
+**What it does (honestly):** Punch a class in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 
-**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
+**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
 
 ### Akton: for gyms and multi-branch studios
 

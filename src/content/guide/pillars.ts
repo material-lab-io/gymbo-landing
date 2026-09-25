@@ -6,7 +6,7 @@
 //     rebuild pillar-1 from it (content reversed a mid-flight four-jobs rewrite).
 //   • Pillars 2-4 = rigs/gymbo/output/guides/pillar-{2,3,4}-*.md (+ _TEMPLATE-AND-FACTS.md).
 // This file transcribes that copy verbatim; do not "improve" the guardrailed claims:
-//   • Gymbo = workout builder + AI chat assistant, NEVER "AI workouts".
+//   • Ask Gymbo capability claims are held until gy-fa0na resolves; NEVER "AI workouts".
 //   • Reminders = WhatsApp templates the trainer taps to send (not auto-send).
 //   • iPhone-only today. No "only India-native". For the trainer, not the gym.
 //   • ₹399/mo may be stated as fact, never led with.
@@ -241,7 +241,7 @@ A spreadsheet can hold this, but it doesn't update a balance in one tap between 
 
 ## where Gymbo fits
 
-[Gymbo](/) is the one place for those four things: every client, every class punched with one tap, an automatic running balance, and each UPI payment recorded against it, plus clean, GST-ready statements you can share. It gives you WhatsApp reminder templates to send, a workout builder (with voice and paste import), and Ask Gymbo, which you can simply ask "who owes me this month?" It's built to be the source of truth, so your business stops living in your head.
+[Gymbo](/) is the one place for those four things: every client, every class punched with one tap, an automatic running balance, and each UPI payment recorded against it, plus clean, GST-ready statements you can share. It gives you WhatsApp reminder templates to send and a workout builder (with voice and paste import). It's built to be the source of truth, so your business stops living in your head.
 
 ## managing your training business day to day
 
@@ -429,7 +429,7 @@ The through-line: results come from consistency, and consistency is a *pattern*,
 
 You don't need spreadsheets or a certification in analytics to train smarter; you need a session history you'll actually look at. The hard part isn't the maths; it's keeping an accurate record across a full roster without it becoming another chore.
 
-That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/), built for the independent trainer in India and running on iPhone, keeps an accurate session and attendance history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone; that judgment stays yours. It keeps the *record* clear so your coaching decisions rest on what really happened, not on what you half-remember. Ask Gymbo can answer questions about your own client history, but the programming call is always the trainer's.
+That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/), built for the independent trainer in India and running on iPhone, keeps an accurate session and attendance history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone; that judgment stays yours. It keeps the *record* clear so your coaching decisions rest on what really happened, not on what you half-remember.
 
 If you run a *gym* rather than train clients yourself, tracking member attendance across a facility is a different problem with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };

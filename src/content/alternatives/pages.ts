@@ -221,7 +221,7 @@ const akton: Post = {
     },
     {
       q: "Does Gymbo have the gym features Akton has?",
-      a: "No, by design. Gymbo has no turnstiles, branches, staff payroll, or crowd monitoring, because an independent trainer doesn't need them. It focuses on the solo trainer's actual job: sessions, payments, balances, scheduling, and Ask Gymbo to query it all.",
+      a: "No, by design. Gymbo has no turnstiles, branches, staff payroll, or crowd monitoring, because an independent trainer doesn't need them. It focuses on the solo trainer's actual job: sessions, payments, balances, and scheduling.",
     },
     {
       q: "Do Akton and Gymbo both work in India with UPI and GST?",
@@ -242,7 +242,6 @@ Both are made in India, for India. The real question isn't features or price. It
 | Anchor features | One-tap class punches, balances, payment ledger, scheduling | QR-turnstile check-in, crowd monitoring, multi-branch, staff payroll |
 | Client scale | Your ~15–25 clients | Hundreds of gym members |
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
-| Ask Gymbo (ask about your clients & balances) | ✅ | ❌ |
 | Setup | Productive in ~60 seconds, nothing to configure | Onboard a facility: branches, staff, members |
 | Platform | iPhone only | iPhone, Android, web |
 | Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | from ₹89/mo (gym suite, unlimited members) |
@@ -283,7 +282,6 @@ Gymbo strips it down to the one-person business:
 - **GST-ready statements and UPI**: built in, India-first.
 - **A real schedule**: day, week, and month views with conflict detection.
 - **A workout builder** with voice and paste import, plus a template library.
-- **Ask Gymbo about your business**: "who owes me money?", "how many sessions does Priya have left?", in plain language. Akton has no equivalent.
 - **No setup.** No branches, staff, or turnstiles to configure. You're productive in about a minute.
 
 ## when to choose which
