@@ -90,13 +90,14 @@ test('threshold: on a SCHEDULED run the override is IGNORED and said so (product
 });
 
 // --- run(): the whole flow against a stubbed GitHub ---
-const fakeGithub = ({ pending = [], events = {}, open = [], failOpen = false } = {}) => {
+const fakeGithub = ({ pending = [], events = {}, open = [], failOpen = false, failPost = null } = {}) => {
   const calls = [];
   const request = async (url, options = {}) => {
     calls.push({ url, method: options.method ?? 'GET', body: options.body ? JSON.parse(options.body) : null });
     if (url.includes('/issues?state=open')) return pending;
     if (/\/issues\/\d+\/events/.test(url)) return events[Number(url.match(/issues\/(\d+)\/events/)[1])] ?? [];
     if (url.includes('/pulls?state=open')) { if (failOpen) throw new Error('boom'); return open; }
+    if (failPost && (options.method ?? 'GET') === 'POST' && url.endsWith(failPost.suffix)) throw new Error(failPost.message);
     return null;
   };
   return { request, calls };
@@ -227,4 +228,65 @@ test('WORKFLOW: threshold_minutes is a dispatch input only, is handed to the scr
   assert.match(yml, /runs-on: \[self-hosted, gt2\]/);
   assert.match(yml, /TEST ONLY/);
   assert.doesNotMatch(yml, /DEPLOY_AUTH_THRESHOLD_MINUTES: ["']?\d/, 'no hardcoded override');
+});
+
+// ===== 2026-09-25: the first REAL overdue PR (control PR 227) made the label POST return 403 and the run went red for
+// the wrong reason. An action failure must never stop the OVERDUE evaluation from being reported. =====
+const FORBIDDEN = 'POST https://api.github.com/repos/o/r/issues/227/labels: 403 {"message":"Resource not accessible by integration"}';
+
+test('run: a 403 on the LABEL POST does not stop the evaluation: the run reports OVERDUE AND the failed action, both RED', async () => {
+  const gh = fakeGithub({ pending: [pr(227, [PENDING_LABEL])], events: { 227: labeled(ago(90)) }, failPost: { suffix: '/issues/227/labels', message: FORBIDDEN } });
+  const r = await run({ request: gh.request, env: env(), now: NOW });
+  assert.equal(r.evaluation.exitCode, 1);
+  assert.ok(r.evaluation.errors.some((e) => /OVERDUE: #227 \(90 min\)/.test(e)), 'the OVERDUE error must still be reported');
+  assert.ok(r.evaluation.errors.some((e) => /could not label #227: .*403/.test(e)), 'the failed label must be reported, not swallowed');
+  assert.ok(!r.actions.includes('label:227'));
+  assert.ok(r.actions.includes('comment:227'), 'the comment is attempted on its own, independent of the label');
+});
+
+test('run: a failing COMMENT is reported too, and the label that succeeded is still recorded', async () => {
+  const gh = fakeGithub({ pending: [pr(227, [PENDING_LABEL])], events: { 227: labeled(ago(90)) }, failPost: { suffix: '/issues/227/comments', message: 'POST .../comments: 403' } });
+  const r = await run({ request: gh.request, env: env(), now: NOW });
+  assert.equal(r.evaluation.exitCode, 1);
+  assert.ok(r.actions.includes('label:227'));
+  assert.ok(r.evaluation.errors.some((e) => /could not comment #227/.test(e)));
+  assert.ok(r.evaluation.errors.some((e) => /OVERDUE: #227/.test(e)));
+});
+
+test('run: with NO action failure there is no could-not-label noise (the report is exact)', async () => {
+  const gh = fakeGithub({ pending: [pr(227, [PENDING_LABEL])], events: { 227: labeled(ago(90)) } });
+  const r = await run({ request: gh.request, env: env(), now: NOW });
+  assert.equal(r.evaluation.errors.filter((e) => /could not/.test(e)).length, 0);
+});
+
+function cliWith403(ageMin) {
+  const shim = join(scratch, `shim403-${Math.random().toString(36).slice(2)}.mjs`);
+  const pending = [{ number: 227, pull_request: {}, labels: [{ name: PENDING_LABEL }, { name: TEST_LABEL }] }];
+  const events = [{ event: 'labeled', label: { name: PENDING_LABEL }, created_at: new Date(Date.now() - ageMin * 60000).toISOString() }];
+  writeFileSync(shim, `globalThis.fetch = async (url, o = {}) => { const j = (x) => ({ ok: true, status: 200, json: async () => x, text: async () => '' });
+    if (String(url).includes('/events')) return j(${JSON.stringify(events)});
+    if (String(url).includes('/pulls?')) return j([]);
+    if (o.method === 'POST') return { ok: false, status: 403, text: async () => '{"message":"Resource not accessible by integration"}', json: async () => ({}) };
+    return j(${JSON.stringify(pending)}); };`);
+  return spawnSync(process.execPath, ['--import', shim, SCRIPT], { encoding: 'utf8', env: { PATH: process.env.PATH, GITHUB_REPOSITORY: 'o/r', GH_TOKEN: 't', GITHUB_EVENT_NAME: 'schedule' } });
+}
+
+test('CLI: when the label POST is 403 the real script STILL exits 1 and prints BOTH ::error::OVERDUE and the failed label', () => {
+  const r = cliWith403(90);
+  assert.equal(r.status, 1, r.stdout + r.stderr);
+  assert.match(r.stderr, /::error::OVERDUE: #227 \(9\d min\)/);
+  assert.match(r.stderr, /::error::could not label #227: POST .*403/);
+});
+
+test('CLI: a 403 on a PR that is NOT overdue is irrelevant and the run stays GREEN (nothing is posted, so nothing can 403)', () => {
+  assert.equal(cliWith403(10).status, 0);
+});
+
+test('WORKFLOW PERMISSIONS: pull-requests is WRITE (a PR label needs it), issues write is kept, and the token can NOT write contents', () => {
+  const yml = readFileSync(new URL('../.github/workflows/deploy-authorization-watch.yml', import.meta.url), 'utf8');
+  const perms = /^permissions:\n((?:  \S.*\n)+)/m.exec(yml)[1];
+  assert.match(perms, /^  pull-requests: write$/m);
+  assert.match(perms, /^  issues: write$/m);
+  assert.doesNotMatch(perms, /pull-requests: read/);
+  assert.doesNotMatch(perms, /contents:\s*write/, 'this token labels and comments; it must not be able to merge or push');
 });

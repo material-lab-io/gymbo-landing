@@ -12,9 +12,13 @@ on:
         required: false
         default: ""
 
+# pull-requests: WRITE, not read. The label and the comment go through the issues API, but for a PULL REQUEST
+# GitHub requires pull-requests:write; with issues:write alone the first real overdue PR got
+# 403 "Resource not accessible by integration" (2026-09-25, control PR 227). That path had never run before
+# because the watcher had never seen an overdue PR. No contents:write: this token cannot merge anything.
 permissions:
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   watch:
