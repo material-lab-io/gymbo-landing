@@ -150,10 +150,12 @@ jobs:
       # would have reopened the oracle silently. Static, no network, no deps: it runs before the build.
       # The second command is the CONTROL ON THE CONTROL: it plants four defects in copies of the handler and
       # requires the verifier to go RED on each, so this step cannot pass only because it is blind.
+      # gy-e60uc.2: the same step also runs the email-shape rule tests (incl. the drift check between the form's and
+      # the edge function's copy) and the waitlist-notify invalid-email outcome tests, each with a forced red.
       - name: "gy-rh2rj: the waitlist enumeration oracle stays closed (verifier + its forced red)"
         run: |
           node scripts/verify-waitlist-oracle.mjs
-          node --test tests/waitlist-oracle-verifier.test.mjs
+          node --test tests/waitlist-oracle-verifier.test.mjs tests/email-shape.test.mjs tests/waitlist-notify.test.mjs
 
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
         run: node --test tests/master-asset-drift.test.mjs tests/screenshot-freshness-relocation.test.mjs

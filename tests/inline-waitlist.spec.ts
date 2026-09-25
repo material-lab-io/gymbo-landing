@@ -389,6 +389,119 @@ for (const [label, fill, expected] of [
   });
 }
 
+/**
+ * gy-e60uc.2 — an email that is not name@domain.tld is refused AT THE FORM with an inline error and NO request
+ * (row 29: accepted by an "@"-only check, then Resend 422'd it, and the visitor was told to check an inbox we
+ * could not send to). Note the HTML type=email check ACCEPTS "a@b", so the browser alone would not have caught
+ * it. NEGATIVE CONTROL and LIVENESS live together: the valid case must post, or "refused" would be a blanket no.
+ * /api/waitlist is intercepted with a stub 200: no row is created, nothing is sent.
+ */
+const EMAIL_ERR = "That email doesn't look right. Check it and try again.";
+const EMAIL_ERR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it to use your WhatsApp number.";
+for (const [label, fill] of [
+  ['a@b', { email: 'a@b' }],
+  ['a@gmail', { email: 'a@gmail' }],
+  ['malformed email WITH a phone (still refused)', { email: 'a@b', phone: '9876543210' }],
+] as const) {
+  test(`malformed email is refused at the form, no request sent: ${label} (gy-e60uc.2)`, async ({ page }) => {
+    await page.goto('/');
+    const posts: string[] = [];
+    await page.route('**/api/waitlist', async (route) => {
+      posts.push(route.request().url());
+      await route.fulfill({ status: 200, body: '{}' });
+    });
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    await form.locator('input[type="email"]').fill(fill.email);
+    if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
+    await form.locator('button[type="submit"]').click();
+    await expect(form.getByRole('alert')).toHaveText('phone' in fill ? EMAIL_ERR_WITH_PHONE : EMAIL_ERR);
+    await expect(form.locator('input[type="email"]')).toHaveAttribute('aria-invalid', 'true');
+    // Focus lands on the field to fix, and NOTHING the visitor typed is cleared (content's ruling).
+    await expect(form.locator('input[type="email"]')).toBeFocused();
+    await expect(form.locator('input[type="email"]')).toHaveValue(fill.email);
+    if ('phone' in fill) await expect(form.locator('input[type="tel"]')).toHaveValue(fill.phone);
+    // Give a wrongly-permitted request time to happen before asserting it did not.
+    await page.waitForTimeout(400);
+    expect(posts, 'a malformed email must not be posted').toEqual([]);
+    await expect(page.getByRole('status').filter({ hasText: /request received/i })).toHaveCount(0);
+    // Editing the field clears the error, like the needs-contact one.
+    await form.locator('input[type="email"]').fill('a@b.co');
+    await expect(form.getByRole('alert')).toHaveCount(0);
+  });
+}
+
+// A comma makes the BROWSER's own type=email validation refuse the submit before our handler runs, so the
+// native message shows instead of the inline one. Still a refusal with no request; asserted separately so the
+// inline-error cases above are not weakened to "either message".
+test('a comma in the address is refused by the browser itself, no request sent (gy-e60uc.2)', async ({ page }) => {
+  await page.goto('/');
+  const posts: string[] = [];
+  await page.route('**/api/waitlist', async (route) => {
+    posts.push(route.request().url());
+    await route.fulfill({ status: 200, body: '{}' });
+  });
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@gmail,com');
+  await form.locator('button[type="submit"]').click();
+  await page.waitForTimeout(400);
+  expect(posts, 'a malformed email must not be posted').toEqual([]);
+  await expect(page.getByRole('status').filter({ hasText: /request received/i })).toHaveCount(0);
+  expect(await form.locator('input[type="email"]').evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false);
+});
+
+// The server applies the same rule. If it refuses an address the form let through, the visitor sees the SAME
+// inline text (never a status code or the server's wording); any other failure keeps the old error + mailto.
+for (const [label, phone, expected] of [
+  ['email only', '', EMAIL_ERR],
+  ['email and phone', '9876543210', EMAIL_ERR_WITH_PHONE],
+] as const) {
+  test(`a server refusal of the email shows the same inline text (${label}) (gy-e60uc.2)`, async ({ page }) => {
+    await page.goto('/');
+    await page.route('**/api/waitlist', (route) => route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'valid email required' }) }));
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    // "a@b.co" passes the form's own check, so this reaches the (stubbed) server.
+    await form.locator('input[type="email"]').fill('a@b.co');
+    if (phone) await form.locator('input[type="tel"]').fill(phone);
+    await form.locator('button[type="submit"]').click();
+    const alert = form.getByRole('alert');
+    await expect(alert).toHaveText(expected);
+    await expect(alert).not.toContainText(/400|422|502|resend|validation|invalid to field/i);
+    await expect(form.locator('input[type="email"]')).toBeFocused();
+    await expect(form.locator('input[type="email"]')).toHaveValue('a@b.co');
+  });
+}
+
+test('a generic server failure keeps the existing error state and its mailto fallback (gy-e60uc.2)', async ({ page }) => {
+  await page.goto('/');
+  await page.route('**/api/waitlist', (route) => route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'failed to join' }) }));
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@b.co');
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByText(/couldn't send your request just now/i)).toBeVisible();
+  await expect(form.getByRole('link', { name: /email us to request access/i })).toHaveAttribute('href', /^mailto:hello@getgymbo\.com/);
+  // NOT mistaken for the email error.
+  await expect(form.getByText(/doesn't look right/i)).toHaveCount(0);
+});
+
+test('LIVENESS: a well-formed email passes the shape check and posts (gy-e60uc.2)', async ({ page }) => {
+  await page.goto('/');
+  const posts: string[] = [];
+  await page.route('**/api/waitlist', async (route) => {
+    posts.push(route.request().url());
+    await route.fulfill({ status: 200, body: '{}' });
+  });
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('first.last+tag@sub.example.co.in');
+  await form.locator('button[type="submit"]').click();
+  await expect.poll(() => posts.length).toBe(1);
+  await expect(page.getByRole('status').filter({ hasText: /request received/i })).toHaveText('Request received. Check your inbox for a confirmation.');
+});
+
 test('the phone field says WhatsApp, and keeps "phone" in its accessible name (gy-e60uc.3)', async ({ page }) => {
   await page.goto('/');
   const phone = page.locator('input[name="phone"]').last();
