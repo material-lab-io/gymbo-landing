@@ -591,6 +591,48 @@ for (const [label, prepare] of [
   });
 }
 
+/**
+ * gy-e60uc.7 focus ruling (pm 23:11Z): on ANY refused submit, focus moves to the FIRST field the error is about, so
+ * a keyboard or screen-reader user lands where the fix is. An empty submit is about the contact PAIR, and the first
+ * contact field is the WhatsApp phone field. Before this, focus stayed on the submit button that had just been
+ * clicked, leaving nowhere to act. document.activeElement is asserted (a focus RING is not drawn for a pointer
+ * click, so "is there a ring" would say nothing). /api/waitlist is intercepted: no row, nothing sent.
+ */
+for (const [label, fill, expectedField] of [
+  ['an empty submit', {}, 'phone'],
+  ['a malformed email', { email: 'a@b' }, 'email'],
+  ['a malformed email WITH a phone', { email: 'a@b', phone: '9876543210' }, 'email'],
+] as const) {
+  test(`focus lands on the first field the error is about after ${label} (gy-e60uc.7)`, async ({ page }) => {
+    await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+    await page.goto('/');
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
+    if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
+    await form.locator('button[type="submit"]').click();
+    await expect(form.getByRole('alert')).toBeVisible();
+    const active = await page.evaluate(() => {
+      const a = document.activeElement as HTMLElement | null;
+      return a ? { tag: a.tagName.toLowerCase(), name: a.getAttribute('name') } : null;
+    });
+    expect(active, `focus after ${label} should be on the "${expectedField}" input, not on ${JSON.stringify(active)}`).toEqual({ tag: 'input', name: expectedField });
+  });
+}
+
+test('after an empty submit the visitor can type straight into the focused field (gy-e60uc.7)', async ({ page }) => {
+  await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByRole('alert')).toBeVisible();
+  await page.keyboard.type('9876543210');
+  await expect(form.locator('input[type="tel"]')).toHaveValue('9876543210');
+  // Typing clears the error, as it does today.
+  await expect(form.getByRole('alert')).toHaveCount(0);
+});
+
 test('the error is named as the description of the field it is about (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');

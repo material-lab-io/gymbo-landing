@@ -24,6 +24,7 @@ export function WaitlistForm() {
   // submit, so the text does not change under the visitor while they edit.
   const [badEmailHadPhone, setBadEmailHadPhone] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  const phoneRef = useRef<HTMLInputElement>(null);
   // The inline error (needs-contact or bad-email; only one is ever shown). Ref: to bring it into view.
   // Id: so the field(s) it is about can name it as their description, not just rely on the live region.
   const errorRef = useRef<HTMLSpanElement>(null);
@@ -62,6 +63,11 @@ export function WaitlistForm() {
     // browser cannot enforce "email or phone" for us; this does.
     if (!email.trim() && !phone.trim()) {
       setStatus("needs-contact");
+      // On ANY refused submit focus goes to the FIRST field the error is about (pm, gy-e60uc.7), so a keyboard or
+      // screen-reader user lands where the fix is. This error is about the contact PAIR, and the first contact
+      // field is the WhatsApp phone. It used to stay on the submit button that had just been clicked, which left
+      // nowhere to act. The malformed-email refusal already focuses the email field (refuseEmail).
+      phoneRef.current?.focus();
       return;
     }
     // gy-e60uc.2: an email that is not name@domain.tld is REFUSED here, even when a phone was also
@@ -179,6 +185,7 @@ export function WaitlistForm() {
         style={fieldStyle}
       />
       <input
+        ref={phoneRef}
         type="tel"
         name="phone"
         autoComplete="tel"
