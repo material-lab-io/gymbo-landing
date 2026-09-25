@@ -65,7 +65,7 @@
 //
 // Usage:
 //   node scripts/check-master-asset-drift.mjs --app-repo <Gymbo-v1 checkout>
-//        [--app-ref origin/main] [--manifest ops/screens/manifest.json] [--json]
+//        [--app-ref origin/main] [--manifest public/screens/manifest.json] [--json]
 // The checkout must be a FULL clone (not shallow); the script refuses a shallow one.
 
 import { readFile } from "node:fs/promises";
@@ -85,7 +85,7 @@ const opt = (name, dflt) => {
 };
 const APP_REPO = opt("--app-repo", null);
 const APP_REF = opt("--app-ref", "origin/main");
-const MANIFEST_PATH = opt("--manifest", "ops/screens/manifest.json");
+const MANIFEST_PATH = opt("--manifest", "public/screens/manifest.json");
 const AS_JSON = argv.includes("--json");
 
 function git(args) {

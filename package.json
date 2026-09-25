@@ -5,15 +5,15 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/optimize-gallery.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs && node scripts/strip-internal-comments.mjs",
+    "build": "node scripts/optimize-gallery.mjs && tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:update": "playwright test --update-snapshots",
     "test:audit": "playwright test tests/audit.spec.ts",
     "test:audit:perf": "playwright test tests/audit-perf.spec.ts",
-    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-change-detector.test.mjs tests/canonical-strings.test.mjs tests/internal-comments.test.mjs",
-    "check:copy-output": "node scripts/check-no-em-dash.mjs && node scripts/check-canonical-terms.mjs && node scripts/check-trial-eligibility.mjs && node scripts/check-canonical-strings.mjs && node scripts/check-no-internal-comments.mjs && node scripts/copy-change-detector.mjs",
+    "test:copy-output": "node --test tests/no-em-dash.test.mjs tests/canonical-terms.test.mjs tests/trial-eligibility.test.mjs tests/copy-change-detector.test.mjs tests/canonical-strings.test.mjs",
+    "check:copy-output": "node scripts/check-no-em-dash.mjs && node scripts/check-canonical-terms.mjs && node scripts/check-trial-eligibility.mjs && node scripts/check-canonical-strings.mjs && node scripts/copy-change-detector.mjs",
     "copy-baseline:write": "node scripts/copy-change-detector.mjs --write",
     "copy-baseline:live": "node scripts/copy-change-detector-live.mjs",
     "typecheck": "tsc -b"

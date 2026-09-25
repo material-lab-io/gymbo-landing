@@ -8,7 +8,7 @@ NOTCHES, weeks after the app changed. The only "detector" we had was a
 human noticing a rendering detail by eye. That fails open: if nobody
 looks, nothing fails.
 
-`ops/screens/manifest.json` binds every screenshot the site actually
+`public/screens/manifest.json` binds every screenshot the site actually
 renders to the build it was captured from. `scripts/check-screenshot-freshness.mjs`
 reads that manifest in CI and **fails the deploy** if a screenshot is
 unverified or older than `maxAgeDays`. This is a mechanical, fail-closed
@@ -53,7 +53,7 @@ A content hash per entry (`sha256`), checked at gate time, would close it.
 
 ## Manifest schema
 
-`ops/screens/manifest.json`:
+`public/screens/manifest.json`:
 
 ```jsonc
 {
