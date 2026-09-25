@@ -527,6 +527,13 @@ for (const [label, project, viewport] of [
         expect(box.y + box.height, `${name} ends below the viewport (${vh}px)`).toBeLessThanOrEqual(vh);
         expect(box.y + box.height, `${name} is covered by the sticky bar (bar top ${barTop}px)`).toBeLessThanOrEqual(barTop + 0.5);
       }
+      // BREATHING ROOM (designer, on the live build): "visible" is not enough. On a 900px desktop the error used to
+      // end at y=900, flush against the viewport edge with its descenders touching it, which reads as cut off. The
+      // last pixel of the error must clear whatever is below it (the viewport edge, or the sticky bar on a phone)
+      // by at least 16px.
+      const errBox = (await alert.boundingBox())!;
+      const clearance = Math.min(barTop, vh) - (errBox.y + errBox.height);
+      expect(clearance, `the error has only ${clearance.toFixed(1)}px between it and the ${barTop < vh ? 'sticky bar' : 'viewport bottom'}; it reads as cut off below 16px`).toBeGreaterThanOrEqual(16);
       // The bar's own hit-test: the point at the error's centre must be the error, not the bar.
       const eb = (await alert.boundingBox())!;
       const topmost = await page.evaluate(([x, y]) => (document.elementFromPoint(x, y) as HTMLElement | null)?.closest('[data-fixed-chrome]')?.getAttribute('data-fixed-chrome') ?? null, [eb.x + eb.width / 2, eb.y + eb.height / 2] as const);
