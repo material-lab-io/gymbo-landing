@@ -401,6 +401,8 @@ const EMAIL_ERR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it
 for (const [label, fill] of [
   ['a@b', { email: 'a@b' }],
   ['a@gmail', { email: 'a@gmail' }],
+  // Refused by the browser's own type=email check unless the form is noValidate; now OUR text must show for it too.
+  ['a@gmail,com', { email: 'a@gmail,com' }],
   ['malformed email WITH a phone (still refused)', { email: 'a@b', phone: '9876543210' }],
 ] as const) {
   test(`malformed email is refused at the form, no request sent: ${label} (gy-e60uc.2)`, async ({ page }) => {
@@ -430,26 +432,6 @@ for (const [label, fill] of [
     await expect(form.getByRole('alert')).toHaveCount(0);
   });
 }
-
-// A comma makes the BROWSER's own type=email validation refuse the submit before our handler runs, so the
-// native message shows instead of the inline one. Still a refusal with no request; asserted separately so the
-// inline-error cases above are not weakened to "either message".
-test('a comma in the address is refused by the browser itself, no request sent (gy-e60uc.2)', async ({ page }) => {
-  await page.goto('/');
-  const posts: string[] = [];
-  await page.route('**/api/waitlist', async (route) => {
-    posts.push(route.request().url());
-    await route.fulfill({ status: 200, body: '{}' });
-  });
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
-  await form.locator('input[type="email"]').fill('a@gmail,com');
-  await form.locator('button[type="submit"]').click();
-  await page.waitForTimeout(400);
-  expect(posts, 'a malformed email must not be posted').toEqual([]);
-  await expect(page.getByRole('status').filter({ hasText: /request received/i })).toHaveCount(0);
-  expect(await form.locator('input[type="email"]').evaluate((el: HTMLInputElement) => el.validity.valid)).toBe(false);
-});
 
 // The server applies the same rule. If it refuses an address the form let through, the visitor sees the SAME
 // inline text (never a status code or the server's wording); any other failure keeps the old error + mailto.
