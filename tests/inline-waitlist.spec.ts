@@ -633,6 +633,54 @@ test('after an empty submit the visitor can type straight into the focused field
   await expect(form.getByRole('alert')).toHaveCount(0);
 });
 
+/**
+ * gy-e60uc.7 / gy-e60uc.3 (designer): NO ONE-WORD ORPHAN. At 375px the hint broke "...either one is / enough." and the
+ * empty-submit error broke "...so we can reach / you.": a second line of a single short word, centred under the form.
+ * text-wrap: balance moves WHERE the break falls (the wording is content's and is untouched). This measures the actual
+ * rendered lines of each text and requires the last line to be at least 40% as wide as the widest one; an orphan is
+ * ~10-15%. Measured from Range client rects, so it sees the wrap the visitor sees, not the CSS that was written.
+ */
+async function lineWidths(loc: import('@playwright/test').Locator) {
+  return loc.evaluate((el) => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const byTop = new Map<number, { l: number; r: number }>();
+    for (const r of Array.from(range.getClientRects())) {
+      if (r.width < 1) continue;
+      const k = Math.round(r.top);
+      const cur = byTop.get(k);
+      byTop.set(k, cur ? { l: Math.min(cur.l, r.left), r: Math.max(cur.r, r.right) } : { l: r.left, r: r.right });
+    }
+    return [...byTop.entries()].sort((a, b) => a[0] - b[0]).map(([, v]) => Math.round(v.r - v.l));
+  });
+}
+for (const [what, trigger, target] of [
+  ['the contact hint', 'idle', 'hint'],
+  ['the empty-submit error', 'empty', 'alert'],
+  ['the malformed-email error', 'bad-email', 'alert'],
+] as const) {
+  test(`${what} has no one-word orphan at 375px (gy-e60uc.7)`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'the orphan is a narrow-phone wrap');
+    await page.setViewportSize({ width: 375, height: 740 });
+    await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    if (trigger === 'bad-email') await form.locator('input[type="email"]').fill('a@b');
+    if (trigger !== 'idle') await form.locator('button[type="submit"]').click();
+    const el = target === 'hint' ? form.getByText('Add a WhatsApp number or an email: either one is enough.') : form.getByRole('alert');
+    await expect(el).toBeVisible();
+    const widths = await lineWidths(el);
+    expect(widths.length, `${what} rendered no lines`).toBeGreaterThan(0);
+    if (widths.length > 1) {
+      const widest = Math.max(...widths);
+      const last = widths[widths.length - 1];
+      expect(last / widest, `${what} wraps into lines of ${JSON.stringify(widths)}px: the last is only ${Math.round((last / widest) * 100)}% of the widest, an orphan`).toBeGreaterThanOrEqual(0.4);
+    }
+  });
+}
+
 test('the error is named as the description of the field it is about (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');
