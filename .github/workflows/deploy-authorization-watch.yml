@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: "0 * * * *"
   workflow_dispatch:
+    inputs:
+      threshold_minutes:
+        description: "TEST ONLY: shorten the overdue threshold (minutes) so a control runs in minutes. Ignored on scheduled runs, which always use the real 60."
+        required: false
+        default: ""
 
 permissions:
   issues: write
@@ -24,4 +29,9 @@ jobs:
       - name: Surface authorisation requests waiting over one hour
         env:
           GH_TOKEN: ${{ github.token }}
+          # empty on a scheduled run; the script honours it ONLY when the event is workflow_dispatch
+          DEPLOY_AUTH_THRESHOLD_MINUTES: ${{ inputs.threshold_minutes }}
         run: node scripts/deploy-authorization-watch.mjs
+        # An OVERDUE PR makes this run RED. The async-watchdog reads red scheduled runs of this
+        # workflow (wf 364035591 is on both its allowlists), so an overdue request reaches an agent;
+        # the label and PR comment are the human-facing record, not the only signal (gy-e9wa6).
