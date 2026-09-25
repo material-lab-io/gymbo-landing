@@ -1,0 +1,92 @@
+[
+  {
+    "src": "https://getgymbo.com/gymbo-mark-darkorange-9d3900.svg",
+    "alt": "",
+    "w": 150,
+    "h": 150
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/balances.png",
+    "alt": "",
+    "w": 230,
+    "h": 500
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/dashboard.png",
+    "alt": "Gymbo's home screen, showing each client's punch card and classes remaining",
+    "w": 230,
+    "h": 500
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/log-payment.png",
+    "alt": "",
+    "w": 230,
+    "h": 500
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/dashboard.png",
+    "alt": "Gymbo's home screen, showing each client's punch card and classes remaining",
+    "w": 280,
+    "h": 608
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/payments.png",
+    "alt": "The Gymbo ledger showing a client's class and payment history with a running balance",
+    "w": 1440,
+    "h": 3130
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/schedule.png",
+    "alt": "The Gymbo schedule for a single day, with each client's class in its time slot",
+    "w": 1440,
+    "h": 3130
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/export.png",
+    "alt": "A branded client statement being exported from Gymbo as a PDF",
+    "w": 1440,
+    "h": 3130
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/workouts.png",
+    "alt": "A full-body workout built in Gymbo, with squat, bench press and barbell row",
+    "w": 1440,
+    "h": 3130
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/dashboard.png",
+    "alt": "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used",
+    "w": 276,
+    "h": 599
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/schedule.png",
+    "alt": "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning",
+    "w": 275,
+    "h": 600
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/payments.png",
+    "alt": "Gymbo class history showing ₹45,663 in payments logged for June",
+    "w": 275,
+    "h": 600
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/workouts.png",
+    "alt": "A full-body strength workout template in Gymbo with squat, bench press and barbell row",
+    "w": 275,
+    "h": 600
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/ai.png",
+    "alt": "Gymbo's built-in AI assistant, ready to answer questions about your training business",
+    "w": 276,
+    "h": 599
+  },
+  {
+    "src": "https://getgymbo.com/screens/gallery/export.png",
+    "alt": "Exporting a branded client statement as a PDF or CSV in Gymbo",
+    "w": 275,
+    "h": 600
+  }
+]
