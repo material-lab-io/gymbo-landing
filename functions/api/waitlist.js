@@ -1,14 +1,10 @@
-// Cloudflare Pages Function — POST /api/waitlist → Supabase `waitlist` table (gy-uh9os).
+// Cloudflare Pages Function — POST /api/waitlist → Supabase RPC public.join_waitlist (gy-uh9os, gy-rh2rj).
 //
-// Inserts via Supabase REST using the PUBLIC anon key (the same
-// NEXT_PUBLIC_SUPABASE_ANON_KEY the app ships in its client bundle — safe to
-// inline / commit; it is not a secret). The table's RLS allows anon INSERT but
-// returns 401 on anon SELECT by design, so no email can ever be read back.
-//
-// SECURITY-CRITICAL (per coach): a PLAIN insert with Prefer: return=minimal.
-// Do NOT add `Prefer: resolution=ignore-duplicates` or `return=representation` —
-// both require SELECT (401 by design) and representation would leak emails.
-// A duplicate returns 409, which we treat as success — see THE ORACLE below.
+// Calls the join_waitlist() function through PostgREST with the PUBLIC anon key (the same
+// NEXT_PUBLIC_SUPABASE_ANON_KEY the app ships in its client bundle — safe to inline / commit; it is not a
+// secret). The function inserts, or silently skips a duplicate, INSIDE Postgres and returns an opaque uuid
+// receipt in BOTH cases, so nothing here can tell a new signup from a duplicate — see THE ORACLE below.
+// anon has no SELECT on the table and no grant on the receipt column.
 // gy-0v33y — ONE definition of a legal source, shared with the browser. The
 // client is not trusted: whatever arrives is re-normalised here, and anything
 // that is not a clean slug becomes NULL rather than being stored as a channel.
@@ -21,25 +17,16 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 // gy-rh2rj — THE ORACLE, and why this constant exists.
 //
-// The table carries UNIQUE indexes on lower(email) and on phone. A unique
-// violation surfaces as 409. If the endpoint answers 201 for a new insert and
-// anything DIFFERENT for a duplicate, then anyone can POST an address and read
-// the difference to learn whether that person is on the waitlist. No SELECT is
-// needed and RLS cannot stop it: the leak lives in the CONSTRAINT, not in a
-// grant. Before this change the two branches returned different status codes
-// (201 vs 200) AND different bodies ({ok:true} vs {ok:true,already:true}) — two
-// independent tells.
+// The table carries UNIQUE indexes on lower(email) and on phone. Inserting through the REST table surfaced
+// a duplicate as 409 (with the index name in the body), so anyone could POST an address and read the
+// difference to learn whether that person is on the waitlist. No SELECT is needed and RLS cannot stop it:
+// the leak lives in the CONSTRAINT, not in a grant.
 //
-// Option (a), recorded on gy-rh2rj by coach and ruled by pm: return ONE frozen
-// response for both outcomes. Dedupe still happens, server-side, in Postgres —
-// the visitor simply cannot observe which branch ran. The alternative (b), a
-// SECURITY DEFINER function swallowing 23505 at the DB layer, is the named
-// escalation if a second caller ever bypasses this endpoint; it is deliberately
-// not taken now.
-//
-// Build it ONCE, here, so the two call sites below cannot drift apart. A future
-// edit that adds a field to only one branch reopens the oracle silently, and
-// that is exactly the bug this shape is designed to make impossible.
+// Option Z, ruled by pm: the swallow happens in the database. join_waitlist() returns a fresh random uuid
+// for a new signup AND for a known contact, and refuses invalid input with one fixed error BEFORE it
+// touches the table, so the answer cannot depend on membership. This handler therefore must not branch on
+// anything it gets back from a 200: there is nothing left to branch on, and a branch added later is exactly
+// how the oracle reopens. The visitor's answer is built ONCE, here, so no call site can drift.
 const SUCCESS_BODY = { ok: true };
 const successResponse = () => Response.json(SUCCESS_BODY, { status: 200 });
 
@@ -62,6 +49,39 @@ const successResponse = () => Response.json(SUCCESS_BODY, { status: 200 });
 const digitsOf = (s) => s.replace(/\D/g, "");
 const looksLikePhone = (s) => digitsOf(s).length >= 7;
 
+// gy-rh2rj step 2 — tell waitlist-notify a signup happened, by RECEIPT ONLY.
+//
+// The body is {mode:"signup", receipt} and nothing else: no name, no email, no phone. waitlist-notify
+// resolves the receipt to a row with service_role and reads the contact from THE ROW, so a caller who
+// holds only the shared secret still cannot make it mail an address of their choosing. Everything here
+// is best-effort and can never change what the visitor sees; the row is the asset, the email is not.
+async function notifyReceipt(context, receipt) {
+  const url = context.env?.WAITLIST_NOTIFY_URL;
+  const secret = context.env?.WAITLIST_NOTIFY_SECRET;
+  if (!url || !secret) {
+    console.error("[waitlist] notify not configured — signup KEPT, nobody told");
+    return;
+  }
+  if (typeof receipt !== "string" || !receipt) {
+    console.error("[waitlist] join_waitlist returned no receipt — signup KEPT, nobody told");
+    return;
+  }
+  try {
+    const n = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-waitlist-secret": secret },
+      body: JSON.stringify({ mode: "signup", receipt }),
+    });
+    // A non-2xx is LOGGED with the status, never swallowed. The daily sweep still team-alerts any row
+    // that is unmarked, so a failed notify is visible AND recoverable.
+    if (!n.ok) {
+      console.error("[waitlist] notify failed", n.status, await n.text().catch(() => ""));
+    }
+  } catch (err) {
+    console.error("[waitlist] notify threw", err);
+  }
+}
+
 export async function onRequestPost(context) {
   try {
     const body = await context.request.json().catch(() => ({}));
@@ -81,93 +101,54 @@ export async function onRequestPost(context) {
       return Response.json({ error: "valid phone required" }, { status: 400 });
     }
 
-    // NULL, NEVER EMPTY STRING — this is load-bearing, not tidiness.
-    // Both unique indexes treat NULL as distinct, so any number of rows may
-    // omit an email or a phone. An empty string is NOT null: lower('') = '' is
-    // a real value, so a SECOND phone-only signup sending email:"" would
-    // collide with the first on waitlist_email_idx and be silently deduped into
-    // it. That would look like "phone signup works" for exactly one visitor and
-    // then swallow everyone after them.
-    // gy-0v33y — WRITE THE COLUMN THAT ALREADY EXISTS. public.waitlist.source
-    // has carried DEFAULT 'getgymbo.com' since the table was created and has
-    // never been written by anything: on prod, all 7 rows read 'getgymbo.com'.
-    // Every row therefore claimed to come from the website, including the ones
-    // that came from Instagram — which is precisely the question Damini asked.
+    // gy-0v33y — WRITE THE COLUMN THAT ALREADY EXISTS, and NEVER LET IT DEFAULT.
+    // public.waitlist.source carries DEFAULT 'getgymbo.com', so a lead with no measured source would
+    // silently be stamped as coming from the website: the default masquerading as a measurement.
+    // 🔴 p_source IS ALWAYS PRESENT IN THE CALL, INCLUDING AS null (AC7). An explicit null stores NULL;
+    // join_waitlist() re-normalises whatever arrives with waitlist_source_slug(), the SQL port of
+    // sourceSlug.mjs. An ABSENT key stays null on purpose and is NOT promoted to "unknown" (gy-ufxgo v2):
+    // the client sends "unknown" when it looked and found nothing, so a missing source means the visit
+    // was never classified, a different fact about the lead.
     //
-    // 🔴 `source` IS ALWAYS PRESENT IN THIS OBJECT, INCLUDING AS NULL. That is
-    // load-bearing and is AC7: a column DEFAULT only fires when the key is
-    // OMITTED, so leaving it out would silently re-stamp 'getgymbo.com' on an
-    // unattributed lead — the default masquerading as a measurement, which is
-    // the exact defect this bead exists to end. An explicit null stores NULL.
-    const row = {
-      name: name || null,
-      email: email || null,
-      phone: phone || null,
-      // gy-ufxgo v2: an ABSENT key stays NULL on purpose and is NOT promoted to
-      // "unknown". The client's resolver never returns null — it sends "unknown"
-      // when it looked and found nothing — so a missing source here means the
-      // visit was never classified at all (a client older than this change, or a
-      // POST that is not our form). Those are different facts about the lead and
-      // the column must keep them apart.
-      source: sourceSlug(body.source),
+    // NULL, NEVER EMPTY STRING: the function trims and NULLIFs, but we send null so the empty-string
+    // trap (lower('') is a real value under the unique email index) is closed at both ends.
+    const args = {
+      p_name: name || null,
+      p_email: email || null,
+      p_phone: phone || null,
+      p_source: sourceSlug(body.source),
     };
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/join_waitlist`, {
       method: "POST",
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         "Content-Type": "application/json",
-        Prefer: "return=minimal",
       },
-      body: JSON.stringify(row),
+      body: JSON.stringify(args),
     });
 
-    // 201 = joined; 409 = already on the list. Both answer the visitor
-    // IDENTICALLY (see THE ORACLE above); only our own side effects differ.
-    if (res.status === 201) {
-      // gy-if6mq: the row is now committed, and ONLY NOW do we notify. Everything
-      // below is best-effort and can never change what the visitor sees.
-      //
-      // WHY THE 201 BRANCH AND NOTHING ELSE (AC4): a 409 means Postgres inserted
-      // NOTHING, so a duplicate cannot produce a second confirmation. That is
-      // structural — there is no de-dup flag to get wrong.
-      //
-      // WHY waitUntil (AC5): the response is already decided. waitUntil lets the
-      // send finish after the visitor has been answered, so a Resend outage or a
-      // slow provider cannot delay, fail, or roll back a signup. The row is the
-      // asset; the email is best-effort. It also keeps the oracle shut on
-      // TIMING: the notify never runs before the response is returned, so a new
-      // insert cannot be distinguished from a duplicate by how long it took.
-      context.waitUntil(
-        (async () => {
-          const url = context.env?.WAITLIST_NOTIFY_URL;
-          const secret = context.env?.WAITLIST_NOTIFY_SECRET;
-          if (!url || !secret) {
-            console.error("[waitlist] notify not configured — signup KEPT, nobody told");
-            return;
-          }
-          try {
-            const n = await fetch(url, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "x-waitlist-secret": secret },
-              // gy-ds3fn: phone rides along, otherwise a phone-only signup
-              // reaches the team as a nameless row with no way to contact it.
-              body: JSON.stringify({ mode: "signup", name, email, phone }),
-            });
-            // AC6: a non-2xx is LOGGED with the status, never swallowed. The daily
-            // sweep re-sends anything still unmarked, so this is visible AND recoverable.
-            if (!n.ok) {
-              console.error("[waitlist] notify failed", n.status, await n.text().catch(() => ""));
-            }
-          } catch (err) {
-            console.error("[waitlist] notify threw", err);
-          }
-        })(),
-      );
+    // 200 = the call was accepted, and the answer is a uuid for a NEW signup AND for a KNOWN contact.
+    // There is nothing to branch on, and this handler must not invent something: see THE ORACLE above.
+    // The notify fires on EVERY 200 with the receipt only, via waitUntil, so a new signup (a Resend
+    // call) and a duplicate (a no-op) return in the same time and shape. Whether the receipt names a
+    // real, unclaimed row is decided in waitlist-notify with service_role, never here.
+    if (res.status === 200) {
+      const receipt = await res.json().catch(() => null);
+      context.waitUntil(notifyReceipt(context, receipt));
       return successResponse();
     }
-    if (res.status === 409) return successResponse();
+
+    // 400 with SQLSTATE 22023 is join_waitlist() refusing the input BEFORE it touches the table, so it
+    // cannot depend on membership. ONLY that code is a visitor error: PostgREST also answers a 400 for
+    // the function's fixed 'waitlist unavailable' (P0001), which is OUR failure and must stay a 502.
+    if (res.status === 400) {
+      const err = await res.json().catch(() => null);
+      if (err && err.code === "22023") {
+        return Response.json({ error: "invalid waitlist entry" }, { status: 400 });
+      }
+    }
     return Response.json({ error: "failed to join" }, { status: 502 });
   } catch (e) {
     return Response.json({ error: "failed to join" }, { status: 502 });
