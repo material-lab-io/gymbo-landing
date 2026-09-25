@@ -23,6 +23,7 @@ function FooterNav() {
             <a href={`${HOME}#pricing`} className="text-[13px]" style={link}>Pricing</a>
             <a href="/privacy/" className="text-[13px]" style={link}>Privacy</a>
             <a href="/terms/" className="text-[13px]" style={link}>Terms</a>
+            <a href="/m/takedown" className="text-[13px]" style={link}>Request video removal</a>
             <a href="mailto:damini@materiallab.io" className="text-[13px]" style={link}>Contact</a>
           </nav>
         </div>
