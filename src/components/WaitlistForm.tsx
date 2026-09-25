@@ -265,7 +265,11 @@ export function WaitlistForm() {
         // it 20 + 12 = 32 integer. Forge has no line-height token, so this is
         // Tailwind's scale, like the gap-3 and px-5 already in this file.
         className="text-[13px] leading-5"
-        style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}
+        // gy-e60uc.7 / gy-e60uc.3 (designer): text-wrap: balance so the two lines are comparable. At 375px the
+        // ratified wording broke "...either one is / enough." and left a one-word orphan. Balance only moves WHERE
+        // the break falls; the line count stays 2, so the row keeps the integer height leading-5 exists for. The
+        // span is a flex item of the form's flex-col, so it is blockified and balance applies. Wording untouched.
+        style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)", textWrap: "balance" }}
       >
         Add a WhatsApp number or an email: either one is enough.
       </span>
@@ -321,6 +325,8 @@ export function WaitlistForm() {
             // honours it exactly as it honours the root's scroll-padding for the sticky bar. A Forge
             // spacing token (24px), not a second hard-coded constant.
             scrollMarginBottom: "var(--g-space-6)",
+            // Same reason as the hint above: no one-word orphan ("...reach / you.") on a narrow phone.
+            textWrap: "balance",
           }}
         >
           Add a WhatsApp number or an email so we can reach you.
@@ -344,6 +350,8 @@ export function WaitlistForm() {
             // honours it exactly as it honours the root's scroll-padding for the sticky bar. A Forge
             // spacing token (24px), not a second hard-coded constant.
             scrollMarginBottom: "var(--g-space-6)",
+            // Same reason as the hint above: no one-word orphan ("...reach / you.") on a narrow phone.
+            textWrap: "balance",
           }}
         >
           {badEmailHadPhone ? EMAIL_SHAPE_ERROR_WITH_PHONE : EMAIL_SHAPE_ERROR}

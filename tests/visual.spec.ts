@@ -27,7 +27,10 @@ const SECTIONS = [
   { name: 'pillar-workouts', testId: 'pillar-workouts' },
   { name: 'gallery', testId: 'gallery-section' },
   { name: 'pricing', testId: 'pricing-section' },
-  { name: 'footer-cta', testId: 'footer-cta-section' },
+  // snapTop: see sectionClip. footer-cta is the only section that sits between two sections of a DIFFERENT ground
+  // (bone above, the bordered footer below), so it is the only one where a fractional edge paints another section's
+  // row into the baseline.
+  { name: 'footer-cta', testId: 'footer-cta-section', snapTop: true },
 ] as const;
 
 /** Scroll fully through a section (top, then bottom) and wait for every
@@ -133,6 +136,29 @@ async function neutralizeFixedChrome(page: Page) {
   expect(found.length, 'expected at least the nav to carry data-fixed-chrome').toBeGreaterThan(0);
 }
 
+/**
+ * gy-e60uc.3 (designer, 2026-09-25): THE EDGES OF THE footer-cta BASELINE WERE OTHER SECTIONS.
+ * An element screenshot rounds the element's box OUTWARD. The section above ends at a fractional offset (measured top
+ * 10606.42 on the phone, 9171.78 on desktop), so the captured row 0 was the bone (250,250,247) bottom edge of the
+ * previous section, not this section's charcoal; and the footer below starts with a 1px lighter top border that
+ * painted into the last row ((23,23,23) instead of (10,10,10)). That bakes a dependency on whatever sits above and
+ * below into the reference: the next change to either would red this baseline with a one-row diff nobody could
+ * explain.
+ *
+ * The clip is STRICTLY INSIDE the section on both edges: from the first row fully inside (ceil of the top) to the last
+ * row fully inside (floor of the bottom). It costs at most two rows against the outward-rounded capture (phone 721 ->
+ * 719, desktop 805 -> 803) and every pixel in it now belongs to this section. Opt-in per section rather than the
+ * default, so no other baseline moves; a section with no fractional neighbour needs nothing.
+ */
+async function sectionClip(locator: Locator) {
+  return locator.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const top = r.top + window.scrollY;
+    const bottom = r.bottom + window.scrollY;
+    return { x: Math.floor(r.left), y: Math.ceil(top), width: Math.ceil(r.width), height: Math.floor(bottom) - Math.ceil(top) };
+  });
+}
+
 test.describe('visual baselines', () => {
   test.beforeEach(async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -147,7 +173,13 @@ test.describe('visual baselines', () => {
       await revealSection(page, locator);
       await scrollHorizontalCarousels(page, locator);
       await waitImagesLoaded(locator);
-      await expect(locator).toHaveScreenshot(`${section.name}-light.png`);
+      if ('snapTop' in section && section.snapTop) {
+        // Measure AFTER the reveal and image waits, when the layout has stopped moving.
+        const clip = await sectionClip(locator);
+        await expect(page).toHaveScreenshot(`${section.name}-light.png`, { clip, fullPage: true });
+      } else {
+        await expect(locator).toHaveScreenshot(`${section.name}-light.png`);
+      }
     });
   }
 
