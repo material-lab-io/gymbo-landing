@@ -1,0 +1,196 @@
+{
+  "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
+  "version": 4,
+  "guideVersion": "v15",
+  "updated": "2026-09-24",
+  "terms": {
+    "brandVerb": "punch",
+    "aiFeature": "Ask Gymbo",
+    "clientNoun": "client",
+    "retiredForGymboFeatures": [
+      "AI-powered",
+      "AI assistant",
+      "AI chat assistant",
+      "chat assistant",
+      "chatbot",
+      "virtual assistant",
+      "copilot",
+      "log a class",
+      "log classes",
+      "log a session",
+      "log sessions",
+      "session logging",
+      "class logging",
+      "trainee"
+    ],
+    "retiredNote": "Advisory only. The pin (strings above) is the gate; this list is context for reviewers. Editorial advice to any trainer and attributed quotes are exempt."
+  },
+  "strings": [
+    {
+      "id": "trial.line",
+      "surface": "public site + app (eligible state)",
+      "text": "Eligible subscribers can try Gymbo free for 7 days.",
+      "source": "Guide s5; spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "trial.eligibilityNote",
+      "surface": "public site: home FAQ, /terms/, pricing.md (a sentence inside larger blocks; match by contains)",
+      "text": "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
+      "source": "gy-xmzqr.7 brief; shipped byte-identical on home, /terms/ and pricing.md",
+      "match": "contains",
+      "notes": "The price half of the earlier trial.detail varies by surface on purpose (home FAQ, terms and pricing.md word the price differently), so only this eligibility sentence is pinned."
+    },
+    {
+      "id": "trial.comparisonRow",
+      "surface": "site comparison table, Gymbo row",
+      "text": "7 days for eligible subscribers, Apple payment method required",
+      "source": "gy-xmzqr.7 content ruling 2026-09-24",
+      "notes": "Site builds it as `${TRIAL_DAYS} days for eligible subscribers, Apple payment method required`; the rendered text is this string with TRIAL_DAYS=7."
+    },
+    {
+      "id": "cta.eligible",
+      "surface": "paywall primary CTA (eligible only)",
+      "text": "Start your 7-day free trial",
+      "source": "spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "cta.ineligible",
+      "surface": "paywall primary CTA (ineligible or unknown)",
+      "text": "Subscribe",
+      "source": "spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "cta.gate.eligible",
+      "surface": "PaywallGateView CTA (eligible only)",
+      "text": "Start 7-day free trial",
+      "source": "spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "finePrint.eligible",
+      "surface": "paywall fine print (eligible)",
+      "text": "After your free trial, ₹399/month or ₹2,999/year. Cancel anytime in Settings.",
+      "source": "spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "finePrint.ineligible",
+      "surface": "paywall fine print (ineligible or unknown)",
+      "text": "₹399/month or ₹2,999/year. Cancel anytime in Settings.",
+      "source": "spec 1d",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "disclosure.eligible",
+      "surface": "SubscriptionDisclosure (eligible)",
+      "text": "Eligible subscribers can try Gymbo free for {days} days. After the trial, {billedPrice} is billed to your Apple ID {cadence} until you cancel. Manage or cancel anytime in Settings. By continuing you agree to Gymbo's Terms and Privacy Policy, including the auto-renewal policy.",
+      "source": "spec 1g",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md",
+      "template": true,
+      "notes": "{days} derives from the StoreKit intro-offer period; {billedPrice}, {cadence} supplied by the caller."
+    },
+    {
+      "id": "disclosure.ineligible",
+      "surface": "SubscriptionDisclosure (ineligible or unknown)",
+      "text": "{billedPrice} is billed to your Apple ID {cadence} until you cancel. Manage or cancel anytime in Settings. By continuing you agree to Gymbo's Terms and Privacy Policy, including the auto-renewal policy.",
+      "source": "spec 1g",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md",
+      "template": true,
+      "notes": "Disclosure is required in BOTH states; only the trial sentence is conditional."
+    },
+    {
+      "id": "success.overlay",
+      "surface": "SuccessOverlayView",
+      "text": "You're on Gymbo Pro. Unlimited clients, the full toolkit. Go run your business.",
+      "source": "spec 1f",
+      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
+    },
+    {
+      "id": "site.meta.description",
+      "surface": "getgymbo.com home meta description (157 chars)",
+      "text": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients. From ₹399/mo, 7-day free trial for eligible subscribers.",
+      "source": "gy-xmzqr.7 / gy-afarz.1 content ruling 2026-09-24"
+    },
+    {
+      "id": "site.meta.og",
+      "surface": "home og:description and JSON-LD description",
+      "text": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients.",
+      "source": "same ruling"
+    },
+    {
+      "id": "site.meta.twitter",
+      "surface": "home twitter:description",
+      "text": "Built for independent personal trainers.",
+      "source": "same ruling"
+    },
+    {
+      "id": "site.gallery.schedule.caption",
+      "surface": "home gallery caption, schedule slide",
+      "text": "Your week, tap to punch",
+      "source": "gy-uu7mt content ruling 2026-09-24 (1-line constraint)"
+    },
+    {
+      "id": "app.pickClient",
+      "surface": "five bulk-punch recovery sites (gy-tk4yd)",
+      "text": "Pick a client, then try again.",
+      "source": "gy-ct48v.1 AC2"
+    },
+    {
+      "id": "app.addClassesFailure",
+      "surface": "unknown genuine add-classes failure",
+      "text": "Couldn't add classes. Check the client's balance before you try again.",
+      "source": "gy-g6s4w.1 AC"
+    },
+    {
+      "id": "app.phoneInUse",
+      "surface": "claim_trainer_phone phone_in_use inline error",
+      "text": "This phone number is already linked to another Gymbo account.",
+      "source": "gy-0ejch content proposal 2026-09-21 (designer approval pending)",
+      "notes": "Action label: 'Contact support'. No retry affordance."
+    },
+    {
+      "id": "app.contactSupport",
+      "surface": "secondary action label",
+      "text": "Contact support",
+      "source": "gy-0ejch"
+    },
+    {
+      "id": "site.home.revenue.intro",
+      "surface": "home '/', 'Track your revenue' card intro paragraph (App.tsx PILLARS[revenue].intro)",
+      "text": "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2a); applied on gymbo-landing PR 217 d40ab7fb",
+      "match": "equals"
+    },
+    {
+      "id": "site.home.revenue.bullet3",
+      "surface": "home '/', 'Track your revenue' card, third bullet (PILLARS[revenue].bullets[2])",
+      "text": "Cash or UPI recorded, so you don't lose track.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2b); PR 217 d40ab7fb",
+      "match": "equals"
+    },
+    {
+      "id": "site.home.faq.clientsDownload.answer",
+      "surface": "home '/', FAQ 'Do my clients need to download anything?' answer, visible AND FAQPage JSON-LD (same string)",
+      "text": "No. Gymbo is for you, the trainer. Your clients just train. You punch the class.",
+      "source": "gy-afarz.2 content ruling 2026-09-24 (C2c); PR 217 d40ab7fb",
+      "match": "equals"
+    }
+  ],
+  "facts": {
+    "_comment": "Ruled numbers (spec 1c/1d, guide sec 4). Consumers assert their own constants EQUAL these; they do not pin price sentences, which are worded per surface. Numbers are integers (INR) or a whole percent.",
+    "trialDays": 7,
+    "monthlyINR": 399,
+    "annualINR": 2999,
+    "annualMonthlyEquivalentINR": 250,
+    "annualSavingsPercent": 37
+  },
+  "changelog": {
+    "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
+    "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",
+    "v1": "2026-09-24: initial 19 strings.",
+    "v4": "2026-09-24: added 3 site.home.* pins (gy-afarz.2 C2 a/b/c). Existing strings and facts unchanged from v3."
+  }
+}

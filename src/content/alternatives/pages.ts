@@ -33,7 +33,7 @@ const truecoach: Post = {
     },
     {
       q: "Does TrueCoach have scheduling?",
-      a: "No. TrueCoach assigns workouts but has no session-booking or calendar system. Gymbo includes a week-view schedule with one-tap session logging.",
+      a: "No. TrueCoach assigns workouts but has no session-booking or calendar system. Gymbo includes a week-view schedule with one-tap class punches.",
     },
     {
       q: "Is Gymbo cheaper than TrueCoach?",
@@ -47,7 +47,7 @@ const truecoach: Post = {
 | | **Gymbo** | **TrueCoach** |
 |---|---|---|
 | Built for | Independent mobile trainers in India | Remote 1:1 coaches (mainly US/Western) |
-| The main job | Log a session in one tap; track payments & balances | Remote programming & client engagement |
+| The main job | Punch a class in one tap; track payments & balances | Remote programming & client engagement |
 | Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | Starter ~$26/mo (~₹2,200), caps at **5 clients** |
 | Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | Standard ~$58/mo (**~₹4,870**), caps at **20 clients** |
 | Pricing model | One flat price, no per-client tiers | Tiered by active client count (5 / 20 / 50) |
@@ -57,7 +57,7 @@ const truecoach: Post = {
 | WhatsApp | ✅ Reminders & sharing | ❌ Uses its own in-app chat |
 | Scheduling / session booking | ✅ Week view, day carousel | ❌ No scheduling system |
 | Sign-in | Phone + Face ID, no password | Email/password |
-| Session logging | **One tap**, balance updates itself | Programming-led; logs workouts, not payments |
+| Class punches | **One tap**, balance updates itself | Programming-led; logs workouts, not payments |
 | Progress tracking | Vitals + photos (shipping this quarter) | ✅ Strong: metrics, photos, compliance |
 | Exercise video library | Growing | ✅ 3,000+ videos |
 | Free trial | ${GYMBO_TRIAL_ROW} | 14 days, no card |
@@ -94,7 +94,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
-- You want one-tap session logging with balances that reconcile themselves.
+- You want one-tap class punches with balances that reconcile themselves.
 - You need GST-ready statements, WhatsApp reminders, and a real schedule.
 - You want one flat, India-priced subscription with no per-client caps.
 
@@ -145,7 +145,7 @@ const trainerize: Post = {
 | | **Gymbo** | **Trainerize** |
 |---|---|---|
 | Built for | Independent mobile trainers in India | Coaches → studios → gyms → enterprise (global) |
-| The main job | Log a session in one tap; track payments & balances | Online coaching, programming & client engagement |
+| The main job | Punch a class in one tap; track payments & balances | Online coaching, programming & client engagement |
 | Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | $9/mo (~₹750), caps at **2 clients** |
 | Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹1,900+)** on Pro, before add-ons |
 | Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
@@ -153,8 +153,8 @@ const trainerize: Post = {
 | GST-ready invoices | ✅ | ❌ |
 | WhatsApp | ✅ Reminders & sharing | ❌ |
 | Sign-in | Phone + Face ID, no password, no email | Email/password |
-| Session logging | **One tap**, balance updates itself | Programming-led; heavier flow |
-| AI | AI assistant + workout builder | Mature AI Workout Builder |
+| Class punches | **One tap**, balance updates itself | Programming-led; heavier flow |
+| AI | Ask Gymbo + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
 | Branded client app | Not yet | ✅ (paid add-on) |
 | Free trial | ${GYMBO_TRIAL_ROW} | 30 days, no card |
@@ -182,7 +182,7 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
-- You want to log a session in one tap and see who's paid and who owes.
+- You want to punch a class in one tap and see who's paid and who owes.
 - You need GST-ready statements and WhatsApp reminders.
 - You want one flat, India-priced subscription, not a bill that climbs with every client and add-on.
 
@@ -213,7 +213,7 @@ const akton: Post = {
     },
     {
       q: "What's the difference between Akton and Gymbo?",
-      a: "Both are India-native (UPI, GST, WhatsApp). The difference is who they're for: Akton runs gyms (members, branches, staff, attendance); Gymbo runs the solo trainer (one-tap session logging, payment tracking, balances) from a phone. Akton is for if you run a gym; Gymbo is for if you are the gym.",
+      a: "Both are India-native (UPI, GST, WhatsApp). The difference is who they're for: Akton runs gyms (members, branches, staff, attendance); Gymbo runs the solo trainer (one-tap class punches, payment tracking, balances) from a phone. Akton is for if you run a gym; Gymbo is for if you are the gym.",
     },
     {
       q: "Is Gymbo cheaper than Akton?",
@@ -221,7 +221,7 @@ const akton: Post = {
     },
     {
       q: "Does Gymbo have the gym features Akton has?",
-      a: "No, by design. Gymbo has no turnstiles, branches, staff payroll, or crowd monitoring, because an independent trainer doesn't need them. It focuses on the solo trainer's actual job: sessions, payments, balances, scheduling, and an AI assistant to query it all.",
+      a: "No, by design. Gymbo has no turnstiles, branches, staff payroll, or crowd monitoring, because an independent trainer doesn't need them. It focuses on the solo trainer's actual job: sessions, payments, balances, scheduling, and Ask Gymbo to query it all.",
     },
     {
       q: "Do Akton and Gymbo both work in India with UPI and GST?",
@@ -238,11 +238,11 @@ Both are made in India, for India. The real question isn't features or price. It
 |---|---|---|
 | Built for | The **solo, mobile** independent trainer | **Gym owners** & facility operators |
 | Where you work | Homes, parks, a society gym, no facility | A physical gym with a door, staff, branches |
-| The main job | Log a session in one tap; track payments & balances | Run a facility: members, attendance, branches, staff |
-| Anchor features | One-tap session log, balances, payment ledger, scheduling | QR-turnstile check-in, crowd monitoring, multi-branch, staff payroll |
+| The main job | Punch a class in one tap; track payments & balances | Run a facility: members, attendance, branches, staff |
+| Anchor features | One-tap class punches, balances, payment ledger, scheduling | QR-turnstile check-in, crowd monitoring, multi-branch, staff payroll |
 | Client scale | Your ~15–25 clients | Hundreds of gym members |
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
-| AI assistant (ask about your clients & balances) | ✅ | ❌ |
+| Ask Gymbo (ask about your clients & balances) | ✅ | ❌ |
 | Setup | Productive in ~60 seconds, nothing to configure | Onboard a facility: branches, staff, members |
 | Platform | iPhone only | iPhone, Android, web |
 | Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | from ₹89/mo (gym suite, unlimited members) |
@@ -272,18 +272,18 @@ A facility cockpit assumes a facility. As an independent trainer, here's what Ak
 - **Staff attendance & payroll**: you're a business of one; there's no staff to pay out.
 - **Membership lifecycle for hundreds of members**: you have a roster of 15–25 people you know by name.
 
-Install a gym-management suite as a solo trainer and you spend your time stepping around the 80% you don't need to reach the 20% that's actually your job: log the session, track the payment, know the balance.
+Install a gym-management suite as a solo trainer and you spend your time stepping around the 80% you don't need to reach the 20% that's actually your job: punch the class, record the payment, know the balance.
 
 ## what gymbo does instead
 
 Gymbo strips it down to the one-person business:
 
-- **One tap to log a session**: balances update themselves.
+- **Punch a class in one tap**: balances update themselves.
 - **Payment tracking with a running ledger**: see who's paid, who owes, who's running low; send a reminder when you need to.
 - **GST-ready statements and UPI**: built in, India-first.
 - **A real schedule**: day, week, and month views with conflict detection.
 - **A workout builder** with voice and paste import, plus a template library.
-- **An AI assistant you can just ask**: "who owes me money?", "how many sessions does Priya have left?", in plain language. Akton has no equivalent.
+- **Ask Gymbo about your business**: "who owes me money?", "how many sessions does Priya have left?", in plain language. Akton has no equivalent.
 - **No setup.** No branches, staff, or turnstiles to configure. You're productive in about a minute.
 
 ## when to choose which
@@ -296,7 +296,7 @@ Gymbo strips it down to the one-person business:
 **Choose Gymbo if:**
 - You're an independent trainer and the business is *you*.
 - You work out of homes, parks, or a shared gym, with no facility to manage.
-- You want one-tap session logging, clean payment tracking, and a tool you can run from your iPhone in seconds.
+- You want one-tap class punches, clean payment tracking, and a tool you can run from your iPhone in seconds.
 
 ## on price, honestly
 

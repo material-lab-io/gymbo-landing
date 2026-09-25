@@ -23,6 +23,8 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
 import {
   TRIAL_DAYS,
+  TRIAL_PRIMARY,
+  TRIAL_ELIGIBILITY_DETAIL,
   BILLING_CHANNEL,
   PLATFORM,
   PLATFORM_ONLY_CLAUSE,
@@ -59,13 +61,13 @@ const PILLARS = [
     n: "01",
     eyebrow: "The Gymbo ledger",
     title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class, payment, and balance you log, so you can see where each client stands.",
+    intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
     bullets: [
-      "Every balance, clear: credit and classes left, updated the moment you log a class.",
+      "Every balance, clear: credit and classes left, updated the moment you punch a class.",
       "Get paid for every class you teach",
-      "Cash or UPI logged, so you don't lose track.",
+      "Cash or UPI recorded, so you don't lose track.",
     ],
-    brief: "Log a payment: UPI or cash, and the balance clears.",
+    brief: "Record a payment: UPI or cash, and the balance clears.",
     dark: false,
   },
   {
@@ -76,7 +78,7 @@ const PILLARS = [
     title: "Get organized",
     intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
     bullets: [
-      "One-tap punch to log a class",
+      "Punch a class in one tap",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
       "Account for travel distance between clients on the calendar, so you can optimize your day",
@@ -105,11 +107,11 @@ const PILLARS = [
     n: "04",
     eyebrow: "Coaching tools",
     title: "Train smarter",
-    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains. And Ask Gymbo, an AI chat assistant grounded in your real client and payment data, answers 'who owes me?' or 'who's due this week?' in a tap.",
+    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains. Ask Gymbo is grounded in your real client and payment data, so it answers 'who owes me?' or 'who's due this week?' in a tap.",
     bullets: [
       "Build and assign workouts from a template library",
       "A muscle and body map for every plan",
-      "Track client progress: logged sessions, adherence, per-exercise gains",
+      "Track client progress: class history, adherence, per-exercise gains",
       "Get directions to your next class, right from the app",
     ],
     brief: "Build a plan (squat, bench, row) and assign it to a client.",
@@ -133,10 +135,10 @@ const demoPoster = (id: string): ClipMap => ({
    (gy-9bmwm.4, gy-dyu6r.6). ── */
 const SCREENS: { slug: string; caption: string; alt: string }[] = [
   { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
-  { slug: "schedule", caption: "Your week, one tap to log", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
-  { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments logged for June" },
+  { slug: "schedule", caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
+  { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
   { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
-  { slug: "ai", caption: "Ask Gymbo anything", alt: "Gymbo's built-in AI assistant, ready to answer questions about your training business" },
+  { slug: "ai", caption: "Ask Gymbo anything", alt: "Ask Gymbo, ready to answer questions about your training business" },
   { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
 ];
 
@@ -148,10 +150,10 @@ const PRICING = [
 
 /* ── FAQ ── */
 export const FAQ = [
-  { q: "Is it free?", a: `Your first ${TRIAL_DAYS} days are free on every plan. After that, Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}.` },
+  { q: "Is it free?", a: `${TRIAL_PRIMARY} Then Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}. ${TRIAL_ELIGIBILITY_DETAIL}` },
   { q: "What happens when my trial ends, and can I cancel or get my data out?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
-  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You log it." },
-  { q: "Does it work offline?", a: "Yes. Log classes and payments without signal; they sync when you're back online." },
+  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
+  { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
   { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
@@ -347,7 +349,7 @@ export default function App() {
                   the copy, scaled as one coherent image so its screens and device
                   silhouettes remain legible without clipping. */}
               <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(92vw, 560px)" }}>
-                <HeroDeviceArt alt="Gymbo dashboard, balances, and payment logging shown across three phones." priority />
+                <HeroDeviceArt alt="Gymbo dashboard, balances, and payment records shown across three phones." priority />
               </div>
             </div>
           </div>
@@ -579,7 +581,7 @@ export default function App() {
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS} days free · billed via {BILLING_CHANNEL}.</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS}-day free trial for eligible subscribers · billed via {BILLING_CHANNEL}.</p>
             </Reveal>
           </div>
         </section>

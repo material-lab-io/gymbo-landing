@@ -1,0 +1,30 @@
+{
+  "source": "Rulings landing could cite from durable beads that are NOT yet in content's canonical strings file (which supplies the rest via src/canonical/). Add an entry only with a ref that survives a session restart; move it to content's file when content adds it.",
+  "ruled": [
+    {
+      "id": "home-hero-note",
+      "route": "/",
+      "surface": "visible block",
+      "equals": "Gymbo is in private alpha. Eligible subscribers can try Gymbo free for 7 days. Billed via the App Store.",
+      "ref": "pm B' ruling gy-xmzqr.7 2026-09-24T13:38Z: hero note built from the canonical string"
+    },
+    {
+      "id": "wellnessz-session-first",
+      "route": "/compare/gymbo-vs-wellnessz/",
+      "contains": "Gymbo is session-first (one-tap class punches, automatic balance math, payment tracking) for independent personal trainers.",
+      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z"
+    },
+    {
+      "id": "blog-best-apps-ask-gymbo",
+      "route": "/blog/best-apps-for-independent-personal-trainers-in-india-2026/",
+      "contains": "it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments.",
+      "ref": "content ruling gy-afarz.1 C2, 2026-09-24T12:38Z"
+    },
+    {
+      "id": "privacy-ask-gymbo-processor",
+      "route": "/privacy/",
+      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z ('Ask Gymbo (AI chat)' is the ruled processor heading)",
+      "equals": "Ask Gymbo (AI chat): Anthropic (Claude)"
+    }
+  ]
+}
