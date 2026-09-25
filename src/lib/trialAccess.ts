@@ -34,7 +34,12 @@ export const PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR = 250;
 export const ANNUAL_SAVINGS_PERCENT = 37;
 
 export const ACCESS_CTA_LABEL = "Request access";
-export const ACCESS_SUCCESS_MESSAGE = "Request received. We'll be in touch with your access.";
+// The success line BRANCHES on what the visitor gave us, because the two follow-ups are different
+// things: an email gets the confirmation mail (waitlist-notify), a phone-only lead gets a WhatsApp
+// message from the team. Keyed on the email being non-empty, so someone who gives BOTH is told about
+// the email. Wording ratified by content; the channel named is the one the founder ruled on.
+export const ACCESS_SUCCESS_MESSAGE_EMAIL = "Request received. Check your inbox for a confirmation.";
+export const ACCESS_SUCCESS_MESSAGE_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
 
 /**
  * gy-xmzqr.7 — the website cannot see a visitor's Apple account, so the trial is
