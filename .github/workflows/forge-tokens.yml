@@ -246,3 +246,89 @@ jobs:
           # And prove the restore worked, so a broken restore cannot leave the
           # tree dirty and silently pass the next step.
           node scripts/check-forge-tokens.mjs
+
+      # ======================================================================
+      # COMMITTED IMAGE ASSETS — gy-rosvo. THE DOUBLE BLIND, AND WHY THE
+      # EXISTING CONTROLS ABOVE CANNOT CATCH IT.
+      #
+      # Every control above seeds into src/ or functions/. Those paths are in
+      # SCAN already, so each one passes identically whether or not public/ is
+      # covered — they are blind to this gap by construction. These seed into
+      # public/, which is the only place a committed .svg lives.
+      #
+      # gy-rosvo was filed as "EXT excludes .svg". That was half of it: SCAN was
+      # [src, functions], so the brand marks were out of scope by EXTENSION *and*
+      # by DIRECTORY. Adding .svg to EXT alone would have moved nothing while
+      # looking exactly like a fix. Control 3 is what makes that unfakeable — it
+      # asserts the asset scan actually EVALUATED FILES, because a rule that
+      # examines zero files reports the same reassuring green as one that passes.
+      # ======================================================================
+      - name: Asset control 1 — an off-palette hex in a committed SVG must FAIL, naming the file
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          # #ab12cd matches no Forge token: for a standalone asset that is the
+          # defect (the mark has drifted off the palette), which is the INVERSE
+          # of the source rule and must be proven separately.
+          printf '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#ab12cd"/></svg>\n' > public/gy-rosvo-selftest.svg
+          if node scripts/check-forge-tokens.mjs > /tmp/selftest-asset.log 2>&1; then
+            rm -f public/gy-rosvo-selftest.svg
+            echo "::error::NEGATIVE CONTROL FAILED — the gate passed a committed SVG carrying an off-palette colour. public/ or .svg is out of scope again; this is the gy-rosvo regression and the brand marks are unwatched."
+            cat /tmp/selftest-asset.log
+            exit 1
+          fi
+          if ! grep -q 'public/gy-rosvo-selftest.svg' /tmp/selftest-asset.log; then
+            rm -f public/gy-rosvo-selftest.svg
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named public/gy-rosvo-selftest.svg. It failed for some other reason (a crash counts) and does not discriminate."
+            cat /tmp/selftest-asset.log
+            exit 1
+          fi
+          rm -f public/gy-rosvo-selftest.svg
+          echo "OK  gate rejects an off-palette colour in a committed SVG, naming the file"
+
+      - name: Asset control 2 — a stale hex in the FILENAME must FAIL, naming the file
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          # Body is a LIVE token (#ff9800 = --g-color-mark-amber), so only the
+          # filename is wrong. gy-rosvo found the colour is carried in both
+          # places; a name that advertises a retired colour is a claim a reader
+          # believes, and this proves the name is checked independently of the body.
+          printf '<svg xmlns="http://www.w3.org/2000/svg"><path fill="#ff9800"/></svg>\n' > public/gymbo-mark-selftest-ab12cd.svg
+          if node scripts/check-forge-tokens.mjs > /tmp/selftest-assetname.log 2>&1; then
+            rm -f public/gymbo-mark-selftest-ab12cd.svg
+            echo "::error::NEGATIVE CONTROL FAILED — the gate passed an asset whose FILENAME advertises a colour that is no longer a Forge token. The filename half of gy-rosvo is unwatched."
+            cat /tmp/selftest-assetname.log
+            exit 1
+          fi
+          if ! grep -q 'public/gymbo-mark-selftest-ab12cd.svg' /tmp/selftest-assetname.log; then
+            rm -f public/gymbo-mark-selftest-ab12cd.svg
+            echo "::error::NEGATIVE CONTROL FAILED — the gate exited non-zero but never named public/gymbo-mark-selftest-ab12cd.svg. It does not discriminate."
+            cat /tmp/selftest-assetname.log
+            exit 1
+          fi
+          rm -f public/gymbo-mark-selftest-ab12cd.svg
+          echo "OK  gate rejects a stale colour in an asset filename, naming the file"
+
+      - name: Asset control 3 — the real marks still PASS, and the scan is proven NON-EMPTY
+        env:
+          FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
+        run: |
+          # 🔴 THE TRAP THIS EXISTS FOR, quoted from gy-rosvo AC3: a control that
+          # accepts ANY failure reports the reassuring one — on gy-1phkc the
+          # controls printed "OK gate correctly rejected drift" while the gate had
+          # evaluated ZERO files. Controls 1 and 2 above would BOTH still pass if
+          # the asset scan were pointed at an empty directory, because seeding a
+          # file there and failing on it does not prove the REAL marks are seen.
+          # So assert the committed tree is actually covered, by count.
+          node scripts/check-forge-tokens.mjs > /tmp/selftest-assetcount.log 2>&1
+          grep -q 'Committed assets scanned' /tmp/selftest-assetcount.log || {
+            echo "::error::The gate no longer reports an asset scan at all. Coverage was removed, not fixed."
+            cat /tmp/selftest-assetcount.log; exit 1; }
+          COUNT=$(sed -n 's/.*Committed assets scanned.* \([0-9]\{1,\}\) file(s).*/\1/p' /tmp/selftest-assetcount.log)
+          if [ -z "$COUNT" ] || [ "$COUNT" -lt 3 ]; then
+            echo "::error::The asset scan evaluated ${COUNT:-no} file(s). public/ holds three committed SVGs (favicon + the two brand marks), so a count under 3 means the scan is looking at the wrong place and its green is empty."
+            cat /tmp/selftest-assetcount.log
+            exit 1
+          fi
+          echo "OK  asset scan covers $COUNT committed file(s) and the real brand marks pass"

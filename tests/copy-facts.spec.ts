@@ -98,11 +98,11 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(match).toBeTruthy();
     const description = match![1];
     expect(description).toContain(`₹${PRICE_MONTHLY_INR}/mo`);
-    expect(description).toContain(`${TRIAL_DAYS} days free`);
+    expect(description).toContain(`${TRIAL_DAYS}-day free trial for eligible subscribers`);
   });
 
   test('Terms.tsx states the trial and pricing facts matching the constants (literal legal text, not interpolated)', () => {
-    expect(termsSource).toContain(`Your first ${TRIAL_DAYS} days are free`);
+    expect(termsSource).toContain(`Eligible subscribers can try Gymbo free for ${TRIAL_DAYS} days`);
     expect(termsSource).toContain(`₹${PRICE_MONTHLY_INR}/month`);
     expect(termsSource).toContain(`₹${PRICE_ANNUAL_INR_DISPLAY} per year`);
     expect(termsSource).toContain(`₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective`);

@@ -1,0 +1,67 @@
+name: Time-fuse control (shifted clock)
+
+# gy-jbax2 (from gy-rro9u). "The gate is green today" and "this build has no time fuse" are
+# different claims, and only a build on a DIFFERENT day supports the second. The copy-change
+# detector pinned sitemap <lastmod> (the build date), so the first build of every UTC day went red
+# and, because the copy gate shares a job with "Deploy to Cloudflare Pages", would have skipped the
+# production deploy without a word. A same-day run of any gate cannot tell those two claims apart.
+#
+# This builds the site with the real clock and again with the JS clock shifted +1 day and +400 days
+# (over a year, so a year- or month-boundary fuse is caught, not only a day boundary), compares
+# EVERY output file (only sitemap.xml <lastmod> may differ), runs the copy gates on the shifted
+# output, and then PLANTS a fuse and requires the control to go RED, so it is never a check that
+# has only ever been seen green. It also fails if the shifted build did not differ at all (the clock
+# shim did not reach the build), because a pass then would prove nothing.
+#
+# WHAT THIS JOB CARRIES THAT NOTHING ELSE DOES: the copy-change detector does not read JS/CSS
+# (gy-ylbzu), so the two-build diff here is the ONLY control that would notice a date stamped inside
+# a bundle. The job output says so on every run.
+#
+# The step-order check (scripts/check-step-order.mjs) also runs here: dist/build-sha.txt is a
+# per-commit stamp that must be written AFTER the copy gates.
+#
+# NOT a required check, deliberately: it builds three times (~40s), and gy-707yq showed a
+# path-filtered required check fails open. The pull_request trigger is path-filtered to the files
+# that can introduce a fuse; the daily schedule catches anything else. A scheduled failure is
+# reported the way prod-watch's are (a red run); whether that reaches a human is the open alert-
+# chain question gy-95ctk, and is NOT verified here.
+on:
+  schedule:
+    - cron: "17 3 * * *" # daily, 03:17 UTC: a different UTC day from any baseline written the day before
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "vite.config.ts"
+      - "scripts/**"
+      - ".github/workflows/**"
+      - "package.json"
+      - "package-lock.json"
+
+# one at a time per ref: the gt2 pool is shared and a stacked PR must not queue N copies (gy-ellyl)
+concurrency:
+  group: time-fuse-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  time-fuse:
+    name: time-fuse (shifted-clock build)
+    runs-on: [self-hosted, gt2]
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Approved self-hosted runner guard
+        run: node scripts/check-workflow-runners.mjs
+
+      # No `cache: npm` (gy-2vvun): see deploy.yml.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm ci
+
+      - name: Step-order invariant (copy gates before any per-commit stamp)
+        run: node scripts/check-step-order.mjs
+
+      - name: Shifted-clock builds, copy gates on them, and planted-fuse positive controls
+        run: node scripts/shifted-clock-control.mjs --self-test

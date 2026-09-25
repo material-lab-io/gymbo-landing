@@ -71,6 +71,15 @@ jobs:
           fi
           echo "OK: runner guard correctly rejected windows-latest."
 
+  prod-watch-bootstrap-control:
+    name: Prod Watch bootstrap classification (offline)
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Positive cache-path and negative classification controls
+        run: bash scripts/test-prod-watch-bootstrap.sh
+
 
   # Decides whether the EXPENSIVE suite below needs to run. Kept out of
   # runner-policy so that job stays dependency-free and fast.
@@ -125,6 +134,9 @@ jobs:
       # --with-deps when moving a job to self-hosted.
       - name: Install Chromium (console-check negative controls)
         run: npx playwright install chromium
+
+      - name: Console-check request lifecycle controls (offline)
+        run: node scripts/test-console-check-request-lifecycle.mjs
 
       - name: Sanity — the GOOD fixture must PASS both curl gates
         run: |
@@ -460,7 +472,7 @@ jobs:
         run: |
           set -euo pipefail
           FIX=$RUNNER_TEMP/screenshot-gate-fixture
-          rm -rf "$FIX"; mkdir -p "$FIX/scripts" "$FIX/public/screens"
+          rm -rf "$FIX"; mkdir -p "$FIX/scripts" "$FIX/public/screens" "$FIX/ops/screens"
           cp scripts/check-screenshot-freshness.mjs scripts/screens-map.mjs "$FIX/scripts/"
           node -e '
             const fs = require("node:fs");
@@ -483,7 +495,7 @@ jobs:
       - name: Negative control — publish of a STALE master must be REFUSED
         run: |
           set -euo pipefail
-          cp "$FIX/stale.json" "$FIX/public/screens/manifest.json"
+          cp "$FIX/stale.json" "$FIX/ops/screens/manifest.json"
           cd "$FIX"
           if node scripts/check-screenshot-freshness.mjs --changed "$FIX/one-stale.txt"; then
             echo "::error::The gate PASSED a change that publishes a 400d-old master. gy-7anl3's blocking half is gone — stale art can now be shipped as new."
@@ -495,7 +507,7 @@ jobs:
         run: |
           set -euo pipefail
           cd "$FIX"
-          printf 'public/screens/manifest.json\n' > "$FIX/manifest-edit.txt"
+          printf 'ops/screens/manifest.json\n' > "$FIX/manifest-edit.txt"
           if node scripts/check-screenshot-freshness.mjs --changed "$FIX/manifest-edit.txt"; then
             echo "::error::The gate PASSED a manifest.json edit with stale entries — an author could restate a stale capture as current."
             exit 1
@@ -549,7 +561,7 @@ jobs:
       - name: Control — with masters FRESH, all three are clean
         run: |
           set -euo pipefail
-          cp "$FIX/fresh.json" "$FIX/public/screens/manifest.json"
+          cp "$FIX/fresh.json" "$FIX/ops/screens/manifest.json"
           cd "$FIX"
           SUMMARY=$RUNNER_TEMP/gate-summary-fresh.md
           : > "$SUMMARY"

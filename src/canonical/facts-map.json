@@ -1,0 +1,11 @@
+{
+  "_comment": "Maps each key of content's `facts` block to the exported constant in src/lib/trialAccess.ts that must EQUAL it. Content rules the numbers; landing owns only this mapping. A facts key with no entry here, or an entry naming a missing key, fails scripts/check-canonical-strings.mjs. The constants are read from the TypeScript source as plain integer literals: a constant rewritten as an expression fails CLOSED (cannot-read-constant) instead of being skipped.",
+  "file": "src/lib/trialAccess.ts",
+  "map": {
+    "trialDays": "TRIAL_DAYS",
+    "monthlyINR": "PRICE_MONTHLY_INR",
+    "annualINR": "PRICE_ANNUAL_INR",
+    "annualMonthlyEquivalentINR": "PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR",
+    "annualSavingsPercent": "ANNUAL_SAVINGS_PERCENT"
+  }
+}

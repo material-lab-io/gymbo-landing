@@ -52,17 +52,40 @@
 // Exit 0 = nothing blocking. Exit 1 = an integrity failure, a stale artifact
 // this change touches, or a could-not-look.
 
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { appendFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 import { SCREENS } from "./screens-map.mjs";
 
-const MANIFEST_PATH = "public/screens/manifest.json";
+// gy-dwxbm: the manifest and its README are INTERNAL crew documents; they live under ops/, NOT
+// public/, so they are not served on getgymbo.com. SCREENS_DIR stays public/screens/ (the PNGs).
+const MANIFEST_PATH = "ops/screens/manifest.json";
 const SCREENS_DIR = "public/screens/";
+// gy-dwxbm: where the manifest lived before it moved out of the public tree. Only used to tell a
+// RELOCATION (same bytes, new path) from an EDIT. Delete once no open branch predates the move.
+const LEGACY_MANIFEST_PATHS = ["public/screens/manifest.json"];
 
 const argv = process.argv.slice(2);
 const STRICT = argv.includes("--strict");
 const changedIdx = argv.indexOf("--changed");
 const changedFile = changedIdx === -1 ? null : argv[changedIdx + 1];
+const baseIdx = argv.indexOf("--base");
+const baseRef = baseIdx === -1 ? null : argv[baseIdx + 1];
+
+// Was the manifest EDITED, or only touched (moved)? Fail-closed: anything git cannot answer is an
+// edit. "Same bytes as the base's copy at its current OR legacy path" is the ONLY way to be a
+// relocation, so a move plus any change to any entry still counts as an edit.
+export function manifestEdited(read, gitShow, base, paths) {
+  if (!base) return true;
+  let current;
+  try { current = read(); } catch { return true; }
+  for (const path of paths) {
+    let before;
+    try { before = gitShow(base, path); } catch { continue; }
+    if (before !== null && before === current) return false;
+  }
+  return true;
+}
 
 // ── which artifacts does THIS change touch? ────────────────────────────────
 // Absent --changed, nothing is considered touched, so aging is warn-only.
@@ -85,7 +108,19 @@ if (changedFile) {
   // A manifest edit can restate any entry, so it counts as touching all of
   // them. Conservative on purpose: it blocks in the direction of not
   // publishing stale art.
-  touchedAll = touched.has(MANIFEST_PATH);
+  touchedAll = touched.has(MANIFEST_PATH) || LEGACY_MANIFEST_PATHS.some((p) => touched.has(p));
+  if (touchedAll) {
+    const edited = manifestEdited(
+      () => readFileSync(MANIFEST_PATH, "utf8"),
+      (ref, path) => execFileSync("git", ["show", `${ref}:${path}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }),
+      baseRef,
+      [MANIFEST_PATH, ...LEGACY_MANIFEST_PATHS],
+    );
+    if (!edited) {
+      touchedAll = false;
+      console.log(`manifest was RELOCATED (byte-identical to ${baseRef}'s copy), not edited: it does not re-publish any entry.`);
+    }
+  }
 }
 
 const isTouched = (sourceFile) =>
@@ -196,7 +231,7 @@ if (integrityFailures.length || publishFailures.length) {
       (STRICT ? "(strict mode: age blocks unconditionally).\n" : "this change publishes.\n") +
       "Integrity failures (missing entry / unverified / invalid capturedAt) are properties of the\n" +
       "change and are always blocking. A stale artifact blocks only when this change touches it.\n" +
-      "See public/screens/MANIFEST.md for how the capture crew backfills a real entry (gy-5xmxm)."
+      "See ops/screens/MANIFEST.md for how the capture crew backfills a real entry (gy-5xmxm)."
   );
   process.exit(1);
 }

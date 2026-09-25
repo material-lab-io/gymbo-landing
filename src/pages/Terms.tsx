@@ -17,7 +17,7 @@ export function Terms() {
 
         <section className="flex flex-col gap-3">
           <h2>The service</h2>
-          <p>Gymbo is software for independent personal trainers to log sessions, track payments and balances, schedule, and manage their clients. It's available on iOS and is in active development, so features may be added, changed, or removed.</p>
+          <p>Gymbo is software for independent personal trainers to punch classes, track payments and balances, schedule, and manage their clients. It's available on iOS and is in active development, so features may be added, changed, or removed.</p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -35,7 +35,7 @@ export function Terms() {
 
         <section className="flex flex-col gap-3">
           <h2>Plans and payment</h2>
-          <p>Your first 7 days are free. After that, plans are: Monthly at ₹399/month (billed monthly); and Annual at ₹2,999 per year (₹250/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients — it does not process those payments or handle your money.</p>
+          <p>Eligible subscribers can try Gymbo free for 7 days. Apple determines introductory-offer eligibility; one introductory offer is available per subscription group. After that, plans are: Monthly at ₹399/month (billed monthly); and Annual at ₹2,999 per year (₹250/month effective). Subscriptions are billed in advance and renew until you cancel. You can cancel anytime, and access continues until the end of your paid period. Prices may change, with notice. Gymbo records the payments you log between you and your clients. It does not process those payments or handle your money.</p>
         </section>
 
         <section className="flex flex-col gap-3">

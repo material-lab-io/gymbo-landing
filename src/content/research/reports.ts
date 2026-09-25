@@ -112,7 +112,7 @@ An established independent running 15–22 clients at metro rates clears a genui
 
 **The #1 reported challenge is client acquisition/retention, followed by scheduling complexity, income instability, admin/tax overhead, and no-shows.** [Verified: Quora multi-respondent business-challenge threads]
 
-> The pattern is consistent across every source: India's independent trainers lose income not on the gym floor but in the **unmanaged back office**: missed renewals, payment delays, forgotten balances, scheduling chaos.
+> The pattern is consistent across every source: India's independent trainers lose income when the business side goes unmanaged: missed renewals, payment delays, forgotten balances, and scheduling chaos.
 
 ## 6. The technology gap: the business runs on WhatsApp, a notebook, and memory
 

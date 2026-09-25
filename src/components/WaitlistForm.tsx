@@ -243,13 +243,13 @@ export function WaitlistForm() {
       )}
       {status === "error" && (
         <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
-          Couldn't add you just now. Please try again, or{" "}
+          Couldn't send your request just now. Try again, or{" "}
           <a
-            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("join the gymbo waitlist")}&body=${encodeURIComponent(`name: ${name}\nphone: ${phone}\nemail: ${email}`)}`}
+            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo private alpha access request")}&body=${encodeURIComponent(`Name: ${name}\nPhone: ${phone}\nEmail: ${email}`)}`}
             className="underline"
             style={{ color: F.white }}
           >
-            email us to join
+            email us to request access
           </a>
           .
         </span>

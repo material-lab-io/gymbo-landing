@@ -144,7 +144,7 @@ jobs:
         # fallback); each is caught.
 
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
-        run: node --test tests/master-asset-drift.test.mjs
+        run: node --test tests/master-asset-drift.test.mjs tests/screenshot-freshness-relocation.test.mjs
         # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
         # repos with fixed dates and asserts the verdicts of
         # scripts/check-master-asset-drift.mjs. NOTHING in CI runs that script
@@ -159,13 +159,21 @@ jobs:
         # wrong date direction); each fails the specific test built for it.
 
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
-        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs
+        run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs tests/cross-page-references.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
         # stored fields, and REFUSES to render media when provenance is missing
         # or the asset is withdrawn — a CC-BY-SA clip published without its
         # credit is a licence breach, so fail-closed is the load-bearing case.
         # Mutation-tested 2026-09-09: forcing attributionIsComplete() true turns
         # 2 red, removing the availability check turns 1 red, restoring is green.
+
+      - name: "gy-322bc.1: built-copy scanner controls"
+        run: npm run test:copy-output
+        # Proves the scanner distinguishes visitor-visible copy from inert
+        # source: visible paragraph and metadata-title mutations fail, while
+        # em dashes in HTML/CSS/script comments pass. gy-afarz.1 adds the
+        # canonical-terms controls: seeded generic-AI and log-a-session copy
+        # must fail, and a missing llms.txt / pricing.md must not pass.
 
       # Screenshot staleness gate (gy-a73px.15; placement corrected by gy-7anl3).
       #
@@ -191,7 +199,7 @@ jobs:
       #   WARNS   a master that was already live and has merely aged. Annotation
       #           + job summary on every run — moving a gate must not delete an
       #           alarm, and this one was already silently fail-open 08-12 to
-      #           08-19 (see public/screens/MANIFEST.md).
+      #           08-19 (see ops/screens/MANIFEST.md).
       #
       # Do NOT re-flatten this by raising maxAgeDays, adding a bypass flag, or
       # backfilling manifest entries — pm ruled all three out. The staleness is
@@ -216,14 +224,21 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch --no-tags origin "${{ github.base_ref }}"
             git diff --name-only FETCH_HEAD...HEAD > /tmp/changed-files.txt
+            # gy-dwxbm: the SHA the change set was measured from (the merge-base, exactly what
+            # `A...B` diffs against), resolved NOW because FETCH_HEAD is rewritten by later
+            # fetches. The gate uses it to tell a RELOCATED manifest from an EDITED one.
+            echo "SCREENSHOT_BASE=$(git merge-base FETCH_HEAD HEAD)" >> "$GITHUB_ENV"
           else
             git diff --name-only HEAD^ HEAD > /tmp/changed-files.txt
+            echo "SCREENSHOT_BASE=$(git rev-parse HEAD^)" >> "$GITHUB_ENV"
           fi
           echo "change set ($(wc -l < /tmp/changed-files.txt) path(s)):"
           sed 's/^/  /' /tmp/changed-files.txt
 
       - name: Screenshot staleness gate
-        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt
+        # An unset/empty SCREENSHOT_BASE makes the gate treat a touched manifest as EDITED
+        # (fail-closed), so a broken step above can only make this stricter, never looser.
+        run: node scripts/check-screenshot-freshness.mjs --changed /tmp/changed-files.txt --base "${SCREENSHOT_BASE:-}"
 
       # Photoreal-device gate (gy-dyu6r.9): exact corrected hero identity, all
       # four demo/poster pairs, measured gallery mask geometry, and approved
@@ -233,6 +248,15 @@ jobs:
         run: node scripts/check-photoreal-device.mjs
 
       - run: npm run build
+
+      - name: "gy-322bc.1: no user-facing em dashes in built output"
+        run: npm run check:copy-output
+        # Scans every route emitted in dist/sitemap.xml plus /auth/callback/
+        # and the real 404. Titles, metadata, JSON-LD, visible text and explicit
+        # accessibility text are checked; comments and script/style source are
+        # intentionally inert. Also runs the gy-afarz.1 canonical-terms gate
+        # (Ask Gymbo / class punches) over the same pages plus llms.txt and
+        # pricing.md.
 
       # gy-a2xps.9 — runs AFTER the build because it scans the built bundle, and
       # BEFORE the deploy because its whole job is to stop one.

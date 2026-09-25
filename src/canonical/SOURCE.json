@@ -1,0 +1,21 @@
+{
+  "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
+  "repo": "material-lab-io/Gymbo-v1",
+  "path": "docs/GYMBO-CANONICAL-STRINGS.json",
+  "branch": "main (Gymbo-v1 PR 1454, squash-merged 2026-09-24T19:04:52Z; this commit IS on main)",
+  "commit": "e0a4467abedbfa455de4724e1287c4d00f2ab7de",
+  "sha256": "f74dd05a322d6ad3790f8bd5cf5d73714fc1f9e9c60e75a5e66022d0d573c768",
+  "guideVersion": "v15",
+  "vendoredAt": "2026-09-24 (v4, re-vendored from main after PR 1454 merged)",
+  "vendoredBy": "gymbo/landing, from content's comment on gy-uu7mt",
+  "webSurfaceIdPrefixes": [
+    "site.",
+    "trial."
+  ],
+  "version": 4,
+  "supersedes": {
+    "commit": "15437a9398e38a96e88a35f201d4c41822583fa3",
+    "sha256": "493c7354cc79f41c715268eb692cf158dc6ce15b79356e59cc9aa59b79e3bfd9",
+    "change": "v4 adds three web pins (site.home.revenue.intro, site.home.revenue.bullet3, site.home.faq.clientsDownload.answer); the 19 v3 strings and the facts block are byte-identical (content compared programmatically; landing re-verified)"
+  }
+}

@@ -2,7 +2,7 @@
 // by src/routes.ts (→ rollup inputs + sitemap), and by vite.config (→ RSS).
 // Each post's body is markdown (rendered with `marked`); the FAQ drives BOTH the
 // visible FAQ and the FAQPage JSON-LD, so they can't drift. Single H1 = `title`.
-import { TRIAL_DAYS, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../../lib/trialAccess";
+import { GYMBO_TRIAL_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR } from "../../lib/trialAccess";
 
 export interface FAQ {
   q: string;
@@ -39,7 +39,7 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "Why not just use a spreadsheet?",
-      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool keeps logging to one tap and reconciles automatically.",
+      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool makes each class one tap and reconciles automatically.",
     },
     {
       q: "Are international coaching apps like Trainerize or TrueCoach good for Indian trainers?",
@@ -106,7 +106,7 @@ We've written the practical fix separately: [how to run a personal training busi
 
 ## where gymbo fits
 
-We built **Gymbo** for the trainer who's hit this exact wall: one-tap session logging, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and an AI assistant, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
+We built **Gymbo** for the trainer who's hit this exact wall: one-tap class punches, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and Ask Gymbo, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
 
 We're not the right tool for a gym chain or a remote coach billing in dollars. We're the right tool for the one-person training business that's outgrown the notebook.`,
 };
@@ -169,7 +169,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 | App | Best for | Built for the solo trainer? | India-native (UPI/GST/WhatsApp) | Platform | Entry price | Free trial |
 |---|---|---|---|---|---|---|
-| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${TRIAL_DAYS} days |
+| **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${GYMBO_TRIAL_ROW} |
 | **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | from **₹89/mo*** | Not stated |
 | **WellnessZ** | Dietitians & nutrition-led coaches | ➖ Nutrition-first, not session-first | ✅ Yes | iPhone, Android, web | **₹499/mo** (40 clients) | 14 days |
 | **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo (~₹750), 2 clients | 30 days |
@@ -183,11 +183,11 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from an iPhone.
 
-**What it does (honestly):** Log a session in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; an AI assistant you can chat with; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
+**What it does (honestly):** Punch a class in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; Ask Gymbo for answers about your business; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 
-**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import and a chat assistant. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
+**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder plus voice/paste import, and Ask Gymbo for answers about your clients and payments. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
 
 ### Akton: for gyms and multi-branch studios
 
