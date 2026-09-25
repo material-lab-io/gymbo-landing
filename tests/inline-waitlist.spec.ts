@@ -354,6 +354,61 @@ test('the revealed capture posts to the same endpoint as the footer one (item 4,
 });
 
 /**
+ * gy-e60uc.3 — the success line BRANCHES on what the visitor typed, and each branch says what really
+ * happens next. The test above matches /request received/i, which BOTH lines satisfy, so it cannot tell
+ * the branches apart; these assert the exact ratified strings. /api/waitlist is intercepted with a stub
+ * 200: NO row is created and nothing is sent.
+ *
+ * 'both' pins the key: an email that is non-empty after trim selects the EMAIL branch even when a phone
+ * is also given, because the confirmation mail is what that visitor will actually receive.
+ */
+const SUCCESS_EMAIL = 'Request received. Check your inbox for a confirmation.';
+const SUCCESS_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
+for (const [label, fill, expected] of [
+  ['email only', { email: 'gy-e60uc3-control@example.invalid' }, SUCCESS_EMAIL],
+  ['phone only', { phone: '9876543210' }, SUCCESS_PHONE_ONLY],
+  ['both (email wins)', { email: 'gy-e60uc3-control@example.invalid', phone: '9876543210' }, SUCCESS_EMAIL],
+  ['whitespace email + phone (phone-only)', { email: '   ', phone: '9876543210' }, SUCCESS_PHONE_ONLY],
+] as const) {
+  test(`waitlist success line, ${label}: exact ratified string, announced as a status (gy-e60uc.3)`, async ({ page }) => {
+    await page.goto('/');
+    const posts: string[] = [];
+    await page.route('**/api/waitlist', async (route) => {
+      posts.push(route.request().url());
+      await route.fulfill({ status: 200, body: '{}' });
+    });
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
+    if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
+    await form.locator('button[type="submit"]').click();
+    await expect.poll(() => posts.length).toBe(1);
+    const status = page.getByRole('status').filter({ hasText: /request received/i });
+    await expect(status).toHaveText(expected);
+    await expect(status).toHaveCount(1);
+  });
+}
+
+test('the phone field says WhatsApp, and keeps "phone" in its accessible name (gy-e60uc.3)', async ({ page }) => {
+  await page.goto('/');
+  const phone = page.locator('input[name="phone"]').last();
+  // Placeholder and aria-label are byte-identical: the only visible label is the placeholder, so the
+  // accessible name contains the visible text by construction (WCAG 2.5.3).
+  await expect(phone).toHaveAttribute('placeholder', 'Your WhatsApp phone number');
+  await expect(phone).toHaveAttribute('aria-label', 'Your WhatsApp phone number');
+  // Nothing about the input's kind or autofill changed.
+  await expect(phone).toHaveAttribute('type', 'tel');
+  await expect(phone).toHaveAttribute('autocomplete', 'tel');
+  const hint = page.getByText('Add a WhatsApp number or an email: either one is enough.').last();
+  await expect(hint).toBeVisible();
+  // Empty submit -> the ratified error, announced as an alert.
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByRole('alert')).toHaveText('Add a WhatsApp number or an email so we can reach you.');
+});
+
+/**
  * 🔴 THE preventScroll CONTROL, AND WHY IT NEEDS ITS OWN SETUP.
  *
  * Removing `preventScroll` from the reveal's focus() call is the subtlest way to

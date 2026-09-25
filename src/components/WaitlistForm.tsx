@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { F } from "../forge-ui";
 import { getAttributionSource } from "../lib/attribution";
-import { ACCESS_SUCCESS_MESSAGE } from "../lib/trialAccess";
+import { ACCESS_SUCCESS_MESSAGE_EMAIL, ACCESS_SUCCESS_MESSAGE_PHONE_ONLY } from "../lib/trialAccess";
 
 type Status = "idle" | "loading" | "done" | "error" | "needs-contact";
 
@@ -11,6 +11,9 @@ export function WaitlistForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  // Which follow-up the visitor is told to expect. Set at submit from what they TYPED, never from
+  // anything the server said, so it cannot become a membership signal.
+  const [phoneOnly, setPhoneOnly] = useState(false);
   // Per-INSTANCE id for the contact-rule hint. See the comment at the <span>:
   // this form renders more than once per document, and a literal id would make
   // one instance describe its inputs with another instance's node.
@@ -27,6 +30,8 @@ export function WaitlistForm() {
       setStatus("needs-contact");
       return;
     }
+    // Decided before the request: the fields stay editable while it is in flight.
+    const gaveEmail = email.trim() !== "";
     setStatus("loading");
     try {
       const res = await fetch("/api/waitlist", {
@@ -43,6 +48,7 @@ export function WaitlistForm() {
       if (typeof window !== "undefined" && (window as any).umami) {
         (window as any).umami.track("waitlist_signup");
       }
+      setPhoneOnly(!gaveEmail);
       setStatus("done");
     } catch {
       // Real error UX (no silent auto-redirect): show an inline error with an
@@ -52,19 +58,19 @@ export function WaitlistForm() {
   }
 
   if (status === "done") {
-    // gy-ds3fn / pm ruling: CHANNEL-NEUTRAL on purpose. The previous line said
-    // "we'll email you", which became false the moment this form could accept a
-    // phone-only signup — so the field and this line had to ship together, never
-    // one then the other. It deliberately does NOT promise a text either: our SMS
-    // delivery is unproven (gy-odma3, sms_delivery_log silent for 22.9 days on
-    // prod), and swapping one lie for another is not a fix. It also survives the
-    // next change to the field set without needing a re-edit.
+    // gy-e60uc.3: the line names the channel we will really use. It used to be channel-neutral
+    // (gy-ds3fn) because a phone-only lead was told "we'll email you" and got no email; the founder
+    // has since ruled that phone-only leads are reached on WhatsApp by the team, so each branch may
+    // say what actually happens. It still names no person, no time and no access promise.
+    // role="status" so a screen reader announces the outcome: the form is REPLACED by this line, so
+    // focus is otherwise left on a node that no longer exists.
     return (
       <p
+        role="status"
         className="text-[15px] py-4"
         style={{ color: "var(--accent)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
       >
-        {ACCESS_SUCCESS_MESSAGE}
+        {phoneOnly ? ACCESS_SUCCESS_MESSAGE_PHONE_ONLY : ACCESS_SUCCESS_MESSAGE_EMAIL}
       </p>
     );
   }
@@ -118,9 +124,9 @@ export function WaitlistForm() {
         name="phone"
         autoComplete="tel"
         inputMode="tel"
-        aria-label="Your phone number"
+        aria-label="Your WhatsApp phone number"
         aria-describedby={contactRuleId}
-        placeholder="Your phone number"
+        placeholder="Your WhatsApp phone number"
         value={phone}
         onChange={(e) => {
           setPhone(e.target.value);
@@ -193,7 +199,7 @@ export function WaitlistForm() {
         className="text-[13px] leading-5"
         style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}
       >
-        Add a phone number or an email: either one is enough.
+        Add a WhatsApp number or an email: either one is enough.
       </span>
       <button
         type="submit"
@@ -238,14 +244,14 @@ export function WaitlistForm() {
           // error (WCAG 1.4.1). role="alert" already carries it non-visually.
           style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)" }}
         >
-          Add a phone number or an email so we can reach you.
+          Add a WhatsApp number or an email so we can reach you.
         </span>
       )}
       {status === "error" && (
         <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
           Couldn't send your request just now. Try again, or{" "}
           <a
-            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo private alpha access request")}&body=${encodeURIComponent(`Name: ${name}\nPhone: ${phone}\nEmail: ${email}`)}`}
+            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo private alpha access request")}&body=${encodeURIComponent(`Name: ${name}\nWhatsApp number: ${phone}\nEmail: ${email}`)}`}
             className="underline"
             style={{ color: F.white }}
           >
