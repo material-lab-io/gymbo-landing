@@ -12,7 +12,7 @@
 // gy-0v33y — ONE definition of a legal source, shared with the browser. The
 // client is not trusted: whatever arrives is re-normalised here, and anything
 // that is not a clean slug becomes NULL rather than being stored as a channel.
-import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
+import { registrySource } from "../../src/lib/sourceSlug.mjs";
 
 const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
@@ -107,7 +107,10 @@ export async function onRequestPost(context) {
       // visit was never classified at all (a client older than this change, or a
       // POST that is not our form). Those are different facts about the lead and
       // the column must keep them apart.
-      source: sourceSlug(body.source),
+      // gy-ufxgo.8: the registry-v5 boundary, re-applied here (the browser is not trusted). An off-registry value
+      // becomes "unknown" and NEVER fails the signup; an absent/broken value stays NULL as above. Source ONLY: no
+      // visitor id, medium or campaign is read from the body (pm 2026-09-26T13:18Z).
+      source: registrySource(body.source),
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
