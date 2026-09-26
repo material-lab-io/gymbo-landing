@@ -371,7 +371,7 @@ export function CompareWellnessZ() {
                 Built for trainers. Try it free.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Request access and we'll be in touch with your access. Eligible subscribers can try Gymbo free for {TRIAL_DAYS} days.
+                Leave a WhatsApp number or email and we'll get back to you. Eligible subscribers can try Gymbo free for {TRIAL_DAYS} days.
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
