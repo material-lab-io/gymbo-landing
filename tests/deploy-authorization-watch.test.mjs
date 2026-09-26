@@ -174,10 +174,35 @@ test('run: the unlabelled-PR count names the PRs this watcher is blind to; draft
   assert.equal(describeUnlabelled([]), null);
 });
 
-test('run: if listing open PRs fails the run stays GREEN but says it could not count (never a silent gap)', async () => {
+test('run: if listing open PRs fails the run goes RED (AC6 rides on that read, so a gap there can hide an armed PR)', async () => {
   const r = await run({ request: fakeGithub({ failOpen: true }).request, env: env(), now: NOW });
+  assert.equal(r.evaluation.exitCode, 1);
+  assert.ok(r.evaluation.errors.some((e) => /could not list open PRs/.test(e)));
+});
+
+// ===== gy-e9wa6.1 AC4 / AC6 =====
+import { GRANTED_LABEL, armedWithoutGrant } from '../scripts/deploy-authorization-watch.mjs';
+
+test('AC4: the overdue comment never @-mentions anyone, and names pm as the authoriser', () => {
+  const src = readFileSync(new URL('../scripts/deploy-authorization-watch.mjs', import.meta.url), 'utf8');
+  assert.doesNotMatch(src, /@kaushik/i);
+  assert.match(src, /authoriser is pm/);
+});
+
+const armed = (number, labels = [], base = 'main') => ({ number, draft: false, created_at: ago(30), base: { ref: base }, labels, auto_merge: { enabled_by: { login: 'x' } } });
+
+test('AC6 POSITIVE: an open PR to main with auto-merge armed and no grant turns the run RED and names it', async () => {
+  const open = [armed(196)];
+  const r = await run({ request: fakeGithub({ open }).request, env: env(), now: NOW });
+  assert.equal(r.evaluation.exitCode, 1);
+  assert.match(r.evaluation.errors.join('\n'), /AUTO-MERGE ARMED without a recorded grant: #196/);
+});
+
+test('AC6 NEGATIVE: armed WITH the grant label, unarmed, and armed-to-another-base are all left green', async () => {
+  const open = [armed(1, [{ name: GRANTED_LABEL }]), { ...armed(2), auto_merge: null }, armed(3, [], 'release')];
+  const r = await run({ request: fakeGithub({ open }).request, env: env(), now: NOW });
   assert.equal(r.evaluation.exitCode, 0);
-  assert.ok(r.evaluation.notes.some((n) => /could not list open PRs/.test(n)));
+  assert.deepEqual(armedWithoutGrant(open), []);
 });
 
 // --- the real CLI: the EXIT CODE is the product, so drive the script itself with a stubbed fetch ---

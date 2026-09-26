@@ -1,0 +1,40 @@
+name: Deploy Authorisation Autolabel
+
+# gy-e9wa6.1 — a green non-draft PR to main is put on deploy-authorization-pending by this workflow, not by a
+# human remembering to. Labelling is its ONLY write: the script issues one label POST and nothing else, and the token has no
+# contents:write, so it cannot merge or push (issues:write is the label API's requirement).
+#
+# Why workflow_run and not pull_request: a pull_request run would execute the PR's OWN copy of this file with a
+# write token. workflow_run always runs the file on main, so a PR cannot change what labels itself. The two
+# workflows listed are the ones that produce the required checks on main ("deploy" and "Runner policy ...").
+# The hourly schedule is the backstop for events workflow_run cannot see (a draft marked ready, a missed event).
+on:
+  workflow_run:
+    workflows: ["Deploy to Cloudflare Pages", "Gate Self-Test (negative controls)"]
+    types: [completed]
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  issues: write
+  checks: read
+
+jobs:
+  label:
+    runs-on: [self-hosted, gt2]
+    steps:
+      # main's copy of the script, never a PR's: workflow_run and schedule both check out the default branch
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Label green non-draft PRs deploy-authorization-pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/deploy-authorization-autolabel.mjs

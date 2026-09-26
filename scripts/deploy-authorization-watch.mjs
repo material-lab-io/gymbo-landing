@@ -26,6 +26,10 @@ export const OVERDUE_LABEL = 'deploy-authorization-overdue';
 // A control PR carries this label so that its (deliberate) overdue state still turns the run
 // red, but does not @-mention the founder with a test comment. It suppresses ONLY the comment.
 export const TEST_LABEL = 'deploy-authorization-test';
+// gy-e9wa6.1 AC6: a PR with auto-merge ARMED merges itself the moment its checks pass, which is a production publish
+// nobody authorised (#196 published that way after 4 days armed). CI cannot read bead comments, so a "recorded grant"
+// has to be visible ON the PR: pm applies this label when granting. Anything armed without it turns the run RED.
+export const GRANTED_LABEL = 'deploy-authorization-granted';
 export const DEFAULT_THRESHOLD_MS = 60 * 60 * 1000;
 export const THRESHOLD_MS = DEFAULT_THRESHOLD_MS;
 
@@ -94,6 +98,11 @@ export function describeUnlabelled(openPrs, now = Date.now()) {
 export const shouldNotify = (issue, row) =>
   row.state === 'overdue' && !issue.labels.some((label) => label.name === OVERDUE_LABEL || label.name === TEST_LABEL);
 
+// Pure. Open PRs to main with auto-merge armed and no grant label.
+export function armedWithoutGrant(openPrs) {
+  return openPrs.filter((pr) => pr.base?.ref === 'main' && pr.auto_merge && !(pr.labels ?? []).some((label) => label.name === GRANTED_LABEL));
+}
+
 // `request(url, options)` is injected so the whole run can be exercised without GitHub.
 export async function run({ request, env, now = Date.now() }) {
   const repo = env.GITHUB_REPOSITORY;
@@ -129,7 +138,7 @@ export async function run({ request, env, now = Date.now() }) {
     if (shouldNotify(issue, row)) {
       await attempt('comment', () => request(`${api}/issues/${issue.number}/comments`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: `@kaushikNaarayan this public-site PR has awaited deployment authorisation for over one hour. Please authorise and perform (or name the performer of) the merge. This is not a delegation of the merge.\n\nTracking: \`${PENDING_LABEL}\` → \`${OVERDUE_LABEL}\` (gy-e9wa6). This run is also RED until it is resolved.` }),
+        body: JSON.stringify({ body: `This public-site PR has awaited deployment authorisation for over one hour. The authoriser is pm (gymbo/gymbo-crew.pm); the alarm reaches them as a RED run through async-watchdog, not as a founder ping. Authorise and perform (or name the performer of) the merge. This is not a delegation of the merge.\n\nTracking: \`${PENDING_LABEL}\` → \`${OVERDUE_LABEL}\` (gy-e9wa6). This run is also RED until it is resolved.` }),
       }));
     }
   }
@@ -143,9 +152,16 @@ export async function run({ request, env, now = Date.now() }) {
   try {
     const open = await request(`${api}/pulls?state=open&per_page=100`);
     unlabelledNote = describeUnlabelled(open, now);
+    const armed = armedWithoutGrant(open);
+    if (armed.length) {
+      evaluation.errors.push(`AUTO-MERGE ARMED without a recorded grant: ${armed.map((pr) => `#${pr.number}`).join(', ')}. An armed PR publishes getgymbo.com the moment its checks pass. Disarm it, or have the authoriser grant it and add the ${GRANTED_LABEL} label (gy-e9wa6.1 AC6).`);
+      evaluation.exitCode = 1;
+    }
   } catch (error) {
     // the informational count must never turn a healthy run red, but it must not vanish quietly either
-    evaluation.notes.push(`could not list open PRs to count the unlabelled ones: ${error.message}`);
+    // AC6 lives in this same read, so a failure here can hide an armed PR: that is red, not a footnote
+    evaluation.errors.push(`could not list open PRs (unlabelled count and AC6 armed-auto-merge check both skipped): ${error.message}`);
+    evaluation.exitCode = 1;
   }
   if (unlabelledNote) evaluation.notes.push(unlabelledNote);
   return { rows, evaluation, actions, thresholdMs };
