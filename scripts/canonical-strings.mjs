@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { norm } from "./copy-blocks.mjs";
+import { matchable } from "./text-normalise.mjs";
 
 export const CANON_DIR = "src/canonical";
 export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
@@ -106,14 +107,28 @@ export function findBuiltPrices(root = "dist") {
 // they stay in findBuiltPrices' declared-unread list).
 const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
 export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
-const amountRe = (n) => new RegExp(`\u20b9\\s?${Number(n).toLocaleString("en-IN").replace(/,/g, ",")}(?![\\d]|,\\d)`);
+// gy-53qq5 (tester M1/M2): the pin reads what a person READS, not the raw bytes. React's SSR puts a
+// comment node between the rupee sign and the digits and the hand-typed meta says 'Rs.399', so the
+// raw-text \u20b9399 regex missed both. priceText() drops comments and tags (html only: '<' is prose in
+// md/txt), then applies the shared matchable() fold (entities, invisibles, look-alikes). amountRe()
+// accepts the spellings a reader treats as the same price: \u20b9 / Rs / Rs. / INR before, or 'rupees' /
+// Rs / INR after, with or without the thousands comma. Still NOT read: Devanagari digits, images.
+const groupings = (n) => [...new Set([Number(n).toLocaleString("en-IN"), Number(n).toLocaleString("en-US"), String(Number(n))])].join("|");
+// A stripped tag keeps its text-bearing attributes: the compare page's hand-typed 'Rs.399' lives in a
+// <meta content>, and alt/title/aria-label are read by people and crawlers too.
+const tagText = (tag) => " " + [...tag.matchAll(/\b(?:content|alt|title|aria-label)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)].map((m) => m[1] ?? m[2]).join(" ") + " ";
+export const priceText = (text, file = "") => matchable(/\.html?$/i.test(file) ? text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText) : text);
+const amountRe = (n) => {
+  const a = `(?:${groupings(n)})`, tail = "(?!\\d|,\\d)(?!\\.\\d*[1-9])";
+  return new RegExp(`(?:\u20b9\\s?|(?<![A-Za-z])(?:Rs\\.?|INR)\\s?)${a}${tail}|(?<![\\d,.])${a}\\s?(?:rupees\\b|(?<![A-Za-z])(?:Rs|INR)\\b)`, "i");
+};
 const listBuiltText = (root) => {
   const out = new Map();
   const walk = (d) => {
     for (const e of readdirSync(join(root, d))) {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
-      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, readFileSync(join(root, rel), "utf8"));
+      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, priceText(readFileSync(join(root, rel), "utf8"), rel));
     }
   };
   if (!existsSync(root)) throw new Error(`${root} does not exist; cannot check prices on a build that is not there`);

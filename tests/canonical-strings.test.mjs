@@ -210,6 +210,37 @@ test("PRICE PIN: one stale surface, a wrong Save N%, a missing listed file, a su
   assert.equal(checkBuiltPricePin({ ...F, monthlyINR: "399" }, reg, dist)[0].kind, "price-fact-missing", "a non-integer fact fails closed");
 });
 
+test("PRICE PIN M1/M2 (tester 09-26): the split-tag and alternate-spelling forms are READ, so an unlisted page cannot state the price in them unwatched", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const M = F.monthlyINR, A = F.annualINR, g = (n) => Number(n).toLocaleString("en-IN");
+  const forms = {
+    "react split tag": `<span>\u20b9<!-- -->${M}</span>`,
+    "comment holding a >": `<span>\u20b9<!-- a > b -->${M}</span>`,
+    "tag between sign and digits": `<b>\u20b9</b><b>${M}</b>`,
+    "Rs.": `<meta content="flat Rs.${M}/mo">`, "Rs space": `<p>Rs ${M}</p>`, "INR": `<p>INR ${M}</p>`,
+    "rupees after": `<p>${M} rupees a month</p>`, "sign then space": `<p>\u20b9 ${M}</p>`,
+    "entity sign": `<p>&#8377;${M}</p>`, "nbsp": `<p>\u20b9&nbsp;${M}</p>`,
+    "annual no comma": `<p>\u20b9${A}</p>`, "annual Rs": `<p>Rs.${g(A)}</p>`,
+  };
+  for (const [name, html] of Object.entries(forms)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), html);
+    const f = checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html");
+    assert.equal(f.length >= 1 && f.every((x) => x.kind === "price-unregistered"), true, `${name}: an unlisted page stating the price in this form must FAIL, got ${JSON.stringify(f)}`);
+  }
+  // NEGATIVES: near-misses that are not the price must stay quiet (no false alarm from the wider reader).
+  const quiet = [`<p>\u20b9${M}0</p>`, `<p>\u20b91,${M}</p>`, `<p>Rs.1${M}</p>`, `<p>${M}0 rupees</p>`, `<p>cars ${M}</p>`, `<p>version ${M} of the guide</p>`, `<p>\u20b9${M}.50</p>`];
+  for (const html of quiet) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), html);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `${html} is not the ruled price`);
+  }
+  // a LISTED file whose only monthly mention is the split-tag form still satisfies the pin, and goes red when the price is bumped.
+  const dist = fixtureDist(canon), p = join(dist, "compare/gymbo-vs-wellnessz/index.html");
+  writeFileSync(p, readFileSync(p, "utf8").split(rupees(M)).join(`\u20b9<!-- -->${M}`).split(rupees(F.annualMonthlyEquivalentINR)).join(`\u20b9<span>${F.annualMonthlyEquivalentINR}</span>`));
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], "control: split-tag amounts on a listed page are read, not reported stale");
+  assert.ok(checkBuiltPricePin({ ...F, monthlyINR: M + 50 }, reg, dist).some((x) => x.file === "compare/gymbo-vs-wellnessz/index.html" && x.id === "monthlyINR"), "and a bumped price is still red on that page");
+  assert.deepEqual(priceDrill(F, reg, dist).missed, [], "the standing drill still goes red for every (file, key) with split tags in the build");
+});
+
 test("PRICE PIN control: a listed page that already states the DRIFTED amount blinds the pin, and the standing drill says so instead of a green", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
   const dist = fixtureDist(canon);
