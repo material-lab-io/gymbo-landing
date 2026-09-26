@@ -162,5 +162,14 @@
         "reason": "sample data shown in the payments screenshot's alt text ('Rs 45,663 in payments recorded for June'), not a price"
       }
     ]
+  },
+  "priceLedger": {
+    "_comment": "gy-53qq5.1 M6. `ruled` = the prices this registry was last reconciled to; it MUST equal content's facts or the gate is red (price-ledger-behind). When content bumps a price: move the old amount into `retired` as { amount, was, note } and set `ruled` to the new one. A retired amount on any page that is not pinned then fails as price-retired-amount (a pinned page already fails as price-unclassified); declare a legitimate third-party figure at the same number in thirdPartyAmounts. Starts empty: the gate cannot know a price it was never told.",
+    "ruled": {
+      "monthlyINR": 399,
+      "annualINR": 2999,
+      "annualMonthlyEquivalentINR": 250
+    },
+    "retired": []
   }
 }
