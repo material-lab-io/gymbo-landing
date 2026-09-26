@@ -298,6 +298,92 @@ test("M1/M2 REGRESSION OF tester's attack2: a careful plain-text 399 -> 449 upda
   assert.equal(checkBuiltPricePin({ ...F, monthlyINR: 449 }, reg, dist).filter((x) => x.kind === "price-stale" && x.file.startsWith("compare/")).length, 0, "presence of the new amount alone was the old pass; it no longer decides");
 });
 
+test("M3 (gy-53qq5.1) PRESENCE IS VISIBLE: a listed page whose only statement of the ruled price sits in a tag attribute (meta, alt) or a script FAILS as price-stale; the same amount in the body passes", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, key = "monthlyINR";
+  const f = "blog/how-india-independent-trainers-run-their-business/index.html";   // pinned to monthlyINR only
+  const page = (inner) => `<!doctype html><html><head><title>t</title></head><body>${inner}</body></html>`;
+  const cases = {
+    "meta attribute only": page(`<meta name="description" content="Only ${rupees(F.monthlyINR)}/month"><p>Pricing is on the pricing page.</p>`),
+    "img alt only": page(`<img src="a.png" alt="Just ${rupees(F.monthlyINR)}/month"><p>Pricing is on the pricing page.</p>`),
+    "script only": page(`<script type="application/ld+json">{"description":"${rupees(F.monthlyINR)}/month"}</script><p>Pricing is on the pricing page.</p>`),
+    "comment holding a > before the price": page(`<!-- a > b ${rupees(F.monthlyINR)}/month --><p>Pricing is on the pricing page.</p>`),
+    "html comment only": page(`<!-- ${rupees(F.monthlyINR)}/month --><p>Pricing is on the pricing page.</p>`),
+  };
+  for (const [name, html] of Object.entries(cases)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, f), html);
+    const r = checkBuiltPricePin(F, reg, dist).filter((x) => x.file === f);
+    assert.deepEqual(r.map((x) => `${x.kind} ${x.id}`), [`price-stale ${key}`], `${name}: the amount is not in visible text, so the pin must not count it`);
+  }
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true });
+  writeFileSync(join(dist, f), page(`<meta name="description" content="Only ${rupees(F.monthlyINR)}/month"><p>Only ${rupees(F.monthlyINR)}/month</p>`));
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === f), [], "control: the same amount in the body passes (and the attribute copy is still classified, not ignored)");
+  writeFileSync(join(dist, f), page(`<p>Only ${rupees(F.monthlyINR)}/month</p><meta name="description" content="Only ${rupees(F.monthlyINR + 1)}/month">`));
+  assert.ok(checkBuiltPricePin(F, reg, dist).some((x) => x.file === f && x.kind === "price-unclassified"), "an attribute still gets classified: a stale amount hidden in a meta is not exempt");
+});
+
+test("M3 (gy-53qq5.1) A DECLARATION AT A CURRENT PRICE HIDES IT: a third-party entry on a LISTED file whose amount equals a ruled Gymbo price FAILS; on an unlisted file it stays allowed", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon);
+  const listed = Object.keys(reg.surfaces)[0];
+  const collide = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: listed, amount: F.monthlyINR, reason: "test: competitor at the same figure" }] } };
+  const r = checkBuiltPricePin(F, collide, dist).filter((x) => x.kind === "price-declared-collides-current");
+  assert.deepEqual(r.map((x) => `${x.file} ${x.value}`), [`${listed} ${F.monthlyINR}`], "the declaration is named");
+  const unlisted = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "newpage/index.html", amount: F.monthlyINR, reason: "competitor at the same figure" }] } };
+  assert.deepEqual(checkBuiltPricePin(F, unlisted, dist).filter((x) => x.kind === "price-declared-collides-current"), [], "an unlisted page may still declare a third-party amount at the same figure (nothing is pinned there to hide)");
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.kind === "price-declared-collides-current"), [], "control: the real registry has no collision today");
+});
+
+test("M5 (gy-53qq5.1) SAVINGS PERCENT IN EVERY PHRASING: a wrong percent beside any saving word FAILS on a listed and an unlisted page; the ruled percent, and unrelated percentages, stay quiet", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, P = F.annualSavingsPercent, W = P + 1;
+  const phrasings = (n) => [`${n}% savings`, `Save up to ${n} percent`, `${n}% off the annual plan`, `${n}% cheaper`, `Saving ${n} %`, `save ${n}%`, `Save ${n}%`, `${n} per cent discount`, `SAVE ${n}%`];
+  for (const form of phrasings(W)) for (const [where, file, wrap] of [["listed", "llms.txt", (t) => `\n${t}\n`], ["unlisted", "newpage/index.html", (t) => `<p>${t}</p>`]]) {
+    const dist = fixtureDist(canon); const p = join(dist, file); mkdirSync(join(dist, "newpage"), { recursive: true });
+    if (where === "listed") writeFileSync(p, readFileSync(p, "utf8") + wrap(form)); else writeFileSync(p, wrap(form));
+    const r = checkBuiltPricePin(F, reg, dist).filter((x) => x.file === file && x.id === "annualSavingsPercent");
+    assert.equal(r.length, 1, `${where} '${form}': a percent that is not the ruled ${P} must be flagged once, got ${JSON.stringify(r)}`);
+  }
+  for (const form of phrasings(P)) {
+    const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\n${form}\n`);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], `control: '${form}' is the ruled percent and passes`);
+  }
+  for (const quiet of ["Verified 90-day client drop-off ~60% of clients", "clients drop off 60% of the time", "about 60% of clients drop off within 90 days", "28% self-employed", "a lower churn of 12%", "7% GST", "reduces admin time by 40%"]) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${quiet}</p>`);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `'${quiet}' is not a savings claim`);
+  }
+  // presence: a pinned file may state the percent as '37% savings' alone (it used to require the literal 'Save 37%')
+  const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8").replace(`Save ${P}%`, `${P}% savings`));
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "llms.txt"), [], "the ruled percent in another phrasing satisfies the pin");
+  // a declared third-party percent is exempt for that page only
+  const d2 = fixtureDist(canon); mkdirSync(join(d2, "newpage"), { recursive: true }); writeFileSync(join(d2, "newpage/index.html"), "<p>Rival: 20% off annual</p>");
+  assert.equal(checkBuiltPricePin(F, reg, d2).filter((x) => x.file === "newpage/index.html").length, 1, "control: undeclared, flagged");
+  const decl = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "newpage/index.html", amount: 20, unit: "percent", reason: "competitor's advertised discount" }] } };
+  assert.deepEqual(checkBuiltPricePin(F, decl, d2).filter((x) => x.file === "newpage/index.html"), [], "declared with unit percent and a reason: exempt on that page");
+});
+
+test("M5 (gy-53qq5.1) two seams: a percent declaration never exempts a rupee amount; the savings claim must be VISIBLE on a page pinned to it", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, P = F.annualSavingsPercent;
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>Only ${rupees(F.monthlyINR)}/month</p>`);
+  const leak = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "newpage/index.html", amount: F.monthlyINR, unit: "percent", reason: "test: a PERCENT declaration at the same digits" }] } };
+  assert.deepEqual(checkBuiltPricePin(F, leak, dist).filter((x) => x.file === "newpage/index.html").map((x) => x.kind), ["price-unregistered"], "a percent entry does not exempt the rupee amount with the same digits");
+  const idx = join(dist, "index.html"), price = (n) => `<p>${rupees(n)}</p>`;
+  const body = `${price(F.monthlyINR)}${price(F.annualINR)}${price(F.annualMonthlyEquivalentINR)}`;
+  writeFileSync(idx, `<html><head><meta name="description" content="Save ${P}%"></head><body>${body}</body></html>`);
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "index.html").map((x) => `${x.kind} ${x.id}`), ["price-stale annualSavingsPercent"], "index is pinned to the percent, and a claim only in a meta is not on the page");
+  writeFileSync(idx, `<html><head><meta name="description" content="Save ${P}%"></head><body>${body}<p>Save ${P}%</p></body></html>`);
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "index.html"), [], "control: the same claim in the body passes");
+});
+
+test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon); const p = join(dist, "llms.txt");
+  writeFileSync(p, readFileSync(p, "utf8") + `\n${F.annualSavingsPercent}% savings\nSave up to ${F.annualSavingsPercent} percent\n${F.annualSavingsPercent}% cheaper\n`);
+  const d = priceDrill(F, reg, dist);
+  assert.deepEqual(d.missed, [], "control: every claim, in every phrasing, goes red when the percent drifts");
+  assert.ok(d.claims >= 3, "the drill counted the extra claims");
+  const masked = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "llms.txt", amount: F.annualSavingsPercent, unit: "percent", reason: "test: declared at the figure the page states" }] } };
+  assert.match(priceDrill(F, masked, dist).missed.join(";"), /llms\.txt\|\d+ of \d+ savings claim\(s\)/, "a declaration at the percent the page states would hide those claims under drift, and the drill reports it");
+});
+
 test("M1/M2 STANDING DRILL: covers every occurrence in every spelling, and says so when one is masked", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
   const dist = fixtureDist(canon); const p = join(dist, "llms.txt");
