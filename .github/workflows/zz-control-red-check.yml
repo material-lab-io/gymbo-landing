@@ -1,0 +1,14 @@
+# CONTROL ONLY (gy-e9wa6.1 AC3, pm-approved 2026-09-26). Never merge.
+# Inert: workflow_dispatch only, so it never fires. Its sole purpose is to make
+# the "Approved self-hosted runner guard" step (and the Runner policy check)
+# read RED on this PR, to prove the autolabeller does NOT label a PR with a
+# red required check. runs-on is self-hosted (not hosted, never billed) but is
+# not the approved [self-hosted, gt2] literal.
+name: zz control red check
+on:
+  workflow_dispatch:
+jobs:
+  control:
+    runs-on: [self-hosted, Linux]
+    steps:
+      - run: echo control
