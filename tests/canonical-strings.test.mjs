@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, priceOccurrences, priceText, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -166,8 +166,8 @@ test("SCOPE DISCLOSURE: built files that state a rupee amount are FOUND and name
   writeFileSync(join(root, "alternatives/akton/index.html"), "<p>\u20b9399/month</p><script type=\"application/ld+json\">{\"price\":\"\u20b92,999\"}</script>");
   writeFileSync(join(root, "pricing.md"), "| Monthly | \u20b9399 / month |\n- Annual \u20b92,999\n");
   writeFileSync(join(root, "llms.txt"), "Monthly: \u20b9399/month\n");
-  writeFileSync(join(root, "app.js"), "const x = '\u20b9399'"); // bundles are a NAMED gap, not scanned
-  assert.deepEqual(findBuiltPrices(root), [{ file: "alternatives/akton/", count: 2 }, { file: "llms.txt", count: 1 }, { file: "pricing.md", count: 2 }]);
+  writeFileSync(join(root, "app.js"), "const x = '\u20b9399'"); // gy-53qq5.1 M4: scripts are read now, not a named gap
+  assert.deepEqual(findBuiltPrices(root), [{ file: "alternatives/akton/", count: 2 }, { file: "app.js", count: 1 }, { file: "llms.txt", count: 1 }, { file: "pricing.md", count: 2 }]);
   assert.throws(() => findBuiltPrices(join(root, "nope")), /does not exist/, "a missing dist is an error, not an empty list");
 });
 
@@ -420,6 +420,53 @@ test("M6 CLI end to end: a bumped fact with the ledger left behind fails the REA
   const f = join(canon, "price-surfaces.json"), j = JSON.parse(readFileSync(f, "utf8")); j.priceLedger.ruled.monthlyINR += 50; writeFileSync(f, JSON.stringify(j));
   const bad = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
   assert.equal(bad.status, 1); assert.match(bad.stderr, /price-ledger-behind monthlyINR.*retired/i);
+});
+
+test("M4 (gy-53qq5.1) EVERY SHIPPED TEXT FILE IS READ: the current price in an unlisted .js/.mjs/.css/.svg/.webmanifest FAILS, including an svg split across tspans", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, M = F.monthlyINR;
+  const forms = {
+    "stale.js": `x="${rupees(M)}/month"`, "stale.mjs": `export const p = "Rs.${M}"`, "stale.css": `a::after{content:"${rupees(M)}"}`,
+    "stale.svg": `<svg><text>\u20b9<tspan>${M}</tspan>/month</text></svg>`, "stale.webmanifest": `{"description":"Only ${rupees(M)}/month"}`,
+    "assets/lazy-Ab3dEf9h.js": `const a="\\u20b9${M}"`,   // a JSON/JS-escaped rupee sign in a hashed chunk
+  };
+  for (const [file, body] of Object.entries(forms)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "assets"), { recursive: true }); writeFileSync(join(dist, file), body);
+    const r = checkBuiltPricePin(F, reg, dist).filter((x) => x.kind === "price-unregistered");
+    assert.equal(r.length, 1, `${file}: an unlisted file stating the current price must FAIL, got ${JSON.stringify(r.map((x) => x.file))}`);
+  }
+  const dist = fixtureDist(canon); writeFileSync(join(dist, "stale.js"), "x=1;var y='no price here'");
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], "control: a .js that states no price is green");
+});
+
+test("M4 HASHED CHUNKS: a registry key names a bundle WITHOUT its build hash, so the pin survives a rebuild; two files that reduce to one name fail closed", () => {
+  const canon = loadCanonical(REAL), F = canon.doc.facts;
+  const reg = { surfaces: { "assets/terms.js": ["monthlyINR", "annualINR"] }, thirdPartyAmounts: { entries: [] } };
+  const mk = (hash) => { const d = mkdtempSync(join(scratch, "hash-")); mkdirSync(join(d, "assets"), { recursive: true }); writeFileSync(join(d, `assets/terms-${hash}.js`), `p="${rupees(F.monthlyINR)} ${rupees(F.annualINR)}"`); return d; };
+  assert.deepEqual(checkBuiltPricePin(F, reg, mk("6GmOuVPd")), [], "the pin matches the chunk under one hash");
+  assert.deepEqual(checkBuiltPricePin(F, reg, mk("Zz9-_aBc")), [], "and under another (the next build)");
+  const red = checkBuiltPricePin({ ...F, monthlyINR: F.monthlyINR + 50 }, reg, mk("6GmOuVPd")).filter((x) => x.kind === "price-stale");
+  assert.deepEqual(red.map((x) => `${x.file} ${x.id}`), ["assets/terms.js monthlyINR"], "a bumped price goes red on the chunk, named without the hash");
+  const dup = mk("6GmOuVPd"); writeFileSync(join(dup, "assets/terms-Ab3dEf9h.js"), "x");
+  assert.throws(() => checkBuiltPricePin(F, reg, dup), /both reduce to|same built name/i, "two chunks with one hash-stripped name are ambiguous: fail closed");
+  const gone = mkdtempSync(join(scratch, "hash-")); mkdirSync(join(gone, "assets"), { recursive: true });
+  assert.ok(checkBuiltPricePin(F, reg, gone).some((x) => x.kind === "price-surface-missing" && x.file === "assets/terms.js"), "a listed chunk that is not in the build is reported by its hash-free name");
+});
+
+test("M4 builtName: a build hash is stripped only from an assets/ file whose 8-character tail looks like a hash; nothing else is renamed", () => {
+  const cases = {
+    "assets/terms-6GmOuVPd.js": "assets/terms.js", "assets/alternatives-main-4sIo2GwD.js": "assets/alternatives-main.js",
+    "assets/index-Zz9-_aBc.css": "assets/index.css", "assets/deep/x-Ab3dEf9h.mjs": "assets/deep/x.mjs",
+    "assets/data-analysis.js": "assets/data-analysis.js",      // 8 lowercase letters: a word, not a hash
+    "other/terms-6GmOuVPd.js": "other/terms-6GmOuVPd.js",      // outside assets/: left alone
+    "assets/logo.svg": "assets/logo.svg", "index.html": "index.html", "assets/terms-6GmOuVP.js": "assets/terms-6GmOuVP.js", // 7 chars: not a hash
+    "assets/terms-6GmOuVPdX.js": "assets/terms-6GmOuVPdX.js",  // 9 chars: not a hash
+  };
+  for (const [from, to] of Object.entries(cases)) assert.equal(builtName(from), to, from);
+});
+
+test("M4 REAL REGISTRY: the two bundles that state Gymbo's price on the real build are pinned", () => {
+  const reg = loadPriceSurfaces(REAL);
+  assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js", "assets/trialAccess.js"], "terms-*.js and trialAccess-*.js state the price (measured on dist 09-26) and are pinned");
 });
 
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {

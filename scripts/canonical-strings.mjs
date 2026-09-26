@@ -82,15 +82,23 @@ export function checkFacts(doc, factsMap, tsSource) {
 // xml and json only: text inside the .js bundles is NOT scanned, and neither are images.
 // Informational, never a failure. Includes competitor prices and constant-derived text on purpose:
 // the point is which files the check does not verify, not which are wrong.
+// gy-53qq5.1 M4: every shipped TEXT file is read (markup, prose, data, scripts, styles, svg, manifests),
+// not only html/md/txt/xml/json: terms-*.js and trialAccess-*.js state Gymbo's price on the real build.
+// Bundles are content-hashed ('terms-6GmOuVPd.js'), so a registry key names them WITHOUT the hash
+// ('assets/terms.js') and survives a rebuild. A hash must carry a digit or capital so an ordinary
+// 8-letter word ('data-analysis.js') is never mistaken for one; if two files still reduce to one name the
+// scan throws instead of guessing.
+const SCANNED = /\.(html?|md|txt|xml|json|m?js|css|svg|webmanifest)$/i;
+export const builtName = (rel) => rel.replace(/^(assets\/.*?)-(?=[A-Za-z0-9_-]*[0-9A-Z])[A-Za-z0-9_-]{8}(\.[A-Za-z0-9]+)$/, "$1$2");
 export function findBuiltPrices(root = "dist") {
   const out = [];
   const walk = (d) => {
     for (const e of readdirSync(join(root, d))) {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
-      if (!/\.(html?|md|txt|xml|json)$/i.test(e)) continue;
+      if (!SCANNED.test(e)) continue;
       const n = priceOccurrences(priceText(readFileSync(join(root, rel), "utf8"), rel)).length;
-      if (n) out.push({ file: rel.replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
+      if (n) out.push({ file: builtName(rel).replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
     }
   };
   if (!existsSync(root)) throw new Error(`${root} does not exist; cannot list the built files the price check does not read`);
@@ -115,8 +123,8 @@ export function findBuiltPrices(root = "dist") {
 // form it was written. That is what turns a leftover old price into a red naming that occurrence,
 // whatever spelling it is in. gy-53qq5.1 closed M3 (a pinned amount must be in the page's VISIBLE text,
 // not only a meta/alt/script; a third-party declaration at a ruled price on a listed page fails) and M5
-// (a savings percent is read in every phrasing, not only 'Save N%'). Still NOT covered: .js/.svg/
-// .webmanifest (M4) and an OLD Gymbo price on an unlisted page (M6).
+// (a savings percent is read in every phrasing, not only 'Save N%'). M4 closed the file-type gap (.js/.mjs/.css/.svg/.webmanifest are read; hashed chunks are pinned by their
+// hash-free name). Still NOT covered: an OLD Gymbo price on an unlisted page (M6), images, Devanagari digits.
 const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
 export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
 // gy-53qq5 (tester M1/M2): the pin reads what a person READS, not the raw bytes. React's SSR puts a
@@ -132,7 +140,7 @@ const tagText = (tag) => " " + [...tag.matchAll(/\b(?:content|alt|title|aria-lab
 // blocks and tag attributes are dropped, so a price that lives only in a meta, an alt or JSON-LD does not
 // satisfy a pin. The default keeps text-bearing attributes so a stale amount hidden there is still classified.
 const dropHidden = (t) => t.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|template|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ");
-export const priceText = (text, file = "", visibleOnly = false) => matchable(/\.html?$/i.test(file) ? (visibleOnly ? dropHidden(text).replace(/<[^>]+>/g, " ") : text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText)) : text);
+export const priceText = (text, file = "", visibleOnly = false) => matchable(/\.(html?|svg)$/i.test(file) ? (visibleOnly ? dropHidden(text).replace(/<[^>]+>/g, " ") : text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText)) : text);
 // priceOccurrences() runs on priceText() output (comments and tags already gone, entities decoded), so
 // it needs no tag-gap handling. Marker before the digits: rupee sign (or its JSON escape), Rs, Rs., INR;
 // or 'rupees' / Rs / INR after them. Grouping commas are optional. Every amount is returned with the form
@@ -164,7 +172,10 @@ const listBuiltText = (root, visibleOnly = false) => {
     for (const e of readdirSync(join(root, d))) {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
-      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, priceText(readFileSync(join(root, rel), "utf8"), rel, visibleOnly));
+      if (!SCANNED.test(e)) continue;
+      const name = builtName(rel);
+      if (out.has(name)) throw new Error(`${rel} and another built file both reduce to the same built name ${name}; the price pin cannot tell them apart, so it refuses to guess`);
+      out.set(name, priceText(readFileSync(join(root, rel), "utf8"), rel, visibleOnly));
     }
   };
   if (!existsSync(root)) throw new Error(`${root} does not exist; cannot check prices on a build that is not there`);
