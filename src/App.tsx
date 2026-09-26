@@ -7,8 +7,6 @@ import {
   FileText,
   Palette,
   Link,
-  CalendarCheck,
-  BarChart3,
   ChevronLeft,
   ChevronRight,
   Smartphone,
@@ -506,22 +504,6 @@ export default function App() {
                 Most independent trainers in India run their business through WhatsApp threads, paper registers, and mental math. Payments get missed, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
               </p>
             </Reveal>
-
-            {/* testimonial */}
-            <Reveal className="mt-12 mx-auto max-w-[720px]">
-              <figure className="flex flex-col text-center p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.beigeCard, boxShadow: SHADOW.card }}>
-                <blockquote className="text-[15px] md:text-[17px] italic" style={{ fontFamily: SERIF, lineHeight: 1.75, color: F.ink }}>
-                  “I used to run everything through WhatsApp and a notebook. Lost track of classes, payments, forgot who owed what. With Gymbo, I open the app, log the session, and move on.”
-                </blockquote>
-                <figcaption className="flex flex-col items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid var(--c-line)" }}>
-                  <span className="grid place-items-center w-11 h-11 rounded-full text-[15px] font-bold" style={{ background: "rgba(245,158,11,0.15)", color: F.amberText, fontFamily: SANS }}>S</span>
-                  <span className="flex flex-col items-center">
-                    <span className="text-[14px] font-bold" style={{ color: F.ink, fontFamily: SANS }}>Sarfaraz</span>
-                    <span className="text-[12px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Fitness trainer · Bangalore</span>
-                  </span>
-                </figcaption>
-              </figure>
-            </Reveal>
           </div>
         </section>
 
@@ -706,17 +688,18 @@ export default function App() {
    split), pause on hover + keyboard focus, static wrapped row under
    prefers-reduced-motion.
 
-   Chip list is the 8 already source-verified touchpoints (marketer,
-   gy-mdqxp 2026-08-13) — shortened to scannable labels, tangible/shipped
-   ones leading. */
+   Chip list is the source-verified touchpoints (marketer, gy-mdqxp
+   2026-08-13) — shortened to scannable labels, tangible/shipped ones
+   leading. 'Booking link' and 'Fitness reports' were REMOVED 2026-09-26
+   (pm ruling on gy-l6dsr): not built, so they must not sit in a strip
+   readers take as shipped. They return only with product proof of shipped
+   status (a screenshot on a released build). */
 const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "QR profile", icon: QrCode },
   { name: "Share links", icon: Share2 },
   { name: "PDF invoices", icon: FileText },
   { name: "Brand theming", icon: Palette },
   { name: "Your own URL", icon: Link },
-  { name: "Booking link", icon: CalendarCheck },
-  { name: "Fitness reports", icon: BarChart3 },
   { name: "Custom branded client content", icon: Smartphone },
 ];
 

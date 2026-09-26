@@ -2,18 +2,6 @@
  "version": 1,
  "entries": [
   {
-   "route": "/",
-   "kinds": [
-    "visible"
-   ],
-   "sentence": "With Gymbo, I open the app, log the session, and move on.”",
-   "reason": "attributed-quote",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
    "route": "/alternatives/truecoach/",
    "kinds": [
     "visible"
