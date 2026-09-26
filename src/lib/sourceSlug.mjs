@@ -170,6 +170,36 @@ export function sourceFromReferrer(referrer, selfHost) {
 // records the absence without inventing the cause.
 export const SOURCE_UNKNOWN = "unknown";
 
+// gy-ufxgo.8 — THE REGISTRY-v5 ALLOWLIST, and the ONLY boundary that decides what is stored.
+//
+// The shape rule above (sourceSlug) is a NORMALISER. It bounds length and characters, and that is all it can
+// do: "9876543210" (a phone number), "damini-rathi" (a person), "summer20" (a campaign) and "naveen_maharashi_06"
+// (a person-token) all PASS it, and any of them stored in a channel column is exactly the per-person or
+// per-campaign identifier the DPDP notice does not cover (gy-wymhs C1: a bounded vocabulary, never a per-person
+// token). So the boundary is membership in registry v5, exact, and everything else is "unknown".
+//
+// Applied by the browser (resolveSource) AND re-applied by both server handlers, because the browser cannot be
+// trusted and the RULE must exist once. Off-registry input is never persisted, never echoed, and never fails a
+// submission: it becomes "unknown", the same measurement as "we looked and found nothing".
+//
+// 🔴 "direct" IS NOT HERE ON PURPOSE (see SOURCE_UNKNOWN above). 🔴 ADDING A CHANNEL IS A REGISTRY DECISION
+// (marketer), not an edit to this array; the test pins the list to an independent literal.
+export const SOURCE_VOCABULARY = Object.freeze([
+  "instagram", "unknown", "referral", "directory", "google", "bing", "duckduckgo", "yahoo", "yandex",
+]);
+const VOCAB = new Set(SOURCE_VOCABULARY);
+export const isRegistrySource = (s) => typeof s === "string" && VOCAB.has(s);
+
+/**
+ * Raw source -> what may be stored. null = nothing measured / a broken caller (stays NULL, never promoted);
+ * a registry-v5 source = itself; anything else that had a usable shape = "unknown".
+ */
+export function registrySource(raw) {
+  const slug = sourceSlug(raw);
+  if (slug === null) return null;
+  return VOCAB.has(slug) ? slug : SOURCE_UNKNOWN;
+}
+
 /**
  * THE RESOLUTION ORDER, in one place: an explicit tag beats an inferred one,
  * and an unattributable visit is recorded as SOURCE_UNKNOWN rather than skipped.
@@ -188,5 +218,9 @@ export const SOURCE_UNKNOWN = "unknown";
  * functions/api/waitlist.js, where an absent body.source stays null on purpose.
  */
 export function resolveSource({ utmSource, referrer, selfHost } = {}) {
-  return sourceSlug(utmSource) ?? sourceFromReferrer(referrer, selfHost) ?? SOURCE_UNKNOWN;
+  // An explicit tag beats an inferred one, VALID OR NOT: a tag we do not recognise is "unknown", it does not hand
+  // the decision to the referrer (a bad tag on a link that arrived from Google is not evidence of Google).
+  const tagged = registrySource(utmSource);
+  if (tagged !== null) return tagged;
+  return sourceFromReferrer(referrer, selfHost) ?? SOURCE_UNKNOWN;
 }

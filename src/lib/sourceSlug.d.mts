@@ -9,3 +9,7 @@ export declare function resolveSource(input?: {
   referrer?: string | null;
   selfHost?: string | null;
 }): string | null;
+
+export const SOURCE_VOCABULARY: readonly string[];
+export function isRegistrySource(s: unknown): boolean;
+export function registrySource(raw: unknown): string | null;

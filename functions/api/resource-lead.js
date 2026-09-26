@@ -33,6 +33,8 @@
 // belongs in the delivery email's unsubscribe link, and handing a capability to the page
 // that the page has no use for is gratuitous exposure.
 
+import { registrySource, SOURCE_UNKNOWN } from "../../src/lib/sourceSlug.mjs";
+
 const PROD_SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 // The public anon key — the same one /api/waitlist and the client bundle already ship.
 // Not a secret. It is powerless against resource_leads except through the RPC above.
@@ -72,7 +74,10 @@ export async function onRequestPost(context) {
     // gy-p3ebo AC7 requires it default false.
     const marketingConsent = body.marketing_consent === true;
     const marketingNotice = String(body.marketing_consent_notice_version || "").trim();
-    const source = String(body.source || "").trim();
+    // gy-ufxgo.8: the registry-v5 boundary (shared with the browser and waitlist.js). resource_leads.source is NOT NULL
+    // today, so an ABSENT source is recorded as "unknown" rather than NULL: never a guess and never the old "landing"
+    // default (a positive claim about where the lead came from that nothing measured).
+    const source = registrySource(body.source) ?? SOURCE_UNKNOWN;
 
     if (!resourceId) return refusal("resource_id required", 400);
     if (!email || !email.includes("@")) return refusal("valid email required", 400);
@@ -108,7 +113,7 @@ export async function onRequestPost(context) {
         p_delivery_consent_notice_version: deliveryNotice,
         p_marketing_consent: marketingConsent,
         p_marketing_consent_notice_version: marketingConsent ? marketingNotice : null,
-        p_source: source || "landing",
+        p_source: source,
       }),
     });
 

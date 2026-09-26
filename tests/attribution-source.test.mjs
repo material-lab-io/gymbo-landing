@@ -14,7 +14,13 @@ import {
   sourceFromReferrer,
   resolveSource,
   SOURCE_MAX_LENGTH,
+  SOURCE_VOCABULARY,
+  isRegistrySource,
+  registrySource,
 } from "../src/lib/sourceSlug.mjs";
+import { readFileSync, readdirSync, mkdtempSync, writeFileSync, mkdirSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 
 test("the two emitters that actually exist today survive verbatim", () => {
   // public/_redirects:4  /ig        → utm_source=instagram
@@ -231,4 +237,125 @@ test("the Android Instagram app referrer is instagram, and lookalikes are not", 
   assert.equal(sourceFromReferrer("android-app://com.instagram.lite/", H), null);
   assert.equal(sourceFromReferrer("android-app://com.evil.instagram.android/", H), null);
   assert.equal(sourceFromReferrer("android-app://com.instagram.android.evil/", H), null);
+});
+
+
+// ===========================================================================
+// gy-ufxgo.8 — THE REGISTRY-v5 ALLOWLIST (pm ruling 2026-09-26T13:18Z).
+// The shape rule above is a NORMALISER, not the boundary: a value that survives it is still
+// not a channel unless registry v5 names it. registrySource() is the boundary, applied by the
+// browser AND re-applied by both server handlers. Source only: no visitor ID, no medium, no
+// campaign on either handler (those are pm-ruled OUT of this change).
+// ===========================================================================
+const V5 = ["instagram", "unknown", "referral", "directory", "google", "bing", "duckduckgo", "yahoo", "yandex"];
+const FORBIDDEN_VALID_SHAPE = ["9876543210", "damini-rathi", "summer20", "naveen_maharashi_06"];   // AC3, verbatim
+
+test("AC1: the vocabulary is EXACTLY registry v5 (independent literal), and every member passes the boundary", () => {
+  assert.deepEqual([...SOURCE_VOCABULARY].sort(), [...V5].sort(), "change the list and this literal together, on purpose");
+  for (const v of V5) {
+    assert.equal(registrySource(v), v, `${v} is a canonical source`);
+    assert.equal(isRegistrySource(v), true);
+    assert.equal(resolveSource({ utmSource: v, selfHost: "getgymbo.com" }), v, `${v} passes the resolver as an explicit tag`);
+  }
+  assert.equal(isRegistrySource("direct"), false, "'direct' is NOT registry v5: it is a claim about behaviour we cannot observe");
+  assert.equal(isRegistrySource("Instagram"), false, "membership is exact; case-folding is the normaliser's job before the boundary");
+});
+
+test("AC3: valid-SHAPE forbidden values (a phone number, a person, a campaign, a person-token) NORMALISE TO unknown and are never echoed", () => {
+  for (const bad of FORBIDDEN_VALID_SHAPE) {
+    assert.match(sourceSlug(bad), /^[a-z0-9_-]{1,32}$/, `${bad}: it PASSES the shape rule, which is exactly why the shape rule is not enough`);
+    assert.equal(registrySource(bad), "unknown", `${bad} must become unknown`);
+    assert.equal(resolveSource({ utmSource: bad, selfHost: "getgymbo.com" }), "unknown");
+    // an off-registry TAG does not let the referrer speak for a link we do not understand
+    assert.equal(resolveSource({ utmSource: bad, referrer: "https://www.google.com/", selfHost: "getgymbo.com" }), "unknown", `${bad} + google referrer`);
+    assert.ok(!String(registrySource(bad)).includes(bad.slice(0, 5)), `${bad} is not echoed`);
+  }
+  for (const bad of ["direct", "newsletter", "facebook", "x?email=someone@example.com&z=2"]) assert.equal(registrySource(bad), "unknown", bad);
+});
+
+test("AC7 (inverted): 'x?email=someone@example.com' is REFUSED at the boundary, it no longer becomes a stored slug", () => {
+  assert.equal(registrySource("x?email=someone@example.com&z=2"), "unknown");
+  assert.notEqual(registrySource("x?email=someone@example.com&z=2"), sourceSlug("x?email=someone@example.com&z=2"), "the normaliser's output is never what gets stored");
+});
+
+test("AC1/AC2: NULL stays NULL (nothing measured / a broken caller), and unknown is a measurement, not a gap", () => {
+  for (const v of [null, undefined, "", "   ", "undefined", "null", "none", "n/a", "-", "----"]) assert.equal(registrySource(v), null, JSON.stringify(v));
+  assert.equal(registrySource("unknown"), "unknown");
+});
+
+test("DRIFT GUARD: everything the referrer resolver can return is INSIDE the vocabulary (an engine row added outside v5 cannot slip in)", () => {
+  for (const ref of ["https://www.google.com/", "https://www.google.co.in/", "https://google.co.uk/", "https://bing.com/", "https://duckduckgo.com/", "https://search.yahoo.com/", "https://yandex.com/", "android-app://com.google.android.googlequicksearchbox/", "android-app://com.instagram.android/"]) {
+    const got = sourceFromReferrer(ref, "getgymbo.com");
+    assert.ok(isRegistrySource(got), `${ref} resolves to ${got}, which must be a v5 source`);
+  }
+});
+
+// ---- both handlers re-apply the SAME rule and carry the source ONLY -------------------------------------------------
+const ENV = { SUPABASE_URL: "https://stub.invalid", SUPABASE_ANON_KEY: "stub-key" };
+function stubFetch(status, json) {
+  const calls = [], real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { calls.push({ url: String(url), body: JSON.parse(init.body) }); return new Response(json ? JSON.stringify(json) : null, { status }); };
+  return { calls, restore: () => { globalThis.fetch = real; } };
+}
+const waitlistCtx = (body) => ({ request: { json: async () => body }, env: {}, waitUntil: () => {} });
+const resourceCtx = (body) => ({ request: { json: async () => body }, env: ENV });
+const RL_OK = { resource_lead_id: "11111111-2222-3333-4444-555555555555", access_granted: true };
+const RL_BASE = { resource_id: "workout-builder-starter-pack", email: "t@example.invalid", delivery_consent: true, delivery_consent_notice_version: "v1" };
+async function postWaitlist(extra) { const f = stubFetch(201); try { const { onRequestPost } = await import("../functions/api/waitlist.js"); const r = await onRequestPost(waitlistCtx({ email: "t@example.invalid", ...extra })); return { r, sent: f.calls[0]?.body }; } finally { f.restore(); } }
+async function postResource(extra) { const f = stubFetch(200, RL_OK); try { const { onRequestPost } = await import("../functions/api/resource-lead.js"); const r = await onRequestPost(resourceCtx({ ...RL_BASE, ...extra })); return { r, sent: f.calls[0]?.body }; } finally { f.restore(); } }
+
+test("AC4: the SERVER re-applies the allowlist on BOTH handlers, and an off-registry source never persists and never fails the submission", async () => {
+  for (const bad of FORBIDDEN_VALID_SHAPE) {
+    const w = await postWaitlist({ source: bad }); assert.equal(w.r.status, 200, `waitlist ${bad}: the submission is NOT failed`); assert.equal(w.sent.source, "unknown", `waitlist ${bad}`);
+    const r = await postResource({ source: bad }); assert.equal(r.r.status, 200, `resource-lead ${bad}: the submission is NOT failed`); assert.equal(r.sent.p_source, "unknown", `resource-lead ${bad}`);
+    assert.ok(!JSON.stringify([w.sent, r.sent]).includes(bad), `${bad} never reaches the database`);
+  }
+  for (const v of V5) { assert.equal((await postWaitlist({ source: v })).sent.source, v); assert.equal((await postResource({ source: v })).sent.p_source, v); }
+});
+
+test("AC1: a legacy/non-form POST with NO source key stays NULL on the waitlist; the resource endpoint never sends the forbidden 'landing' default", async () => {
+  assert.equal((await postWaitlist({})).sent.source, null, "waitlist: an absent key is NULL, never promoted to unknown");
+  assert.equal((await postWaitlist({ source: "none" })).sent.source, null, "waitlist: a broken caller's 'none' is NULL");
+  const r = await postResource({});
+  assert.notEqual(r.sent.p_source, "landing", "the forbidden landing default is gone");
+  assert.equal(r.sent.p_source, "unknown", "resource_leads.source is NOT NULL today, so an absent source is recorded as unknown, never NULL and never a guess");
+});
+
+test("NEGATIVE CONTROL per handler: no visitor/funnel/session id and no medium/campaign reaches the database, even when the browser supplies them", async () => {
+  const PROBE = "0b8f6e1a-7c3d-4e2b-9a1f-5d4c3b2a1908";   // an RFC 4122 v4 shaped id
+  const supplied = { source: "instagram", funnel_visit_id: PROBE, anonymous_visitor_id: PROBE, funnelVisitId: PROBE, anonymousVisitorId: PROBE, visitor_id: PROBE, session_id: PROBE, medium: "organic_social", campaign: "summer20", utm_medium: "social", utm_campaign: "summer20", p_funnel_visit_id: PROBE, p_anonymous_visitor_id: PROBE, p_medium: "x", p_campaign: "y" };
+  const w = await postWaitlist(supplied), r = await postResource(supplied);
+  for (const [who, sent] of [["waitlist", w.sent], ["resource-lead", r.sent]]) {
+    assert.doesNotMatch(Object.keys(sent).join(" "), /funnel|visitor|session|medium|campaign/i, `${who}: no such KEY reaches the database`);
+    assert.ok(!JSON.stringify(sent).includes(PROBE), `${who}: the id VALUE never reaches the database`);
+  }
+  assert.deepEqual(Object.keys(w.sent).sort(), ["email", "name", "phone", "source"], "waitlist: the row carries exactly these keys, so a new one is a deliberate act");
+  assert.deepEqual(Object.keys(r.sent).sort(), ["p_delivery_consent", "p_delivery_consent_notice_version", "p_email", "p_marketing_consent", "p_marketing_consent_notice_version", "p_name", "p_resource_id", "p_source"], "resource-lead: exactly these RPC args");
+  assert.equal(w.sent.source, "instagram"); assert.equal(r.sent.p_source, "instagram");
+});
+
+test("gy-674s8 NAME GUARD (kept green here so CI enforces it): resource-lead p_name is ALWAYS null, whatever the browser sends", async () => {
+  const r = await postResource({ name: "Probe Name 674s8", source: "google" });
+  assert.equal(r.sent.p_name, null); assert.ok(!JSON.stringify(r.sent).includes("Probe Name"));
+  assert.equal("p_name" in r.sent, true, "the KEY stays: the RPC has no default for p_name");
+});
+
+// ---- the repo-wide KEY-NAME GATE: the #203 visitor-ID plumbing cannot creep back --------------------------------------
+const FORBIDDEN_NAMES = /funnel_visit_id|anonymous_visitor_id|funnelVisit|anonymousVisitor|gymbo\.anonymous/i;   // non-overlapping: each alternative catches a spelling the others cannot
+function forbiddenNameHits(root) {
+  const hits = [];
+  const walk = (dir) => { for (const e of readdirSync(dir, { withFileTypes: true })) { const p = join(dir, e.name); if (e.isDirectory()) { if (e.name !== "node_modules") walk(p); } else if (/\.(m?js|cjs|ts|tsx|jsx|json|html|css)$/.test(e.name) && FORBIDDEN_NAMES.test(readFileSync(p, "utf8"))) hits.push(p); } };
+  walk(root); return hits;
+}
+const REPO = new URL("..", import.meta.url).pathname;
+test("KEY-NAME GATE: none of the visitor-id names appear anywhere in functions/ or src/", () => {
+  assert.deepEqual([...forbiddenNameHits(join(REPO, "functions")), ...forbiddenNameHits(join(REPO, "src"))].map((p) => p.replace(REPO, "")), []);
+});
+test("KEY-NAME GATE has TEETH: planted names in a scratch tree are found, each spelling, and a clean tree is empty", () => {
+  const dir = mkdtempSync(join(tmpdir(), "gate-")); mkdirSync(join(dir, "functions"), { recursive: true });
+  assert.deepEqual(forbiddenNameHits(dir), [], "control: clean");
+  for (const [i, n] of ["funnel_visit_id", "anonymous_visitor_id", "funnelVisitId", "anonymousVisitorId", "gymbo.anonymousVisitor.v1", "ANONYMOUS_VISITOR_ID", "gymbo.anonymousId", "funnelVisit"].entries()) {
+    writeFileSync(join(dir, "functions", `f${i}.js`), `const x = { ${JSON.stringify(n)}: 1 };`);
+    assert.equal(forbiddenNameHits(dir).length, i + 1, `${n} is caught`);
+  }
 });
