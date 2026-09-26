@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
-import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
+import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, NAMED_LIMITS, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
 import { scanDist } from "./copy-change-detector.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -32,6 +32,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       else appendNote = "ledger append-only check SKIPPED: no base (not in CI and no --base given); CI runs it";
     }
     if (appendNote) console.log(`  ${appendNote}`);
+    console.log(`  NAMED LIMITS (deliberately not read by the price gate): ${NAMED_LIMITS.join("; ")}.`);
     findings.push(...checkBuiltPricePin(canon.doc.facts, reg, opt("--root", "dist")));
     const drill = priceDrill(canon.doc.facts, reg, opt("--root", "dist"));
     if (drill.missed.length) findings.push({ kind: "price-pin-blind", detail: `the standing drill (every price bumped) did NOT go red for ${drill.missed.length} listed (file,key) or occurrence(s): ${drill.missed.slice(0, 6).join("; ")}` });

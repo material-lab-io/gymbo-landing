@@ -203,7 +203,7 @@ export function priceOccurrences(text) {
 // with SAVING_AFTER ('37% savings', '37%-off', '37 pct cheaper'). 'lower', 'less' and 'reduce' stay out
 // on purpose: the research page uses them about churn.
 export const SAVING_WORDS = ["save", "saves", "saved", "saving", "savings", "discount", "cheaper"];
-export const SAVING_FILLERS = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge"];
+export const SAVING_FILLERS = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge", "than", "at", "least", "roughly", "close", "upwards", "massive"];
 export const SAVING_AFTER = ["savings", "saving", "off", "cheaper", "discount"];
 const PCT = String.raw`(?:%|percent|per cent|pct)`;
 const SAVE_BEFORE = String.raw`\b(?:${SAVING_WORDS.join("|")})\b(?:[^\w.!?;]|\b(?:${SAVING_FILLERS.join("|")})\b)*?(\d+(?:\.\d+)?)\s?${PCT}`;
@@ -342,7 +342,7 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
       if (k && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${JSON.stringify(shown(o))} (${rupees(o.value)}) but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` }); }
     }
   }
-  for (const [file, text] of files) for (const c of savingsClaims(text)) if (c.value !== facts.annualSavingsPercent && !tpPct.has(`${file}|${c.value}`)) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", form: c.raw.replace(/\s+/g, " ").slice(0, 60), detail: `${file} says ${JSON.stringify(c.raw.replace(/\s+/g, " ").slice(0, 60))}, content ruled ${facts.annualSavingsPercent}%. If this is not Gymbo\'s own annual saving (a competitor\'s advertised discount), declare it in thirdPartyAmounts as { file, amount: ${c.value}, unit: "percent", reason }` });
+  for (const [file, text] of files) for (const c of savingsClaims(text)) if (c.value !== facts.annualSavingsPercent && !tpPct.has(`${file}|${c.value}`)) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", form: c.raw.replace(/\s+/g, " ").slice(0, 60), detail: `${file} says ${JSON.stringify(c.raw.replace(/\s+/g, " ").slice(0, 60))}, content ruled ${facts.annualSavingsPercent}%. If this is not Gymbo\'s own annual saving (a competitor\'s advertised discount, or any other percentage that reads as a saving, such as time saved: it is not a price but it sits beside a saving word), declare it in thirdPartyAmounts as { file, amount: ${c.value}, unit: "percent", reason }` });
   return findings;
 }
 
@@ -419,3 +419,16 @@ export function checkCanonical({ doc, source, map, sha }, surfaces, today = new 
   }
   return { findings, notes };
 }
+
+// What this gate deliberately does NOT read, written down so a green is not over-read. Each entry was MEASURED
+// against the merged gate by tester (attack notes on gy-53qq5.1) and is pinned by a test that shows it is real.
+// pm ruled these named limits, not fixes (gy-53qq5.1, 2026-09-26): 'less'/'lower' stay out because the research
+// page says them about churn; the hiding variants need a rendering engine, not a text scan.
+export const NAMED_LIMITS = [
+  "less/lower savings phrasings ('Pay 37% less', '37% lower than monthly')",
+  "'You get 37% back' (no saving word)",
+  "hiding by opacity:0, font-size:0, an off-screen or clipped box, or a CSS comment inside style",
+  "a price kept only in the <title> element",
+  "hiding by a class name (a stylesheet is not read)",
+  "Devanagari digits and text inside images",
+];

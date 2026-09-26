@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 // The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
 // an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
 for (const k of ["GITHUB_ACTIONS", "GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH", "GITHUB_BASE_REF"]) delete process.env[k];
@@ -518,7 +518,7 @@ test("R2 (gy-53qq5.1) PHRASING BREADTH: a saving verb with filler words before t
 test("R2 VOCABULARY: the declared lists are pinned to independent literals and every word is behaviourally live (a list derived from itself could not fail when an entry is dropped)", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, W = F.annualSavingsPercent + 1;
   const WORDS = ["save", "saves", "saved", "saving", "savings", "discount", "cheaper"];
-  const FILL = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge"];
+  const FILL = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge", "than", "at", "least", "roughly", "close", "upwards", "massive"];
   const AFTER = ["savings", "saving", "off", "cheaper", "discount"];
   assert.deepEqual([...SAVING_WORDS].sort(), [...WORDS].sort(), "saving words: change the list and this literal together, on purpose");
   assert.deepEqual([...SAVING_FILLERS].sort(), [...FILL].sort(), "filler words: change the list and this literal together, on purpose");
@@ -528,6 +528,47 @@ test("R2 VOCABULARY: the declared lists are pinned to independent literals and e
   for (const f of FILL) assert.equal(flagged(`save ${f} ${W}%`), 1, `filler '${f}' may sit between the saving word and the number`);
   for (const a of AFTER) assert.equal(flagged(`${W}% ${a}`), 1, `'${a}' after the number closes a claim`);
   assert.equal(flagged(`save quickly ${W}%`), 0, "a word that is not a filler ends the search");
+});
+
+test("RESIDUALS (tester R2): 'more than', 'at least', 'roughly', 'close to', 'upwards of' and 'a massive' before the number are read", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, P = F.annualSavingsPercent, W = P + 1;
+  const forms = (n) => [`Save more than ${n}%`, `saves you at least ${n}%`, `Save roughly ${n}%`, `save close to ${n}%`, `save upwards of ${n}%`, `Save a massive ${n}%`, `You save more than ${n} percent`, `saving at least ${n} pct`];
+  for (const form of forms(W)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${form}</p>`);
+    assert.equal(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html" && x.id === "annualSavingsPercent").length, 1, `'${form}': a percent that is not the ruled ${P} must be flagged once`);
+  }
+  for (const form of forms(P)) { const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\n${form}\n`); assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], `control: '${form}' is the ruled percent`); }
+  for (const quiet of ["saves you at least 2 hours; 50% of trainers agree", "save more than one afternoon. 60% of clients", "roughly 60% of clients drop off", "more than 40% of trainers reply", "at least 30% of sessions run late", "close to 12% churn"]) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${quiet}</p>`);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `'${quiet}' is not a savings claim (no saving word before the number)`);
+  }
+});
+
+test("RESIDUALS: the stale-percent finding no longer says only 'competitor': a time-saved or other percentage that reads as a saving trips it too, and the text says so", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), "<p>Save 40% of your admin time</p>");
+  const r = checkBuiltPricePin(F, reg, dist).find((x) => x.file === "newpage/index.html" && x.id === "annualSavingsPercent");
+  assert.ok(r, "a time-saved percentage beside a saving word is flagged (by design: strict until declared)");
+  assert.match(r.detail, /time saved|not a price/i, "the text names that case, not only a competitor's discount");
+  assert.match(r.detail, /declare/i); assert.match(r.detail, /unit/i);
+});
+
+test("NAMED LIMITS: what the price gate deliberately does NOT read is a declared list in the gate, printed on every green run, and each limit is real (measured, not hoped)", () => {
+  const LIT = ["less/lower savings phrasings ('Pay 37% less', '37% lower than monthly')", "'You get 37% back' (no saving word)", "hiding by opacity:0, font-size:0, an off-screen or clipped box, or a CSS comment inside style", "a price kept only in the <title> element", "hiding by a class name (a stylesheet is not read)", "Devanagari digits and text inside images"];
+  assert.deepEqual(NAMED_LIMITS, LIT, "the list is pinned to an independent literal: change both on purpose");
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, W = F.annualSavingsPercent + 1;
+  const flagged = (text) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${text}</p>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html").length; };
+  assert.equal(flagged(`Pay ${W}% less`), 0, "limit 1 is real: 'less' is not read");
+  assert.equal(flagged(`${W}% lower than monthly`), 0, "limit 1 is real: 'lower' is not read");
+  assert.equal(flagged(`You get ${W}% back`), 0, "limit 2 is real");
+  const pinned = "blog/how-india-independent-trainers-run-their-business/index.html", key = "monthlyINR", P = rupees(F.monthlyINR);
+  const presence = (inner) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, pinned), `<!doctype html><html><head><title>t</title></head><body>${inner}</body></html>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length; };
+  for (const [n, inner] of [["opacity:0", `<p style="opacity:0">${P}</p>`], ["font-size:0", `<p style="font-size:0">${P}</p>`], ["off-screen", `<p style="position:absolute;left:-9999px">${P}</p>`], ["clip", `<p style="clip:rect(0,0,0,0);position:absolute">${P}</p>`], ["css comment in style", `<p style="/* x */display:none">${P}</p>`], ["class name", `<p class="hidden">${P}</p>`]]) assert.equal(presence(inner), 0, `limit 3/5 is real: '${n}' still counts as PRESENT (a named limit, not a fix)`);
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, pinned), `<!doctype html><html><head><title>${P}</title></head><body><p>x</p></body></html>`);
+  assert.equal(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length, 0, "limit 4 is real: a price only in <title> counts as present");
+  const out = spawnSync(process.execPath, [SCRIPT, "--root", fixtureDist(canon), "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(out.status, 0, out.stderr + out.stdout); for (const l of LIT) assert.ok(out.stdout.includes(l), `a green run prints the named limit: ${l}`);
+  assert.match(out.stdout, /NAMED LIMITS/);
 });
 
 test("R2 finding text tells the next editor what to do: a competitor percent is declared with unit percent; a listed chunk missing from a build says a rebuild may fix a hash that looks like a word", () => {
