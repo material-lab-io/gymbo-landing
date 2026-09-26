@@ -43,11 +43,15 @@ The waitlist form (`src/components/WaitlistForm.tsx`) POSTs to `/api/waitlist`
     the send atomically (`confirmation_claimed_at`), and is a silent no-op for an
     unknown receipt. It is a Supabase edge function that is deployed **by hand**
     (gy-6nxc0); merging this repo does not deploy it.
-  - **Direct table access.** `anon` currently still holds `INSERT` on
-    `public.waitlist` (additive step A of gy-rh2rj). gy-rh2rj **step B** revokes it
-    and drops the policy, after which `join_waitlist()` is the only anon write path.
-    Read the state on gy-rh2rj rather than trusting this line to stay current.
-    `anon` has never had `SELECT`, so no email can be read back.
+  - **Direct table access.** gy-rh2rj **step B** (Gymbo-v1 PR 1491, merged as
+    `deb658b21`, migration `20260926003000_gy-rh2rj-step-b-revoke-anon-waitlist-insert.sql`)
+    revoked `anon`'s `INSERT` on `public.waitlist` and dropped its policy, and
+    `db-migrate` recorded it as applied and verified. `join_waitlist()` is now the
+    only anon write path (it is `SECURITY DEFINER`, so it does not depend on the
+    revoked grant, and `anon` still holds `EXECUTE` on it). `anon` has never had
+    `SELECT`, so no email can be read back. The prod catalog read-back (0 policies,
+    no anon privilege on the table) is posted on gy-rh2rj; read it there rather than
+    trusting this paragraph to stay current. Do not re-add a direct insert path.
 - On success the client fires the Umami event `waitlist_signup` (visit→signup CVR).
 
 ## Read entries / verify
