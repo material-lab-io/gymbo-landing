@@ -178,6 +178,25 @@ export function loadPriceSurfaces(dir = CANON_DIR) {
   if (!j.surfaces || !Object.keys(j.surfaces).length) throw new Error("price-surfaces.json lists no surfaces; refusing a vacuous pass");
   return j;
 }
+// gy-53qq5.1 M6: the gate has no memory of what a price WAS, so after a bump a page that still quotes the
+// old figure is invisible unless it is pinned. The ledger in price-surfaces.json records the prices the
+// registry was last reconciled to (`ruled`) and every former Gymbo price (`retired`). This check makes a
+// bump impossible to land quietly: if content's facts differ from `ruled`, the gate is RED until someone
+// moves the old amount into `retired` and updates `ruled`; a retired amount is then flagged on every page
+// that is not pinned (a pinned page already fails as price-unclassified). It cannot know an old price it
+// was never told: the ledger starts empty, and only a bump made through it protects the next one.
+export function checkPriceLedger(facts, reg) {
+  const led = reg.priceLedger;
+  if (!led) return [{ kind: "price-ledger-missing", detail: "price-surfaces.json has no priceLedger; without it an old price on an unpinned page cannot be recognised after a bump" }];
+  const out = [];
+  for (const k of PRICE_KEYS) if (led.ruled?.[k] !== facts[k]) out.push({ kind: "price-ledger-behind", id: k, detail: `content ruled ${facts[k]} for ${k} but the ledger records ${led.ruled?.[k] ?? "none"}; move the old amount into priceLedger.retired as { amount, was, note } and set priceLedger.ruled.${k} to ${facts[k]}, so the old price is flagged on every page that still quotes it` });
+  const now = new Set(PRICE_KEYS.map((k) => facts[k]));
+  for (const e of led.retired || []) {
+    if (!Number.isInteger(e?.amount)) { out.push({ kind: "price-ledger-bad-entry", detail: `a priceLedger.retired entry has no integer amount: ${JSON.stringify(e)}` }); continue; }
+    if (now.has(e.amount)) out.push({ kind: "price-ledger-retired-is-current", value: e.amount, detail: `priceLedger.retired lists ${e.amount}, which is a current ruled price; retiring a live price would hide it` });
+  }
+  return out;
+}
 export function checkBuiltPricePin(facts, reg, root = "dist") {
   const findings = [];
   const files = listBuiltText(root), visible = listBuiltText(root, true);
@@ -186,6 +205,7 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
   if (findings.length) return findings;
   const current = new Set(Object.values(amt));
   const tp = new Set((reg.thirdPartyAmounts?.entries || []).filter((e) => e.unit !== "percent").map((e) => `${e.file}|${e.amount}`));
+  const retired = new Set((reg.priceLedger?.retired || []).map((e) => e?.amount).filter(Number.isInteger));
   const tpPct = new Set((reg.thirdPartyAmounts?.entries || []).filter((e) => e.unit === "percent").map((e) => `${e.file}|${e.amount}`));
   // gy-53qq5.1 M3: on a LISTED file a declaration at a ruled Gymbo price would let a competitor's figure
   // (or a stale Gymbo one) stand in for the pinned amount. Re-classify per occurrence before it is allowed.
@@ -211,6 +231,7 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
     const seen = new Set();
     for (const o of priceOccurrences(text)) {
       const k = PRICE_KEYS.find((x) => amt[x] === o.value);
+      if (retired.has(o.value) && !current.has(o.value) && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-retired-amount", file, value: o.value, form: shown(o), detail: `${file} states ${JSON.stringify(shown(o))} (${o.value}), a FORMER Gymbo price recorded in priceLedger.retired; update it, or declare it in thirdPartyAmounts with a reason if it is someone else's figure` }); }
       if (k && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${JSON.stringify(shown(o))} (${rupees(o.value)}) but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` }); }
     }
   }

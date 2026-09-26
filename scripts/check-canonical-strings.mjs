@@ -4,7 +4,7 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
+import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
 import { scanDist } from "./copy-change-detector.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -19,6 +19,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     for (const n of notes) console.log(`  ${n}`);
     const typed = findBuiltPrices(opt("--root", "dist"));
     const reg = loadPriceSurfaces(opt("--canon", CANON_DIR));
+    findings.push(...checkPriceLedger(canon.doc.facts, reg));
     findings.push(...checkBuiltPricePin(canon.doc.facts, reg, opt("--root", "dist")));
     const drill = priceDrill(canon.doc.facts, reg, opt("--root", "dist"));
     if (drill.missed.length) findings.push({ kind: "price-pin-blind", detail: `the standing drill (every price bumped) did NOT go red for ${drill.missed.length} listed (file,key) or occurrence(s): ${drill.missed.slice(0, 6).join("; ")}` });

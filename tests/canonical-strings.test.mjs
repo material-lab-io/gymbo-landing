@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, priceDrill, priceOccurrences, priceText, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, priceOccurrences, priceText, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -371,6 +371,55 @@ test("M5 (gy-53qq5.1) two seams: a percent declaration never exempts a rupee amo
   assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "index.html").map((x) => `${x.kind} ${x.id}`), ["price-stale annualSavingsPercent"], "index is pinned to the percent, and a claim only in a meta is not on the page");
   writeFileSync(idx, `<html><head><meta name="description" content="Save ${P}%"></head><body>${body}<p>Save ${P}%</p></body></html>`);
   assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "index.html"), [], "control: the same claim in the body passes");
+});
+
+test("M6 (gy-53qq5.1) A RETIRED PRICE ON AN UNLISTED PAGE: after a bump, a former Gymbo price on any page that is not pinned FAILS (was GREEN); a declared third-party figure and a listed page are not double-flagged", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, OLD = F.monthlyINR, NEW = OLD + 50;
+  const F2 = { ...F, monthlyINR: NEW };
+  const ledger = (retired) => ({ ruled: { monthlyINR: NEW, annualINR: F.annualINR, annualMonthlyEquivalentINR: F.annualMonthlyEquivalentINR }, retired });
+  const withLedger = (r) => ({ ...reg, priceLedger: ledger(r) });
+  const forms = { "plain": `<p>Only ${rupees(OLD)}/month</p>`, "Rs.": `<p>Rs.${OLD}/mo</p>`, "react split": `<p>\u20b9<!-- -->${OLD}</p>`, "rupees after": `<p>${OLD} rupees</p>`, "meta attr": `<meta name="d" content="${rupees(OLD)}">` };
+  for (const [name, html] of Object.entries(forms)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "oldpage"), { recursive: true }); writeFileSync(join(dist, "oldpage/index.html"), html);
+    const before = checkBuiltPricePin(F2, reg, dist).filter((x) => x.file === "oldpage/index.html");
+    assert.deepEqual(before, [], `${name}: control, WITHOUT a retired ledger the old price on an unlisted page passes (the M6 miss, measured)`);
+    const after = checkBuiltPricePin(F2, withLedger([{ amount: OLD, was: "monthlyINR", note: "test" }]), dist).filter((x) => x.file === "oldpage/index.html");
+    assert.deepEqual(after.map((x) => `${x.kind} ${x.value}`), [`price-retired-amount ${OLD}`], `${name}: a retired amount on an unlisted page must FAIL once`);
+  }
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "oldpage"), { recursive: true }); writeFileSync(join(dist, "oldpage/index.html"), forms.plain);
+  const decl = { ...withLedger([{ amount: OLD, was: "monthlyINR" }]), thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "oldpage/index.html", amount: OLD, reason: "a competitor at the same figure" }] } };
+  assert.deepEqual(checkBuiltPricePin(F2, decl, dist).filter((x) => x.file === "oldpage/index.html"), [], "declared third-party at the retired figure: exempt on that page only");
+  const doubled = checkBuiltPricePin(F2, withLedger([{ amount: OLD, was: "monthlyINR" }]), dist).filter((x) => reg.surfaces[x.file] && x.kind === "price-retired-amount");
+  assert.deepEqual(doubled, [], "a LISTED page already fails as price-unclassified; it is not flagged twice");
+  const cur = fixtureDist(canon); mkdirSync(join(cur, "newpage"), { recursive: true }); writeFileSync(join(cur, "newpage/index.html"), `<p>Only ${rupees(NEW)}/month</p>`);
+  assert.deepEqual(checkBuiltPricePin(F2, withLedger([{ amount: NEW, was: "monthlyINR" }]), cur).filter((x) => x.file === "newpage/index.html").map((x) => x.kind), ["price-unregistered"], "an amount that is a CURRENT price again is treated as current (unregistered), never as retired");
+  const twice = fixtureDist(canon); mkdirSync(join(twice, "oldpage"), { recursive: true }); writeFileSync(join(twice, "oldpage/index.html"), `<p>${rupees(OLD)} a month</p><p>Rs.${OLD} flat</p><p>${OLD} rupees</p>`);
+  assert.equal(checkBuiltPricePin(F2, withLedger([{ amount: OLD, was: "monthlyINR" }]), twice).filter((x) => x.file === "oldpage/index.html" && x.kind === "price-retired-amount").length, 1, "the same retired amount stated three times on one page is ONE finding, not three");
+  const md = fixtureDist(canon); writeFileSync(join(md, "old.md"), `Only ${rupees(OLD)}/month`);
+  assert.equal(checkBuiltPricePin(F2, withLedger([{ amount: OLD, was: "monthlyINR" }]), md).filter((x) => x.file === "old.md" && x.kind === "price-retired-amount").length, 1, "a markdown/text surface (llms.txt-style) is read too");
+});
+
+test("M6 LEDGER: content's facts must equal the ledger the registry was reconciled to, so a bump cannot land without retiring the old price", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  assert.deepEqual(checkPriceLedger(F, reg), [], "control: the real registry's ledger matches the real facts");
+  const bumped = checkPriceLedger({ ...F, monthlyINR: F.monthlyINR + 50, annualINR: F.annualINR + 1 }, reg);
+  assert.deepEqual(bumped.map((x) => `${x.kind} ${x.id}`).sort(), ["price-ledger-behind annualINR", "price-ledger-behind monthlyINR"], "every drifted price is named");
+  assert.match(bumped[0].detail, /retired/i, "the finding says what to do");
+  assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: undefined }).map((x) => x.kind), ["price-ledger-missing"], "no ledger fails closed");
+  assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: { ruled: { monthlyINR: F.monthlyINR }, retired: [] } }).map((x) => `${x.kind} ${x.id}`).sort(), ["price-ledger-behind annualINR", "price-ledger-behind annualMonthlyEquivalentINR"], "a ruled key the ledger does not record is behind, not skipped");
+  const live = checkPriceLedger(F, { ...reg, priceLedger: { ...reg.priceLedger, retired: [{ amount: F.monthlyINR, was: "monthlyINR" }] } });
+  assert.deepEqual(live.map((x) => x.kind), ["price-ledger-retired-is-current"], "retiring a live price would hide it: refused");
+  assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: { ...reg.priceLedger, retired: [{ was: "monthlyINR" }] } }).map((x) => x.kind), ["price-ledger-bad-entry"], "a retired entry without an integer amount is refused");
+});
+
+test("M6 CLI end to end: a bumped fact with the ledger left behind fails the REAL gate and names the fix; the real ledger passes", () => {
+  const dist = fixtureDist(loadCanonical(REAL));
+  const canon = mkdtempSync(join(scratch, "canon-")); cpSync(REAL, canon, { recursive: true });
+  const ok = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(ok.status, 0, ok.stderr + ok.stdout);
+  const f = join(canon, "price-surfaces.json"), j = JSON.parse(readFileSync(f, "utf8")); j.priceLedger.ruled.monthlyINR += 50; writeFileSync(f, JSON.stringify(j));
+  const bad = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(bad.status, 1); assert.match(bad.stderr, /price-ledger-behind monthlyINR.*retired/i);
 });
 
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {
