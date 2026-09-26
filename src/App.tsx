@@ -608,7 +608,7 @@ export default function App() {
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
                 Payments, schedules, and clients in one app.
               </h2>
-              <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
+              <p className="mt-4 text-[15px] gy-text-balance" style={{ color: F.boneMuted, fontFamily: SANS }}>
                 Leave a WhatsApp number or email and we'll get back to you.
               </p>
             </Reveal>

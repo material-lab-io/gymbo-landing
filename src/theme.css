@@ -146,3 +146,13 @@
     0 0 0 2px var(--g-color-neutral-dark-0),
     0 0 0 4px var(--g-color-neutral-dark-fg);
 }
+
+/* gy-e60uc.8 (designer): ONE definition of balanced wrapping. A short paragraph of two or three lines under a CTA
+   reads as an accident when its last line is a stranded word or two; text-wrap: balance evens the lines and degrades to
+   the ordinary wrap in a browser that lacks it. It changes only WHERE a line breaks, never the wording or the number of
+   lines, so it does not change a block's height. Opt-in per element, deliberately NOT a blanket rule: on long body copy
+   balance changes the measure and can hurt. Used on the footer-CTA subline (home + compare). The hint and error spans in
+   WaitlistForm.tsx still carry inline copies; migrating them to this class is gy-hfu0h. */
+.gy-text-balance {
+  text-wrap: balance;
+}

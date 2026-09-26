@@ -681,6 +681,29 @@ for (const [what, trigger, target] of [
   });
 }
 
+/**
+ * gy-e60uc.8 (designer): the footer-CTA subline on BOTH pages uses the one shared .gy-text-balance class, and at 375px
+ * its last line is not a stranded word: the last rendered line is at least 40% as wide as the widest. Measured from Range
+ * client rects (the wrap the visitor sees), not from the CSS that was written. Runs on the phone, where the wrap bites.
+ */
+for (const [pagePath, label] of [['/', 'home'], ['/compare/gymbo-vs-wellnessz/', 'the compare page']] as const) {
+  test(`the footer-CTA subline on ${label} is balanced at 375px (gy-e60uc.8)`, async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'the wrap is a narrow-phone matter');
+    await page.setViewportSize({ width: 375, height: 740 });
+    await page.goto(pagePath);
+    await page.waitForLoadState('networkidle');
+    const p = page.locator('p', { hasText: "Leave a WhatsApp number or email and we'll get back to you." }).last();
+    await p.scrollIntoViewIfNeeded();
+    await expect(p).toHaveClass(/gy-text-balance/);
+    expect(await p.evaluate((el) => getComputedStyle(el).textWrapMode + '|' + getComputedStyle(el).textWrapStyle)).toMatch(/balance/);
+    const widths = await lineWidths(p);
+    expect(widths.length, 'the subline rendered no lines').toBeGreaterThan(1);
+    const widest = Math.max(...widths);
+    const last = widths[widths.length - 1];
+    expect(last / widest, `the subline wraps into lines of ${JSON.stringify(widths)}px: the last is only ${Math.round((last / widest) * 100)}% of the widest`).toBeGreaterThanOrEqual(0.4);
+  });
+}
+
 test('the error is named as the description of the field it is about (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');
