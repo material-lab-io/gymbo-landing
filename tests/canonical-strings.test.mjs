@@ -469,6 +469,31 @@ test("M4 REAL REGISTRY: the two bundles that state Gymbo's price on the real bui
   assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js", "assets/trialAccess.js"], "terms-*.js and trialAccess-*.js state the price (measured on dist 09-26) and are pinned");
 });
 
+test("R1 (gy-53qq5.1) HIDDEN TEXT IS NOT PRESENCE: a pinned price kept only in a hidden element FAILS; a hidden STALE price is still classified; look-alikes that are visible pass", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, key = "monthlyINR", P = rupees(F.monthlyINR);
+  const f = "blog/how-india-independent-trainers-run-their-business/index.html";   // pinned to monthlyINR only
+  const run = (inner) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, f), `<!doctype html><html><head><title>t</title></head><body>${inner}</body></html>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === f); };
+  const visible = "<p>Pricing is on the pricing page.</p>";
+  const hidden = {
+    "hidden attribute": `<div hidden>${P}/month</div>`, "hidden=\"\"": `<div hidden="">${P}/month</div>`, "hidden=until-found": `<div hidden="until-found">${P}/month</div>`,
+    "display:none": `<div style="display:none">${P}/month</div>`, "display: none;": `<span style='display: none;'>${P}/month</span>`, "display:none among others": `<p style="color:red;display:none;margin:0">${P}/month</p>`,
+    "visibility:hidden": `<p style="visibility:hidden">${P}/month</p>`, "content-visibility": `<div style="content-visibility:hidden">${P}/month</div>`,
+    "nested deep": `<div style="display:none"><ul><li><span>${P}</span></li></ul></div>`, "same-name nesting": `<div hidden><div>x</div>${P}</div>`, "case": `<DIV HIDDEN>${P}</DIV>`, "unquoted style value": `<p style=display:none>${P}</p>`, "mixed-case open and close": `<Div hidden>${P}</dIV>`,
+  };
+  for (const [name, html] of Object.entries(hidden)) assert.deepEqual(run(visible + html).map((x) => `${x.kind} ${x.id}`), [`price-stale ${key}`], `${name}: the price is not visible, so the pin must not count it`);
+  assert.deepEqual(run(`<div hidden>${P}</div>${visible}`).map((x) => x.kind), ["price-stale"], "an unclosed-looking sibling order does not matter");
+  const shown = {
+    "aria-hidden=true is hidden from assistive tech, NOT from a sighted reader": `<p aria-hidden="true">${P}/month</p>`, "aria-hidden=false": `<p aria-hidden="false">${P}/month</p>`, "display:block": `<p style="display:block">${P}/month</p>`, "class name only": `<p class="hidden-xs">${P}/month</p>`,
+    "data attribute": `<p data-hidden="x">${P}/month</p>`, "title says hidden": `<p title="hidden fee">${P}/month</p>`, "after a closed hidden block": `<div hidden>x</div><p>${P}/month</p>`, "mixed-case close tag still closes the hidden block": `<Div hidden>x</dIV><p>${P}/month</p>`, "non-void self-closing hidden element opens no skip": `<span hidden/><p>${P}/month</p>`, "self-closing with space": `<div hidden /><p>${P}/month</p>`, "opacity is not hiding": `<p style="opacity:1">${P}/month</p>`, "invalid display value is ignored by browsers": `<p style="display:none-x">${P}/month</p>`, "prefixed property is a different property": `<p style="x-display:none">${P}/month</p>`, "hidden is not a substring match": `<p data-x="a hidden b" class="hidden">${P}/month</p>`,
+  };
+  for (const [name, html] of Object.entries(shown)) assert.deepEqual(run(html), [], `${name}: still visible, the pin passes`);
+  assert.ok(run(`<p>${P}/month</p><div hidden>${rupees(F.monthlyINR + 1)}/month</div>`).some((x) => x.kind === "price-unclassified"), "a stale amount hidden in a display:none block is still CLASSIFIED (exclusion is for presence only)");
+  assert.deepEqual(run(`<input hidden name="p" value="x"><img hidden alt="x" src="a.png"><br hidden><hr hidden><p>${P}/month</p>`), [], "hidden VOID elements (input, img, br, hr) carry no text and must not swallow the rest of the page");
+  assert.deepEqual(run(`<div style="display:none"><p>x</p></div><p>${P}/month</p>`), [], "a hidden block closes: text after it is visible again");
+  // the HTML void elements, as an INDEPENDENT literal (the source list cannot vouch for itself): a hidden one opens no skip
+  for (const v of ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]) assert.deepEqual(run(`<${v} hidden><p>${P}/month</p>`), [], `<${v} hidden> is void: it must not swallow the rest of the page`);
+});
+
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
   const dist = fixtureDist(canon); const p = join(dist, "llms.txt");

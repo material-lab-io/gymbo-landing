@@ -139,7 +139,45 @@ const tagText = (tag) => " " + [...tag.matchAll(/\b(?:content|alt|title|aria-lab
 // visibleOnly (gy-53qq5.1 M3): what a reader sees on the page. Comments, script/style/template/noscript
 // blocks and tag attributes are dropped, so a price that lives only in a meta, an alt or JSON-LD does not
 // satisfy a pin. The default keeps text-bearing attributes so a stale amount hidden there is still classified.
-const dropHidden = (t) => t.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|template|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " ");
+// R1 (gy-53qq5.1): a reader does not see an element that is `hidden`,
+// or styled display:none / visibility:hidden / content-visibility:hidden, so its text is not PRESENCE. A hidden
+// price still gets CLASSIFIED (this runs only for the visible view), so a stale amount hiding there is not
+// exempt. Depth-tracked so nested same-name elements close correctly; void elements never open a skip; a
+// hidden element that is never closed hides the rest of the page, which fails closed (the pin goes red).
+// aria-hidden is NOT hiding: it removes text from assistive tech, a sighted reader still sees it (a visible price
+// with a screen-reader twin is a common pattern). Class names are not read either: nothing here can know what
+// a stylesheet hides, so a price kept only in a visually-hidden class is a named limit.
+const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+const HIDDEN_STYLE = /(?:^|[;\s])(?:display\s*:\s*none|visibility\s*:\s*hidden|content-visibility\s*:\s*hidden)(?![\w-])/i;
+// Attributes are tokenised (name, then a quoted or bare value) so the word 'hidden' inside another attribute's
+// VALUE (data-x="a hidden b") is never mistaken for the hidden attribute.
+const ATTR = /([^\s=/"'<>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
+const isHiddenTag = (attrs) => {
+  for (const m of attrs.matchAll(ATTR)) {
+    const name = m[1].toLowerCase();
+    if (name === "hidden") return true;
+    if (name === "style" && HIDDEN_STYLE.test(m[2] ?? m[3] ?? m[4] ?? "")) return true;
+  }
+  return false;
+};
+const dropHiddenElements = (html) => {
+  const TAG = /<(\/?)([a-zA-Z][a-zA-Z0-9:-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
+  let out = "", pos = 0, skip = null, depth = 0, m;
+  while ((m = TAG.exec(html))) {
+    const [whole, close, rawName, attrs] = m, name = rawName.toLowerCase(), selfClosing = /\/\s*$/.test(attrs) || VOID.has(name);
+    if (skip === null) {
+      out += html.slice(pos, m.index); pos = m.index + whole.length;
+      if (!close && isHiddenTag(attrs)) { if (!selfClosing) { skip = name; depth = 1; } continue; }
+      out += whole;
+    } else {
+      pos = m.index + whole.length;
+      if (name !== skip) continue;
+      if (close) { if (--depth === 0) skip = null; } else if (!selfClosing) depth++;
+    }
+  }
+  return skip === null ? out + html.slice(pos) : out;
+};
+const dropHidden = (t) => dropHiddenElements(t.replace(/<!--[\s\S]*?-->/g, "").replace(/<(script|style|template|noscript)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, " "));
 export const priceText = (text, file = "", visibleOnly = false) => matchable(/\.(html?|svg)$/i.test(file) ? (visibleOnly ? dropHidden(text).replace(/<[^>]+>/g, " ") : text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText)) : text);
 // priceOccurrences() runs on priceText() output (comments and tags already gone, entities decoded), so
 // it needs no tag-gap handling. Marker before the digits: rupee sign (or its JSON escape), Rs, Rs., INR;
