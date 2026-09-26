@@ -1,0 +1,175 @@
+{
+  "_comment": "gy-53qq5. Which BUILT files must state which of content's ruled prices. Keys name entries of `facts` in gymbo-canonical-strings.json; numbers are NEVER typed here, they are read from the facts at check time, so a price change (content bumps the fact) makes every listed file that still carries the old number go RED. Enumerated from dist/ (what ships), not from src/. A built file that states a current Gymbo amount and is NOT listed here fails as price-unregistered: list it or remove the price. `savePercent` files must also say 'Save N%' with N = annualSavingsPercent. A pinned amount must be in the page's VISIBLE text (a meta, alt, script or comment does not count; gy-53qq5.1 M3), and a savings percent is read in every phrasing ('Save N%', 'N% savings', 'N% off', 'N% cheaper'; M5). A thirdPartyAmounts entry may carry \"unit\": \"percent\" to declare a non-Gymbo percentage. Amounts are matched in every spelling (rupee sign raw/entity/split by a React comment or tag, Rs, Rs., INR, 'N rupees', with or without grouping commas). Scope: html/md/txt/xml/json/js/mjs/css/svg/webmanifest in dist (gy-53qq5.1 M4). A hashed bundle is listed WITHOUT its build hash ('assets/terms.js' for terms-6GmOuVPd.js); two files reducing to one name make the scan throw.",
+  "surfaces": {
+    "index.html": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR",
+      "annualSavingsPercent"
+    ],
+    "terms/index.html": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "llms.txt": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR",
+      "annualSavingsPercent"
+    ],
+    "pricing.md": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR",
+      "annualSavingsPercent"
+    ],
+    "alternatives/akton/index.html": [
+      "monthlyINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "alternatives/trainerize/index.html": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "alternatives/truecoach/index.html": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html": [
+      "monthlyINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "blog/how-india-independent-trainers-run-their-business/index.html": [
+      "monthlyINR"
+    ],
+    "compare/gymbo-vs-wellnessz/index.html": [
+      "monthlyINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "assets/terms.js": [
+      "monthlyINR",
+      "annualINR",
+      "annualMonthlyEquivalentINR"
+    ],
+    "assets/trialAccess.js": [
+      "monthlyINR"
+    ]
+  },
+  "thirdPartyAmounts": {
+    "_comment": "Every rupee amount in a LISTED file must be a current ruled Gymbo price or be declared here as { file, amount, reason } (gy-53qq5 M1/M2). An amount that is neither is price-unclassified: if it is Gymbo's OLD price it is stale and must be updated; if it is someone else's figure, declare it with the reason. Declared per (file, amount): a Gymbo price that equals a declared figure in the same file is hidden by the declaration (named limit). For an UNLISTED page, a declaration also exempts a third-party amount that happens to equal a current Gymbo price. Read from each sentence in dist on 2026-09-26.",
+    "entries": [
+      {
+        "file": "alternatives/akton/index.html",
+        "amount": 89,
+        "reason": "Akton's advertised entry price (competitor, gym-suite plan)"
+      },
+      {
+        "file": "alternatives/trainerize/index.html",
+        "amount": 500,
+        "reason": "editorial: what an Indian trainer may charge per session (Rs 500-1,500), not a Gymbo price"
+      },
+      {
+        "file": "alternatives/trainerize/index.html",
+        "amount": 750,
+        "reason": "Trainerize's $9/mo tier converted to rupees (competitor)"
+      },
+      {
+        "file": "alternatives/trainerize/index.html",
+        "amount": 1900,
+        "reason": "Trainerize Pro tier ($23+/mo) converted to rupees (competitor)"
+      },
+      {
+        "file": "alternatives/truecoach/index.html",
+        "amount": 2200,
+        "reason": "TrueCoach Starter ($26/mo) converted to rupees (competitor)"
+      },
+      {
+        "file": "alternatives/truecoach/index.html",
+        "amount": 4870,
+        "reason": "TrueCoach cost for a 5-20 client trainer, converted (competitor)"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 89,
+        "reason": "Akton's advertised entry price (competitor, gym-suite plan)"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 499,
+        "reason": "WellnessZ plan price (competitor), entry plan"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 999,
+        "reason": "WellnessZ plan price (competitor), 120-client plan"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 3999,
+        "reason": "WellnessZ plan price (competitor), white-label option"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 750,
+        "reason": "Trainerize's $9/mo tier converted to rupees (competitor)"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 1900,
+        "reason": "Trainerize Pro tier ($23+/mo) converted to rupees (competitor)"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 2200,
+        "reason": "TrueCoach Starter ($26/mo) converted to rupees (competitor)"
+      },
+      {
+        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
+        "amount": 4870,
+        "reason": "TrueCoach cost for a 5-20 client trainer, converted (competitor)"
+      },
+      {
+        "file": "blog/how-india-independent-trainers-run-their-business/index.html",
+        "amount": 500,
+        "reason": "editorial ceiling for trainer software ('well under Rs 500/mo'), not a Gymbo price"
+      },
+      {
+        "file": "blog/how-india-independent-trainers-run-their-business/index.html",
+        "amount": 1900,
+        "reason": "Western coaching seats 'Rs 1,900+/mo' (competitor tier, converted)"
+      },
+      {
+        "file": "compare/gymbo-vs-wellnessz/index.html",
+        "amount": 499,
+        "reason": "WellnessZ plan price (competitor), 40-client plan"
+      },
+      {
+        "file": "compare/gymbo-vs-wellnessz/index.html",
+        "amount": 999,
+        "reason": "WellnessZ plan price (competitor), 120-client plan"
+      },
+      {
+        "file": "compare/gymbo-vs-wellnessz/index.html",
+        "amount": 3999,
+        "reason": "WellnessZ plan price (competitor), white-label tier"
+      },
+      {
+        "file": "index.html",
+        "amount": 45663,
+        "reason": "sample data shown in the payments screenshot's alt text ('Rs 45,663 in payments recorded for June'), not a price"
+      }
+    ]
+  },
+  "priceLedger": {
+    "_comment": "gy-53qq5.1 M6. `ruled` = the prices this registry was last reconciled to; it MUST equal content's facts or the gate is red (price-ledger-behind). When content bumps a price: move the old amount into `retired` as { amount, was, note } and set `ruled` to the new one. A retired amount on any page that is not pinned then fails as price-retired-amount (a pinned page already fails as price-unclassified); declare a legitimate third-party figure at the same number in thirdPartyAmounts. Starts empty: the gate cannot know a price it was never told.",
+    "ruled": {
+      "monthlyINR": 399,
+      "annualINR": 2999,
+      "annualMonthlyEquivalentINR": 250
+    },
+    "retired": []
+  }
+}
