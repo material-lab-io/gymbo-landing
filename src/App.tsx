@@ -627,7 +627,7 @@ export default function App() {
                 Payments, schedules, and clients in one app.
               </h2>
               <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Request access and we'll be in touch with your access.
+                Leave a WhatsApp number or email and we'll get back to you.
               </p>
             </Reveal>
 
