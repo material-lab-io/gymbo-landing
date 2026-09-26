@@ -12,6 +12,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { norm } from "./copy-blocks.mjs";
+import { matchable } from "./text-normalise.mjs";
 
 export const CANON_DIR = "src/canonical";
 export const sha256 = (buf) => createHash("sha256").update(buf).digest("hex");
@@ -88,7 +89,7 @@ export function findBuiltPrices(root = "dist") {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
       if (!/\.(html?|md|txt|xml|json)$/i.test(e)) continue;
-      const n = priceOccurrences(readFileSync(join(root, rel), "utf8")).length;
+      const n = priceOccurrences(priceText(readFileSync(join(root, rel), "utf8"), rel)).length;
       if (n) out.push({ file: rel.replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
     }
   };
@@ -117,10 +118,23 @@ export function findBuiltPrices(root = "dist") {
 // same figure as a stale Gymbo price (the declaration hides it).
 const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
 export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
-const GAP = String.raw`(?:\s|&nbsp;|&#160;|&#xa0;|<!--[\s\S]*?-->|<[^>]*>)*`;
-const MARK = String.raw`(?:\u20b9|\\u20b9|&#8377;|&#x20b9;|(?<![A-Za-z])Rs\.?|(?<![A-Za-z])INR)`;
+// gy-53qq5 (tester M1/M2): the pin reads what a person READS, not the raw bytes. React's SSR puts a
+// comment node between the rupee sign and the digits and the hand-typed meta says 'Rs.399', so the
+// raw-text \u20b9399 regex missed both. priceText() drops comments and tags (html only: '<' is prose in
+// md/txt), then applies the shared matchable() fold (entities, invisibles, look-alikes). priceOccurrences()
+// then reads every amount in the spellings a reader treats as the same price: \u20b9 / Rs / Rs. / INR before, or 'rupees' /
+// Rs / INR after, with or without the thousands comma. Still NOT read: Devanagari digits, images.
+// A stripped tag keeps its text-bearing attributes: the compare page's hand-typed 'Rs.399' lives in a
+// <meta content>, and alt/title/aria-label are read by people and crawlers too.
+const tagText = (tag) => " " + [...tag.matchAll(/\b(?:content|alt|title|aria-label)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)].map((m) => m[1] ?? m[2]).join(" ") + " ";
+export const priceText = (text, file = "") => matchable(/\.html?$/i.test(file) ? text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText) : text);
+// priceOccurrences() runs on priceText() output (comments and tags already gone, entities decoded), so
+// it needs no tag-gap handling. Marker before the digits: rupee sign (or its JSON escape), Rs, Rs., INR;
+// or 'rupees' / Rs / INR after them. Grouping commas are optional. Every amount is returned with the form
+// it was written in, so a finding can name the occurrence.
+const MARK = String.raw`(?:\u20b9|\\u20b9|(?<![A-Za-z])Rs\.?|(?<![A-Za-z])INR)`;
 const NUM = String.raw`(\d[\d,]*(?:\.\d+)?)`;
-const AMOUNT_RE = () => new RegExp(`${MARK}${GAP}${NUM}|${NUM}\\s*rupees?\\b`, "gi");
+const AMOUNT_RE = () => new RegExp(`${MARK}\\s*${NUM}|${NUM}\\s*(?:rupees?\\b|(?<![A-Za-z])(?:Rs|INR)\\b)`, "gi");
 export function priceOccurrences(text) {
   return [...text.matchAll(AMOUNT_RE())].map((m) => ({ raw: m[0], value: Number((m[1] ?? m[2]).replace(/,/g, "")), index: m.index }));
 }
@@ -130,7 +144,7 @@ const listBuiltText = (root) => {
     for (const e of readdirSync(join(root, d))) {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
-      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, readFileSync(join(root, rel), "utf8"));
+      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, priceText(readFileSync(join(root, rel), "utf8"), rel));
     }
   };
   if (!existsSync(root)) throw new Error(`${root} does not exist; cannot check prices on a build that is not there`);

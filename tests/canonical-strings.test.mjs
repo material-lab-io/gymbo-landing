@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, priceDrill, priceOccurrences, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, priceDrill, priceOccurrences, priceText, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -210,6 +210,37 @@ test("PRICE PIN: one stale surface, a wrong Save N%, a missing listed file, a su
   assert.equal(checkBuiltPricePin({ ...F, monthlyINR: "399" }, reg, dist)[0].kind, "price-fact-missing", "a non-integer fact fails closed");
 });
 
+test("PRICE PIN M1/M2 (tester 09-26): the split-tag and alternate-spelling forms are READ, so an unlisted page cannot state the price in them unwatched", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const M = F.monthlyINR, A = F.annualINR, g = (n) => Number(n).toLocaleString("en-IN");
+  const forms = {
+    "react split tag": `<span>\u20b9<!-- -->${M}</span>`,
+    "comment holding a >": `<span>\u20b9<!-- a > b -->${M}</span>`,
+    "tag between sign and digits": `<b>\u20b9</b><b>${M}</b>`,
+    "Rs.": `<meta content="flat Rs.${M}/mo">`, "Rs space": `<p>Rs ${M}</p>`, "INR": `<p>INR ${M}</p>`,
+    "rupees after": `<p>${M} rupees a month</p>`, "sign then space": `<p>\u20b9 ${M}</p>`,
+    "entity sign": `<p>&#8377;${M}</p>`, "nbsp": `<p>\u20b9&nbsp;${M}</p>`,
+    "annual no comma": `<p>\u20b9${A}</p>`, "annual Rs": `<p>Rs.${g(A)}</p>`,
+  };
+  for (const [name, html] of Object.entries(forms)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), html);
+    const f = checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html");
+    assert.equal(f.length >= 1 && f.every((x) => x.kind === "price-unregistered"), true, `${name}: an unlisted page stating the price in this form must FAIL, got ${JSON.stringify(f)}`);
+  }
+  // NEGATIVES: near-misses that are not the price must stay quiet (no false alarm from the wider reader).
+  const quiet = [`<p>\u20b9${M}0</p>`, `<p>\u20b91,${M}</p>`, `<p>Rs.1${M}</p>`, `<p>${M}0 rupees</p>`, `<p>cars ${M}</p>`, `<p>version ${M} of the guide</p>`, `<p>\u20b9${M}.50</p>`];
+  for (const html of quiet) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), html);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `${html} is not the ruled price`);
+  }
+  // a LISTED file whose only monthly mention is the split-tag form still satisfies the pin, and goes red when the price is bumped.
+  const dist = fixtureDist(canon), p = join(dist, "compare/gymbo-vs-wellnessz/index.html");
+  writeFileSync(p, readFileSync(p, "utf8").split(rupees(M)).join(`\u20b9<!-- -->${M}`).split(rupees(F.annualMonthlyEquivalentINR)).join(`\u20b9<span>${F.annualMonthlyEquivalentINR}</span>`));
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], "control: split-tag amounts on a listed page are read, not reported stale");
+  assert.ok(checkBuiltPricePin({ ...F, monthlyINR: M + 50 }, reg, dist).some((x) => x.file === "compare/gymbo-vs-wellnessz/index.html" && x.id === "monthlyINR"), "and a bumped price is still red on that page");
+  assert.deepEqual(priceDrill(F, reg, dist).missed, [], "the standing drill still goes red for every (file, key) with split tags in the build");
+});
+
 test("PRICE PIN control: a listed page that already states the DRIFTED amount blinds the pin, and the standing drill says so instead of a green", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
   const dist = fixtureDist(canon);
@@ -234,14 +265,15 @@ test("CLI end to end: the real gate goes RED on a stale price and prints the dri
 
 // ---- gy-53qq5 M1 + M2 (tester's attack2): every spelling of an amount is one amount ----
 const FORMS = (n) => { const g = Number(n).toLocaleString("en-IN"); return [`\u20b9${g}`, `\u20b9<!-- -->${g}`, `\u20b9<!-- --> ${g}`, `\u20b9 ${g}`, `\u20b9\u00a0${g}`, `&#8377;${g}`, `\u20b9<span>${g}</span>`, `Rs.${g}`, `Rs ${g}`, `Rs. ${g}`, `INR ${g}`, `INR${g}`, `${g} rupees`, `\u20b9${n}`, `Rs.${n}`]; };
+const occ = (t) => priceOccurrences(priceText(t, "x.html")); // the gate normalises (comments, tags, entities) BEFORE it reads amounts
 test("M1/M2 NORMALISER: every spelling reads as the same amount; a non-amount does not", () => {
-  for (const f of FORMS(399)) assert.deepEqual(priceOccurrences(f).map((o) => o.value), [399], f);
-  for (const f of FORMS(2999)) assert.deepEqual(priceOccurrences(f).map((o) => o.value), [2999], f);
-  assert.deepEqual(priceOccurrences("\u20b9<!-- a > b -->399").map((o) => o.value), [399], "a comment that itself contains '>' is skipped as a comment, not cut as a tag");
-  assert.deepEqual(priceOccurrences("\u20b9<!-- x -->\u00a0&nbsp;&#160;399").map((o) => o.value), [399], "any mix of whitespace-like padding");
-  assert.deepEqual(priceOccurrences("\u20b9399, or \u20b92,999/year; Rs.250/mo").map((o) => o.value), [399, 2999, 250]);
-  assert.deepEqual(priceOccurrences('"priceCurrency":"INR","price":"399"').map((o) => o.value), [], "a bare JSON-LD price has no marker in front of it (copy-facts.spec.ts guards that one)");
-  assert.deepEqual(priceOccurrences("SINR 399 and RsX 399 and words 399"), [], "the marker must be a whole token");
+  for (const f of FORMS(399)) assert.deepEqual(occ(f).map((o) => o.value), [399], f);
+  for (const f of FORMS(2999)) assert.deepEqual(occ(f).map((o) => o.value), [2999], f);
+  assert.deepEqual(occ("\u20b9<!-- a > b -->399").map((o) => o.value), [399], "a comment that itself contains '>' is skipped as a comment, not cut as a tag");
+  assert.deepEqual(occ("\u20b9<!-- x -->\u00a0&nbsp;&#160;399").map((o) => o.value), [399], "any mix of whitespace-like padding");
+  assert.deepEqual(occ("\u20b9399, or \u20b92,999/year; Rs.250/mo").map((o) => o.value), [399, 2999, 250]);
+  assert.deepEqual(occ('"priceCurrency":"INR","price":"399"').map((o) => o.value), [], "a bare JSON-LD price has no marker in front of it (copy-facts.spec.ts guards that one)");
+  assert.deepEqual(occ("SINR 399 and RsX 399 and words 399"), [], "the marker must be a whole token");
 });
 
 test("M1/M2 UNLISTED PAGE: every spelling of a current Gymbo price is price-unregistered (was GREEN for all of them)", () => {
@@ -262,7 +294,7 @@ test("M1/M2 REGRESSION OF tester's attack2: a careful plain-text 399 -> 449 upda
   const prep = (t) => t.replace(/\u20b9399(?![\d,])/g, "\u20b9449");           // tester's PREP: plain text only
   writeFileSync(cmp, prep(readFileSync(cmp, "utf8")));
   const red = checkBuiltPricePin({ ...F, monthlyINR: 449 }, reg, dist).filter((x) => x.kind === "price-unclassified" && x.file.startsWith("compare/"));
-  assert.deepEqual(red.map((x) => x.form).sort(), ["Rs.399", "Rs.399", "\u20b9<!-- -->399"].sort(), "the split form and both Rs. forms are named; the updated plain one is not");
+  assert.deepEqual(red.map((x) => x.form).sort(), ["Rs.399", "Rs.399", "\u20b9399"].sort(), "the split form (shown as read, comment dropped) and both Rs. forms are named; the updated plain one is not");
   assert.equal(checkBuiltPricePin({ ...F, monthlyINR: 449 }, reg, dist).filter((x) => x.kind === "price-stale" && x.file.startsWith("compare/")).length, 0, "presence of the new amount alone was the old pass; it no longer decides");
 });
 
