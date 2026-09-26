@@ -7,7 +7,10 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+// The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
+// an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
+for (const k of ["GITHUB_ACTIONS", "GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH", "GITHUB_BASE_REF"]) delete process.env[k];
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -535,6 +538,75 @@ test("R2 finding text tells the next editor what to do: a competitor percent is 
   const d2 = fixtureDist(canon); rmSync(join(d2, "terms/index.html"));
   const m = checkBuiltPricePin(F, reg, d2).find((x) => x.kind === "price-surface-missing");
   assert.match(m.detail, /rebuild/i, "a missing listed file says what to try first");
+});
+
+// ---- R3 (gy-53qq5.1): the ledger cannot be silenced ----
+const LEDGER = (ruled, retired = []) => ({ ruled: { monthlyINR: 399, annualINR: 2999, annualMonthlyEquivalentINR: 250, ...ruled }, retired });
+const ledgerKinds = (r) => r.map((x) => [x.kind, x.id, x.value].filter((v) => v !== undefined).join(" ")).sort();
+
+test("R3 APPEND-ONLY: a changed ruled price REQUIRES its old value in retired, and nothing may leave retired (except a price that is live again)", () => {
+  const base = LEDGER({});
+  assert.deepEqual(checkLedgerAppendOnly(base, LEDGER({})), [], "control: no change");
+  assert.deepEqual(checkLedgerAppendOnly(base, LEDGER({ monthlyINR: 449 }, [{ amount: 399, was: "monthlyINR" }])), [], "bump with the old price retired: fine");
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(base, LEDGER({ monthlyINR: 449 }))), ["price-ledger-old-not-retired monthlyINR 399"], "tester's L6c: ruled overwritten, old price never retired = SILENCED");
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(base, LEDGER({ annualINR: 3499, annualMonthlyEquivalentINR: 292 }, [{ amount: 2999, was: "annualINR" }]))), ["price-ledger-old-not-retired annualMonthlyEquivalentINR 250"], "tester's L7d: retire SOME old prices but not all");
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(base, LEDGER({ monthlyINR: 449, annualINR: 3499 }))), ["price-ledger-old-not-retired annualINR 2999", "price-ledger-old-not-retired monthlyINR 399"], "every silenced key is named");
+  const b2 = LEDGER({ monthlyINR: 449 }, [{ amount: 399, was: "monthlyINR", note: "old" }]);
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(b2, LEDGER({ monthlyINR: 449 }))), ["price-ledger-retired-removed 399"], "an entry that was retired on the base cannot be deleted");
+  assert.deepEqual(checkLedgerAppendOnly(b2, LEDGER({ monthlyINR: 449 }, [{ amount: 399, was: "monthlyINR", note: "reworded" }])), [], "editing a note is not removal");
+  assert.deepEqual(checkLedgerAppendOnly(b2, LEDGER({ monthlyINR: 449 }, [{ amount: 399 }, { amount: 299, was: "x" }])), [], "appending more entries is fine");
+  assert.deepEqual(checkLedgerAppendOnly(b2, LEDGER({ monthlyINR: 399 }, [{ amount: 449, was: "monthlyINR" }])), [], "REINSTATED: the price went back to 399, so 399 may leave retired (checkPriceLedger refuses a live price there) and the price it left, 449, is retired");
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(b2, LEDGER({ monthlyINR: 399 }, []))), ["price-ledger-old-not-retired monthlyINR 449"], "...but reverting still requires retiring the price it moved away from");
+  assert.deepEqual(checkLedgerAppendOnly(LEDGER({}), LEDGER({ monthlyINR: 250, annualMonthlyEquivalentINR: 399 })), [], "a value that moves BETWEEN keys is still live, so retiring it would deadlock against checkPriceLedger: not demanded");
+  assert.deepEqual(ledgerKinds(checkLedgerAppendOnly(LEDGER({ monthlyINR: 449 }, [{ amount: 399 }, { amount: 299 }]), LEDGER({ monthlyINR: 449 }, [{ amount: 399 }]))), ["price-ledger-retired-removed 299"], "only the entry that left is named");
+  assert.deepEqual(checkLedgerAppendOnly(undefined, LEDGER({ monthlyINR: 449 })), [], "a base with no ledger yet has nothing to protect");
+  assert.deepEqual(checkLedgerAppendOnly(base, undefined).map((x) => x.kind), ["price-ledger-missing"], "a head that deleted the ledger is refused");
+});
+
+test("R3 BASE FROM CI: the PR base sha or the push 'before' sha, read from the event payload; anything unresolvable in CI fails closed", () => {
+  const ev = (o) => () => JSON.stringify(o);
+  assert.deepEqual(ledgerBaseFromEnv({ GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "pull_request", GITHUB_EVENT_PATH: "/e" }, ev({ pull_request: { base: { sha: "abc123" } } })), { ref: "abc123" });
+  assert.deepEqual(ledgerBaseFromEnv({ GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push", GITHUB_EVENT_PATH: "/e" }, ev({ before: "def456" })), { ref: "def456" });
+  for (const [name, env, reader] of [
+    ["all-zero before", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push", GITHUB_EVENT_PATH: "/e" }, ev({ before: "0".repeat(40) })],
+    ["pull_request without a base sha", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "pull_request", GITHUB_EVENT_PATH: "/e" }, ev({ pull_request: {} })],
+    ["no event path", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push" }, ev({}), /GITHUB_EVENT_PATH/],
+    ["unreadable payload", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push", GITHUB_EVENT_PATH: "/e" }, () => { throw new Error("ENOENT"); }],
+    ["an event this gate does not know", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "schedule", GITHUB_EVENT_PATH: "/e" }, ev({}), /not one this check knows/],
+  ]) { const r = ledgerBaseFromEnv(env, reader); assert.ok(r.error && !r.ref, `${name}: in CI an unresolvable base is an ERROR, never a silent skip`); }
+  for (const [name, env, reader, msg] of [["no event path", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push" }, ev({}), /GITHUB_EVENT_PATH/], ["unknown event", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "schedule", GITHUB_EVENT_PATH: "/e" }, ev({}), /not one this check knows/], ["unreadable", { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push", GITHUB_EVENT_PATH: "/e" }, () => { throw new Error("ENOENT"); }, /could not be read/]]) assert.match(ledgerBaseFromEnv(env, reader).error, msg, `${name}: the message names the cause`);
+  assert.deepEqual(ledgerBaseFromEnv({}, () => { throw new Error("must not read"); }), { ref: null }, "off CI with nothing configured: no base, no error (the CLI decides)");
+  assert.deepEqual(ledgerBaseFromEnv({ GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "workflow_dispatch" }, () => { throw new Error("a dispatch carries no base: must not read"); }), { ref: null, mergeBase: "origin/main" }, "a manual dispatch has no base commit: compare against where this ref left main");
+});
+
+test("R3 CLI end to end: --base-ledger, --base <git ref>, and CI with no resolvable base", () => {
+  const dist = fixtureDist(loadCanonical(REAL));
+  const run = (args, env = {}) => spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24", ...args], { encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "", GITHUB_EVENT_NAME: "", GITHUB_EVENT_PATH: "", GITHUB_BASE_REF: "", ...env } });
+  const real = loadPriceSurfaces(REAL).priceLedger, tmp = mkdtempSync(join(scratch, "base-"));
+  const same = join(tmp, "same.json"); writeFileSync(same, JSON.stringify(real));
+  const ok = run(["--base-ledger", same]); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /append-only/i, "a green run says the check ran");
+  const older = join(tmp, "older.json"); writeFileSync(older, JSON.stringify({ ...real, ruled: { ...real.ruled, monthlyINR: real.ruled.monthlyINR - 50 } }));
+  const bad = run(["--base-ledger", older]); assert.equal(bad.status, 1); assert.match(bad.stderr, /price-ledger-old-not-retired monthlyINR.*retire/i);
+  const gone = join(tmp, "gone.json"); writeFileSync(gone, JSON.stringify({ ...real, retired: [{ amount: 299, was: "monthlyINR" }] }));
+  const rm = run(["--base-ledger", gone]); assert.equal(rm.status, 1); assert.match(rm.stderr, /price-ledger-retired-removed \(299 was in priceLedger\.retired on the base and is gone/);
+  const ci = run([], { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "push" }); assert.equal(ci.status, 1); assert.match(ci.stderr, /price-ledger-base-unknown/, "in CI with no resolvable base the gate FAILS, it does not skip");
+  // a real git base: two commits of a canon dir, the second silently bumps ruled
+  const repo = mkdtempSync(join(scratch, "repo-")), sh = (...a) => spawnSync("git", ["-C", repo, ...a], { encoding: "utf8" });
+  sh("init", "-q"); sh("config", "user.email", "t@t"); sh("config", "user.name", "t");
+  sh("commit", "-q", "--allow-empty", "-m", "before the registry existed"); const emptySha = sh("rev-parse", "HEAD").stdout.trim();
+  const canon = join(repo, "canon"); cpSync(REAL, canon, { recursive: true }); sh("add", "-A"); sh("commit", "-qm", "base");
+  const baseSha = sh("rev-parse", "HEAD").stdout.trim();
+  const early = run(["--canon", canon, "--base", emptySha]); assert.equal(early.status, 0, early.stderr + early.stdout); assert.match(early.stdout, /base has no ledger yet/, "a base that predates the registry has nothing to protect: not an error");
+  const badJson = join(canon, "price-surfaces.json"), keep = readFileSync(badJson, "utf8"); writeFileSync(badJson, "{ not json"); sh("commit", "-qam", "broken"); const brokenSha = sh("rev-parse", "HEAD").stdout.trim(); writeFileSync(badJson, keep);
+  const bj = run(["--canon", canon, "--base", brokenSha]); assert.equal(bj.status, 1); assert.match(bj.stderr, /price-ledger-base-unknown.*not valid JSON/, "an unparseable base file is an error, not a pass");
+  const f = join(canon, "price-surfaces.json"), j = JSON.parse(readFileSync(f, "utf8")); j.priceLedger.ruled.monthlyINR += 50; writeFileSync(f, JSON.stringify(j));
+  const g = run(["--canon", canon, "--base", baseSha]); assert.equal(g.status, 1); assert.match(g.stderr, /price-ledger-old-not-retired monthlyINR/, "the git path reads the base's ledger from the ref");
+  // a manual workflow_dispatch: the base is the merge-base with origin/main
+  sh("update-ref", "refs/remotes/origin/main", baseSha);
+  const disp = run(["--canon", canon], { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "workflow_dispatch" }); assert.equal(disp.status, 1); assert.match(disp.stderr, /price-ledger-old-not-retired monthlyINR/, "a dispatch compares against the merge-base with origin/main");
+  sh("update-ref", "-d", "refs/remotes/origin/main");
+  const nomain = run(["--canon", canon], { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "workflow_dispatch" }); assert.equal(nomain.status, 1); assert.match(nomain.stderr, /price-ledger-base-unknown.*origin\/main/, "no origin/main to compare with: fails closed");
+  const g2 = run(["--canon", canon, "--base", "0000000000000000000000000000000000000000"]); assert.equal(g2.status, 1); assert.match(g2.stderr, /price-ledger-base-unknown/, "a ref git cannot resolve fails closed");
 });
 
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {

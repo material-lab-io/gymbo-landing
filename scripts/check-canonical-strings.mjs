@@ -4,7 +4,8 @@
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
-import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
+import { spawnSync } from "node:child_process";
+import { loadCanonical, loadFactsMap, checkCanonical, checkFacts, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, priceDrill, CANON_DIR } from "./canonical-strings.mjs";
 import { scanDist } from "./copy-change-detector.mjs";
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
@@ -20,6 +21,17 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const typed = findBuiltPrices(opt("--root", "dist"));
     const reg = loadPriceSurfaces(opt("--canon", CANON_DIR));
     findings.push(...checkPriceLedger(canon.doc.facts, reg));
+    // R3: the ledger is append-only against its base (--base-ledger FILE, --base REF, or the CI event's base)
+    let appendNote;
+    if (opt("--base-ledger")) { findings.push(...checkLedgerAppendOnly(JSON.parse(readFileSync(opt("--base-ledger"), "utf8")), reg.priceLedger)); appendNote = `ledger append-only vs ${opt("--base-ledger")}`; }
+    else {
+      const b = opt("--base") ? { ref: opt("--base") } : ledgerBaseFromEnv(process.env);
+      if (b.mergeBase) { const m = spawnSync("git", ["-C", opt("--canon", CANON_DIR), "merge-base", "HEAD", b.mergeBase], { encoding: "utf8" }); if (m.status === 0 && m.stdout.trim()) b.ref = m.stdout.trim(); else b.error = `no merge-base with ${b.mergeBase} (${(m.stderr || "").trim() || "git failed"}); a manual dispatch needs it to find the ledger's base`; }
+      if (b.error) findings.push({ kind: "price-ledger-base-unknown", detail: b.error });
+      else if (b.ref) { const r = readBaseLedger({ ref: b.ref, canonDir: opt("--canon", CANON_DIR) }); if (r.error) findings.push({ kind: "price-ledger-base-unknown", detail: r.error }); else { findings.push(...checkLedgerAppendOnly(r.ledger, reg.priceLedger)); appendNote = `ledger append-only vs ${b.ref.slice(0, 12)}${r.ledger ? "" : " (base has no ledger yet)"}`; } }
+      else appendNote = "ledger append-only check SKIPPED: no base (not in CI and no --base given); CI runs it";
+    }
+    if (appendNote) console.log(`  ${appendNote}`);
     findings.push(...checkBuiltPricePin(canon.doc.facts, reg, opt("--root", "dist")));
     const drill = priceDrill(canon.doc.facts, reg, opt("--root", "dist"));
     if (drill.missed.length) findings.push({ kind: "price-pin-blind", detail: `the standing drill (every price bumped) did NOT go red for ${drill.missed.length} listed (file,key) or occurrence(s): ${drill.missed.slice(0, 6).join("; ")}` });

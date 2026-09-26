@@ -9,6 +9,7 @@
 // and 'punch' are pinned as TERMS only. Free-form sentences that use them are pinned only
 // by the copy-change-detector as `observed`. So green here is NOT "no retired wording anywhere".
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { norm } from "./copy-blocks.mjs";
@@ -256,6 +257,52 @@ export function checkPriceLedger(facts, reg) {
     if (now.has(e.amount)) out.push({ kind: "price-ledger-retired-is-current", value: e.amount, detail: `priceLedger.retired lists ${e.amount}, which is a current ruled price; retiring a live price would hide it` });
   }
   return out;
+}
+// gy-53qq5.1 R3: the ledger can be SILENCED. checkPriceLedger only compares `ruled` to content's facts, so an
+// editor who overwrites `ruled` with the new price and never moves the old one into `retired` gets a green
+// gate, and the old price on an unpinned page passes (tester's L6c; retiring only some old prices is L7d).
+// Against the PR base (the ledger as it was): every price `ruled` moved away from must now be in `retired`,
+// and nothing may leave `retired`. A value that is still live under ANY key is exempt from both rules, so a
+// price that goes back (reinstated) or moves between keys does not deadlock against checkPriceLedger, which
+// refuses a live price in `retired`. What this cannot see: a workflow edit that skips the check, or a base
+// that is itself already silenced; reviewers own those.
+export function checkLedgerAppendOnly(base, head) {
+  if (!head) return [{ kind: "price-ledger-missing", detail: "the head has no priceLedger, so the append-only check has nothing to read; a deleted ledger is refused" }];
+  if (!base) return [];
+  const out = [], amounts = (l) => (l.retired || []).map((e) => e?.amount).filter(Number.isInteger);
+  const retiredNow = new Set(amounts(head)), liveNow = new Set(PRICE_KEYS.map((k) => head.ruled?.[k]).filter(Number.isInteger));
+  for (const k of PRICE_KEYS) {
+    const was = base.ruled?.[k];
+    if (Number.isInteger(was) && !retiredNow.has(was) && !liveNow.has(was)) out.push({ kind: "price-ledger-old-not-retired", id: k, value: was, detail: `priceLedger.ruled.${k} changed from ${was} to ${head.ruled?.[k]} but ${was} is not in priceLedger.retired; retire it as { amount: ${was}, was: "${k}", note }, or the old price stays invisible on every unpinned page` });
+  }
+  for (const a of amounts(base)) if (!retiredNow.has(a) && !liveNow.has(a)) out.push({ kind: "price-ledger-retired-removed", value: a, detail: `${a} was in priceLedger.retired on the base and is gone; retired is append-only (remove it only if ${a} is a live price again)` });
+  return out;
+}
+
+// Where the base comes from in CI: the PR base sha, or the push's `before`, read from the event payload GitHub
+// writes for every run. In CI an unresolvable base is an ERROR (never a silent skip: a skip is what silence
+// looks like); off CI nothing is configured and the CLI decides. A manual workflow_dispatch carries no base commit:
+// the CLI compares against the merge-base with origin/main (on main itself that is the same commit).
+export function ledgerBaseFromEnv(env, readFile = (p) => readFileSync(p, "utf8")) {
+  if (env.GITHUB_ACTIONS !== "true") return { ref: null };
+  if (env.GITHUB_EVENT_NAME === "workflow_dispatch") return { ref: null, mergeBase: "origin/main" };
+  if (!env.GITHUB_EVENT_PATH) return { error: "GITHUB_EVENT_PATH is not set, so the base commit for the ledger check cannot be read" };
+  let ev; try { ev = JSON.parse(readFile(env.GITHUB_EVENT_PATH)); } catch (e) { return { error: `the event payload could not be read (${e.message})` }; }
+  const name = env.GITHUB_EVENT_NAME, ref = name === "pull_request" || name === "pull_request_target" ? ev.pull_request?.base?.sha : name === "push" ? ev.before : undefined;
+  if (name !== "pull_request" && name !== "pull_request_target" && name !== "push") return { error: `event "${name}" is not one this check knows how to find a base for` };
+  if (!ref || /^0+$/.test(ref)) return { error: `no usable base sha in the ${name} event payload` };
+  return { ref };
+}
+
+// The base's price-surfaces.json read from git (the path is relative to canonDir, which may sit anywhere in the
+// repo). A base that predates the registry has no ledger yet: that is `{ ledger: undefined }`, not an error.
+export function readBaseLedger({ ref, canonDir = CANON_DIR }) {
+  const git = (...a) => spawnSync("git", ["-C", canonDir, ...a], { encoding: "utf8" });
+  const c = git("cat-file", "-e", `${ref}^{commit}`);
+  if (c.status !== 0) return { error: `base commit ${ref} is not in this checkout (${(c.stderr || "").trim() || "git failed"}); fetch-depth 0 is expected` };
+  if (git("cat-file", "-e", `${ref}:./price-surfaces.json`).status !== 0) return { ledger: undefined };
+  const r = git("show", `${ref}:./price-surfaces.json`);
+  try { return { ledger: JSON.parse(r.stdout).priceLedger }; } catch (e) { return { error: `the base's price-surfaces.json is not valid JSON (${e.message})` }; }
 }
 export function checkBuiltPricePin(facts, reg, root = "dist") {
   const findings = [];
