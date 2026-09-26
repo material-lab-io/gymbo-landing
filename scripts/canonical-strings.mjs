@@ -89,7 +89,7 @@ export function findBuiltPrices(root = "dist") {
       const rel = d ? `${d}/${e}` : e;
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
       if (!/\.(html?|md|txt|xml|json)$/i.test(e)) continue;
-      const n = (readFileSync(join(root, rel), "utf8").match(/\u20b9\s?\d/g) || []).length;
+      const n = priceOccurrences(priceText(readFileSync(join(root, rel), "utf8"), rel)).length;
       if (n) out.push({ file: rel.replace(/\/index\.html$/, "/").replace(/^index\.html$/, "/"), count: n });
     }
   };
@@ -102,26 +102,42 @@ export function findBuiltPrices(root = "dist") {
 // `facts` rule the amounts; price-surfaces.json says which built files must state which. Amounts are
 // read from the facts, never retyped, so when content bumps a price every listed file still carrying
 // the old number goes red (the 399 -> 449 drill), and a file that states a current Gymbo amount but is
-// not listed fails too (a new page cannot quote the price unwatched). Still NOT covered: .js bundles,
-// images, and rupee amounts that are not one of the ruled facts (competitor prices, research figures:
-// they stay in findBuiltPrices' declared-unread list).
+// not listed fails too (a new page cannot quote the price unwatched).
+//
+// NORMALISED (tester's attack2, M1+M2): an amount is read the way a person reads it, not the way a
+// template wrote it. Marker = rupee sign (raw, entity, or JSON escape), 'Rs', 'Rs.', 'INR', or a
+// trailing 'rupees'. Between the marker and the digits the gap may hold whitespace, nbsp, HTML comments
+// and tags: React's own render emits '\u20b9<!-- -->399', so an ordinary edit produces that form.
+// Grouping commas are optional ('2,999' and '2999' are one amount).
+//
+// EVERY amount in a LISTED file is then classified: a current ruled price, or a third-party figure
+// declared in price-surfaces.json with a reason. Anything else is price-unclassified, printed in the
+// form it was written. That is what turns a leftover old price into a red naming that occurrence,
+// whatever spelling it is in. Still NOT covered: .js/.svg/.webmanifest (gy-53qq5.1 M4), presence-not-
+// truth of the NEW amount (M3), '% savings' phrasings (M5), and a third-party amount declared at the
+// same figure as a stale Gymbo price (the declaration hides it).
 const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
 export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
 // gy-53qq5 (tester M1/M2): the pin reads what a person READS, not the raw bytes. React's SSR puts a
 // comment node between the rupee sign and the digits and the hand-typed meta says 'Rs.399', so the
 // raw-text \u20b9399 regex missed both. priceText() drops comments and tags (html only: '<' is prose in
-// md/txt), then applies the shared matchable() fold (entities, invisibles, look-alikes). amountRe()
-// accepts the spellings a reader treats as the same price: \u20b9 / Rs / Rs. / INR before, or 'rupees' /
+// md/txt), then applies the shared matchable() fold (entities, invisibles, look-alikes). priceOccurrences()
+// then reads every amount in the spellings a reader treats as the same price: \u20b9 / Rs / Rs. / INR before, or 'rupees' /
 // Rs / INR after, with or without the thousands comma. Still NOT read: Devanagari digits, images.
-const groupings = (n) => [...new Set([Number(n).toLocaleString("en-IN"), Number(n).toLocaleString("en-US"), String(Number(n))])].join("|");
 // A stripped tag keeps its text-bearing attributes: the compare page's hand-typed 'Rs.399' lives in a
 // <meta content>, and alt/title/aria-label are read by people and crawlers too.
 const tagText = (tag) => " " + [...tag.matchAll(/\b(?:content|alt|title|aria-label)\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)].map((m) => m[1] ?? m[2]).join(" ") + " ";
 export const priceText = (text, file = "") => matchable(/\.html?$/i.test(file) ? text.replace(/<!--[\s\S]*?-->/g, "").replace(/<[^>]+>/g, tagText) : text);
-const amountRe = (n) => {
-  const a = `(?:${groupings(n)})`, tail = "(?!\\d|,\\d)(?!\\.\\d*[1-9])";
-  return new RegExp(`(?:\u20b9\\s?|(?<![A-Za-z])(?:Rs\\.?|INR)\\s?)${a}${tail}|(?<![\\d,.])${a}\\s?(?:rupees\\b|(?<![A-Za-z])(?:Rs|INR)\\b)`, "i");
-};
+// priceOccurrences() runs on priceText() output (comments and tags already gone, entities decoded), so
+// it needs no tag-gap handling. Marker before the digits: rupee sign (or its JSON escape), Rs, Rs., INR;
+// or 'rupees' / Rs / INR after them. Grouping commas are optional. Every amount is returned with the form
+// it was written in, so a finding can name the occurrence.
+const MARK = String.raw`(?:\u20b9|\\u20b9|(?<![A-Za-z])Rs\.?|(?<![A-Za-z])INR)`;
+const NUM = String.raw`(\d[\d,]*(?:\.\d+)?)`;
+const AMOUNT_RE = () => new RegExp(`${MARK}\\s*${NUM}|${NUM}\\s*(?:rupees?\\b|(?<![A-Za-z])(?:Rs|INR)\\b)`, "gi");
+export function priceOccurrences(text) {
+  return [...text.matchAll(AMOUNT_RE())].map((m) => ({ raw: m[0], value: Number((m[1] ?? m[2]).replace(/,/g, "")), index: m.index }));
+}
 const listBuiltText = (root) => {
   const out = new Map();
   const walk = (d) => {
@@ -148,10 +164,13 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
   const amt = Object.fromEntries(PRICE_KEYS.map((k) => [k, facts[k]]));
   for (const k of PRICE_KEYS) if (!Number.isInteger(amt[k])) findings.push({ kind: "price-fact-missing", id: k, detail: `facts.${k} is not an integer; refusing a vacuous pass` });
   if (findings.length) return findings;
+  const current = new Set(Object.values(amt));
   const tp = new Set((reg.thirdPartyAmounts?.entries || []).map((e) => `${e.file}|${e.amount}`));
+  const shown = (o) => o.raw.replace(/\s+/g, " ").slice(0, 60);
   for (const [file, keys] of Object.entries(reg.surfaces)) {
     const text = files.get(file);
     if (text === undefined) { findings.push({ kind: "price-surface-missing", file, detail: "listed in price-surfaces.json but not in the build; remove it or fix the path" }); continue; }
+    const occ = priceOccurrences(text);
     for (const key of keys) {
       if (key === "annualSavingsPercent") {
         const found = [...text.matchAll(/save\s+(\d+)\s?%/gi)].map((m) => Number(m[1]));
@@ -159,25 +178,44 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
         continue;
       }
       if (!PRICE_KEYS.includes(key)) { findings.push({ kind: "price-registry-unknown-key", file, id: key, detail: "not a price fact this check knows" }); continue; }
-      if (!amountRe(amt[key]).test(text)) findings.push({ kind: "price-stale", file, id: key, detail: `${file} does not state ${rupees(amt[key])} (${key}); the ruled price changed or the page did not follow` });
+      if (!occ.some((o) => o.value === amt[key])) findings.push({ kind: "price-stale", file, id: key, detail: `${file} does not state ${rupees(amt[key])} (${key}); the ruled price changed or the page did not follow` });
     }
+    for (const o of occ) if (!current.has(o.value) && !tp.has(`${file}|${o.value}`)) findings.push({ kind: "price-unclassified", file, value: o.value, form: shown(o), detail: `${file} states ${JSON.stringify(shown(o))} (${o.value}), which is neither a current ruled price nor a declared third-party amount; if it is Gymbo's OLD price it is stale, otherwise declare it in thirdPartyAmounts with a reason` });
   }
   for (const [file, text] of files) {
     if (reg.surfaces[file]) continue;
-    for (const k of PRICE_KEYS) if (amountRe(amt[k]).test(text) && !tp.has(`${file}|${amt[k]}`)) findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${rupees(amt[k])} but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` });
+    const seen = new Set();
+    for (const o of priceOccurrences(text)) {
+      const k = PRICE_KEYS.find((x) => amt[x] === o.value);
+      if (k && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${JSON.stringify(shown(o))} (${rupees(o.value)}) but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` }); }
+    }
   }
   for (const [file, text] of files) for (const m of text.matchAll(/save\s+(\d+)\s?%/gi)) if (Number(m[1]) !== facts.annualSavingsPercent) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", detail: `${file} says 'Save ${m[1]}%', content ruled ${facts.annualSavingsPercent}` });
   return findings;
 }
 
 // The standing negative control: bump every price and require the pin to go RED for EVERY listed
-// (file, key). A pin that has never been seen to catch a real price drift is not evidence (gy-53qq5 AC4).
+// (file, key) AND for EVERY occurrence, in whatever spelling, of a current Gymbo amount in a listed
+// file (gy-53qq5 AC4 + tester's M1/M2: a pin that has never been seen to catch each form is not evidence).
 export function priceDrill(facts, reg, root = "dist", bump = 37) {
   const drifted = { ...facts, monthlyINR: facts.monthlyINR + bump, annualINR: facts.annualINR + bump, annualMonthlyEquivalentINR: facts.annualMonthlyEquivalentINR + bump, annualSavingsPercent: facts.annualSavingsPercent + 1 };
-  const got = new Set(checkBuiltPricePin(drifted, reg, root).filter((f) => f.kind === "price-stale").map((f) => `${f.file}|${f.id}`));
+  const red = checkBuiltPricePin(drifted, reg, root);
+  const got = new Set(red.filter((f) => f.kind === "price-stale").map((f) => `${f.file}|${f.id}`));
   const missed = [];
   for (const [file, keys] of Object.entries(reg.surfaces)) for (const k of keys) if (!got.has(`${file}|${k}`)) missed.push(`${file}|${k}`);
-  return { missed, total: Object.values(reg.surfaces).reduce((n, k) => n + k.length, 0) };
+  const files = listBuiltText(root);
+  const now = new Set(PRICE_KEYS.map((k) => facts[k]));
+  let occurrences = 0;
+  for (const file of Object.keys(reg.surfaces)) {
+    const mine = priceOccurrences(files.get(file) || "").filter((o) => now.has(o.value));
+    occurrences += mine.length;
+    for (const v of now) {
+      const want = mine.filter((o) => o.value === v).length;
+      const have = red.filter((f) => f.kind === "price-unclassified" && f.file === file && f.value === v).length;
+      if (have < want) missed.push(`${file}|${want - have} of ${want} occurrence(s) of ${v}`);
+    }
+  }
+  return { missed, total: Object.values(reg.surfaces).reduce((n, k) => n + k.length, 0), occurrences };
 }
 
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
