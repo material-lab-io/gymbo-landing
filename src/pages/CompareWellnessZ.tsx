@@ -370,7 +370,7 @@ export function CompareWellnessZ() {
               <h2 className="text-[clamp(28px,4.5vw,46px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, maxWidth: "18ch" }}>
                 Built for trainers. Try it free.
               </h2>
-              <p className="mt-4 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
+              <p className="mt-4 text-[15px] gy-text-balance" style={{ color: F.boneMuted, fontFamily: SANS }}>
                 Leave a WhatsApp number or email and we'll get back to you. Eligible subscribers can try Gymbo free for {TRIAL_DAYS} days.
               </p>
             </Reveal>
