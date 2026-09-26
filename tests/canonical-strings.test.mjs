@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -492,6 +492,49 @@ test("R1 (gy-53qq5.1) HIDDEN TEXT IS NOT PRESENCE: a pinned price kept only in a
   assert.deepEqual(run(`<div style="display:none"><p>x</p></div><p>${P}/month</p>`), [], "a hidden block closes: text after it is visible again");
   // the HTML void elements, as an INDEPENDENT literal (the source list cannot vouch for itself): a hidden one opens no skip
   for (const v of ["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]) assert.deepEqual(run(`<${v} hidden><p>${P}/month</p>`), [], `<${v} hidden> is void: it must not swallow the rest of the page`);
+});
+
+test("R2 (gy-53qq5.1) PHRASING BREADTH: a saving verb with filler words before the number, a hyphenated 'N%-off', and 'pct' are read; sentence boundaries and non-savings percents stay quiet", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, P = F.annualSavingsPercent, W = P + 1;
+  const forms = (n) => [`annual billing saves you ${n}%`, `Save an extra ${n}%`, `Save a full ${n}%`, `Saves you up to ${n} percent`, `save as much as ${n}%`, `You save an additional ${n}%`, `saved ${n}%`, `cheaper by ${n}%`, `${n}%-off annual plan`, `save ${n} pct`, `${n} pct savings`, `Saving you a whopping ${n}%`];
+  for (const form of forms(W)) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${form}</p>`);
+    const r = checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html" && x.id === "annualSavingsPercent");
+    assert.equal(r.length, 1, `'${form}': a percent that is not the ruled ${P} must be flagged once, got ${JSON.stringify(r)}`);
+  }
+  for (const form of forms(P)) {
+    const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\n${form}\n`);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], `control: '${form}' is the ruled percent and passes`);
+  }
+  for (const quiet of ["Save. 60% of clients drop off within 90 days", "saves the day. 60% of trainers agree", "saves you 2 hours and 50% of admin", "save time on 60% of tasks", "a full 60% of clients", "an extra 12% of trainers replied", "you save your 5 minutes; 40% churn", "cheaper than Trainerize. 30% of trainers switch"]) {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${quiet}</p>`);
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `'${quiet}' is not a savings claim`);
+  }
+});
+
+test("R2 VOCABULARY: the declared lists are pinned to independent literals and every word is behaviourally live (a list derived from itself could not fail when an entry is dropped)", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, W = F.annualSavingsPercent + 1;
+  const WORDS = ["save", "saves", "saved", "saving", "savings", "discount", "cheaper"];
+  const FILL = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge"];
+  const AFTER = ["savings", "saving", "off", "cheaper", "discount"];
+  assert.deepEqual([...SAVING_WORDS].sort(), [...WORDS].sort(), "saving words: change the list and this literal together, on purpose");
+  assert.deepEqual([...SAVING_FILLERS].sort(), [...FILL].sort(), "filler words: change the list and this literal together, on purpose");
+  assert.deepEqual([...SAVING_AFTER].sort(), [...AFTER].sort(), "after-number words: change the list and this literal together, on purpose");
+  const flagged = (text) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${text}</p>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html" && x.id === "annualSavingsPercent").length; };
+  for (const w of WORDS) assert.equal(flagged(`${w} ${W}%`), 1, `saving word '${w}' opens a claim`);
+  for (const f of FILL) assert.equal(flagged(`save ${f} ${W}%`), 1, `filler '${f}' may sit between the saving word and the number`);
+  for (const a of AFTER) assert.equal(flagged(`${W}% ${a}`), 1, `'${a}' after the number closes a claim`);
+  assert.equal(flagged(`save quickly ${W}%`), 0, "a word that is not a filler ends the search");
+});
+
+test("R2 finding text tells the next editor what to do: a competitor percent is declared with unit percent; a listed chunk missing from a build says a rebuild may fix a hash that looks like a word", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), "<p>Rival: 20% off annual</p>");
+  const r = checkBuiltPricePin(F, reg, dist).find((x) => x.file === "newpage/index.html");
+  assert.match(r.detail, /declare/i); assert.match(r.detail, /unit/i); assert.match(r.detail, /percent/i);
+  const d2 = fixtureDist(canon); rmSync(join(d2, "terms/index.html"));
+  const m = checkBuiltPricePin(F, reg, d2).find((x) => x.kind === "price-surface-missing");
+  assert.match(m.detail, /rebuild/i, "a missing listed file says what to try first");
 });
 
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {
