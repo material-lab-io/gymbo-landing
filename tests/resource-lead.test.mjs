@@ -207,3 +207,27 @@ test("email is required and malformed input is refused without a database round 
     assert.equal(f.calls.length, 0);
   } finally { f.restore(); }
 });
+
+test("🔴 gy-674s8 NAME GUARD — body.name NEVER reaches the RPC; p_name is always null", async () => {
+  const { onRequestPost } = await import(MOD);
+  const f = stubFetch(rpcOk());
+  try {
+    const PROBE = "Probe Name 674s8";
+    const withName = await onRequestPost(ctx({ ...VALID, name: PROBE }));
+    const without = { ...VALID }; delete without.name;
+    const withoutName = await onRequestPost(ctx(without));
+    // LIVENESS: both submissions really reached the RPC and succeeded, so the null below is
+    // the handler's choice, not the absence of a call.
+    assert.equal(withName.status, 200);
+    assert.equal(withoutName.status, 200);
+    assert.equal(f.calls.length, 2);
+    for (const call of f.calls) {
+      assert.equal(call.body.p_email, VALID.email);
+      // The KEY must be present (main's RPC has no default for p_name) and its value null.
+      assert.equal(Object.prototype.hasOwnProperty.call(call.body, "p_name"), true);
+      assert.equal(call.body.p_name, null);
+    }
+    assert.equal(JSON.stringify(f.calls[0].body).includes(PROBE), false,
+      "the submitted name reached the RPC args — it would be stored in resource_leads.name");
+  } finally { f.restore(); }
+});

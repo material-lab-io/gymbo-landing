@@ -65,7 +65,6 @@ export async function onRequestPost(context) {
 
     const resourceId = String(body.resource_id || "").trim();
     const email = String(body.email || "").trim();
-    const name = String(body.name || "").trim();
     const deliveryConsent = body.delivery_consent === true;
     const deliveryNotice = String(body.delivery_consent_notice_version || "").trim();
     // DEFAULTS FALSE, and only an explicit boolean true counts. A missing key, "false",
@@ -100,7 +99,11 @@ export async function onRequestPost(context) {
       body: JSON.stringify({
         p_resource_id: resourceId,
         p_email: email,
-        p_name: name || null,
+        // 🔴 ALWAYS NULL, never body.name (gy-674s8, pm 2026-09-26T13:12Z). v1 is email-only
+        // and the privacy notice names no name for this capture, so none may be stored. The
+        // key stays because main's resource_lead_submit has NO default for p_name: omitting
+        // it would stop PostgREST matching the function and break every submission.
+        p_name: null,
         p_delivery_consent: true,
         p_delivery_consent_notice_version: deliveryNotice,
         p_marketing_consent: marketingConsent,
