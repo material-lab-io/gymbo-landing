@@ -97,6 +97,74 @@ export function findBuiltPrices(root = "dist") {
   return out.sort((x, y) => x.file.localeCompare(y.file));
 }
 
+// gy-53qq5: THE PRICE PIN ON BUILT FILES. findBuiltPrices only NAMES files; this one FAILS. Content's
+// `facts` rule the amounts; price-surfaces.json says which built files must state which. Amounts are
+// read from the facts, never retyped, so when content bumps a price every listed file still carrying
+// the old number goes red (the 399 -> 449 drill), and a file that states a current Gymbo amount but is
+// not listed fails too (a new page cannot quote the price unwatched). Still NOT covered: .js bundles,
+// images, and rupee amounts that are not one of the ruled facts (competitor prices, research figures:
+// they stay in findBuiltPrices' declared-unread list).
+const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
+export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
+const amountRe = (n) => new RegExp(`\u20b9\\s?${Number(n).toLocaleString("en-IN").replace(/,/g, ",")}(?![\\d]|,\\d)`);
+const listBuiltText = (root) => {
+  const out = new Map();
+  const walk = (d) => {
+    for (const e of readdirSync(join(root, d))) {
+      const rel = d ? `${d}/${e}` : e;
+      if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
+      if (/\.(html?|md|txt|xml|json)$/i.test(e)) out.set(rel, readFileSync(join(root, rel), "utf8"));
+    }
+  };
+  if (!existsSync(root)) throw new Error(`${root} does not exist; cannot check prices on a build that is not there`);
+  walk("");
+  return out;
+};
+export function loadPriceSurfaces(dir = CANON_DIR) {
+  const f = join(dir, "price-surfaces.json");
+  if (!existsSync(f)) throw new Error(`${f} is missing; the price pin's surface list is part of the gate`);
+  const j = JSON.parse(readFileSync(f, "utf8"));
+  if (!j.surfaces || !Object.keys(j.surfaces).length) throw new Error("price-surfaces.json lists no surfaces; refusing a vacuous pass");
+  return j;
+}
+export function checkBuiltPricePin(facts, reg, root = "dist") {
+  const findings = [];
+  const files = listBuiltText(root);
+  const amt = Object.fromEntries(PRICE_KEYS.map((k) => [k, facts[k]]));
+  for (const k of PRICE_KEYS) if (!Number.isInteger(amt[k])) findings.push({ kind: "price-fact-missing", id: k, detail: `facts.${k} is not an integer; refusing a vacuous pass` });
+  if (findings.length) return findings;
+  const tp = new Set((reg.thirdPartyAmounts?.entries || []).map((e) => `${e.file}|${e.amount}`));
+  for (const [file, keys] of Object.entries(reg.surfaces)) {
+    const text = files.get(file);
+    if (text === undefined) { findings.push({ kind: "price-surface-missing", file, detail: "listed in price-surfaces.json but not in the build; remove it or fix the path" }); continue; }
+    for (const key of keys) {
+      if (key === "annualSavingsPercent") {
+        const found = [...text.matchAll(/save\s+(\d+)\s?%/gi)].map((m) => Number(m[1]));
+        if (!found.includes(facts.annualSavingsPercent)) findings.push({ kind: "price-stale", file, id: key, detail: `no 'Save ${facts.annualSavingsPercent}%' in the built file (found: ${found.join(", ") || "none"})` });
+        continue;
+      }
+      if (!PRICE_KEYS.includes(key)) { findings.push({ kind: "price-registry-unknown-key", file, id: key, detail: "not a price fact this check knows" }); continue; }
+      if (!amountRe(amt[key]).test(text)) findings.push({ kind: "price-stale", file, id: key, detail: `${file} does not state ${rupees(amt[key])} (${key}); the ruled price changed or the page did not follow` });
+    }
+  }
+  for (const [file, text] of files) {
+    if (reg.surfaces[file]) continue;
+    for (const k of PRICE_KEYS) if (amountRe(amt[k]).test(text) && !tp.has(`${file}|${amt[k]}`)) findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${rupees(amt[k])} but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` });
+  }
+  for (const [file, text] of files) for (const m of text.matchAll(/save\s+(\d+)\s?%/gi)) if (Number(m[1]) !== facts.annualSavingsPercent) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", detail: `${file} says 'Save ${m[1]}%', content ruled ${facts.annualSavingsPercent}` });
+  return findings;
+}
+
+// The standing negative control: bump every price and require the pin to go RED for EVERY listed
+// (file, key). A pin that has never been seen to catch a real price drift is not evidence (gy-53qq5 AC4).
+export function priceDrill(facts, reg, root = "dist", bump = 37) {
+  const drifted = { ...facts, monthlyINR: facts.monthlyINR + bump, annualINR: facts.annualINR + bump, annualMonthlyEquivalentINR: facts.annualMonthlyEquivalentINR + bump, annualSavingsPercent: facts.annualSavingsPercent + 1 };
+  const got = new Set(checkBuiltPricePin(drifted, reg, root).filter((f) => f.kind === "price-stale").map((f) => `${f.file}|${f.id}`));
+  const missed = [];
+  for (const [file, keys] of Object.entries(reg.surfaces)) for (const k of keys) if (!got.has(`${file}|${k}`)) missed.push(`${file}|${k}`);
+  return { missed, total: Object.values(reg.surfaces).reduce((n, k) => n + k.length, 0) };
+}
+
 export const isWebId = (id, source) => (source.webSurfaceIdPrefixes || ["site.", "trial."]).some((p) => id.startsWith(p));
 
 // Ruled entries for the copy baseline: every NON-waived target of every mapped web string.

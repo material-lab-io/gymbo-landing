@@ -1,0 +1,19 @@
+{
+  "_comment": "gy-53qq5. Which BUILT files must state which of content's ruled prices. Keys name entries of `facts` in gymbo-canonical-strings.json; numbers are NEVER typed here, they are read from the facts at check time, so a price change (content bumps the fact) makes every listed file that still carries the old number go RED. Enumerated from dist/ (what ships), not from src/. A built file that states a current Gymbo amount and is NOT listed here fails as price-unregistered: list it or remove the price. `savePercent` files must also say 'Save N%' with N = annualSavingsPercent. Scope: html/md/txt/xml/json in dist; the .js bundles are not scanned (named gap).",
+  "surfaces": {
+    "index.html": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR", "annualSavingsPercent"],
+    "terms/index.html": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"],
+    "llms.txt": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR", "annualSavingsPercent"],
+    "pricing.md": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR", "annualSavingsPercent"],
+    "alternatives/akton/index.html": ["monthlyINR", "annualMonthlyEquivalentINR"],
+    "alternatives/trainerize/index.html": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"],
+    "alternatives/truecoach/index.html": ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"],
+    "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html": ["monthlyINR", "annualMonthlyEquivalentINR"],
+    "blog/how-india-independent-trainers-run-their-business/index.html": ["monthlyINR"],
+    "compare/gymbo-vs-wellnessz/index.html": ["monthlyINR", "annualMonthlyEquivalentINR"]
+  },
+  "thirdPartyAmounts": {
+    "_comment": "A built file may legitimately state a current Gymbo amount for a NON-Gymbo reason (a competitor at the same rupee figure). Declare it here as { file, amount, reason }. Empty today: every occurrence of 399/2,999/250 in dist is Gymbo's own price (checked by reading each sentence, 2026-09-26).",
+    "entries": []
+  }
+}
