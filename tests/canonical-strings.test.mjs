@@ -4,10 +4,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { GATES, gateArgs } from "../scripts/shifted-clock-control.mjs";
 // The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
 // an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
 for (const k of ["GITHUB_ACTIONS", "GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH", "GITHUB_BASE_REF"]) delete process.env[k];
@@ -607,6 +608,34 @@ test("R3 CLI end to end: --base-ledger, --base <git ref>, and CI with no resolva
   sh("update-ref", "-d", "refs/remotes/origin/main");
   const nomain = run(["--canon", canon], { GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "workflow_dispatch" }); assert.equal(nomain.status, 1); assert.match(nomain.stderr, /price-ledger-base-unknown.*origin\/main/, "no origin/main to compare with: fails closed");
   const g2 = run(["--canon", canon, "--base", "0000000000000000000000000000000000000000"]); assert.equal(g2.status, 1); assert.match(g2.stderr, /price-ledger-base-unknown/, "a ref git cannot resolve fails closed");
+});
+
+// ---- HOTFIX (gy-53qq5.1 R3): the shallow-checkout job must be able to run the gate ----
+const ROOT = new URL("..", import.meta.url).pathname;
+test("R3 HOTFIX: the time-fuse harness runs the price gate on a SHALLOW checkout where the base commit does not exist; it must use an explicit, reasoned opt-out, and deploy.yml (full history) must be the enforcement point", () => {
+  const dist = fixtureDist(loadCanonical(REAL)), tmp = mkdtempSync(join(scratch, "tf-"));
+  const ev = join(tmp, "ev.json"); writeFileSync(ev, JSON.stringify({ pull_request: { base: { sha: "f".repeat(40) } } }));   // a base sha this checkout has never seen
+  const ciEnv = { ...process.env, GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "pull_request", GITHUB_EVENT_PATH: ev };
+  const g = GATES.find(([label]) => label.startsWith("canonical strings"));
+  // the way the harness really invokes it: gateArgs(), the same function its spawn loop uses
+  const viaHarness = spawnSync(process.execPath, [...gateArgs(g, dist), "--today", "2026-09-24"], { encoding: "utf8", env: ciEnv });
+  assert.equal(viaHarness.status, 0, "the harness's own invocation must pass on a shallow CI checkout: " + viaHarness.stderr + viaHarness.stdout);
+  assert.match(viaHarness.stdout, /ledger append-only.*SKIPPED.*explicit/i, "and it says loudly that it skipped, and why");
+  // control: WITHOUT the flag the same environment is refused (fail closed is still the default)
+  const bare = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24"], { encoding: "utf8", env: ciEnv });
+  assert.equal(bare.status, 1); assert.match(bare.stderr, /price-ledger-base-unknown/);
+  // the flag needs a real reason
+  const noReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24", "--skip-ledger-base"], { encoding: "utf8", env: ciEnv });
+  assert.equal(noReason.status, 1); assert.match(noReason.stderr, /price-ledger-skip-needs-reason/);
+  const shortReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24", "--skip-ledger-base", "ok"], { encoding: "utf8", env: ciEnv });
+  assert.equal(shortReason.status, 1); assert.match(shortReason.stderr, /price-ledger-skip-needs-reason/);
+  // the opt-out lives in ONE place: nothing that enforces (workflows, package scripts, other scripts) may carry it
+  const carriers = [];
+  const scan = (dir) => { for (const e of readdirSync(join(ROOT, dir), { withFileTypes: true })) { const rel = `${dir}/${e.name}`; if (e.isDirectory()) { if (!["node_modules", "dist", "dist-ssr"].includes(e.name)) scan(rel); } else if (/\.(ya?ml|mjs|js|json|sh)$/.test(e.name) && readFileSync(join(ROOT, rel), "utf8").includes("--skip-ledger-base")) carriers.push(rel); } };
+  scan(".github"); scan("scripts"); if (readFileSync(join(ROOT, "package.json"), "utf8").includes("--skip-ledger-base")) carriers.push("package.json");
+  assert.deepEqual(carriers.sort(), ["scripts/check-canonical-strings.mjs", "scripts/shifted-clock-control.mjs"], "only the definition and the time-fuse harness may mention the opt-out; a workflow or npm script that carried it would be silence");
+  const deploy = readFileSync(join(ROOT, ".github/workflows/deploy.yml"), "utf8");
+  assert.match(deploy, /actions\/checkout@v4\s*\n\s*with:\s*\n(?:\s*#.*\n)*\s*fetch-depth:\s*0/, "the enforcement point (deploy.yml) checks out full history so the base commit exists");
 });
 
 test("M5 STANDING DRILL: every savings claim in every phrasing goes red under drift, and the drill says so when one is masked", () => {
