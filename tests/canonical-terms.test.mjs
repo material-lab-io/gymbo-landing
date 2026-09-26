@@ -4,7 +4,7 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { scanHtmlTerms, scanText, BANNED, META_ONLY_BANNED } from "../scripts/check-canonical-terms.mjs";
+import { scanHtmlTerms, scanText, BANNED, META_ONLY_BANNED, EXCEPTIONS } from "../scripts/check-canonical-terms.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-terms.mjs", import.meta.url).pathname;
 const scratch = mkdtempSync(join(tmpdir(), "gymbo-canonical-terms-"));
@@ -188,10 +188,12 @@ test("NEGATIVE CONTROL: on a guide/research route only text that names Gymbo nea
   assert.equal(scanText("It gives you a builder, and an app for logging sessions.", "/blog/x/", "visible text").length, 1);
 });
 
-test("the attributed trainer quote is one sentence, not a licence for logging copy", () => {
+test("the removed testimonial's sentence is NO LONGER waived: it is flagged like any other logging copy (compliance ruled DO NOT RETAIN, gy-v9pwo.5; pm 09-26 gy-l6dsr)", () => {
   const quote = "With Gymbo, I open the app, log the session, and move on.";
-  assert.equal(scanText(quote, "/", "visible text").length, 0);
-  assert.equal(scanText(`${quote} Gymbo lets you log your sessions.`, "/", "visible text").length, 1);
+  assert.equal(scanText(quote, "/", "visible text").length >= 1, true, "a permit for a sentence that no longer ships is a loophole for its return");
+  assert.equal(scanText(`${quote} Gymbo lets you log your sessions.`, "/", "visible text").length >= 1, true);
+  assert.equal(EXCEPTIONS.some((e) => e.context.test(quote)), false, "no standing exception matches the retired sentence");
+  assert.equal(EXCEPTIONS.length, 1, "only the spreadsheet-comparison exception remains");
 });
 
 test("an exact-phrase hit is reported once, not again by the family that also matches it", () => {

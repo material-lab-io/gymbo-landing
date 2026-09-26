@@ -39,14 +39,12 @@ const isMetaSurface = (surface, route) => surface.startsWith("metadata ") || (ro
 
 // Deliberately narrow: each entry keeps ONE sentence whose subject is not Gymbo's
 // action. Nothing here may exempt a file or a route.
+// (The home-page attributed trainer quote had an entry here until 2026-09-26: the testimonial was removed, compliance ruled
+// DO NOT RETAIN in gy-v9pwo.5, and a standing permit for a sentence that no longer ships is a loophole for its return.)
 export const EXCEPTIONS = [
   {
     reason: "guide/get-organized: spreadsheet comparison, not Gymbo's action",
     context: /a spreadsheet can hold this, but it doesn't log a session with one tap between clients/i,
-  },
-  {
-    reason: "home: attributed trainer quote, the trainer's own words (content addendum 2, 2026-09-22)",
-    context: /I open the app, log the session, and move on/i,
   },
 ];
 
