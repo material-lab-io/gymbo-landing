@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_LESS_CONTEXT, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 import { GATES, gateArgs } from "../scripts/shifted-clock-control.mjs";
 // The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
 // an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
@@ -545,6 +545,27 @@ test("RESIDUALS (tester R2): 'more than', 'at least', 'roughly', 'close to', 'up
   }
 });
 
+test("PM RULING 12:02Z: 'N% less/lower' is read ONLY with a pay/plan/annual/yearly word in the same sentence, 'You get N% back' is read, and the real research sentences stay quiet", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, P = F.annualSavingsPercent, W = P + 1;
+  const flagged = (text, n = "newpage") => { const dist = fixtureDist(canon); mkdirSync(join(dist, n), { recursive: true }); writeFileSync(join(dist, n, "index.html"), `<p>${text}</p>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === `${n}/index.html` && x.id === "annualSavingsPercent").length; };
+  const CTX = ["pay", "pays", "paying", "plan", "plans", "annual", "annually", "yearly"];
+  assert.deepEqual([...SAVING_LESS_CONTEXT].sort(), [...CTX].sort(), "the context words: change the list and this literal together, on purpose");
+  for (const w of CTX) assert.equal(flagged(`${W}% less if you go ${w}`) + flagged(`On the ${w} side it is ${W}% lower`), 2, `context word '${w}' makes '${W}% less/lower' a claim`);
+  for (const form of [`Pay ${W}% less`, `You pay ${W}% less on the annual plan`, `The annual plan is ${W}% lower than monthly`, `${W}% less than paying monthly`, `${W} percent less, billed yearly`]) assert.equal(flagged(form), 1, `'${form}' is a savings claim: flagged once`);
+  for (const form of [`Pay ${P}% less`, `The annual plan is ${P}% lower than monthly`]) { const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\n${form}\n`); assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], `control: '${form}' states the ruled percent`); }
+  for (const form of [`You get ${W}% back`, `you get up to ${W}% back`, `Get ${W} percent back on the annual plan`, `Getting ${W}% back`, `Gets ${W}% back`, `She gets ${W}% back`]) assert.equal(flagged(form), 1, `'${form}' is a savings claim`);
+  for (const form of [`You get ${P}% back`, `Get ${P} percent back`]) { const dist = fixtureDist(canon); const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\n${form}\n`); assert.deepEqual(checkBuiltPricePin(F, reg, dist), [], `control: '${form}' states the ruled percent`); }
+  // BARE less/lower stays quiet, including the two REAL research-page sentences (verbatim from the built site)
+  const REAL_DENSITY = "[Verified totals + Estimate active-rate] US density adjusted (benchmark): the US has ~104,000 independent trainers (370,000 trainers \u00d7 28% self-employed); adjusting for India's lower density gives ~28,000\u201344,000.";
+  const REAL_CHURN = "Verified 90-day client drop-off ~60% of clients";
+  for (const quiet of [REAL_DENSITY, REAL_CHURN, "churn is 12% lower than last quarter", "40% less admin every week", "a lower churn of 12%", "we got 60% of clients back on track. plan the next step", "30% of trainers get paid late; annual reviews help"]) assert.equal(flagged(quiet, "research"), 0, `'${quiet.slice(0, 60)}': not a savings claim`);
+  // the context must be in the SAME sentence
+  assert.equal(flagged(`Choose the annual plan. Churn is ${W}% lower`), 0, "a context word in a DIFFERENT sentence does not count");
+  assert.equal(flagged(`Billing is yearly; churn is ${W}% lower`), 0, "a semicolon ends the sentence");
+  assert.equal(flagged(`On the annual plan, 2.5 months are free and churn is ${W}% lower`), 1, "a decimal point inside a sentence (2.5) does not end it, so the context word before it still counts");
+  for (const quiet of [`You get ${W}% more clients`, `you get ${W}% of clients replying`, `Get ${W}% of your week back for training`]) assert.equal(flagged(quiet), 0, `'${quiet}': 'get N%' without 'back' directly after the percent is not a claim`);
+});
+
 test("RESIDUALS: the stale-percent finding no longer says only 'competitor': a time-saved or other percentage that reads as a saving trips it too, and the text says so", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
   const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), "<p>Save 40% of your admin time</p>");
@@ -555,18 +576,17 @@ test("RESIDUALS: the stale-percent finding no longer says only 'competitor': a t
 });
 
 test("NAMED LIMITS: what the price gate deliberately does NOT read is a declared list in the gate, printed on every green run, and each limit is real (measured, not hoped)", () => {
-  const LIT = ["less/lower savings phrasings ('Pay 37% less', '37% lower than monthly')", "'You get 37% back' (no saving word)", "hiding by opacity:0, font-size:0, an off-screen or clipped box, or a CSS comment inside style", "a price kept only in the <title> element", "hiding by a class name (a stylesheet is not read)", "Devanagari digits and text inside images"];
+  const LIT = ["a BARE less/lower percentage (no pay, plan, annual or yearly word in the sentence)", "hiding by opacity:0, font-size:0, an off-screen or clipped box, or a CSS comment inside style", "a price kept only in the <title> element", "hiding by a class name (a stylesheet is not read)", "Devanagari digits and text inside images"];
   assert.deepEqual(NAMED_LIMITS, LIT, "the list is pinned to an independent literal: change both on purpose");
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, W = F.annualSavingsPercent + 1;
   const flagged = (text) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>${text}</p>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html").length; };
-  assert.equal(flagged(`Pay ${W}% less`), 0, "limit 1 is real: 'less' is not read");
-  assert.equal(flagged(`${W}% lower than monthly`), 0, "limit 1 is real: 'lower' is not read");
-  assert.equal(flagged(`You get ${W}% back`), 0, "limit 2 is real");
+  assert.equal(flagged(`${W}% lower than monthly`), 0, "limit 1 is real: a BARE 'lower' (no pay/plan/annual/yearly word) is not read");
+  assert.equal(flagged(`Churn is ${W}% lower`), 0, "limit 1 is real: a bare 'lower' about something else stays quiet");
   const pinned = "blog/how-india-independent-trainers-run-their-business/index.html", key = "monthlyINR", P = rupees(F.monthlyINR);
   const presence = (inner) => { const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, pinned), `<!doctype html><html><head><title>t</title></head><body>${inner}</body></html>`); return checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length; };
-  for (const [n, inner] of [["opacity:0", `<p style="opacity:0">${P}</p>`], ["font-size:0", `<p style="font-size:0">${P}</p>`], ["off-screen", `<p style="position:absolute;left:-9999px">${P}</p>`], ["clip", `<p style="clip:rect(0,0,0,0);position:absolute">${P}</p>`], ["css comment in style", `<p style="/* x */display:none">${P}</p>`], ["class name", `<p class="hidden">${P}</p>`]]) assert.equal(presence(inner), 0, `limit 3/5 is real: '${n}' still counts as PRESENT (a named limit, not a fix)`);
+  for (const [n, inner] of [["opacity:0", `<p style="opacity:0">${P}</p>`], ["font-size:0", `<p style="font-size:0">${P}</p>`], ["off-screen", `<p style="position:absolute;left:-9999px">${P}</p>`], ["clip", `<p style="clip:rect(0,0,0,0);position:absolute">${P}</p>`], ["css comment in style", `<p style="/* x */display:none">${P}</p>`], ["class name", `<p class="hidden">${P}</p>`]]) assert.equal(presence(inner), 0, `limit 2/4 is real: '${n}' still counts as PRESENT (a named limit, not a fix)`);
   const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, pinned), `<!doctype html><html><head><title>${P}</title></head><body><p>x</p></body></html>`);
-  assert.equal(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length, 0, "limit 4 is real: a price only in <title> counts as present");
+  assert.equal(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length, 0, "limit 3 is real: a price only in <title> counts as present");
   const out = spawnSync(process.execPath, [SCRIPT, "--root", fixtureDist(canon), "--today", "2026-09-24"], { encoding: "utf8" });
   assert.equal(out.status, 0, out.stderr + out.stdout); for (const l of LIT) assert.ok(out.stdout.includes(l), `a green run prints the named limit: ${l}`);
   assert.match(out.stdout, /NAMED LIMITS/);

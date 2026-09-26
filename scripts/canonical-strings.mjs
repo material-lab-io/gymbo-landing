@@ -204,14 +204,30 @@ export function priceOccurrences(text) {
 // on purpose: the research page uses them about churn.
 export const SAVING_WORDS = ["save", "saves", "saved", "saving", "savings", "discount", "cheaper"];
 export const SAVING_FILLERS = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge", "than", "at", "least", "roughly", "close", "upwards", "massive"];
+// pm ruling (gy-53qq5.1 12:02Z): 'N% less/lower' is a savings claim ONLY when one of these words is in the SAME sentence; a bare
+// 'less/lower' stays a named limit because the research page says them about density and churn.
+export const SAVING_LESS_CONTEXT = ["pay", "pays", "paying", "plan", "plans", "annual", "annually", "yearly"];
 export const SAVING_AFTER = ["savings", "saving", "off", "cheaper", "discount"];
 const PCT = String.raw`(?:%|percent|per cent|pct)`;
 const SAVE_BEFORE = String.raw`\b(?:${SAVING_WORDS.join("|")})\b(?:[^\w.!?;]|\b(?:${SAVING_FILLERS.join("|")})\b)*?(\d+(?:\.\d+)?)\s?${PCT}`;
 const SAVE_AFTER = String.raw`(\d+(?:\.\d+)?)\s?${PCT}[\s-]+(?:${SAVING_AFTER.join("|")})\b`;
+// Two forms added by pm's 12:02Z ruling (gy-53qq5.1): 'You get 37% back' (a GET word, the same fillers, then 'back'), and
+// 'N% less/lower', which is a claim ONLY when a SAVING_LESS_CONTEXT word is in the same sentence. The sentence is what lies
+// between the nearest sentence ends (. ! ? ; followed by a space or the end) on either side of the match.
+const SAVE_GET = String.raw`\b(?:get|gets|getting)\b(?:[^\w.!?;]|\b(?:${SAVING_FILLERS.join("|")})\b)*?(\d+(?:\.\d+)?)\s?${PCT}\s+back\b`;
+const SAVE_LESS = String.raw`(\d+(?:\.\d+)?)\s?${PCT}[\s-]+(?:less|lower)\b`;
+const LESS_CONTEXT = new RegExp(String.raw`\b(?:${SAVING_LESS_CONTEXT.join("|")})\b`, "i");
+const sentenceAround = (text, from, to) => {
+  const ends = /[.!?;](?=\s|$)/g; let a = 0, b = text.length, m;
+  while ((m = ends.exec(text))) { if (m.index < from) a = m.index + 1; else if (m.index >= to) { b = m.index; break; } }
+  return text.slice(a, b);
+};
 export function savingsClaims(text) {
   const seen = new Set(), out = [];
-  for (const re of [new RegExp(SAVE_BEFORE, "gid"), new RegExp(SAVE_AFTER, "gid")]) for (const m of text.matchAll(re)) {
-    const at = m.indices[1][0]; if (seen.has(at)) continue; seen.add(at);
+  for (const [re, needsContext] of [[new RegExp(SAVE_BEFORE, "gid"), false], [new RegExp(SAVE_AFTER, "gid"), false], [new RegExp(SAVE_GET, "gid"), false], [new RegExp(SAVE_LESS, "gid"), true]]) for (const m of text.matchAll(re)) {
+    const at = m.indices[1][0]; if (seen.has(at)) continue;
+    if (needsContext && !LESS_CONTEXT.test(sentenceAround(text, m.index, m.index + m[0].length))) continue;
+    seen.add(at);
     out.push({ raw: m[0], value: Number(m[1]), index: m.index });
   }
   return out;
@@ -420,13 +436,14 @@ export function checkCanonical({ doc, source, map, sha }, surfaces, today = new 
   return { findings, notes };
 }
 
-// What this gate deliberately does NOT read, written down so a green is not over-read. Each entry was MEASURED
-// against the merged gate by tester (attack notes on gy-53qq5.1) and is pinned by a test that shows it is real.
-// pm ruled these named limits, not fixes (gy-53qq5.1, 2026-09-26): 'less'/'lower' stay out because the research
-// page says them about churn; the hiding variants need a rendering engine, not a text scan.
+// What this gate deliberately does NOT read, written down so a green is not over-read. Each entry was MEASURED against the
+// merged gate by tester (attack notes on gy-53qq5.1) and is pinned by a test that shows it is real.
+// WHAT PM RULED (gy-53qq5.1, 12:02Z): 'Pay N% less', 'N% less/lower' with a pay/plan/annual/yearly word in the same sentence, and
+// 'You get N% back' are READ (declared lists above). Only a BARE less/lower stays a limit, because the research page uses
+// those words about density and churn; the hiding variants need a rendering engine, not a text scan. (An earlier revision of
+// this comment said pm ruled the less/back phrasings to be limits: that misattributed the narrowing, and was wrong.)
 export const NAMED_LIMITS = [
-  "less/lower savings phrasings ('Pay 37% less', '37% lower than monthly')",
-  "'You get 37% back' (no saving word)",
+  "a BARE less/lower percentage (no pay, plan, annual or yearly word in the sentence)",
   "hiding by opacity:0, font-size:0, an off-screen or clipped box, or a CSS comment inside style",
   "a price kept only in the <title> element",
   "hiding by a class name (a stylesheet is not read)",
