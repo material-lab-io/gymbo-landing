@@ -156,8 +156,19 @@ export function priceOccurrences(text) {
 // 20%'; not 'off': 'drop-off ~60%' is churn) or right AFTER it ('37% savings', '37% off the annual plan', '37% cheaper'). Deliberately tight:
 // 'lower', 'less' and 'reduce' are not saving words here (the research page says 'lower churn' and '40%
 // less admin' about things that are not a price). Returns every claim with the form it was written in.
-const SAVE_BEFORE = String.raw`\b(?:sav(?:e|es|ing|ings)|discount)\b\W*?(?:(?:up to|upto|of|by|about|around|over|nearly)\s+)?(\d+(?:\.\d+)?)\s?(?:%|percent|per cent)`;
-const SAVE_AFTER = String.raw`(\d+(?:\.\d+)?)\s?(?:%|percent|per cent)\s+(?:savings?|saving|off|cheaper|discount)\b`;
+// R2 (gy-53qq5.1): the vocabulary is a DECLARED list, so widening it is an edit to a named array, not to
+// a regex. SAVING_WORDS open a claim when they come BEFORE the number; SAVING_FILLERS are the words that
+// may sit between the saving word and the number ('saves YOU 37%', 'save AN EXTRA 37%', 'save AS MUCH AS
+// 37%'). Anything else between them (a digit, another noun) ends the search, and a sentence boundary
+// (. ! ? ;) ends it too, so 'Save. 60% of clients' is not a claim. A number AFTER the claim word is read
+// with SAVING_AFTER ('37% savings', '37%-off', '37 pct cheaper'). 'lower', 'less' and 'reduce' stay out
+// on purpose: the research page uses them about churn.
+export const SAVING_WORDS = ["save", "saves", "saved", "saving", "savings", "discount", "cheaper"];
+export const SAVING_FILLERS = ["you", "your", "an", "a", "the", "up", "to", "upto", "of", "by", "about", "around", "over", "nearly", "almost", "extra", "full", "further", "additional", "another", "more", "as", "much", "whopping", "huge"];
+export const SAVING_AFTER = ["savings", "saving", "off", "cheaper", "discount"];
+const PCT = String.raw`(?:%|percent|per cent|pct)`;
+const SAVE_BEFORE = String.raw`\b(?:${SAVING_WORDS.join("|")})\b(?:[^\w.!?;]|\b(?:${SAVING_FILLERS.join("|")})\b)*?(\d+(?:\.\d+)?)\s?${PCT}`;
+const SAVE_AFTER = String.raw`(\d+(?:\.\d+)?)\s?${PCT}[\s-]+(?:${SAVING_AFTER.join("|")})\b`;
 export function savingsClaims(text) {
   const seen = new Set(), out = [];
   for (const re of [new RegExp(SAVE_BEFORE, "gid"), new RegExp(SAVE_AFTER, "gid")]) for (const m of text.matchAll(re)) {
@@ -224,7 +235,7 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
   const shown = (o) => o.raw.replace(/\s+/g, " ").slice(0, 60);
   for (const [file, keys] of Object.entries(reg.surfaces)) {
     const text = files.get(file);
-    if (text === undefined) { findings.push({ kind: "price-surface-missing", file, detail: "listed in price-surfaces.json but not in the build; remove it or fix the path" }); continue; }
+    if (text === undefined) { findings.push({ kind: "price-surface-missing", file, detail: "listed in price-surfaces.json but not in the build; if it is a hashed bundle whose build hash happens to read as a plain word (all lowercase, so it is not stripped), a rebuild usually fixes it; otherwise remove it or fix the path" }); continue; }
     const occ = priceOccurrences(text), seen = priceOccurrences(visible.get(file) ?? "");
     for (const key of keys) {
       if (key === "annualSavingsPercent") {
@@ -246,7 +257,7 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
       if (k && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${JSON.stringify(shown(o))} (${rupees(o.value)}) but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` }); }
     }
   }
-  for (const [file, text] of files) for (const c of savingsClaims(text)) if (c.value !== facts.annualSavingsPercent && !tpPct.has(`${file}|${c.value}`)) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", form: c.raw.replace(/\s+/g, " ").slice(0, 60), detail: `${file} says ${JSON.stringify(c.raw.replace(/\s+/g, " ").slice(0, 60))}, content ruled ${facts.annualSavingsPercent}%` });
+  for (const [file, text] of files) for (const c of savingsClaims(text)) if (c.value !== facts.annualSavingsPercent && !tpPct.has(`${file}|${c.value}`)) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", form: c.raw.replace(/\s+/g, " ").slice(0, 60), detail: `${file} says ${JSON.stringify(c.raw.replace(/\s+/g, " ").slice(0, 60))}, content ruled ${facts.annualSavingsPercent}%. If this is not Gymbo\'s own annual saving (a competitor\'s advertised discount), declare it in thirdPartyAmounts as { file, amount: ${c.value}, unit: "percent", reason }` });
   return findings;
 }
 
