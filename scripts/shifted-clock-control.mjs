@@ -121,8 +121,14 @@ export const GATES = [
   ["log verb", "scripts/check-log-verb.mjs", true],
   // a deliberate DATE rule (waivers expire), not a build-time fuse: run on the real clock so a
   // legitimately expiring waiver is not reported as a time fuse.
-  ["canonical strings (real clock: it has an intentional waiver-expiry date rule)", "scripts/check-canonical-strings.mjs", false],
+  // This job checks out with depth 1, so the ledger's BASE commit does not exist here; it tests clock independence, not ledger
+  // history. The append-only check is enforced by deploy.yml (full history). The opt-out is explicit, reasoned and printed.
+  ["canonical strings (real clock: it has an intentional waiver-expiry date rule)", "scripts/check-canonical-strings.mjs", false, ["--skip-ledger-base", "time-fuse harness: shallow checkout has no base commit and this job tests clock independence; deploy.yml (full history) enforces append-only"]],
 ];
+
+// The argv a gate is spawned with: [script, "--root", <shifted build>, ...its own extra args]. One function, so the harness and its test
+// cannot disagree about what a gate is invoked with.
+export const gateArgs = ([, script, , extraArgs = []], root) => [script, "--root", root, ...extraArgs];
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2);
@@ -145,11 +151,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       }
       for (const f of findings) console.error(`   FAIL ${f.kind}: ${f.file}${f.detail ? ` (${f.detail})` : ""}`);
       failed += findings.length;
-      for (const [label, script, shim] of GATES) {
+      for (const entry of GATES) {
+        const [label, script, shim] = entry;
         if (!existsSync(script)) { console.log(`   skip ${label}: ${script} is not on this branch`); continue; }
         const env = { ...process.env };
         if (shim) { env.NODE_OPTIONS = `${env.NODE_OPTIONS ?? ""} --require ${SHIM}`.trim(); env.GYMBO_SHIFT_DAYS = String(d); }
-        const r = spawnSync(process.execPath, [script, "--root", shifted], { env, encoding: "utf8" });
+        const r = spawnSync(process.execPath, gateArgs(entry, shifted), { env, encoding: "utf8" });
         console.log(`   ${r.status === 0 ? "ok  " : "FAIL"} ${label} on the +${d}d build (exit ${r.status})`);
         if (r.status !== 0) { failed++; console.error(String(r.stdout) + String(r.stderr)); }
       }

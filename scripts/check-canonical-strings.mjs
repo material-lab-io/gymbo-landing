@@ -23,7 +23,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     findings.push(...checkPriceLedger(canon.doc.facts, reg));
     // R3: the ledger is append-only against its base (--base-ledger FILE, --base REF, or the CI event's base)
     let appendNote;
-    if (opt("--base-ledger")) { findings.push(...checkLedgerAppendOnly(JSON.parse(readFileSync(opt("--base-ledger"), "utf8")), reg.priceLedger)); appendNote = `ledger append-only vs ${opt("--base-ledger")}`; }
+    // The ONE explicit opt-out, for the time-fuse harness only: that job checks out with depth 1 (the base commit does not
+    // exist there) and tests clock independence, not ledger history. deploy.yml checks out full history and is where
+    // the check is enforced. A test pins that this flag appears nowhere but here and scripts/shifted-clock-control.mjs.
+    if (args.includes("--skip-ledger-base")) {
+      const why = opt("--skip-ledger-base", "");
+      if (!why || why.trim().length < 15) findings.push({ kind: "price-ledger-skip-needs-reason", detail: "--skip-ledger-base needs a reason of at least 15 characters saying why the base is unavailable and where the check IS enforced" });
+      else appendNote = `ledger append-only SKIPPED by explicit flag (--skip-ledger-base): ${why}`;
+    } else if (opt("--base-ledger")) { findings.push(...checkLedgerAppendOnly(JSON.parse(readFileSync(opt("--base-ledger"), "utf8")), reg.priceLedger)); appendNote = `ledger append-only vs ${opt("--base-ledger")}`; }
     else {
       const b = opt("--base") ? { ref: opt("--base") } : ledgerBaseFromEnv(process.env);
       if (b.mergeBase) { const m = spawnSync("git", ["-C", opt("--canon", CANON_DIR), "merge-base", "HEAD", b.mergeBase], { encoding: "utf8" }); if (m.status === 0 && m.stdout.trim()) b.ref = m.stdout.trim(); else b.error = `no merge-base with ${b.mergeBase} (${(m.stderr || "").trim() || "git failed"}); a manual dispatch needs it to find the ledger's base`; }
