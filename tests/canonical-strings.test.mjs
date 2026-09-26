@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, priceDrill, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 
 const SCRIPT = new URL("../scripts/check-canonical-strings.mjs", import.meta.url).pathname;
 const REAL = new URL("../src/canonical", import.meta.url).pathname;
@@ -171,15 +171,64 @@ test("SCOPE DISCLOSURE: built files that state a rupee amount are FOUND and name
   assert.throws(() => findBuiltPrices(join(root, "nope")), /does not exist/, "a missing dist is an error, not an empty list");
 });
 
-test("CLI end to end: a price-change drill. The constants-file check stays GREEN while built files carry the old price, and its output NAMES those files", () => {
-  const dist = fixtureDist(loadCanonical(REAL));
-  const add = (f, extra) => { mkdirSync(join(dist, f, ".."), { recursive: true }); const p = join(dist, f); writeFileSync(p, (existsSync(p) ? readFileSync(p, "utf8") : "") + extra); } // keep the mapped strings; only ADD a stale price
-  add("pricing.md", "\nMonthly \u20b9399/month\n"); add("llms.txt", "\nMonthly \u20b9399/month\n"); add("alternatives/akton/index.html", "<p>\u20b9399</p>");
+test("PRICE PIN gy-53qq5: the 399 -> 449 drill. A bumped price goes RED on every listed built file (llms.txt and pricing.md included); the unbumped build is GREEN", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL);
+  const dist = fixtureDist(canon);
+  assert.deepEqual(checkBuiltPricePin(canon.doc.facts, reg, dist), [], "control: the fixture build states every pinned price, so it is green");
+  const drifted = { ...canon.doc.facts, monthlyINR: 449 };
+  const red = checkBuiltPricePin(drifted, reg, dist).filter((f) => f.id === "monthlyINR").map((f) => f.file).sort();
+  assert.deepEqual(red, Object.entries(reg.surfaces).filter(([, k]) => k.includes("monthlyINR")).map(([f]) => f).sort(), "every surface pinned to monthlyINR is red, not just the ones the author remembered");
+  assert.ok(red.includes("llms.txt") && red.includes("pricing.md"), "the machine-read surfaces are inside the pin");
+  assert.deepEqual(priceDrill(canon.doc.facts, reg, dist).missed, [], "the standing drill goes red for every (file, key)");
+});
+
+test("PRICE PIN: a page that quotes a current Gymbo price but is not listed FAILS (a new page cannot state the price unwatched); a declared third-party amount is exempt", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL);
+  const dist = fixtureDist(canon);
+  mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), `<p>Only ${rupees(canon.doc.facts.monthlyINR)}/month</p>`);
+  const f = checkBuiltPricePin(canon.doc.facts, reg, dist);
+  assert.deepEqual(f.map((x) => `${x.kind} ${x.file} ${x.id}`), ["price-unregistered newpage/index.html monthlyINR"]);
+  const declared = { ...reg, thirdPartyAmounts: { entries: [{ file: "newpage/index.html", amount: canon.doc.facts.monthlyINR, reason: "competitor at the same figure" }] } };
+  assert.deepEqual(checkBuiltPricePin(canon.doc.facts, declared, dist), []);
+});
+
+test("PRICE PIN: one stale surface, a wrong Save N%, a missing listed file, a substring amount and a non-integer fact each fail by name", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon);
+  writeFileSync(join(dist, "pricing.md"), readFileSync(join(dist, "pricing.md"), "utf8").replace(rupees(F.annualINR), rupees(F.annualINR + 500)));
+  assert.deepEqual(checkBuiltPricePin(F, reg, dist).map((x) => `${x.file} ${x.id}`), ["pricing.md annualINR"]);
+  const d2 = fixtureDist(canon); writeFileSync(join(d2, "llms.txt"), readFileSync(join(d2, "llms.txt"), "utf8").replace(`Save ${F.annualSavingsPercent}%`, "Save 40%"));
+  assert.ok(checkBuiltPricePin(F, reg, d2).some((x) => x.file === "llms.txt" && x.id === "annualSavingsPercent"));
+  const d3 = fixtureDist(canon); rmSync(join(d3, "terms/index.html"));
+  assert.ok(checkBuiltPricePin(F, reg, d3).some((x) => x.kind === "price-surface-missing" && x.file === "terms/index.html"));
+  // a longer amount must not satisfy the pin: \u20b93990 is not \u20b9399, \u20b929990 is not \u20b92,999 (the trailing-digit guard)
+  const d4 = fixtureDist(canon); const p4 = join(d4, "llms.txt");
+  writeFileSync(p4, readFileSync(p4, "utf8").split(rupees(F.annualINR)).join(`\u20b9${F.annualINR}0`).split(rupees(F.monthlyINR)).join(`\u20b9${F.monthlyINR}0`));
+  const k = checkBuiltPricePin(F, reg, d4).filter((x) => x.file === "llms.txt").map((x) => x.id).sort();
+  assert.deepEqual(k, ["annualINR", "monthlyINR"], "amounts that merely START WITH the ruled digits do not count");
+  assert.throws(() => checkBuiltPricePin(F, reg, join(dist, "nope")), /does not exist/);
+  assert.equal(checkBuiltPricePin({ ...F, monthlyINR: "399" }, reg, dist)[0].kind, "price-fact-missing", "a non-integer fact fails closed");
+});
+
+test("PRICE PIN control: a listed page that already states the DRIFTED amount blinds the pin, and the standing drill says so instead of a green", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  const dist = fixtureDist(canon);
+  assert.deepEqual(priceDrill(F, reg, dist).missed, [], "control: clean fixture, no blind spot");
+  const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\ncompetitor: ${rupees(F.monthlyINR + 37)}\n`);
+  assert.deepEqual(priceDrill(F, reg, dist).missed, ["llms.txt|monthlyINR"]);
   const r = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
-  assert.equal(r.status, 0, r.stderr + r.stdout);
-  assert.match(r.stdout, /NOT READ by the constants-file check: \d+ BUILT file\(s\).*alternatives\/akton\/ x1.*llms\.txt x1.*pricing\.md x1/);
-  assert.match(r.stdout, /CONSTANTS FILE ONLY/); assert.match(r.stdout, /NOT a check on prices in built pages/);
-  assert.doesNotMatch(r.stdout, /price pin/i, "the gate must not call itself a price pin");
+  assert.equal(r.status, 1); assert.match(r.stderr, /price-pin-blind.*did NOT go red for 1 of \d+.*llms\.txt\|monthlyINR/);
+});
+
+test("CLI end to end: the real gate goes RED on a stale price and prints the drill result on green", () => {
+  const dist = fixtureDist(loadCanonical(REAL));
+  const ok = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(ok.status, 0, ok.stderr + ok.stdout);
+  assert.match(ok.stdout, /PRICE PIN \(gy-53qq5\): \d+ built file\(s\) pinned.*went RED on (\d+) of \1 listed/);
+  assert.match(ok.stdout, /DECLARED UNREAD/);
+  writeFileSync(join(dist, "llms.txt"), readFileSync(join(dist, "llms.txt"), "utf8").replace("\u20b9399", "\u20b9449"));
+  const bad = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  assert.equal(bad.status, 1); assert.match(bad.stderr, /price-stale monthlyINR.*llms\.txt does not state \u20b9399/);
 });
 
 // Build the JSON object whose string sits at a surface path like "$.mainEntity[].acceptedAnswer.text".
@@ -206,6 +255,12 @@ function fixtureDist(canon) {
   for (const [route, p] of pages) {
     if (route.endsWith("/")) { mkdirSync(join(dist, route), { recursive: true }); writeFileSync(join(dist, route, "index.html"), `<!doctype html><html><head><title>t</title>${p.head.join("")}</head><body><main>${p.body.join("")}</main></body></html>`); }
     else writeFileSync(join(dist, route), p.lines.join("\n") + "\n");
+  }
+  const reg = loadPriceSurfaces(REAL), f = canon.doc.facts;
+  for (const [file, keys] of Object.entries(reg.surfaces)) {
+    const line = keys.map((k) => (k === "annualSavingsPercent" ? `Save ${f[k]}%` : rupees(f[k]))).join(" ");
+    mkdirSync(join(dist, file, ".."), { recursive: true });
+    writeFileSync(join(dist, file), (existsSync(join(dist, file)) ? readFileSync(join(dist, file), "utf8") : "") + `<p>${line}</p>\n`);
   }
   return dist;
 }
