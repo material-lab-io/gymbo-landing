@@ -7,19 +7,40 @@
 // grievance contact are text, not comments, and are asserted to SURVIVE (see check-no-internal-comments).
 // Comments without a marker (Cloudflare's <!--email_off--> directives among them) are left alone.
 export const NAMED_PEOPLE = ["Kaushik", "Damini"];
-export const MARKER = new RegExp(`\\bgy-[a-z0-9]{4,6}(?:\\.\\d+)?\\b|\\b(?:${NAMED_PEOPLE.join("|")})\\b`, "i");
+// gy-454k3 AC2: the id suffix length is not fixed at the 4-6 chars observed so far — bound it wide
+// (4-16) rather than to today's shape, so a longer id minted later is still caught. {4,6} previously
+// missed a 7-char id outright (no shorter match exists to fall back to at that position).
+export const MARKER = new RegExp(`\\bgy-[a-z0-9]{4,16}(?:\\.\\d+)?\\b|\\b(?:${NAMED_PEOPLE.join("|")})\\b`, "i");
 
 const HTML_COMMENT = /<!--[\s\S]*?-->/g;
 const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//g;
-// A line comment needs whitespace or line start before // so "https://" never matches.
-const LINE_COMMENT = /(^|[ \t])\/\/[^\n]*/gm;
+// gy-454k3 AC2: previously required whitespace/line-start before // so "https://" never matched —
+// but that also missed the very common `statement;//comment` shape (no space before //). Exclude
+// URLs by their actual distinguishing feature instead: a scheme colon immediately before the slashes.
+const LINE_COMMENT = /(?<!:)\/\/[^\n]*/gm;
 
+// gy-454k3 AC3: BLOCK_COMMENT is naive text matching, not a real parser — it pairs the FIRST `/*` it
+// sees with the NEXT `*/`, wherever that is. A `/*` living inside one string followed, much later, by
+// an unrelated `*/` inside another string would make it match (and, if marked, delete) everything in
+// between, including real code — a minified-before/after diff can't tell that apart from the deliberate,
+// legitimate case this bead exists to fix (a short marked comment embedded inside a JS template-literal
+// string, gy-becxi/PR 215), because minification doesn't touch string contents either way: both look
+// like "the string changed". What DOES distinguish them is length — a real comment is short by nature;
+// a false pairing that swallows real code between two unrelated delimiters is not. Cap it.
+// 2000 comfortably covers this codebase's real multi-line explanatory comments (the longest shipped
+// one, gy-becxi's, is 559 chars) while staying far short of what an accidental cross-code pairing would
+// span in practice.
+const MAX_MARKED_BLOCK_COMMENT = 2000;
 const marked = (s) => MARKER.test(s);
-const dropIfMarked = (m) => (marked(m) ? "" : m);
+const dropIfMarked = (m) => {
+  if (!marked(m)) return m;
+  if (m.length > MAX_MARKED_BLOCK_COMMENT) throw new Error(`refusing to strip a ${m.length}-char marked comment (over ${MAX_MARKED_BLOCK_COMMENT}); this is more likely a false /* ... */ pairing across real code than a genuine comment — inspect and fix by hand: ${m.slice(0, 200)}...`);
+  return "";
+};
 
 export function stripMarkedComments(text, kind) {
   if (kind === "css") return text.replace(BLOCK_COMMENT, dropIfMarked);
-  if (kind === "js") return text.replace(BLOCK_COMMENT, dropIfMarked).replace(LINE_COMMENT, (m, lead) => (marked(m) ? lead : m));
+  if (kind === "js") return text.replace(BLOCK_COMMENT, dropIfMarked).replace(LINE_COMMENT, dropIfMarked);
   // html: comments anywhere; then CSS/JS comments inside <style> and non-JSON <script> bodies only
   // (never inside JSON-LD: a "/*" there is data, not a comment).
   let out = text.replace(HTML_COMMENT, dropIfMarked);
