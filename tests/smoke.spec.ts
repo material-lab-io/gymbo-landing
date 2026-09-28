@@ -95,12 +95,14 @@ test('hero and all six gallery screens render approved photoreal device assets',
   }
 });
 
-test('all four pillar demos lazy-load and advance as muted looping inline video', async ({ page }) => {
+test('all remaining pillar demos lazy-load and advance as muted looping inline video', async ({ page }) => {
+  // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo had a retired claim burned into its
+  // pixels and was pulled from the "Track your revenue" pillar with no replacement, pending
+  // gy-7zhx1's re-render. 3 demos remain until that lands.
   await page.goto('/');
   const demos = page.getByTestId('pillar-demo');
-  await expect(demos).toHaveCount(4);
+  await expect(demos).toHaveCount(3);
   const expected = [
-    ['log-payment', 'light'],
     ['schedule', 'dark'],
     ['branded-statement', 'light'],
     ['build-workout', 'light'],
@@ -126,14 +128,14 @@ test('all four pillar demos lazy-load and advance as muted looping inline video'
   }
 });
 
-test('reduced motion renders all four matching posters without autoplay', async ({ page }) => {
+test('reduced motion renders all remaining matching posters without autoplay', async ({ page }) => {
+  // gy-v9pwo.4: log-payment's poster carried the same retired claim; see the note above.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('video')).toHaveCount(0);
   const posters = page.getByTestId('pillar-demo-poster');
-  await expect(posters).toHaveCount(4);
+  await expect(posters).toHaveCount(3);
   const expected = [
-    '/demos/log-payment-light.png',
     '/demos/schedule-dark.png',
     '/demos/branded-statement-light.png',
     '/demos/build-workout-light.png',
