@@ -61,6 +61,38 @@ test("named people are matched case-insensitively and by word, bead ids by shape
   assert.equal(stripMarkedComments(css, "css"), ".gy-focus-ring-dark:focus-visible{outline:2px solid #fff}");
 });
 
+test("AC2: a trailing-';//' line comment and a 7-character bead id are both caught by the check, and the control (marker removed) passes", () => {
+  const leakyJs = { "/d/app.js": 'foo();//gy-abcd note\nvar x = 1;' };
+  const leaky = scan(leakyJs);
+  assert.equal(leaky.leaks.length, 1, "the ;//gy-abcd line comment must be caught");
+  assert.match(leaky.leaks[0].comment, /gy-abcd/);
+
+  const leakyCss = { "/d/index.html": "<html><style>/* gy-abcdefg */.a{b:c}</style>" + okSite["/d/index.html"].slice(6) };
+  const leakySeven = scan(leakyCss);
+  assert.equal(leakySeven.leaks.length, 1, "a 7-character bead id must be caught, not just the 4-6 char shape seen so far");
+  assert.match(leakySeven.leaks[0].comment, /gy-abcdefg/);
+
+  const controlJs = scan({ "/d/app.js": 'foo();// note\nvar x = 1;' });
+  assert.equal(controlJs.leaks.length, 0, "control: the same line with the marker removed passes");
+  const controlCss = scan({ "/d/index.html": "<html><style>/* plain note */.a{b:c}</style>" + okSite["/d/index.html"].slice(6) });
+  assert.equal(controlCss.leaks.length, 0, "control: the same comment with the marker removed passes");
+});
+
+test("AC3 FALSE-PAIRING GUARD: a marked /* ... */ that pairs across real code (a false BLOCK_COMMENT match caused by an unrelated /* and */ far apart) refuses to strip rather than silently deleting the code in between", () => {
+  // A '/*' inside one string, unrelated code in between, then an unrelated '*/' inside a later string.
+  // The naive regex pairs them as one huge "comment"; because it's marked (gy-abcde), a length-blind
+  // strip would delete the real statements sitting between the two strings. It must refuse instead.
+  const before = 'var a="/* gy-abcde";\n'.padEnd(200, " ") + 'function real(){ return 42; }\n'.repeat(100) + 'var b="*/";';
+  assert.throws(() => stripMarkedComments(before, "js"), /refusing to strip a \d+-char marked comment/);
+});
+
+test("AC3 CONTROL: a genuinely short marked comment, even one embedded inside a JS template-literal string (the gy-becxi/PR 215 shape), strips cleanly under the length cap", () => {
+  const js = 'const css = `.x{a:b}\n/* gy-becxi the register Kaushik called abrupt */\n.y{c:d}`; export default css;';
+  const out = stripMarkedComments(js, "js");
+  assert.doesNotMatch(out, /Kaushik|gy-becxi/);
+  assert.ok(parses(out));
+});
+
 test("CODE-DAMAGE GUARD: a '/*' inside a string would make a naive strip delete code; the build REFUSES it instead of shipping broken JS", () => {
   const js = 'var a="/*";var b=1;/* gy-abcde note */var c=2;';
   assert.ok(parses(js));
