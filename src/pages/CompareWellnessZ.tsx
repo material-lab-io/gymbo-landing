@@ -230,7 +230,7 @@ export function CompareWellnessZ() {
                 Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning: it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a one-tap class punch, a structured client card that does the balance math for you, and payment reminders that go out on their own. A workout builder and Ask Gymbo are built in, but the hero is running your training business, not planning nutrition.
               </p>
               <p className="text-[15px] md:text-[16px] pt-2" style={{ color: F.marigold, fontFamily: SANS, fontWeight: 600, lineHeight: 1.6 }}>
-                Bottom line: same country, different jobs. WellnessZ optimizes the dietitian's day; Gymbo optimizes the trainer's.
+                Bottom line: same country, different jobs. WellnessZ is built for the dietitian's day; Gymbo is built for the trainer's.
               </p>
             </Reveal>
           </div>
