@@ -31,6 +31,7 @@ import { rootVars } from "../_forge.js";
 import { supabaseUrl, svcHeaders } from "../m/_shared.js";
 import { resolveToken, prescription, TOKEN_RE, blockBelongsToLink } from "./_workout.js";
 import { fetchSharedWorkout, creditHtml } from "./_workout_rpc.js";
+import { isRateLimited } from "./_ratelimit.js";
 
 const CSS = `
 :root{${rootVars(["brand-amber-500", "brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg", "status-green-fill-dark", "status-green-text"])}--bg:var(--g-color-neutral-light-0);--card:var(--g-color-neutral-light-1);--fg:var(--g-color-neutral-light-fg);--muted:var(--g-color-grey-muted-fg-light);--brand:var(--g-color-brand-amber-text-light);
@@ -104,14 +105,26 @@ const notSaved = () =>
 <p class="sub">Nothing was recorded. Please tap again — and if it keeps happening, tell your trainer.</p>
 </div>`, 503);
 
-export async function onRequestGet({ env, params }) {
-  // gy-emboo/gy-t9mm8 (pm 2026-09-28): reads now go through the future RPC's
-  // contract (functions/w/_workout_rpc.js). Its own "no service-role key" path
-  // returns { ok: false, reason: "no_rpc" } and lands on the SAME refusal real
-  // production already shows today — nothing here regresses production while
-  // gy-emboo is unbuilt; it only unblocks a preview/staging deploy that binds
-  // the key deliberately for this stub.
-  const r = await fetchSharedWorkout(env, String(params.token || ""), { TOKEN_RE, blockBelongsToLink });
+// gy-emboo — an edge rate limit on /w/ (see _ratelimit.js for what it is and
+// is not). Deliberately the SAME visitor-facing shape as every other refusal
+// on this page: no count, no window, no "you are blocked" — that copy would
+// itself be an oracle telling a guesser their rate, not just their result.
+const tooManyRequests = () =>
+  shell("Too many requests", `<div class="state">
+<h1>Too many requests</h1>
+<p class="sub">Please wait a moment and try again.</p>
+</div>`, 429);
+
+export async function onRequestGet({ env, params, request }) {
+  const ip = request?.headers?.get?.("CF-Connecting-IP") || null;
+  if (isRateLimited(ip ? `w-get:${ip}` : null)) {
+    console.error("[w] rate limited:", ip || "no-ip");
+    return tooManyRequests();
+  }
+
+  // gy-emboo/gy-t9mm8: reads go through the REAL anon RPC now
+  // (functions/w/_workout_rpc.js) — no service-role key anywhere in this path.
+  const r = await fetchSharedWorkout(env, String(params.token || ""), { TOKEN_RE });
   if (!r.ok) {
     console.error("[w] token refused:", r.reason);
     return refusal();
@@ -184,6 +197,20 @@ ${finish}
 export async function onRequestPost(context) {
   const { env, request, params } = context;
   const token = String(params.token || "");
+
+  const ip = request?.headers?.get?.("CF-Connecting-IP") || null;
+  if (isRateLimited(ip ? `w-post:${ip}` : null)) {
+    console.error("[w] rate limited:", ip || "no-ip");
+    return tooManyRequests();
+  }
+
+  // 🔴 gy-nm6ii (the anon-callable completion-write RPC) is NOT part of this
+  // swap — it is a separate, still-open P0 bead owned by coach. This write
+  // path is UNCHANGED: it still requires SUPABASE_SERVICE_ROLE_KEY, which the
+  // founder has ruled is never bound on real Cloudflare Pages production
+  // (gy-b0126), so a tick/finish POST still fails closed in prod exactly as
+  // it does today, pending gy-nm6ii. Only the GET (read) path is fixed by
+  // this PR.
   if (!env.SUPABASE_SERVICE_ROLE_KEY) return refusal();
 
   const r = await resolveToken(env, token);
