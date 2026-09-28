@@ -501,7 +501,7 @@ export default function App() {
                 Built in India for Indian trainers
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
-                Most independent trainers in India run their business through WhatsApp threads, paper registers, and mental math. Payments get missed, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
+                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
               </p>
             </Reveal>
           </div>
@@ -513,7 +513,7 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
-                Less than one missed session.
+                Straightforward pricing.
               </h2>
               <p className="mt-3 text-[14px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_LEGIBILITY_LINE}</p>
             </Reveal>
