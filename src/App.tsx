@@ -62,7 +62,7 @@ const PILLARS = [
     intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
     bullets: [
       "Every balance, clear: credit and classes left, updated the moment you punch a class.",
-      "Get paid for every class you teach",
+      "Track every class, payment, and balance.",
       "Cash or UPI recorded, so you don't lose track.",
     ],
     brief: "Record a payment: UPI or cash, and the balance clears.",
@@ -79,7 +79,7 @@ const PILLARS = [
       "Punch a class in one tap",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
-      "Account for travel distance between clients on the calendar, so you can optimize your day",
+      "Save a class location and open directions when you need them.",
     ],
     brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
     dark: true,
