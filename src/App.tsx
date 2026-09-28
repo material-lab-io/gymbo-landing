@@ -62,7 +62,7 @@ const PILLARS = [
     intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
     bullets: [
       "Every balance, clear: credit and classes left, updated the moment you punch a class.",
-      "Get paid for every class you teach",
+      "Track every class, payment, and balance.",
       "Cash or UPI recorded, so you don't lose track.",
     ],
     brief: "Record a payment: UPI or cash, and the balance clears.",
@@ -79,7 +79,7 @@ const PILLARS = [
       "Punch a class in one tap",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
-      "Account for travel distance between clients on the calendar, so you can optimize your day",
+      "Save a class location and open directions when you need them.",
     ],
     brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
     dark: true,
@@ -386,10 +386,14 @@ export default function App() {
 
           {PILLARS.map((p, i) => {
             const dark = p.dark;
+            // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo video/poster has the retired
+            // "Get paid for every class you teach." claim burned into its pixels. Pulled
+            // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
+            const hasDemo = p.demoId !== "log-payment";
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
-                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
-                  <Reveal>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-10 md:gap-16 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                  <Reveal className={hasDemo ? undefined : "md:text-center md:mx-auto md:max-w-[640px]"}>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
                     </span>
@@ -415,18 +419,20 @@ export default function App() {
                     </ul>
                   </Reveal>
 
-                  <Reveal className="relative flex items-center justify-center" >
-                    <div className="relative">
-                      <DemoFrame
-                        demoId={p.demoId}
-                        clip={demoClip(p.demoId)}
-                        poster={demoPoster(p.demoId)}
-                        theme={dark ? "dark" : "light"}
-                        label={`${p.title}: demo`}
-                        maxWidth={360}
-                      />
-                    </div>
-                  </Reveal>
+                  {hasDemo && (
+                    <Reveal className="relative flex items-center justify-center" >
+                      <div className="relative">
+                        <DemoFrame
+                          demoId={p.demoId}
+                          clip={demoClip(p.demoId)}
+                          poster={demoPoster(p.demoId)}
+                          theme={dark ? "dark" : "light"}
+                          label={`${p.title}: demo`}
+                          maxWidth={360}
+                        />
+                      </div>
+                    </Reveal>
+                  )}
                 </div>
 
                 {p.id === "brand" && <BrandMarquee />}
@@ -501,7 +507,7 @@ export default function App() {
                 Built in India for Indian trainers
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
-                Most independent trainers in India run their business through WhatsApp threads, paper registers, and mental math. Payments get missed, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
+                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
               </p>
             </Reveal>
           </div>
@@ -513,7 +519,7 @@ export default function App() {
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
-                Less than one missed session.
+                Straightforward pricing.
               </h2>
               <p className="mt-3 text-[14px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_LEGIBILITY_LINE}</p>
             </Reveal>
