@@ -19,6 +19,7 @@ const ASSIGN_ID = "bbbbbbbb-1111-2222-3333-444444444444";
 const WORKOUT_ID = "ffffffff-1111-2222-3333-444444444444";
 const BLOCK_A = "cccccccc-1111-2222-3333-444444444444";
 const BLOCK_B = "cccccccc-1111-2222-3333-555555555555";
+const BLOCK_C = "cccccccc-1111-2222-3333-666666666666";
 const EX_A = "dddddddd-1111-2222-3333-444444444444";
 const EX_B = "dddddddd-1111-2222-3333-555555555555";
 
@@ -26,7 +27,7 @@ const clip = readFileSync(new URL("../tests/fixtures/clip.mp4", import.meta.url)
 
 // THE STATE. completions starts EMPTY on purpose: if the journey's assertion
 // passed against a pre-seeded row it would prove nothing about the tap.
-const state = { completions: new Set(), completedAt: null, expired: false, revoked: false };
+const state = { completions: new Set(), completedAt: null, expired: false, revoked: false, failWrite: false };
 
 const link = () => ({
   id: LINK_ID, assignment_id: ASSIGN_ID,
@@ -39,10 +40,10 @@ const link = () => ({
 // all — so the journey also sees AC2's defined empty state in the same page,
 // rather than a separate contrived test.
 //
-// gy-t9mm8 / gy-emboo (2026-09-28): split into the shape exercise_media_for_app
-// returns (the ratified-primary view) and the shape exercise_media itself
-// returns (source/asset_kind, joined back by media_id) — same two-query split
-// functions/w/_workout_rpc.js's stub performs, mirroring media_page's real RPC.
+// gy-t9mm8 / gy-emboo (2026-09-28): viewRows/sourceRows mirror the two source
+// tables shared_workout_page's own body joins server-side (exercise_media_for_app
+// then exercise_media by media_id) — this mock's /rest/v1/rpc/shared_workout_page
+// handler below does that join itself and returns the RPC's real row shape.
 const MEDIA_ID = "eeeeeeee-1111-2222-3333-444444444444";
 const viewRows = [{
   exercise_id: EX_A, media_id: MEDIA_ID,
@@ -65,6 +66,9 @@ const posterJpeg = Buffer.from(
 const blocks = [
   { id: BLOCK_A, position: 0, exercise_id: EX_A, exercise_name: "Bench Press", sets: 3, reps: "10", load: "40kg", rest_seconds: 60, notes: null },
   { id: BLOCK_B, position: 1, exercise_id: EX_B, exercise_name: "Plank", sets: 3, reps: "45s", load: null, rest_seconds: 30, notes: null },
+  // gy-pgxiv (pm's eyes-on round, 2026-09-28): a block with NO linked exercise
+  // at all, distinct from Plank's "linked exercise, no media row" case above.
+  { id: BLOCK_C, position: 2, exercise_id: null, exercise_name: "Farmer carry", sets: 3, reps: "30m", load: null, rest_seconds: 45, notes: null },
 ];
 
 const json = (res, body, status = 200) => {
@@ -81,7 +85,11 @@ const server = createServer((req, res) => {
   if (p === "/__control") {
     if (u.searchParams.has("expire")) state.expired = u.searchParams.get("expire") === "1";
     if (u.searchParams.has("revoke")) state.revoked = u.searchParams.get("revoke") === "1";
-    if (u.searchParams.has("reset")) { state.completions.clear(); state.completedAt = null; state.expired = false; state.revoked = false; }
+    // gy-t9mm8 (pm 2026-09-28 eyes-on round) — force the completion write to
+    // fail, so the "not saved" (503) state can be SEEN in a real browser
+    // instead of only asserted from a unit-level stub.
+    if (u.searchParams.has("failwrite")) state.failWrite = u.searchParams.get("failwrite") === "1";
+    if (u.searchParams.has("reset")) { state.completions.clear(); state.completedAt = null; state.expired = false; state.revoked = false; state.failWrite = false; }
     return json(res, { ok: true, completions: [...state.completions], completedAt: state.completedAt });
   }
 
@@ -95,6 +103,42 @@ const server = createServer((req, res) => {
   if (p === "/storage/v1/object/public/exercise-media/wger/clip-poster.jpg") {
     res.writeHead(200, { "content-type": "image/jpeg", "content-length": posterJpeg.length });
     return res.end(posterJpeg);
+  }
+
+  // gy-t9mm8 / gy-emboo: the REAL read path now goes through this RPC, matching
+  // shared_workout_page(p_token)'s shape exactly (one row per block, workout
+  // columns repeated, block_id NULL for a zero-block workout).
+  if (p === "/rest/v1/rpc/shared_workout_page") {
+    if (req.method !== "POST") return json(res, [], 404);
+    let b = ""; req.on("data", (d) => (b += d));
+    return req.on("end", () => {
+      let token = null;
+      try { token = JSON.parse(b).p_token; } catch {}
+      if (token !== TOKEN) return json(res, []);
+      const l = link();
+      if (l.revoked_at || new Date(l.expires_at).getTime() <= Date.now()) return json(res, []);
+      const rows = blocks.map((blk) => {
+        const view = viewRows.find((v) => v.exercise_id === blk.exercise_id) || null;
+        const src = view ? sourceRows.find((s) => s.id === view.media_id) || null : null;
+        return {
+          workout_name: "Push day", workout_notes: "Warm up first.",
+          completed_at: l.completed_at,
+          block_id: blk.id, block_position: blk.position, block_type: "exercise", group_index: null,
+          exercise_name: blk.exercise_name, sets: blk.sets, reps: blk.reps, load: blk.load,
+          duration_seconds: null, distance_m: null, rest_seconds: blk.rest_seconds,
+          block_done: state.completions.has(blk.id),
+          source: src ? src.source : null, asset_kind: src ? src.asset_kind : null,
+          author: view ? view.author : null, author_url: view ? view.author_url : null,
+          work_title: view ? view.work_title : null, source_url: view ? view.source_url : null,
+          licence_id: view ? view.licence_id : null, licence_name: view ? view.licence_name : null,
+          licence_url: view ? view.licence_url : null,
+          is_derivative: src ? src.is_derivative : null, modification_note: view ? view.modification_note : null,
+          video_object_path: view ? view.video_object_path : null,
+          poster_object_path: view ? view.poster_object_path : null,
+        };
+      });
+      return json(res, rows);
+    });
   }
 
   if (p === "/rest/v1/workout_share_links") {
@@ -141,6 +185,7 @@ const server = createServer((req, res) => {
     if (req.method === "POST") {
       let b = ""; req.on("data", (d) => (b += d));
       return req.on("end", () => {
+        if (state.failWrite) { res.writeHead(500).end(); return; }
         try {
           const { block_id } = JSON.parse(b);
           // The unique index is the real dedupe; a Set mirrors it so a double

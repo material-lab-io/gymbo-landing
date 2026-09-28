@@ -70,7 +70,17 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // AC2 NEG — the second exercise has no media, and says so rather than showing
   // a broken player. Same page, same journey: this is what the client sees.
   await expect(page.getByText("Plank")).toBeVisible();
-  await expect(page.getByText("No video for this exercise.")).toBeVisible();
+  await expect(page.getByText("No video for this exercise.").first()).toBeVisible();
+
+  // gy-pgxiv — a THIRD exercise with no LINKED exercise at all (exercise_id
+  // NULL). Same defined empty state as the "no media" case above, by design
+  // (see _workout_rpc.js's shapeMedia), but a distinct real-world cause
+  // (152/164 legacy blocks), so it gets its own journey assertion rather than
+  // being folded silently into Plank's.
+  await expect(page.getByText("Farmer carry")).toBeVisible();
+  await expect(
+    page.locator("section").filter({ hasText: "Farmer carry" }).getByText("No video for this exercise."),
+  ).toBeVisible();
 
   // THE TICK. Then reload — this is the assertion that cannot be faked.
   await page.getByRole("button", { name: "Mark done" }).first().click();
