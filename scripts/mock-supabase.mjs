@@ -19,6 +19,7 @@ const ASSIGN_ID = "bbbbbbbb-1111-2222-3333-444444444444";
 const WORKOUT_ID = "ffffffff-1111-2222-3333-444444444444";
 const BLOCK_A = "cccccccc-1111-2222-3333-444444444444";
 const BLOCK_B = "cccccccc-1111-2222-3333-555555555555";
+const BLOCK_C = "cccccccc-1111-2222-3333-666666666666";
 const EX_A = "dddddddd-1111-2222-3333-444444444444";
 const EX_B = "dddddddd-1111-2222-3333-555555555555";
 
@@ -26,7 +27,7 @@ const clip = readFileSync(new URL("../tests/fixtures/clip.mp4", import.meta.url)
 
 // THE STATE. completions starts EMPTY on purpose: if the journey's assertion
 // passed against a pre-seeded row it would prove nothing about the tap.
-const state = { completions: new Set(), completedAt: null, expired: false, revoked: false };
+const state = { completions: new Set(), completedAt: null, expired: false, revoked: false, failWrite: false };
 
 const link = () => ({
   id: LINK_ID, assignment_id: ASSIGN_ID,
@@ -65,6 +66,9 @@ const posterJpeg = Buffer.from(
 const blocks = [
   { id: BLOCK_A, position: 0, exercise_id: EX_A, exercise_name: "Bench Press", sets: 3, reps: "10", load: "40kg", rest_seconds: 60, notes: null },
   { id: BLOCK_B, position: 1, exercise_id: EX_B, exercise_name: "Plank", sets: 3, reps: "45s", load: null, rest_seconds: 30, notes: null },
+  // gy-pgxiv (pm's eyes-on round, 2026-09-28): a block with NO linked exercise
+  // at all, distinct from Plank's "linked exercise, no media row" case above.
+  { id: BLOCK_C, position: 2, exercise_id: null, exercise_name: "Farmer carry", sets: 3, reps: "30m", load: null, rest_seconds: 45, notes: null },
 ];
 
 const json = (res, body, status = 200) => {
@@ -81,7 +85,11 @@ const server = createServer((req, res) => {
   if (p === "/__control") {
     if (u.searchParams.has("expire")) state.expired = u.searchParams.get("expire") === "1";
     if (u.searchParams.has("revoke")) state.revoked = u.searchParams.get("revoke") === "1";
-    if (u.searchParams.has("reset")) { state.completions.clear(); state.completedAt = null; state.expired = false; state.revoked = false; }
+    // gy-t9mm8 (pm 2026-09-28 eyes-on round) — force the completion write to
+    // fail, so the "not saved" (503) state can be SEEN in a real browser
+    // instead of only asserted from a unit-level stub.
+    if (u.searchParams.has("failwrite")) state.failWrite = u.searchParams.get("failwrite") === "1";
+    if (u.searchParams.has("reset")) { state.completions.clear(); state.completedAt = null; state.expired = false; state.revoked = false; state.failWrite = false; }
     return json(res, { ok: true, completions: [...state.completions], completedAt: state.completedAt });
   }
 
@@ -177,6 +185,7 @@ const server = createServer((req, res) => {
     if (req.method === "POST") {
       let b = ""; req.on("data", (d) => (b += d));
       return req.on("end", () => {
+        if (state.failWrite) { res.writeHead(500).end(); return; }
         try {
           const { block_id } = JSON.parse(b);
           // The unique index is the real dedupe; a Set mirrors it so a double
