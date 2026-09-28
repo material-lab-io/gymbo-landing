@@ -1,6 +1,15 @@
 // gy-454k3: build-time strip of internal comments from dist/. Runs LAST in `npm run build`.
 // FAIL-CLOSED on damage: every JS bundle and every inline <script> is parsed before AND after;
 // a strip that turns parseable code into unparseable code aborts the build instead of shipping it.
+// gy-454k3 AC3: a strip that STAYS parseable can still be wrong — the real risk is BLOCK_COMMENT's
+// naive /* ... */ pairing matching across real code (see internal-markers.mjs MAX_MARKED_BLOCK_COMMENT
+// for why that guard lives there, not here: it has to distinguish "false pairing ate real code" from
+// "legitimately deleted a short comment embedded inside a JS string", and only length tells them apart
+// — a minified-output diff can't, because minification doesn't touch string contents either way, and a
+// deliberate string-content change (the gy-becxi/PR 215 case this bead exists to fix) always shows up
+// as a real difference there. The parse check below is a second, independent net for the same class of
+// failure: a bad pairing usually also breaks syntax, so both guards fire for the common case; the length
+// cap is the one that also catches a pairing that happens to stay parseable.
 import { readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
