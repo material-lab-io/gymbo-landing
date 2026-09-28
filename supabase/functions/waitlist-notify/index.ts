@@ -14,12 +14,20 @@
 // Deploy with verify_jwt=false; the shared secret header is the gate, exactly as
 // send-trainer-reminder-email does.
 //
-// TWO MODES, ONE FUNCTION:
+// THREE MODES, ONE TRANSPORT:
 //   {mode:"signup", name, email}  fired from waitlist.js on its 201 branch only.
 //   {mode:"sweep"}                the daily reconciliation. Sends the digest when we are
 //                                 over threshold, AND -- crucially -- picks up any signup
 //                                 whose individual alert failed. That sweep is what stops
 //                                 a failed send becoming a permanently unnoticed lead.
+//   {mode:"resource_fulfillment", resource_lead_id, resource_id}
+//                                 sends one consent-gated Starter Pack email. No address
+//                                 crosses the Pages-to-Edge boundary: this function claims
+//                                 it from the locked lead store with service_role.
+
+import {
+  fulfillResourceLead,
+} from "./resource-fulfillment.mjs"
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails"
 
@@ -90,7 +98,12 @@ async function db(path: string, init: RequestInit = {}): Promise<Response> {
 // AC6: Resend's real status must reach the caller, never be swallowed. A non-2xx
 // returns an error WITH the provider status and the body is logged. A path that can
 // only ever report success has not been shown to detect anything.
-async function sendMail(to: string[], subject: string, html: string) {
+async function sendMail(
+  to: string[],
+  subject: string,
+  html: string,
+  options: { text?: string; idempotencyKey?: string } = {},
+) {
   const resendKey = Deno.env.get("RESEND_API_KEY")
   if (!resendKey) {
     console.error("[waitlist-notify] RESEND_API_KEY not set")
@@ -98,8 +111,18 @@ async function sendMail(to: string[], subject: string, html: string) {
   }
   const res = await fetch(RESEND_ENDPOINT, {
     method: "POST",
-    headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: `Gymbo <${FROM}>`, to, subject, html }),
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      "Content-Type": "application/json",
+      ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
+    },
+    body: JSON.stringify({
+      from: `Gymbo <${FROM}>`,
+      to,
+      subject,
+      html,
+      ...(options.text ? { text: options.text } : {}),
+    }),
   })
   if (!res.ok) {
     const detail = await res.text().catch(() => "<unreadable>")
@@ -254,11 +277,76 @@ Deno.serve(async (req: Request) => {
     return json({ error: "unauthorized" }, 401)
   }
 
-  let body: { mode?: string; name?: string; email?: string; phone?: string }
+  let body: {
+    mode?: string
+    name?: string
+    email?: string
+    phone?: string
+    resource_lead_id?: string
+    resource_id?: string
+  }
   try { body = await req.json() } catch { return json({ error: "bad_json" }, 400) }
   const mode = body.mode ?? "signup"
 
   try {
+    if (mode === "resource_fulfillment") {
+      const outcome = await fulfillResourceLead({
+        resourceLeadId: body.resource_lead_id,
+        resourceId: body.resource_id,
+        starterPackUrl: Deno.env.get("WORKOUT_STARTER_PACK_URL"),
+        requestAccessUrl: Deno.env.get("GYMBO_REQUEST_ACCESS_URL"),
+      }, {
+        claim: async ({ resourceLeadId, resourceId }: {
+          resourceLeadId: string
+          resourceId: string
+        }) => {
+          const res = await db("rpc/resource_fulfillment_claim", {
+            method: "POST",
+            body: JSON.stringify({
+              p_resource_lead_id: resourceLeadId,
+              p_resource_id: resourceId,
+            }),
+          })
+          if (!res.ok) throw new Error(`resource_claim_failed_${res.status}`)
+          return await res.json()
+        },
+        record: async ({
+          resourceLeadId,
+          outcome,
+          providerStatus,
+          providerMessageId,
+          errorCode,
+        }: {
+          resourceLeadId: string
+          outcome: string
+          providerStatus: number | null
+          providerMessageId: string | null
+          errorCode: string | null
+        }) => {
+          const res = await db("rpc/resource_fulfillment_record_result", {
+            method: "POST",
+            body: JSON.stringify({
+              p_resource_lead_id: resourceLeadId,
+              p_outcome: outcome,
+              p_provider_status: providerStatus,
+              p_provider_message_id: providerMessageId,
+              p_error_code: errorCode,
+            }),
+          })
+          if (!res.ok) throw new Error(`resource_record_failed_${res.status}`)
+          return await res.json()
+        },
+        send: ({ to, subject, html, text, idempotencyKey }: {
+          to: string[]
+          subject: string
+          html: string
+          text: string
+          idempotencyKey: string
+        }) => sendMail(to, subject, html, { text, idempotencyKey }),
+      })
+      return json(outcome.body, outcome.status)
+    }
+
     if (mode === "signup") {
       const email = String(body.email ?? "").trim()
       const phone = String(body.phone ?? "").trim()
@@ -358,4 +446,3 @@ Deno.serve(async (req: Request) => {
     return json({ error: String(err) }, 500)
   }
 })
-

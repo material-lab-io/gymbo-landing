@@ -17,7 +17,11 @@ import assert from "node:assert/strict";
 const MOD = "../functions/api/resource-lead.js";
 const ENV = { SUPABASE_URL: "https://stub.invalid", SUPABASE_ANON_KEY: "stub-key" };
 
-const ctx = (body) => ({ request: { json: async () => body }, env: ENV });
+const ctx = (body, env = ENV, pending = []) => ({
+  request: { json: async () => body },
+  env,
+  waitUntil: (promise) => pending.push(promise),
+});
 const VALID = {
   resource_id: "workout-builder-starter-pack",
   email: "Trainer@Example.Invalid",
@@ -31,8 +35,9 @@ function stubFetch(responder) {
   const calls = [];
   const real = globalThis.fetch;
   globalThis.fetch = async (url, init) => {
-    calls.push({ url, body: JSON.parse(init.body) });
-    return responder();
+    const call = { url, body: JSON.parse(init.body), init };
+    calls.push(call);
+    return responder(call, calls.length - 1);
   };
   return { calls, restore: () => { globalThis.fetch = real; } };
 }
@@ -54,6 +59,35 @@ test("HAPPY PATH — a consented submission returns the gate and the opaque id",
     // reach the RPC. Without it, those tests would also pass if the handler were inert.
     assert.equal(f.calls.length, 1);
     assert.match(f.calls[0].url, /\/rest\/v1\/rpc\/resource_lead_submit$/);
+  } finally { f.restore(); }
+});
+
+test("gy-35awp.1 — only a server-granted lead schedules fulfillment, with no PII in the internal call", async () => {
+  const { onRequestPost } = await import(MOD);
+  const pending = [];
+  const env = {
+    ...ENV,
+    WAITLIST_NOTIFY_URL: "https://notify.example.invalid/waitlist-notify",
+    WAITLIST_NOTIFY_SECRET: "internal-secret",
+  };
+  const f = stubFetch((_call, index) => index === 0
+    ? rpcOk()()
+    : new Response(JSON.stringify({ ok: true, sent: true }), { status: 200 }));
+  try {
+    const res = await onRequestPost(ctx(VALID, env, pending));
+    assert.equal(res.status, 200);
+    await Promise.all(pending);
+    assert.equal(f.calls.length, 2, "one RPC and one transport call are required");
+    assert.match(f.calls[0].url, /\/rest\/v1\/rpc\/resource_lead_submit$/);
+    assert.equal(f.calls[1].url, env.WAITLIST_NOTIFY_URL);
+    assert.deepEqual(f.calls[1].body, {
+      mode: "resource_fulfillment",
+      resource_lead_id: "11111111-2222-3333-4444-555555555555",
+      resource_id: "workout-builder-starter-pack",
+    });
+    const wire = JSON.stringify(f.calls[1].body);
+    assert.equal(wire.includes(VALID.email), false);
+    assert.equal(wire.includes(VALID.name), false);
   } finally { f.restore(); }
 });
 
