@@ -38,15 +38,29 @@ const link = () => ({
 // Exercise A has a complete, attributable wger clip. Exercise B has NO media at
 // all — so the journey also sees AC2's defined empty state in the same page,
 // rather than a separate contrived test.
-const media = [{
-  id: "eeeeeeee-1111-2222-3333-444444444444", exercise_id: EX_A,
-  source: "wger", asset_kind: "video", availability: "available", author: "Goulart",
+//
+// gy-t9mm8 / gy-emboo (2026-09-28): split into the shape exercise_media_for_app
+// returns (the ratified-primary view) and the shape exercise_media itself
+// returns (source/asset_kind, joined back by media_id) — same two-query split
+// functions/w/_workout_rpc.js's stub performs, mirroring media_page's real RPC.
+const MEDIA_ID = "eeeeeeee-1111-2222-3333-444444444444";
+const viewRows = [{
+  exercise_id: EX_A, media_id: MEDIA_ID,
+  video_object_path: "wger/clip.mp4", poster_object_path: "wger/clip-poster.jpg",
+  author: "Goulart", author_url: "https://wger.de/en/user/goulart", work_title: "Bench Press",
   source_url: "https://wger.de/en/exercise/512/view/", licence_id: "CC-BY-SA-4.0",
   licence_name: "Creative Commons Attribution Share Alike 4",
   licence_url: "https://creativecommons.org/licenses/by-sa/4.0/deed.en",
-  object_path: "wger/clip.mp4", is_derivative: true,
   modification_note: "Transcoded from H.265/HEVC to H.264 for playback compatibility.",
 }];
+const sourceRows = [{ id: MEDIA_ID, source: "wger", asset_kind: "video", is_derivative: true }];
+// A minimal valid 1x1 white JPEG — the poster only needs to be a servable
+// image, not a meaningful one; the journey asserts the `poster` attribute is
+// present, not what it depicts.
+const posterJpeg = Buffer.from(
+  "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=",
+  "base64",
+);
 
 const blocks = [
   { id: BLOCK_A, position: 0, exercise_id: EX_A, exercise_name: "Bench Press", sets: 3, reps: "10", load: "40kg", rest_seconds: 60, notes: null },
@@ -71,11 +85,16 @@ const server = createServer((req, res) => {
     return json(res, { ok: true, completions: [...state.completions], completedAt: state.completedAt });
   }
 
-  if (p === "/storage/v1/object/sign/exercise-media/wger/clip.mp4" && req.method === "POST")
-    return json(res, { signedURL: "/object/public/clip.mp4?token=stub" });
-  if (p === "/storage/v1/object/public/clip.mp4") {
+  // Public-bucket URLs (gy-h8a7o.1 — no signing): publicObjectUrl() builds
+  // /storage/v1/object/public/<bucket>/<object_path> with each path segment
+  // percent-encoded, so these routes match the EXACT shape the page requests.
+  if (p === "/storage/v1/object/public/exercise-media/wger/clip.mp4") {
     res.writeHead(200, { "content-type": "video/mp4", "content-length": clip.length, "accept-ranges": "bytes" });
     return res.end(clip);
+  }
+  if (p === "/storage/v1/object/public/exercise-media/wger/clip-poster.jpg") {
+    res.writeHead(200, { "content-type": "image/jpeg", "content-length": posterJpeg.length });
+    return res.end(posterJpeg);
   }
 
   if (p === "/rest/v1/workout_share_links") {
@@ -106,7 +125,18 @@ const server = createServer((req, res) => {
     if (wantWorkout) rows = wantWorkout === WORKOUT_ID ? rows : [];
     return json(res, rows);
   }
-  if (p === "/rest/v1/exercise_media") return json(res, media);
+  if (p === "/rest/v1/exercise_media_for_app") {
+    const ids = (u.searchParams.get("exercise_id") || "").replace(/^in\.\(|\)$/g, "").split(",").filter(Boolean);
+    return json(res, viewRows.filter((v) => ids.includes(v.exercise_id)));
+  }
+  if (p === "/rest/v1/exercise_media") {
+    const idsParam = u.searchParams.get("id");
+    if (idsParam) {
+      const ids = idsParam.replace(/^in\.\(|\)$/g, "").split(",").filter(Boolean);
+      return json(res, sourceRows.filter((s) => ids.includes(s.id)));
+    }
+    return json(res, sourceRows);
+  }
   if (p === "/rest/v1/workout_share_block_completions") {
     if (req.method === "POST") {
       let b = ""; req.on("data", (d) => (b += d));
