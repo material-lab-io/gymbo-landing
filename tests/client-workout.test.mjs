@@ -11,8 +11,11 @@
 // the anon key only. Fixtures below build the RPC's actual row shape — one row
 // per live block, workout columns repeated, block_id NULL for a zero-block
 // workout — instead of stubbing the OLD multi-table service-role REST reads.
-// The write path (onRequestPost) is UNCHANGED and so are its tests: the
-// completion-write RPC is gy-nm6ii, a separate still-open bead.
+//
+// 🔴 gy-b0126.1 (pm, after #265): writes ALSO now go through real anon RPCs
+// (set_shared_workout_block_done / finish_shared_workout,
+// functions/w/_workout_write_rpc.js) — no service-role key anywhere in this
+// file's path any more, on either GET or POST.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { _resetRateLimitStateForTests } from "../functions/w/_ratelimit.js";
@@ -253,40 +256,32 @@ test("gy-emboo: a request with no CF-Connecting-IP (e.g. an unusual proxy path) 
 });
 
 // ---------------------------------------------------------------------------
-// gy-nm6ii — the scoping and the honest-write rules.
-//
-// 🔴 These cover a defect that was LIVE in the code above: POST accepted any
-// well-formed uuid as a block id and wrote it against the resolved link, and it
-// swallowed the write result entirely. So a token for workout A could mark a
-// block of workout B, and a write that failed still answered with the same 303
-// as one that worked. Both are now refusals with their own response.
-//
-// UNCHANGED from the pre-gy-emboo version: onRequestPost's data path was never
-// touched by the read swap (only the GET path moved to the real RPC).
-const LEGACY_LINK = { id: "aaaaaaaa-1111-2222-3333-444444444444", expires_at: new Date(Date.now() + 864e5).toISOString(), revoked_at: null };
-const LEGACY_BLOCK_ID = BLOCK.id;
+// gy-b0126.1 — the write swap. onRequestPost now calls the REAL anon RPCs
+// (set_shared_workout_block_done / finish_shared_workout) instead of the old
+// service-role REST writes. Both return a single boolean; the page maps
+// false to one of TWO responses depending on WHY (see _workout_write_rpc.js):
+// an RPC-level "no" (bad token, wrong workout, deleted row) is a refusal
+// (same family as the read side's uniform refusal); a genuine transport
+// failure is "not saved" (503, "please tap again").
+const WRITE_BLOCK_ID = BLOCK.id;
 
-// A stub that answers the SCOPED block lookup (id + workout_id + is_deleted)
-// separately from the page's list query, so "is this block in this workout?" can
-// be made false on its own.
-function stubScope({ inScope = true, writeStatus = 201, link = LEGACY_LINK } = {}) {
+// Route the two write RPCs to a controllable result. `rpcResult` is what the
+// RPC call itself returns as HTTP body (true/false), `httpStatus` lets a test
+// simulate a genuine transport failure (non-2xx) distinct from an honest
+// `false`.
+function stubWrite({ tickResult = true, finishResult = true, httpStatus = 200 } = {}) {
   _resetRateLimitStateForTests();
-  const writes = [];
+  const calls = [];
   globalThis.fetch = async (url, init) => {
     const u = String(url);
-    if (u.includes("workout_share_links?token=")) return new Response(JSON.stringify([link]), { status: 200 });
-    if (u.includes("workout_assignments?id="))
-      return new Response(JSON.stringify([{ workout_id: "ffffffff-1111-2222-3333-444444444444" }]), { status: 200 });
-    // the scoped lookup blockBelongsToLink performs
-    if (u.includes("workout_blocks?id="))
-      return new Response(JSON.stringify(inScope ? [{ id: LEGACY_BLOCK_ID }] : []), { status: 200 });
-    if (init?.method === "POST" || init?.method === "PATCH") {
-      writes.push(u);
-      return new Response(null, { status: writeStatus });
-    }
+    calls.push(u);
+    if (u.includes("/rest/v1/rpc/set_shared_workout_block_done"))
+      return new Response(JSON.stringify(tickResult), { status: httpStatus });
+    if (u.includes("/rest/v1/rpc/finish_shared_workout"))
+      return new Response(JSON.stringify(finishResult), { status: httpStatus });
     return new Response("[]", { status: 200 });
   };
-  return writes;
+  return calls;
 }
 
 const post = async (body) => {
@@ -294,66 +289,97 @@ const post = async (body) => {
   return onRequestPost({ env: WRITE_ENV, request: { formData: async () => new Map(body) }, params: { token: TOKEN } });
 };
 
-test("a write with no service-role key configured still fails closed (gy-nm6ii unbuilt — unchanged)", async () => {
+test("a malformed token is refused before any RPC call", async () => {
+  const calls = stubWrite();
   _resetRateLimitStateForTests();
   const { onRequestPost } = await import(MOD);
-  const req = { formData: async () => new Map([["block", LEGACY_BLOCK_ID]]) };
-  const res = await onRequestPost({ env: ENV, request: req, params: { token: TOKEN } });
+  const req = { formData: async () => new Map([["block", WRITE_BLOCK_ID]]) };
+  const res = await onRequestPost({ env: WRITE_ENV, request: req, params: { token: "../../etc/passwd" } });
   assert.equal(res.status, 404);
+  assert.equal(calls.length, 0, "a malformed token must never reach the database");
 });
 
-test("AC3 NEG: a block from ANOTHER workout is refused, and nothing is written", async () => {
-  const writes = stubScope({ inScope: false });
-  const res = await post([["block", "99999999-1111-2222-3333-444444444444"]]);
+test("AC3 NEG: the RPC refusing a block (e.g. from ANOTHER workout) maps to the SAME refusal as a bad token", async () => {
+  // set_shared_workout_block_done does its own workout-scope check inside the
+  // function now; a false here IS that refusal, whatever caused it.
+  stubWrite({ tickResult: false });
+  const res = await post([["block", WRITE_BLOCK_ID]]);
   assert.equal(res.status, 404, "a token for one workout must not mark another workout's exercise");
-  assert.equal(writes.length, 0, "the refusal must happen BEFORE the write, not be cleaned up after it");
+  assert.match(await res.text(), /not available/i);
 });
 
-test("AC3 POSITIVE CONTROL: a block inside this workout still ticks", async () => {
+test("AC3 POSITIVE CONTROL: a block the RPC accepts still ticks", async () => {
   // Without this, the refusal above is equally explained by "no tick ever works".
-  const writes = stubScope({ inScope: true });
-  const res = await post([["block", LEGACY_BLOCK_ID]]);
+  const calls = stubWrite({ tickResult: true });
+  const res = await post([["block", WRITE_BLOCK_ID]]);
   assert.equal(res.status, 303);
-  assert.equal(writes.length, 1);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0], /\/rest\/v1\/rpc\/set_shared_workout_block_done$/);
 });
 
-test("a double-tap (409 from the unique index) is still success, not an error", async () => {
-  stubScope({ inScope: true, writeStatus: 409 });
-  const res = await post([["block", LEGACY_BLOCK_ID]]);
+test("a double-tap (the RPC's own idempotent ON CONFLICT DO NOTHING) is still success, not an error", async () => {
+  // The RPC itself absorbs the repeat and still returns true — there is no
+  // 409 at this layer any more, because there is no unique-index INSERT at
+  // this layer any more.
+  stubWrite({ tickResult: true });
+  const res = await post([["block", WRITE_BLOCK_ID]]);
   assert.equal(res.status, 303, "a repeat tap is the same event; an error toast for one would be our bug");
 });
 
-test("🔴 a write that FAILS is not answered with the same redirect as one that worked", async () => {
-  stubScope({ inScope: true, writeStatus: 500 });
-  const res = await post([["block", LEGACY_BLOCK_ID]]);
+test("🔴 a genuine transport failure (RPC unreachable/non-2xx) is NOT SAVED, not the same refusal as a bad token", async () => {
+  stubWrite({ httpStatus: 500 });
+  const res = await post([["block", WRITE_BLOCK_ID]]);
   assert.equal(res.status, 503);
   assert.match(await res.text(), /did not save/i, "the client must be told the tick was not recorded");
 });
 
+test("an RPC refusal and a transport failure produce DIFFERENT responses — the distinction is the point", async () => {
+  const refused = await (async () => { stubWrite({ tickResult: false }); return post([["block", WRITE_BLOCK_ID]]); })();
+  const failed = await (async () => { stubWrite({ httpStatus: 500 }); return post([["block", WRITE_BLOCK_ID]]); })();
+  assert.notEqual(refused.status, failed.status);
+  assert.equal(refused.status, 404);
+  assert.equal(failed.status, 503);
+});
+
 test("a failed 'I finished this workout' is not reported as finished", async () => {
-  stubScope({ inScope: true, writeStatus: 500 });
+  stubWrite({ httpStatus: 500 });
   const res = await post([["finish", "1"]]);
   assert.equal(res.status, 503);
 });
 
-test("a malformed block id is refused without touching the database", async () => {
-  const writes = stubScope({ inScope: true });
-  const res = await post([["block", "not-a-uuid"]]);
-  assert.equal(res.status, 404);
-  assert.equal(writes.length, 0);
+test("finish calls finish_shared_workout, not the tick RPC", async () => {
+  const calls = stubWrite({ finishResult: true });
+  const res = await post([["finish", "1"]]);
+  assert.equal(res.status, 303);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0], /\/rest\/v1\/rpc\/finish_shared_workout$/);
 });
 
-test("a write against an expired link is refused, not silently accepted", async () => {
-  // Otherwise the link stops SHOWING the workout but keeps ACCEPTING data.
-  stubScope({ inScope: true, link: { ...LEGACY_LINK, expires_at: new Date(Date.now() - 1000).toISOString() } });
-  const res = await post([["block", LEGACY_BLOCK_ID]]);
+test("a malformed block id is refused without calling the RPC at all", async () => {
+  const calls = stubWrite();
+  const res = await post([["block", "not-a-uuid"]]);
   assert.equal(res.status, 404);
+  assert.equal(calls.length, 0);
+});
+
+test("the write calls the RPC using the anon key — never the service-role key", async () => {
+  _resetRateLimitStateForTests();
+  let seenInit;
+  globalThis.fetch = async (url, init) => {
+    seenInit = init;
+    return new Response(JSON.stringify(true), { status: 200 });
+  };
+  const { onRequestPost } = await import(MOD);
+  const req = { formData: async () => new Map([["block", WRITE_BLOCK_ID]]) };
+  await onRequestPost({ env: WRITE_ENV, request: req, params: { token: TOKEN } });
+  assert.equal(seenInit.headers.apikey, SUPABASE_ANON_KEY);
+  assert.doesNotMatch(seenInit.headers.Authorization, /test-key/);
 });
 
 test("POST redirects instead of re-rendering, so a refresh cannot re-submit", async () => {
-  stubScope({ inScope: true });
+  stubWrite({ tickResult: true });
   const { onRequestPost } = await import(MOD);
-  const req = { formData: async () => new Map([["block", LEGACY_BLOCK_ID]]) };
+  const req = { formData: async () => new Map([["block", WRITE_BLOCK_ID]]) };
   const res = await onRequestPost({ env: WRITE_ENV, request: req, params: { token: TOKEN } });
   assert.equal(res.status, 303);
   assert.equal(res.headers.get("Location"), `/w/${TOKEN}`);
