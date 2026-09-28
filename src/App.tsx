@@ -386,10 +386,14 @@ export default function App() {
 
           {PILLARS.map((p, i) => {
             const dark = p.dark;
+            // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo video/poster has the retired
+            // "Get paid for every class you teach." claim burned into its pixels. Pulled
+            // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
+            const hasDemo = p.demoId !== "log-payment";
             return (
               <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
-                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid md:grid-cols-2 items-center gap-10 md:gap-16 ${i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
-                  <Reveal>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-10 md:gap-16 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                  <Reveal className={hasDemo ? undefined : "md:text-center md:mx-auto md:max-w-[640px]"}>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
                       {p.n} · {p.eyebrow}
                     </span>
@@ -415,18 +419,20 @@ export default function App() {
                     </ul>
                   </Reveal>
 
-                  <Reveal className="relative flex items-center justify-center" >
-                    <div className="relative">
-                      <DemoFrame
-                        demoId={p.demoId}
-                        clip={demoClip(p.demoId)}
-                        poster={demoPoster(p.demoId)}
-                        theme={dark ? "dark" : "light"}
-                        label={`${p.title}: demo`}
-                        maxWidth={360}
-                      />
-                    </div>
-                  </Reveal>
+                  {hasDemo && (
+                    <Reveal className="relative flex items-center justify-center" >
+                      <div className="relative">
+                        <DemoFrame
+                          demoId={p.demoId}
+                          clip={demoClip(p.demoId)}
+                          poster={demoPoster(p.demoId)}
+                          theme={dark ? "dark" : "light"}
+                          label={`${p.title}: demo`}
+                          maxWidth={360}
+                        />
+                      </div>
+                    </Reveal>
+                  )}
                 </div>
 
                 {p.id === "brand" && <BrandMarquee />}
