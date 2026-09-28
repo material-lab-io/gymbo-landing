@@ -5,6 +5,14 @@
 // database, because the schema exists to make them impossible — so Supabase is
 // stubbed here and each test fixes the precise row shape under test.
 // The happy path is proved for real in the browser journey (client-journey.spec.ts).
+//
+// 🔴 gy-t9mm8 / gy-emboo (pm 2026-09-28): reads now go through
+// functions/w/_workout_rpc.js's stub, which queries exercise_media_for_app
+// directly (the ratified-primary, complete-attribution view — gy-g1ihn/
+// gy-5ksjw) instead of the retired byte_size tie-break, and returns PUBLIC
+// object URLs (no signing — gy-h8a7o.1's public-bucket-plus-quarantine model).
+// Fixtures and assertions below were rewritten to match that contract. The
+// write path (onRequestPost) is UNCHANGED and so are its tests.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
@@ -16,28 +24,32 @@ const LINK = { id: "aaaaaaaa-1111-2222-3333-444444444444", assignment_id: "bbbbb
 const BLOCK = { id: "cccccccc-1111-2222-3333-444444444444", position: 0,
                 exercise_id: "dddddddd-1111-2222-3333-444444444444",
                 exercise_name: "Bench Press", sets: 3, reps: "10", load: "40kg", rest_seconds: 60, notes: null };
-const MEDIA_OK = {
-  id: "eeeeeeee-1111-2222-3333-444444444444", exercise_id: BLOCK.exercise_id,
-  source: "wger", asset_kind: "video", availability: "available", author: "Goulart",
+const MEDIA_ID = "eeeeeeee-1111-2222-3333-444444444444";
+// exercise_media_for_app's own row shape (gy-g1ihn) — the view, not the table.
+const VIEW_ROW_OK = {
+  exercise_id: BLOCK.exercise_id, media_id: MEDIA_ID,
+  video_object_path: "wger/x.mp4", poster_object_path: "wger/x-poster.jpg",
+  author: "Goulart", author_url: "https://wger.de/en/user/goulart", work_title: "Bench Press",
   source_url: "https://wger.de/en/exercise/512/view/", licence_id: "CC-BY-SA-4.0",
   licence_name: "Creative Commons Attribution Share Alike 4",
   licence_url: "https://creativecommons.org/licenses/by-sa/4.0/deed.en",
-  object_path: "wger/x.mp4", is_derivative: true, modification_note: "Transcoded to H.264.",
+  modification_note: "Transcoded to H.264.",
 };
+// exercise_media's source/asset_kind/is_derivative — joined back by media_id,
+// same shape media_page's own RPC body joins (gy-s8z4z).
+const SOURCE_ROW_OK = { id: MEDIA_ID, source: "wger", asset_kind: "video", is_derivative: true };
 
-// Route each PostgREST path to a fixture. Storage always signs, so any refusal
-// is attributable to the rule under test and never to a signing failure.
-function stub({ link = LINK, blocks = [BLOCK], media = [MEDIA_OK], done = [] } = {}) {
+// Route each PostgREST path to a fixture.
+function stub({ link = LINK, blocks = [BLOCK], viewRows = [VIEW_ROW_OK], sourceRows = [SOURCE_ROW_OK], done = [] } = {}) {
   globalThis.fetch = async (url, init) => {
     const u = String(url);
-    if (u.includes("/storage/v1/object/sign/"))
-      return new Response(JSON.stringify({ signedURL: "/object/signed/x?token=t" }), { status: 200 });
     if (u.includes("workout_share_links?token=")) return new Response(JSON.stringify(link ? [link] : []), { status: 200 });
     if (u.includes("workout_assignments?id=")) return new Response(JSON.stringify([{ workout_id: "ffffffff-1111-2222-3333-444444444444" }]), { status: 200 });
     if (u.includes("workouts?id=")) return new Response(JSON.stringify([{ name: "Push day", notes: null }]), { status: 200 });
     if (u.includes("workout_blocks?")) return new Response(JSON.stringify(blocks), { status: 200 });
     if (u.includes("workout_share_block_completions?")) return new Response(JSON.stringify(done), { status: 200 });
-    if (u.includes("exercise_media?")) return new Response(JSON.stringify(media), { status: 200 });
+    if (u.includes("exercise_media_for_app?")) return new Response(JSON.stringify(viewRows), { status: 200 });
+    if (u.includes("exercise_media?id=in.")) return new Response(JSON.stringify(sourceRows), { status: 200 });
     if (init?.method === "PATCH" || init?.method === "POST") return new Response(null, { status: 201 });
     return new Response("[]", { status: 200 });
   };
@@ -56,8 +68,14 @@ test("POSITIVE CONTROL: a valid token shows the workout, the video and the tick 
   assert.match(html, /Push day/);
   assert.match(html, /Bench Press/);
   assert.match(html, /3 × 10 @ 40kg/, "the prescription must render from the stored fields");
-  assert.match(html, /<video[^>]+autoplay[^>]+muted[^>]+loop/, "short MP4 must behave like the GIF the founder pictured");
+  // 🔴 NO AUTOPLAY (pm ruling 09-17, gy-emboo AC8): `controls` gives a native
+  // tap-to-play, poster shows the frame at rest. muted/loop/playsinline are
+  // kept for once the client DOES tap play.
+  assert.match(html, /<video[^>]+controls[^>]+muted[^>]+loop/, "tap-to-play, not autoplay");
+  assert.doesNotMatch(html, /autoplay/, "AC8/AC2 amendment: autoplay pulls up to 720p unrequested");
   assert.match(html, /playsinline/, "without playsinline iOS takes the video fullscreen on play");
+  assert.match(html, /poster="[^"]*x-poster\.jpg/, "AC8: a poster path must render for every playable exercise");
+  assert.doesNotMatch(html, /\/storage\/v1\/object\/sign\//, "public bucket, no signed URLs (gy-h8a7o.1)");
   assert.match(html, /Mark done/);
 });
 
@@ -102,32 +120,22 @@ test("every refusal reason produces the SAME response — no oracle for a guesse
 });
 
 test("AC2 NEG: an exercise with NO media shows a defined empty state, not a broken player", async () => {
-  const { status, html } = await get({ media: [] });
+  const { status, html } = await get({ viewRows: [], sourceRows: [] });
   assert.equal(status, 200, "the rest of the workout must still be usable");
   assert.match(html, /Bench Press/);
   assert.match(html, /No video for this exercise/);
   assert.doesNotMatch(html, /<video/, "a broken or empty player is exactly what this AC forbids");
 });
 
-test("AC2 NEG: media whose bytes cannot be signed also lands on the empty state", async () => {
-  stub({});
-  const inner = globalThis.fetch;
-  globalThis.fetch = async (url, init) =>
-    String(url).includes("/storage/v1/object/sign/")
-      ? new Response("no", { status: 404 })
-      : inner(url, init);
-  const { onRequestGet } = await import(MOD);
-  const html = await (await onRequestGet({ env: ENV, params: { token: TOKEN } })).text();
-  assert.match(html, /No video for this exercise/);
-  assert.doesNotMatch(html, /<video/);
-});
-
-test("AC3 NEG: a clip missing its attribution FAILS CLOSED — refused, not shown uncredited", async () => {
-  // The licence gate. Showing CC-BY-SA media without its credit is a breach, and
-  // "it is only a client link" is not a defence.
-  const { status, html } = await get({ media: [{ ...MEDIA_OK, author: null }] });
+test("AC3 NEG: a clip that does not qualify for exercise_media_for_app (incomplete attribution, not primary, or unavailable) FAILS CLOSED", async () => {
+  // The view's OWN WHERE clause (gy-5ksjw/gy-g1ihn) is the licence gate now —
+  // author/licence_name/licence_url/source_url NOT NULL, is_primary, available,
+  // has a rendition. Any of those failing means the view returns NO row for
+  // this exercise, which is indistinguishable from "no media" at this layer,
+  // and that is the point: the page cannot show what the view will not name.
+  const { status, html } = await get({ viewRows: [], sourceRows: [] });
   assert.equal(status, 200);
-  assert.doesNotMatch(html, /<video/, "unattributable media must not play");
+  assert.doesNotMatch(html, /<video/, "unattributable/non-primary media must not play");
   assert.match(html, /No video for this exercise/);
 });
 
@@ -140,7 +148,7 @@ test("AC3: attribution renders from stored fields for a complete clip", async ()
 });
 
 test("AC3: changing the stored author changes the credit — nothing is hard-coded", async () => {
-  const { html } = await get({ media: [{ ...MEDIA_OK, author: "Someone Else" }] });
+  const { html } = await get({ viewRows: [{ ...VIEW_ROW_OK, author: "Someone Else" }] });
   assert.match(html, /Someone Else/);
   assert.doesNotMatch(html, /Goulart/);
 });
@@ -191,7 +199,11 @@ test("AC4: the service_role key never appears in the rendered HTML", async () =>
   assert.doesNotMatch(html, /SUPABASE_SERVICE_ROLE_KEY/);
 });
 
-test("FAIL-CLOSED: with no service_role key configured, nothing is served", async () => {
+test("FAIL-CLOSED: with no service_role key configured, nothing is served (the real RPC does not exist yet)", async () => {
+  // functions/w/_workout_rpc.js's fetchSharedWorkout returns {ok:false,
+  // reason:"no_rpc"} when the key is absent — the exact state real production
+  // is in today, and will stay in until gy-emboo ships and this stub branch
+  // is deleted.
   const { status } = await get({}, TOKEN, {});
   assert.equal(status, 404);
 });
@@ -204,6 +216,9 @@ test("FAIL-CLOSED: with no service_role key configured, nothing is served", asyn
 // swallowed the write result entirely. So a token for workout A could mark a
 // block of workout B, and a write that failed still answered with the same 303
 // as one that worked. Both are now refusals with their own response.
+//
+// UNCHANGED from the pre-gy-emboo version: onRequestPost's data path was never
+// touched by the RPC stub (only reads moved).
 
 // A stub that answers the SCOPED block lookup (id + workout_id + is_deleted)
 // separately from the page's list query, so "is this block in this workout?" can
@@ -290,57 +305,42 @@ test("🔴 the DPDP notice is present and appears BEFORE the first tap control",
 });
 
 // ---------------------------------------------------------------------------
-// gy-16f0e — WHICH clip the page shows must not depend on the order the database
-// happens to hand rows back in.
-//
-// 🔴 Note this is a DIFFERENT "nondeterministic" from gy-pbce1, which is about a
-// video frame varying between screenshots. This one is about the page choosing a
-// different CLIP for the same link. Same word, different failure.
+// gy-emboo — the read now comes from exercise_media_for_app, not a hand-rolled
+// tie-break. gy-16f0e's old byte_size/id ordering tests are RETIRED: the view
+// itself is the single source of "which clip wins" (is_primary, gy-g1ihn), so
+// there is no longer a query-order or a reducer decision for this page to get
+// wrong. What remains to prove is that the page reads the RIGHT view and joins
+// back to the right table for source/asset_kind, matching media_page's own
+// RPC body (gy-s8z4z) so /w/, /m/ and the app can never disagree.
 
-test("gy-16f0e: the clip query asks for a TOTAL order — a partial one still races", async () => {
-  // Determinism here genuinely lives in the query, not in the page: PostgREST
-  // returns heap order without `order=`, and heap order changes after an UPDATE
-  // or a vacuum. So the query IS the assertion.
+test("gy-emboo: the read queries exercise_media_for_app (the ratified-primary view), not exercise_media directly", async () => {
   const urls = [];
-  globalThis.fetch = async (url) => {
+  const inner = async (url, init) => {
     urls.push(String(url));
-    const u = String(url);
-    if (u.includes("workout_share_links?token=")) return new Response(JSON.stringify([LINK]), { status: 200 });
-    if (u.includes("workout_assignments?id=")) return new Response(JSON.stringify([{ workout_id: "f" }]), { status: 200 });
-    if (u.includes("workouts?id=")) return new Response(JSON.stringify([{ name: "W", notes: null }]), { status: 200 });
-    if (u.includes("workout_blocks?")) return new Response(JSON.stringify([BLOCK]), { status: 200 });
-    if (u.includes("exercise_media?")) return new Response(JSON.stringify([MEDIA_OK]), { status: 200 });
-    if (u.includes("/storage/v1/object/sign/")) return new Response(JSON.stringify({ signedURL: "/x" }), { status: 200 });
-    return new Response("[]", { status: 200 });
+    return stub._lastFetch(url, init);
   };
+  stub({});
+  stub._lastFetch = globalThis.fetch;
+  globalThis.fetch = inner;
   const { onRequestGet } = await import(MOD);
   await onRequestGet({ env: ENV, params: { token: TOKEN } });
-
-  const mediaUrl = urls.find((u) => u.includes("exercise_media?"));
-  assert.ok(mediaUrl, "the page never queried exercise_media");
-  assert.match(mediaUrl, /[?&]order=/, "no order= : PostgREST returns heap order and the clip shown becomes arbitrary");
-  const order = decodeURIComponent(mediaUrl.match(/[?&]order=([^&]+)/)[1]);
-  assert.match(order, /(^|,)id\./,
-    "the order has no tie-break on id, so two clips of equal size still race — a partial order is nondeterminism with extra steps");
+  const viewUrl = urls.find((u) => u.includes("exercise_media_for_app?"));
+  assert.ok(viewUrl, "the page never queried exercise_media_for_app");
+  assert.match(viewUrl, /exercise_id=in\./, "must scope to this workout's exercises, not read the whole view");
 });
 
-test("gy-16f0e: a later motion clip must NOT displace an earlier one", async () => {
-  // The query decides WHICH clip wins; the reducer must respect that and keep the
-  // first. If it overwrote on every motion row, the last row would win and the
-  // ordering above would be decided by iteration instead.
-  const { loadWorkout } = await import("../functions/w/_workout.js");
-  const first  = { ...MEDIA_OK, id: "aaaa", object_path: "wger/first.mp4" };
-  const second = { ...MEDIA_OK, id: "bbbb", object_path: "wger/second.mp4" };
-  globalThis.fetch = async (url) => {
-    const u = String(url);
-    if (u.includes("workout_assignments?id=")) return new Response(JSON.stringify([{ workout_id: "f" }]), { status: 200 });
-    if (u.includes("workouts?id=")) return new Response(JSON.stringify([{ name: "W", notes: null }]), { status: 200 });
-    if (u.includes("workout_blocks?")) return new Response(JSON.stringify([BLOCK]), { status: 200 });
-    if (u.includes("exercise_media?")) return new Response(JSON.stringify([first, second]), { status: 200 });
-    if (u.includes("workout_share_block_completions?")) return new Response("[]", { status: 200 });
-    return new Response("[]", { status: 200 });
+test("gy-emboo: source/asset_kind are joined back from exercise_media by media_id, same shape as media_page's RPC", async () => {
+  const urls = [];
+  const inner = async (url, init) => {
+    urls.push(String(url));
+    return stub._lastFetch(url, init);
   };
-  const wo = await loadWorkout(ENV, LINK);
-  assert.equal(wo.blocks[0].media.object_path, "wger/first.mp4",
-    "the SECOND clip won — the reducer overwrites, so the query's order decides nothing");
+  stub({});
+  stub._lastFetch = globalThis.fetch;
+  globalThis.fetch = inner;
+  const { onRequestGet } = await import(MOD);
+  await onRequestGet({ env: ENV, params: { token: TOKEN } });
+  const sourceUrl = urls.find((u) => u.includes("exercise_media?id=in."));
+  assert.ok(sourceUrl, "the page never joined back to exercise_media for source/asset_kind");
+  assert.match(sourceUrl, new RegExp(MEDIA_ID), "must join on the view's own media_id, not the exercise_id");
 });

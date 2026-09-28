@@ -29,8 +29,8 @@
 import { esc } from "../m/_shared.js";
 import { rootVars } from "../_forge.js";
 import { supabaseUrl, svcHeaders } from "../m/_shared.js";
-import { resolveToken, loadWorkout, prescription, mediaFor, attributionHtml, TOKEN_RE,
-         blockBelongsToLink } from "./_workout.js";
+import { resolveToken, prescription, TOKEN_RE, blockBelongsToLink } from "./_workout.js";
+import { fetchSharedWorkout, creditHtml } from "./_workout_rpc.js";
 
 const CSS = `
 :root{${rootVars(["brand-amber-500", "brand-amber-text-light", "brand-marigold-500", "grey-muted-fg-dark", "grey-muted-fg-light", "neutral-dark-0", "neutral-dark-1", "neutral-dark-3", "neutral-dark-fg", "neutral-light-0", "neutral-light-1", "neutral-light-3", "neutral-light-fg", "status-green-fill-dark", "status-green-text"])}--bg:var(--g-color-neutral-light-0);--card:var(--g-color-neutral-light-1);--fg:var(--g-color-neutral-light-fg);--muted:var(--g-color-grey-muted-fg-light);--brand:var(--g-color-brand-amber-text-light);
@@ -105,40 +105,44 @@ const notSaved = () =>
 </div>`, 503);
 
 export async function onRequestGet({ env, params }) {
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("[w] SUPABASE_SERVICE_ROLE_KEY missing — refusing to serve");
-    return refusal();
-  }
-  const r = await resolveToken(env, String(params.token || ""));
+  // gy-emboo/gy-t9mm8 (pm 2026-09-28): reads now go through the future RPC's
+  // contract (functions/w/_workout_rpc.js). Its own "no service-role key" path
+  // returns { ok: false, reason: "no_rpc" } and lands on the SAME refusal real
+  // production already shows today — nothing here regresses production while
+  // gy-emboo is unbuilt; it only unblocks a preview/staging deploy that binds
+  // the key deliberately for this stub.
+  const r = await fetchSharedWorkout(env, String(params.token || ""), { TOKEN_RE, blockBelongsToLink });
   if (!r.ok) {
     console.error("[w] token refused:", r.reason);
     return refusal();
   }
-  const wo = await loadWorkout(env, r.link);
-  if (!wo) return refusal();
+  const wo = r.workout;
 
   const parts = [];
   for (const b of wo.blocks) {
-    const m = await mediaFor(env, b);
     const name = esc(b.exercise_name || "Exercise");
     const rx = prescription(b);
+    const m = b.media;
 
-    // autoplay + muted + loop + playsinline is what makes a short MP4 behave the
-    // way the founder pictured a GIF behaving — at roughly a tenth the bytes.
-    // playsinline is load-bearing on iOS: without it Safari takes the video
-    // fullscreen the moment it plays.
+    // 🔴 NO AUTOPLAY (pm ruling 09-17, gy-emboo AC8/AC2 amendment): autoplay
+    // pulls up to 720p over a client's mobile data unrequested. `controls` +
+    // `poster` gives a NATIVE tap-to-play control with the poster frame shown
+    // at rest — no JS needed, matching this page's standing no-JS constraint.
+    // muted+loop+playsinline are kept for once the client DOES tap play: loop
+    // still gives the GIF-like replay the founder pictured, playsinline still
+    // stops iOS Safari from forcing fullscreen.
     const asset =
-      m.kind === "video"
-        ? `<video src="${esc(m.url)}" autoplay muted loop playsinline preload="metadata"></video>`
-        : m.kind === "still"
-          ? `<img class="asset" alt="" src="${esc(m.url)}">`
-          : `<div class="nomedia">${esc(m.why)}</div>`;
+      !m
+        ? `<div class="nomedia">No video for this exercise.</div>`
+        : m.assetKind === "still"
+          ? `<img class="asset" alt="" src="${esc(m.stillUrl)}">`
+          : `<video src="${esc(m.videoUrl)}" controls muted loop playsinline preload="metadata"${m.posterUrl ? ` poster="${esc(m.posterUrl)}"` : ""}></video>`;
 
     parts.push(`<section class="ex">
 <h2>${name}</h2>
 ${rx ? `<p class="rx">${esc(rx)}</p>` : ""}
 ${asset}
-${m.media ? attributionHtml(m.media) : ""}
+${m ? creditHtml(m.credit) : ""}
 <form method="POST">
 <input type="hidden" name="block" value="${esc(b.id)}">
 <button class="tick" type="submit" data-done="${b.done ? 1 : 0}">

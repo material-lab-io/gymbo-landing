@@ -36,11 +36,24 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // Nothing anywhere that asks the client who they are.
   expect(await page.locator("input[type=email], input[type=tel], textarea").count()).toBe(0);
 
-  // AC2 — the video really plays. currentTime advancing past zero means frames
-  // were decoded; readyState alone can be satisfied by metadata only.
+  // AC2 / AC8 — NO AUTOPLAY (pm ruling 09-17, gy-emboo): the clip shows its
+  // poster and a native tap-to-play control (`controls`), and must NOT be
+  // decoding frames before the client taps — autoplay pulls up to 720p over
+  // mobile data unrequested. So the first assertion is that it is genuinely
+  // AT REST, then the tap is what proves the control actually plays the clip.
   const video = page.locator("video").first();
   await expect(video).toHaveAttribute("playsinline", "");
   await expect(video).toHaveAttribute("loop", "");
+  await expect(video).toHaveAttribute("controls", "");
+  await expect(video).toHaveAttribute("poster", /.+/);
+  await expect(video).not.toHaveAttribute("autoplay", "");
+  const atRest = await video.evaluate((v: HTMLVideoElement) => v.currentTime === 0 && v.paused);
+  expect(atRest).toBe(true);
+
+  // Tap the native control to start playback — this is the assertion that
+  // cannot be faked by a video that merely exists in the DOM: currentTime
+  // advancing past zero means frames were actually decoded.
+  await video.click();
   await page.waitForFunction(
     () => {
       const v = document.querySelector("video") as HTMLVideoElement | null;
