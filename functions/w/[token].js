@@ -28,9 +28,9 @@
 // works on our machines and nowhere else.
 import { esc } from "../m/_shared.js";
 import { rootVars } from "../_forge.js";
-import { supabaseUrl, svcHeaders } from "../m/_shared.js";
-import { resolveToken, prescription, TOKEN_RE, blockBelongsToLink } from "./_workout.js";
+import { prescription, TOKEN_RE } from "./_workout.js";
 import { fetchSharedWorkout, creditHtml } from "./_workout_rpc.js";
+import { setBlockDone, finishWorkout } from "./_workout_write_rpc.js";
 import { isRateLimited } from "./_ratelimit.js";
 
 const CSS = `
@@ -102,7 +102,7 @@ const refusal = () =>
 const notSaved = () =>
   shell("Not saved", `<div class="state">
 <h1>That did not save</h1>
-<p class="sub">Nothing was recorded. Please tap again — and if it keeps happening, tell your trainer.</p>
+<p class="sub">Nothing was recorded. Please tap again. If it keeps happening, tell your trainer.</p>
 </div>`, 503);
 
 // gy-emboo — an edge rate limit on /w/ (see _ratelimit.js for what it is and
@@ -165,7 +165,7 @@ ${b.done ? "✓ Done" : "Mark done"}</button>
   }
 
   const finish = wo.completedAt
-    ? `<div class="done-banner">Workout complete — your trainer can see it. 🎉</div>`
+    ? `<div class="done-banner">Workout complete. Your trainer can see it.</div>`
     : `<form method="POST" class="finish"><input type="hidden" name="finish" value="1">
 <button type="submit">I finished this workout</button></form>`;
 
@@ -204,60 +204,40 @@ export async function onRequestPost(context) {
     return tooManyRequests();
   }
 
-  // 🔴 gy-nm6ii (the anon-callable completion-write RPC) is NOT part of this
-  // swap — it is a separate, still-open P0 bead owned by coach. This write
-  // path is UNCHANGED: it still requires SUPABASE_SERVICE_ROLE_KEY, which the
-  // founder has ruled is never bound on real Cloudflare Pages production
-  // (gy-b0126), so a tick/finish POST still fails closed in prod exactly as
-  // it does today, pending gy-nm6ii. Only the GET (read) path is fixed by
-  // this PR.
-  if (!env.SUPABASE_SERVICE_ROLE_KEY) return refusal();
-
-  const r = await resolveToken(env, token);
-  // A write against an expired or revoked link is refused exactly like a read.
-  // Otherwise the link stops SHOWING the workout but keeps ACCEPTING data, which
-  // is the worst of both.
-  if (!r.ok) return refusal();
+  if (!TOKEN_RE.test(token)) return refusal();
 
   const form = await request.formData().catch(() => null);
   if (!form) return refusal();
 
+  // gy-b0126.1: writes go through the REAL anon RPCs now — no service-role
+  // key anywhere in this path either, matching the GET swap (gy-emboo).
+  // TWO outcomes on failure, not one, even though the RPC itself returns a
+  // single boolean (see _workout_write_rpc.js): "refused" is the RPC's own
+  // authoritative no (bad token, wrong workout, deleted row) — the SAME
+  // family as a read-side refusal, so it gets the SAME response. "upstream"
+  // is a genuine transport failure — the honest "please tap again" applies
+  // there, and there ONLY, or a hiccuping request would tell a client their
+  // real link is broken.
   if (form.get("finish")) {
-    const res = await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_links?id=eq.${r.link.id}`, {
-      method: "PATCH",
-      headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
-      body: JSON.stringify({ completed_at: new Date().toISOString() }),
-    }).catch(() => null);
-    if (!res || !res.ok) {
-      console.error("[w] finish write failed:", res ? res.status : "network");
-      return notSaved();
+    const r = await finishWorkout(env, token);
+    if (!r.ok) {
+      console.error("[w] finish", r.reason);
+      return r.reason === "refused" ? refusal() : notSaved();
     }
   } else {
     const block = String(form.get("block") || "");
     if (!/^[0-9a-f-]{36}$/i.test(block)) return refusal();
 
-    // 🔴 gy-nm6ii AC3. A token is scoped to ONE workout, so a block that is not
-    // in that workout is refused here and, authoritatively, by the database.
-    if (!(await blockBelongsToLink(env, r.link, block))) {
-      console.error("[w] block outside this link's workout, refused:", block);
-      return refusal();
-    }
-
-    const res = await fetch(`${supabaseUrl(env)}/rest/v1/workout_share_block_completions`, {
-      method: "POST",
-      headers: { ...svcHeaders(env.SUPABASE_SERVICE_ROLE_KEY), Prefer: "return=minimal" },
-      body: JSON.stringify({ share_link_id: r.link.id, block_id: block }),
-    }).catch(() => null);
-
-    // A repeat tap is the same event, not a second one — the unique index says
-    // so and a 409 here is success. The client is on a phone; double-taps are
-    // guaranteed, and an error toast for one would be our bug, not theirs.
-    // Anything else IS a failure and is no longer swallowed: the old
-    // `.catch(() => {})` redirected to a page where the tick had not happened
-    // and nothing anywhere said so.
-    if (!res || (!res.ok && res.status !== 409)) {
-      console.error("[w] tick write failed:", res ? res.status : "network");
-      return notSaved();
+    // 🔴 gy-nm6ii AC3 / gy-b0126 AC3. set_shared_workout_block_done checks
+    // block scope (a live block of THIS token's workout) INSIDE the function,
+    // before writing, and returns false if it does not belong — the same
+    // refusal shape as a bad token. There is no separate JS-side scope check
+    // any more: the RPC IS the authoritative check now (plus the database's
+    // own workout_share_completion_scope_guard trigger as a backstop).
+    const r = await setBlockDone(env, token, block, true);
+    if (!r.ok) {
+      console.error("[w] tick", r.reason, block);
+      return r.reason === "refused" ? refusal() : notSaved();
     }
   }
 

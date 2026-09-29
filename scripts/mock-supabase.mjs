@@ -141,6 +141,42 @@ const server = createServer((req, res) => {
     });
   }
 
+  // gy-b0126.1: the REAL write path, matching set_shared_workout_block_done's
+  // and finish_shared_workout's own uniform-boolean contract — the mock's
+  // scope check (is this block one of THIS workout's live blocks?) mirrors
+  // what the real function does inside a single SQL statement.
+  if (p === "/rest/v1/rpc/set_shared_workout_block_done") {
+    if (req.method !== "POST") return json(res, false, 404);
+    let b = ""; req.on("data", (d) => (b += d));
+    return req.on("end", () => {
+      if (state.failWrite) { res.writeHead(500).end(); return; }
+      let args = {};
+      try { args = JSON.parse(b); } catch {}
+      const { p_token, p_block_id, p_done } = args;
+      const l = link();
+      const tokenOk = p_token === TOKEN && !l.revoked_at && new Date(l.expires_at).getTime() > Date.now();
+      const blockOk = tokenOk && blocks.some((blk) => blk.id === p_block_id);
+      if (!blockOk || p_done === undefined || p_done === null) return json(res, false);
+      if (p_done) state.completions.add(p_block_id);
+      else state.completions.delete(p_block_id);
+      return json(res, true);
+    });
+  }
+  if (p === "/rest/v1/rpc/finish_shared_workout") {
+    if (req.method !== "POST") return json(res, false, 404);
+    let b = ""; req.on("data", (d) => (b += d));
+    return req.on("end", () => {
+      if (state.failWrite) { res.writeHead(500).end(); return; }
+      let args = {};
+      try { args = JSON.parse(b); } catch {}
+      const l = link();
+      const tokenOk = args.p_token === TOKEN && !l.revoked_at && new Date(l.expires_at).getTime() > Date.now();
+      if (!tokenOk) return json(res, false);
+      if (!state.completedAt) state.completedAt = new Date().toISOString();
+      return json(res, true);
+    });
+  }
+
   if (p === "/rest/v1/workout_share_links") {
     if (req.method === "PATCH") {
       let b = ""; req.on("data", (d) => (b += d));

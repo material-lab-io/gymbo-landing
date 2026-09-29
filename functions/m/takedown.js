@@ -52,7 +52,7 @@ const shell = (title, body, status = 200) =>
   new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} — Gymbo</title><meta name="robots" content="noindex">
+<title>${esc(title)} - Gymbo</title><meta name="robots" content="noindex">
 <style>${CSS}</style></head><body><div class="wrap">${body}</div></body></html>`,
     { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
   );
@@ -145,7 +145,7 @@ ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
 <input id="media_id" name="media_id" required placeholder="https://getgymbo.com/m/...">`}
 <label for="requester_name">Your name</label>
 <input id="requester_name" name="requester_name" required autocomplete="name">
-<label for="requester_email">Your email — we use this only to reach you about this request</label>
+<label for="requester_email">Your email: we use this only to reach you about this request</label>
 <input id="requester_email" name="requester_email" type="email" required autocomplete="email">
 <fieldset>
 <legend>You are</legend>
@@ -164,7 +164,7 @@ ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
 </fieldset>
 <label for="claim_detail">What is the problem?</label>
 <textarea id="claim_detail" name="claim_detail" required></textarea>
-<label for="evidence">Anything that helps us check this — optional</label>
+<label for="evidence">Anything that helps us check this, optional</label>
 <textarea id="evidence" name="evidence"></textarea>
 <p class="note">${RETENTION_NOTICE}</p>
 <p class="note">${IP_LIMITER_NOTICE_HTML}</p>
