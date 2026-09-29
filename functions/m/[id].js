@@ -65,7 +65,7 @@ const page = (title, body, status = 200) =>
   new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)} — Gymbo</title>
+<title>${esc(title)} - Gymbo</title>
 <meta name="robots" content="noindex">
 <style>${CSS}</style></head><body><div class="wrap">${body}
 <p class="foot">Shared from <a href="https://getgymbo.com/">Gymbo</a>. If you appear in

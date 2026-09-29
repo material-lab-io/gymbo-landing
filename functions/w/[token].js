@@ -102,7 +102,7 @@ const refusal = () =>
 const notSaved = () =>
   shell("Not saved", `<div class="state">
 <h1>That did not save</h1>
-<p class="sub">Nothing was recorded. Please tap again — and if it keeps happening, tell your trainer.</p>
+<p class="sub">Nothing was recorded. Please tap again. If it keeps happening, tell your trainer.</p>
 </div>`, 503);
 
 // gy-emboo — an edge rate limit on /w/ (see _ratelimit.js for what it is and
@@ -165,7 +165,7 @@ ${b.done ? "✓ Done" : "Mark done"}</button>
   }
 
   const finish = wo.completedAt
-    ? `<div class="done-banner">Workout complete — your trainer can see it. 🎉</div>`
+    ? `<div class="done-banner">Workout complete. Your trainer can see it. 🎉</div>`
     : `<form method="POST" class="finish"><input type="hidden" name="finish" value="1">
 <button type="submit">I finished this workout</button></form>`;
 
