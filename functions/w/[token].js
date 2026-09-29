@@ -165,7 +165,7 @@ ${b.done ? "✓ Done" : "Mark done"}</button>
   }
 
   const finish = wo.completedAt
-    ? `<div class="done-banner">Workout complete. Your trainer can see it. 🎉</div>`
+    ? `<div class="done-banner">Workout complete. Your trainer can see it.</div>`
     : `<form method="POST" class="finish"><input type="hidden" name="finish" value="1">
 <button type="submit">I finished this workout</button></form>`;
 
