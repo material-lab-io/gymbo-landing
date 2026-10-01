@@ -92,6 +92,19 @@ test("a phone-only row gets NO confirmation but DOES get the team alert (unchang
   assert.equal(teamAlerts(out).length, 1);
 });
 
+test("gy-e60uc.4 AC1: a successful send logs one structured line per send, naming the row id and the Resend message id, with the email address nowhere in the logs", () => {
+  const out = run([{ receipt: R1 }]);
+  const lines = out.logs
+    .filter((l) => l.startsWith("[waitlist-notify] send "))
+    .map((l) => JSON.parse(l.slice("[waitlist-notify] send ".length)));
+  assert.equal(lines.length, 2, JSON.stringify(out.logs));
+  const confirmation = lines.find((l) => l.kind === "confirmation");
+  const team = lines.find((l) => l.kind === "team_alert");
+  assert.deepEqual(confirmation, { kind: "confirmation", row_ids: [101], outcome: "sent", status: 200, resend_id: "stub-id" });
+  assert.deepEqual(team, { kind: "team_alert", row_ids: [101], outcome: "sent", status: 200, resend_id: "stub-id" });
+  assert.ok(!out.logs.some((l) => l.includes("asha@example.com")), "the address must never appear in the log, structured or not");
+});
+
 for (const bad of ["a@b", "a@gmail", "a@gmail,com", "a@b..com"]) {
   test(`gy-e60uc.2: a row whose email is '${bad}' is NOT sent to Resend and is reported as invalid-email (422, named, address not logged)`, () => {
     const rows = { [R1]: { id: 101, name: "A", email: bad, phone: "9876543210" } };
@@ -138,4 +151,11 @@ test("FORCED RED (gy-e60uc.2): with the validation removed, a malformed address 
   const rows = { [R1]: { id: 101, name: "A", email: "a@b", phone: "9876543210" } };
   const out = run([{ receipt: R1 }], { rows, fn });
   assert.equal(confirmations(out).length, 1);
+});
+
+test("FORCED RED (gy-e60uc.4): with the success-path log line dropped, a sent email produces no structured log at all", () => {
+  const fn = mutate('logSend(ctx, "sent", res.status, id)\n  return', 'return', "no-log-on-success.ts");
+  const out = run([{ receipt: R1 }], { fn });
+  const lines = out.logs.filter((l) => l.startsWith("[waitlist-notify] send "));
+  assert.equal(lines.length, 0, "the mutant must drop both structured lines, or the AC1 test above is blind");
 });

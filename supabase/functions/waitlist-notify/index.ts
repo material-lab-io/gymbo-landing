@@ -103,13 +103,28 @@ async function db(path: string, init: RequestInit = {}): Promise<Response> {
   })
 }
 
+// gy-e60uc.4: who this send was FOR, for the structured log line below. Row ids only --
+// never the address -- so "sent vs delivered" can be checked without the Resend dashboard
+// and without putting an email address in the logs.
+interface SendCtx { kind: "confirmation" | "team_alert"; rowIds: number[] }
+
+// gy-e60uc.4 AC1: one structured line per send attempt, machine-parseable (JSON on one
+// line, not interpolated into a sentence), naming the row(s), the Resend message id when
+// one exists, and the outcome. No email address is ever a parameter here.
+function logSend(ctx: SendCtx, outcome: "sent" | "failed", status: number, resendId?: string) {
+  console.error("[waitlist-notify] send", JSON.stringify({
+    kind: ctx.kind, row_ids: ctx.rowIds, outcome, status, resend_id: resendId ?? null,
+  }))
+}
+
 // AC6: Resend's real status must reach the caller, never be swallowed. A non-2xx
 // returns an error WITH the provider status and the body is logged. A path that can
 // only ever report success has not been shown to detect anything.
-async function sendMail(to: string[], subject: string, html: string) {
+async function sendMail(to: string[], subject: string, html: string, ctx: SendCtx) {
   const resendKey = Deno.env.get("RESEND_API_KEY")
   if (!resendKey) {
     console.error("[waitlist-notify] RESEND_API_KEY not set")
+    logSend(ctx, "failed", 0)
     return { ok: false as const, status: 0, error: "resend_not_configured" }
   }
   const res = await fetch(RESEND_ENDPOINT, {
@@ -120,6 +135,7 @@ async function sendMail(to: string[], subject: string, html: string) {
   if (!res.ok) {
     const detail = await res.text().catch(() => "<unreadable>")
     console.error("[waitlist-notify] Resend FAILED", res.status, detail)
+    logSend(ctx, "failed", res.status)
     return { ok: false as const, status: res.status, error: "send_failed", detail }
   }
   // Copied from send-trainer-reminder-email (gy-6hauk ii): read the message id rather
@@ -133,6 +149,10 @@ async function sendMail(to: string[], subject: string, html: string) {
   } catch (err) {
     console.error("[waitlist-notify] Resend response was not JSON", err)
   }
+  // Logged even when `id` is undefined (the malformed-body case above): the outcome is
+  // still "sent" (Resend returned 2xx) and a null resend_id in the log is the honest
+  // record of that gap, not a reason to drop the line.
+  logSend(ctx, "sent", res.status, id)
   return { ok: true as const, status: res.status, id }
 }
 
@@ -358,7 +378,7 @@ Deno.serve(async (req: Request) => {
       const conf = emailInvalid
         ? { ok: false as const, status: 0, error: "invalid-email" as const, detail: undefined }
         : email
-          ? await sendMail([email], "your gymbo access request", confirmationHtml(name))
+          ? await sendMail([email], "your gymbo access request", confirmationHtml(name), { kind: "confirmation", rowIds: [claimed.id] })
           : { ok: true as const, status: 0, id: undefined, skipped: "no_email_phone_only" }
 
       // The team half. Over threshold we send nothing now and leave the row unmarked;
@@ -368,7 +388,7 @@ Deno.serve(async (req: Request) => {
       let alerted = 0
       if (!digest) {
         // The claimed row IS the row: no lookup by email/phone (which could match a different, older row).
-        team = await sendMail(TEAM, `gymbo waitlist: ${contactOf(claimed)}`, teamHtml([claimed], false, emailInvalid))
+        team = await sendMail(TEAM, `gymbo waitlist: ${contactOf(claimed)}`, teamHtml([claimed], false, emailInvalid), { kind: "team_alert", rowIds: [claimed.id] })
         if (team.ok) { await markAlerted([claimed.id]); alerted = 1 }
       }
       // AC5 / AC2 point 4: the row is the asset. This function NEVER deletes or
@@ -410,7 +430,7 @@ Deno.serve(async (req: Request) => {
       const subject = rows.length === 1
         ? `gymbo waitlist: ${rows[0].email}`
         : `gymbo waitlist: ${rows.length} new signups`
-      const sent = await sendMail(TEAM, subject, teamHtml(rows, digest || rows.length > 1))
+      const sent = await sendMail(TEAM, subject, teamHtml(rows, digest || rows.length > 1), { kind: "team_alert", rowIds: rows.map((r) => r.id) })
       if (!sent.ok) return json({ ok: false, mode: "sweep", error: sent.error, status: sent.status }, 502)
       await markAlerted(rows.map((r) => r.id))
       return json({ ok: true, mode: "sweep", digest_mode: digest, alerted: rows.length, ids: rows.map((r) => r.id) })
