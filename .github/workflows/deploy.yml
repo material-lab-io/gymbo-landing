@@ -472,6 +472,25 @@ jobs:
           # whether the Pages emulator above is up.
           scripts/pw-test.sh tests/copy-facts.spec.ts --project=desktop || RC=1
 
+          # gy-vawlh — the copy change detector and canonical-strings checks above
+          # assert PRESENCE of a ruled claim in the built document, not VISIBILITY
+          # to a reader: display:none, visibility:hidden, a zero-area/clipped box
+          # and an off-screen position all pass those checks untouched. This spec
+          # is the rendered half: negative controls proving each of those four
+          # techniques (plus a bonus opacity:0-on-an-ancestor case) actually fails
+          # a real browser's hit-test/geometry, a positive control proving an
+          # ordinary block still passes, and the real gate against every
+          # visible-block ruled string this repo carries. BLOCKS like the other
+          # copy gates: a claim we can point to in a PR diff while a reader can
+          # never see it is the exact state gy-vawlh exists to catch before merge.
+          #
+          # Mutation-checked via the negative controls themselves (each is a
+          # fixture proving the predicate fails that specific technique, not an
+          # assertion that has only ever been seen passing) plus a leaf-matching
+          # bug and a hit-test ancestor-containment bug caught empirically while
+          # building this (see scripts/copy-visibility-check.mjs's comments).
+          scripts/pw-test.sh tests/copy-visibility.spec.ts --project=desktop --project=mobile || RC=1
+
           # gy-w7x93 — the behavioural suites that had never been executed by CI.
           #
           # WHY THIS BLOCKS. smoke.spec.ts carries the property designer named as
