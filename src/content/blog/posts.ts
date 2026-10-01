@@ -31,15 +31,15 @@ const guideIndiaTrainers: Post = {
   faq: [
     {
       q: "What do most personal trainers in India use to manage their clients?",
-      a: "Most use a free stack: WhatsApp for scheduling and reminders, a paper diary for session counts and balances, and UPI (GPay/PhonePe) for payments, often with Instagram as the front door for new clients. It works for a small roster and tends to break down around 15 active clients.",
+      a: "Most use a free stack: WhatsApp for scheduling and reminders, a paper diary for session counts and balances, and UPI (GPay/PhonePe) for payments, often with Instagram as the front door for new clients. It works for a small roster and tends to break down once you can no longer hold who's paid, who's owed, and who trained today in your head.",
     },
     {
       q: "At what point should a trainer move off WhatsApp and a diary?",
-      a: "Usually when admin starts eating multiple hours a week and payments become hard to track, commonly around 15 clients. The signal: when you're no longer sure who's paid, who's owed, and who's down to their last session.",
+      a: "Usually when admin starts eating multiple hours a week and payments become hard to track. The signal: when you're no longer sure who's paid, who's owed, and who's down to their last session.",
     },
     {
       q: "Why not just use a spreadsheet?",
-      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool makes each class one tap and reconciles automatically.",
+      a: "A spreadsheet adds structure but becomes its own manual job: you still do all the data entry and math, and it doesn't handle scheduling, reminders, or payments. A purpose-built tool makes each class a couple of taps and reconciles automatically.",
     },
     {
       q: "Are international coaching apps like Trainerize or TrueCoach good for Indian trainers?",
@@ -47,12 +47,12 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "How much should software for an independent trainer cost in India?",
-      a: `It should be a small fraction of monthly income, well under ₹500/mo. Western seats often run ₹1,900+/mo, which is 2–5% of a typical Indian trainer's income. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
+      a: `It should be a small fraction of monthly income, well under ₹500/mo. Western seats often run ₹1,900+/mo, a real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
     },
   ],
   bodyMd: `## the short version
 
-Most independent personal trainers in India run their entire business on three free tools: **WhatsApp, a paper diary, and UPI.** It works (genuinely well) until somewhere around 15 clients. Past that, the admin starts eating hours every week, payments slip through the cracks, and "client #23" becomes a different, harder job than "client #3" ever was.
+A lot of independent personal trainers in India run their business on three free tools: **WhatsApp, a paper diary, and UPI.** It works (genuinely well) until the admin starts eating real hours. Past that, the admin starts eating hours every week, payments slip through the cracks, and "client #23" becomes a different, harder job than "client #3" ever was.
 
 This is the story of why that free stack works as long as it does, and the specific moment trainers we've talked to say it stops.
 
@@ -69,9 +69,9 @@ This stack is close to universal, and there's a good reason: it's free, everyone
 
 The problem isn't that it's bad. The problem is that it has **no structure and no math.** Nothing adds up your balances for you. Nothing tells you who's down to their last session. Nothing reconciles the month. You do.
 
-## the ~15-client wall
+## the admin wall
 
-In our conversations with independent trainers, the same threshold comes up again and again: somewhere around **15 active clients**, the free stack stops keeping up.
+In our conversations with independent trainers, the same pattern comes up again and again: the free stack stops keeping up once the admin gets heavy.
 
 It's not a hard number; it depends on how many packages, rates, and schedules you're juggling, but the pattern is consistent. Below it, you can hold the whole business in your head and your diary. Above it, you can't, and the cracks show:
 
@@ -93,7 +93,7 @@ It's tempting to read the wall as a personal failing: get more organized, try ha
 Two leaks matter most once that integration work outgrows your head, and both are about payments:
 
 
-- **No-shows and untracked sessions.** A missed or unlogged session is real money: a typical independent session in India runs ₹500–1,500. Miss a few a month across a full roster and it adds up to a meaningful chunk of income you never see.
+- **No-shows and untracked sessions.** A missed or unlogged session is real money: a typical independent session in India runs ₹500–2,500. Miss a few a month across a full roster and it adds up to a meaningful chunk of income you never see.
 - **Month-end disputes.** When the only record of "how many sessions are left" lives in your memory and a client's memory, you get the he-said-she-said at renewal time. It's awkward, it costs you goodwill, and sometimes it costs you the payment.
 
 None of this is about not caring enough. You can't reconcile what was never structured.
@@ -102,11 +102,11 @@ None of this is about not caring enough. You can't reconcile what was never stru
 
 The instinct, once the wall hits, is to reach for a spreadsheet. It helps for a while, then becomes its own admin job, because you're still doing the entry and the math by hand. The Western coaching apps are the other instinct, but they're built for $50–150 sessions, priced in dollars, and have no UPI, no GST, no WhatsApp.
 
-We've written the practical fix separately: [how to run a personal training business in India](/guide/run-personal-training-business-india/) walks through the five systems that replace the free stack, in order, without losing the one-tap simplicity that made WhatsApp-and-a-diary work in the first place.
+We've written the practical fix separately: [how to run a personal training business in India](/guide/run-personal-training-business-india/) walks through the five systems that replace the free stack, in order, without losing the few-taps simplicity that made WhatsApp-and-a-diary work in the first place.
 
 ## where gymbo fits
 
-We built **Gymbo** for the trainer who's hit this exact wall: one-tap class punches, automatic balances, UPI payments, GST-ready statements, WhatsApp reminders, a workout builder, and Ask Gymbo, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
+We built **Gymbo** for the trainer who's hit this exact wall: class punches in a couple of taps, automatic balances, UPI payments, GST-ready statements (once you add your GSTIN), WhatsApp reminders, a workout builder, and Ask Gymbo, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
 
 We're not the right tool for a gym chain or a remote coach billing in dollars. We're the right tool for the one-person training business that's outgrown the notebook.`,
 };
@@ -155,7 +155,7 @@ If you run a gym or a multi-trainer studio, Gymbo is the wrong tool and we'll po
 
 ## the honest landscape
 
-Most independent trainers in India don't use any of these apps. They run on **WhatsApp + a paper diary + UPI**: free, universal, and good enough until around 15 clients, where the admin starts eating real hours. (We wrote a full guide on [how India's independent trainers run their business](/blog/how-india-independent-trainers-run-their-business/).)
+Plenty of independent trainers in India don't use any of these apps yet. They run on **WhatsApp + a paper diary + UPI**: free, universal, and good enough until the admin starts eating real hours. (We wrote a full guide on [how India's independent trainers run their business](/blog/how-india-independent-trainers-run-their-business/).)
 
 When trainers do look for software, the field splits into three groups:
 
@@ -183,7 +183,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from an iPhone.
 
-**What it does (honestly):** Punch a class in one tap and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
+**What it does (honestly):** Punch a class in a couple of taps and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder with voice and paste import plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 
