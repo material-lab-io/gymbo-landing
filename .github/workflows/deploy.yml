@@ -472,7 +472,7 @@ jobs:
           # whether the Pages emulator above is up.
           scripts/pw-test.sh tests/copy-facts.spec.ts --project=desktop || RC=1
 
-          # gy-vawlh — the copy-change-detector and canonical-strings checks above
+          # gy-vawlh — the copy change detector and canonical-strings checks above
           # assert PRESENCE of a ruled claim in the built document, not VISIBILITY
           # to a reader: display:none, visibility:hidden, a zero-area/clipped box
           # and an off-screen position all pass those checks untouched. This spec
