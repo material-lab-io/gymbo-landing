@@ -142,7 +142,7 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded invoicing"], highlight: false },
+  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded statements"], highlight: false },
   { name: "Annual", tagline: `Save ${ANNUAL_SAVINGS_PERCENT}%`, price: String(PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR), period: "/month", note: `Billed yearly at ₹${PRICE_ANNUAL_INR_DISPLAY} via ${BILLING_CHANNEL}. Save ${ANNUAL_SAVINGS_PERCENT}%.`, features: ["Everything in Monthly", `${ANNUAL_SAVINGS_PERCENT}% savings`, `₹${PRICE_ANNUAL_INR_DISPLAY} billed annually`], highlight: true },
 ];
 
@@ -703,7 +703,7 @@ export default function App() {
 const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "QR profile", icon: QrCode },
   { name: "Share links", icon: Share2 },
-  { name: "PDF invoices", icon: FileText },
+  { name: "PDF statements", icon: FileText },
   { name: "Brand theming", icon: Palette },
   { name: "Your own URL", icon: Link },
   { name: "Custom branded client content", icon: Smartphone },
