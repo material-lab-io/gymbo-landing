@@ -2,11 +2,11 @@
 
 > Gymbo is an iOS business app for independent personal trainers in India. It turns the day-to-day of running a training practice into a few taps: punching classes, recording payments, checking balances, scheduling, and looking professional. Monthly or annual pricing and unlimited clients. Eligible subscribers can try Gymbo free for 7 days.
 
-Gymbo is built for the independent personal trainer, not a gym chain or dietitian. A trainer's day is classes, schedules, and payments, so Gymbo is built around that: punch a class in one tap, let the client card calculate the balance, and use colour-coded balances to see who owes you. Gymbo also includes a daily email summary, workout builder, Ask Gymbo, and a shareable QR profile card. Clients do not download anything. Gymbo is for the trainer.
+Gymbo is built for the independent personal trainer, not a gym chain or dietitian. A trainer's day is classes, schedules, and payments, so Gymbo is built around that: punch a class in a couple of taps, let the client card calculate the balance, and use colour-coded balances to see who owes you. Gymbo also includes a daily email summary, workout builder, Ask Gymbo, and a shareable QR profile card. Clients do not download anything. Gymbo is for the trainer.
 
 ## Key features
 
-- One-tap class punches with automatic balance math
+- Class punches in a couple of taps, with automatic balance math
 - Payment and balance tracking (cash or UPI), GST invoices, colour-coded reminders
 - Scheduling and your full client roster in one place
 - Workout builder with a template library + voice/paste import (build and assign workouts)

@@ -678,8 +678,10 @@ const FAQ_AKTON_SLUGS = new Set([
 // mutual internal linking that makes the data report a citation surface. Surfaced
 // in the related module (not inline) so content owns the pillar bodies. These are
 // the pillars whose subject the report directly covers (population, retention,
-// tech gap, income/rates).
-const RESEARCH_LINK: RelatedLink = {
+// tech gap, income/rates). Exported (gy-zms46 item 41) so the cornerstone blog
+// post's own related module (entry-server.tsx) can cite it the same way, for the
+// ₹20,000–50,000/mo income-band figure that replaced an invented percentage.
+export const RESEARCH_LINK: RelatedLink = {
   href: "/research/state-of-indias-independent-trainers-2026/",
   label: "The State of India's Independent Personal Trainers, 2026 (data report)",
 };
