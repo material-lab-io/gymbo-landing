@@ -11,8 +11,8 @@
     {
       "id": "wellnessz-session-first",
       "route": "/compare/gymbo-vs-wellnessz/",
-      "contains": "Gymbo is session-first (one-tap class punches, automatic balance math, payment tracking) for independent personal trainers.",
-      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z"
+      "contains": "Gymbo is session-first (class punches in a couple of taps, automatic balance math, payment tracking) for independent personal trainers.",
+      "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z, superseded gy-zms46 2026-10-01"
     },
     {
       "id": "blog-best-apps-ask-gymbo",
