@@ -172,6 +172,18 @@ jobs:
         # additions-only, no non-visual exemption, FOUND outranking blindness,
         # wrong date direction); each fails the specific test built for it.
 
+      - name: "gy-h2z6x: visual-baseline provenance refuses a stale/missing sidecar (forced red on the real gy-tjqwg near-miss)"
+        run: node --test tests/visual-provenance.test.mjs
+        # Mutation-checked: flipping the mismatch comparison, and disabling the
+        # missing-sidecar branch, each turn 2 of 10 cases red. The suite's own
+        # mismatch test reproduces the exact recorded near-miss (a baseline
+        # captured against "Join the waitlist" staged against current main's
+        # "Request access") and asserts it REFUSES rather than silently
+        # pixel-diffing. The browser-dependent half (extracting the live
+        # fingerprint from a page, wired into tests/visual.spec.ts) was
+        # additionally verified by hand against the real pre-swap commit
+        # (ba239851) — see gy-h2z6x for the transcript.
+
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
         run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs tests/cross-page-references.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from
