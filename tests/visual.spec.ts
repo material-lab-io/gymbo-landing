@@ -1,4 +1,5 @@
 import { test, expect, type Locator, type Page } from '@playwright/test';
+import { recordOrVerifyProvenance } from './visual-provenance';
 
 /**
  * Visual regression baselines (gy-a73px.1 — Wave 0 safety net for round 3).
@@ -167,18 +168,23 @@ test.describe('visual baselines', () => {
   });
 
   for (const section of SECTIONS) {
-    test(`${section.name}`, async ({ page }) => {
+    test(`${section.name}`, async ({ page }, testInfo) => {
       const locator = page.getByTestId(section.testId);
       await expect(locator).toBeVisible();
       await revealSection(page, locator);
       await scrollHorizontalCarousels(page, locator);
       await waitImagesLoaded(locator);
+      const snapshotName = `${section.name}-light.png`;
+      // gy-h2z6x: refuse (or record) BEFORE the pixel comparison — see
+      // tests/visual-provenance.ts for why a baseline with no/mismatched
+      // provenance must not be silently diffed against.
+      await recordOrVerifyProvenance(testInfo, snapshotName, locator, testInfo.project.name);
       if ('snapTop' in section && section.snapTop) {
         // Measure AFTER the reveal and image waits, when the layout has stopped moving.
         const clip = await sectionClip(locator);
-        await expect(page).toHaveScreenshot(`${section.name}-light.png`, { clip, fullPage: true });
+        await expect(page).toHaveScreenshot(snapshotName, { clip, fullPage: true });
       } else {
-        await expect(locator).toHaveScreenshot(`${section.name}-light.png`);
+        await expect(locator).toHaveScreenshot(snapshotName);
       }
     });
   }
@@ -192,7 +198,7 @@ test.describe('visual baselines', () => {
   // The approved photoreal frame restores its aperture; this clip keeps the
   // physical frame edge and current screenshot crop under visual review.
   // Runs in both projects (desktop + mobile).
-  test('gallery-card-corner', async ({ page }) => {
+  test('gallery-card-corner', async ({ page }, testInfo) => {
     const gallery = page.getByTestId('gallery-section');
     await revealSection(page, gallery);
     await waitImagesLoaded(gallery);
@@ -204,7 +210,9 @@ test.describe('visual baselines', () => {
     await page.waitForTimeout(150);
     const box = await card.boundingBox();
     if (!box) throw new Error('gallery screen card has no bounding box');
-    await expect(page).toHaveScreenshot('gallery-card-corner-light.png', {
+    const snapshotName = 'gallery-card-corner-light.png';
+    await recordOrVerifyProvenance(testInfo, snapshotName, card, testInfo.project.name);
+    await expect(page).toHaveScreenshot(snapshotName, {
       clip: { x: Math.max(0, box.x), y: Math.max(0, box.y), width: 96, height: 96 },
     });
   });
