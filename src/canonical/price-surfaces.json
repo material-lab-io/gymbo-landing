@@ -69,7 +69,7 @@
       {
         "file": "alternatives/trainerize/index.html",
         "amount": 500,
-        "reason": "editorial: what an Indian trainer may charge per session (Rs 500-1,500), not a Gymbo price"
+        "reason": "editorial: what an Indian trainer may charge per session (Rs 500-2,500), not a Gymbo price"
       },
       {
         "file": "alternatives/trainerize/index.html",
@@ -160,6 +160,16 @@
         "file": "index.html",
         "amount": 45663,
         "reason": "sample data shown in the payments screenshot's alt text ('Rs 45,663 in payments recorded for June'), not a price"
+      },
+      {
+        "file": "alternatives/trainerize/index.html",
+        "amount": 20000,
+        "reason": "editorial: income band a mid-career Indian trainer typically clears per month (Rs 20,000-50,000, state-of-trainers report), not a Gymbo price (gy-zms46 item 41)"
+      },
+      {
+        "file": "blog/how-india-independent-trainers-run-their-business/index.html",
+        "amount": 20000,
+        "reason": "editorial: income band a mid-career Indian trainer typically clears per month (Rs 20,000-50,000, state-of-trainers report), not a Gymbo price (gy-zms46 item 41)"
       }
     ]
   },

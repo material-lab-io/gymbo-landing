@@ -8,7 +8,7 @@ import { GuideIndex } from "./pages/GuideIndex";
 import { ArticlePage } from "./pages/ArticlePage";
 import { POSTS } from "./content/blog/posts";
 import { ALTERNATIVES } from "./content/alternatives/pages";
-import { ALL_GUIDES, relatedFor, pillarLinks } from "./content/guide/pillars";
+import { ALL_GUIDES, relatedFor, pillarLinks, RESEARCH_LINK } from "./content/guide/pillars";
 import { REPORTS, reportRelated } from "./content/research/reports";
 import { ROUTES } from "./routes";
 
@@ -27,7 +27,10 @@ const ELEMENTS: Record<string, React.ReactElement> = {
   guide: <GuideIndex />,
 };
 for (const p of POSTS) {
-  ELEMENTS[`blog-${p.slug}`] = <ArticlePage post={p} related={p.slug === CORNERSTONE_SLUG ? pillarLinks() : undefined} />;
+  // gy-zms46 item 41: the cornerstone post cites the income-band figure (₹20,000–50,000/mo)
+  // the report sources, via the same "related module, not inline" pattern the guide pillars
+  // already use for this report — appended to its existing pillar-links set, not a new link kind.
+  ELEMENTS[`blog-${p.slug}`] = <ArticlePage post={p} related={p.slug === CORNERSTONE_SLUG ? [...pillarLinks(), RESEARCH_LINK] : undefined} />;
 }
 for (const p of ALTERNATIVES) {
   ELEMENTS[`alt-${p.slug}`] = <ArticlePage post={p} back={{ href: "/", label: "← gymbo" }} showDate={false} />;
