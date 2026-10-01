@@ -86,7 +86,7 @@ This is the wall the established independent trainer hits: enough clients to mak
 
 It's tempting to read the wall as a personal failing: get more organized, try harder, keep a better diary. That's not what's actually going on.
 
-**Clients, scheduling, payments, and programming** are four separate jobs that all live in your head and a notebook below 15 clients. The free stack handles each of these *separately* and informally. The moment they need to talk to each other ("she paid for 12, she's done 9, so 3 left, and her renewal is due"), you become the integration layer by hand, every time. That's the work that doesn't scale, and no amount of discipline changes how much of it there is.
+**Clients, scheduling, payments, and programming** are four separate jobs that all live in your head and a notebook. The free stack handles each of these *separately* and informally. The moment they need to talk to each other ("she paid for 12, she's done 9, so 3 left, and her renewal is due"), you become the integration layer by hand, every time. That's the work that doesn't scale, and no amount of discipline changes how much of it there is.
 
 ## where the money actually leaks
 
