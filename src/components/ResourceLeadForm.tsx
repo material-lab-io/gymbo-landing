@@ -166,7 +166,7 @@ export function ResourceLeadForm() {
         </span>
       )}
 
-      <label className="flex items-start gap-2 text-[13px]" style={{ color: F.inkMuted, fontFamily: "var(--font-sans)" }}>
+      <label className="flex items-start gap-2 text-[13px]" style={{ color: F.boneMuted, fontFamily: "var(--font-sans)" }}>
         <input
           ref={consentRef}
           type="checkbox"
@@ -189,7 +189,7 @@ export function ResourceLeadForm() {
         </span>
       )}
 
-      <label className="flex items-start gap-2 text-[13px]" style={{ color: F.inkMuted, fontFamily: "var(--font-sans)" }}>
+      <label className="flex items-start gap-2 text-[13px]" style={{ color: F.boneMuted, fontFamily: "var(--font-sans)" }}>
         <input
           type="checkbox"
           checked={marketingConsent}
@@ -221,9 +221,9 @@ export function ResourceLeadForm() {
         </span>
       )}
 
-      <p className="text-[12px]" style={{ color: F.inkMuted, fontFamily: "var(--font-sans)" }}>
+      <p className="text-[12px]" style={{ color: F.boneMuted, fontFamily: "var(--font-sans)" }}>
         By submitting this form, your email is stored to send you this resource. See our{" "}
-        <a href="/privacy/" style={{ color: F.inkMuted, textDecoration: "underline" }}>
+        <a href="/privacy/" style={{ color: F.boneMuted, textDecoration: "underline" }}>
           privacy policy
         </a>{" "}
         for details.
