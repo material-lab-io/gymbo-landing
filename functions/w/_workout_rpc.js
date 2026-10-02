@@ -87,6 +87,7 @@ export async function fetchSharedWorkout(env, token, { TOKEN_RE } = {}) {
       sets: r.sets,
       reps: r.reps,
       load: r.load,
+      duration_seconds: r.duration_seconds,
       rest_seconds: r.rest_seconds,
       done: !!r.block_done,
       media: shapeMedia(env, r),
