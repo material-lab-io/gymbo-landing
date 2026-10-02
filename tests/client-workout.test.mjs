@@ -20,6 +20,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { _resetRateLimitStateForTests } from "../functions/w/_ratelimit.js";
 import { SUPABASE_ANON_KEY } from "../functions/m/_shared.js";
+import { prescription } from "../functions/w/_workout.js";
 
 const MOD = "../functions/w/[token].js";
 const ENV = { SUPABASE_URL: "https://stub.invalid" };
@@ -48,7 +49,7 @@ function row(block, { link = LINK, media = null, done = false, workoutName = "Pu
     block_id: block ? block.id : null, block_position: 0, block_type: "exercise", group_index: null,
     exercise_name: block ? block.exercise_name : null,
     sets: block?.sets ?? null, reps: block?.reps ?? null, load: block?.load ?? null,
-    rest_seconds: block?.rest_seconds ?? null, duration_seconds: null, distance_m: null,
+    rest_seconds: block?.rest_seconds ?? null, duration_seconds: block?.duration_seconds ?? null, distance_m: null,
     block_done: done,
     source: media?.source ?? null, asset_kind: media?.asset_kind ?? null,
     author: media?.author ?? null, author_url: media?.author_url ?? null, work_title: media?.work_title ?? null,
@@ -83,7 +84,7 @@ test("POSITIVE CONTROL: a valid token shows the workout, the video and the tick 
   assert.equal(status, 200);
   assert.match(html, /Push day/);
   assert.match(html, /Bench Press/);
-  assert.match(html, /3 × 10 @ 40kg/, "the prescription must render from the stored fields");
+  assert.match(html, /3×10 @ 40kg/, "the prescription must render from the stored fields");
   // 🔴 NO AUTOPLAY (pm ruling 09-17, gy-emboo AC8): `controls` gives a native
   // tap-to-play, poster shows the frame at rest. muted/loop/playsinline are
   // kept for once the client DOES tap play.
@@ -93,6 +94,16 @@ test("POSITIVE CONTROL: a valid token shows the workout, the video and the tick 
   assert.match(html, /poster="[^"]*x-poster\.jpg/, "AC8: a poster path must render for every playable exercise");
   assert.doesNotMatch(html, /\/storage\/v1\/object\/sign\//, "public bucket, no signed URLs (gy-h8a7o.1)");
   assert.match(html, /Mark done/);
+});
+
+test("AC1/AC2: the RPC's timed fields render iOS-format durations and preserve reps", async () => {
+  const uniform = { ...BLOCK, id: "bbbbbbbb-1111-2222-3333-444444444444", exercise_name: "Plank", reps: null, load: null, duration_seconds: 45 };
+  const varied = { ...BLOCK, id: "dddddddd-1111-2222-3333-444444444444", exercise_name: "Intervals", reps: "45-60-45", load: null, duration_seconds: 45 };
+  const { html } = await get([row(uniform), row(varied), row({ ...BLOCK, sets: 4, reps: "12", load: null })]);
+  assert.match(html, /3 × 45s/, "uniform timed sets carry one seconds suffix");
+  assert.match(html, /45s-60s-45s/, "non-uniform timed sets carry every seconds suffix");
+  assert.match(html, /4×12/, "reps stay compact and do not inherit timed spacing");
+  assert.equal(prescription({ sets: 3, reps: "45-60-45", duration_seconds: 45 }), "45s-60s-45s");
 });
 
 test("AC1 NEG: zero rows (unknown, tampered, expired, revoked or orphaned — the RPC collapses all of them) is refused", async () => {

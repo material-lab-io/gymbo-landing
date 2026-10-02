@@ -16,12 +16,20 @@
 // functions any more; they were deleted rather than left as dead code.
 export const TOKEN_RE = /^[A-Za-z0-9_-]{20,64}$/;
 
-// The prescription line, built only from fields that are actually present.
-// "3 × 10 @ 40kg" reads naturally; "3 × null" does not, and a client seeing
-// "null" concludes the app is broken.
+// Mirrors BuilderBlock.summary in the shipped iOS app (Workout.swift:229-238).
+// The workout codec stores a non-uniform timed ladder in reps (for example
+// "45-60-45") while duration_seconds remains the duration discriminator.
 export function prescription(b) {
   const bits = [];
-  if (b.sets && b.reps) bits.push(`${b.sets} × ${b.reps}`);
+  if (b.duration_seconds) {
+    const perSetSeconds = String(b.reps || "").split("-");
+    const hasCompletePerSetSeconds =
+      perSetSeconds.length === Number(b.sets) && perSetSeconds.every((seconds) => /^\d+$/.test(seconds));
+    return hasCompletePerSetSeconds
+      ? perSetSeconds.map((seconds) => `${seconds}s`).join("-")
+      : `${b.sets} × ${b.duration_seconds}s`;
+  }
+  if (b.sets && b.reps) bits.push(`${b.sets}×${b.reps}`);
   else if (b.sets) bits.push(`${b.sets} sets`);
   else if (b.reps) bits.push(`${b.reps} reps`);
   if (b.load) bits.push(`@ ${b.load}`);

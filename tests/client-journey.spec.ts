@@ -32,7 +32,7 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // AC1 — the workout is simply there, with nothing to sign in to.
   await expect(page.getByRole("heading", { name: "Push day" })).toBeVisible();
   await expect(page.getByText("Bench Press")).toBeVisible();
-  await expect(page.getByText("3 × 10 @ 40kg")).toBeVisible();
+  await expect(page.getByText("3×10 @ 40kg")).toBeVisible();
   // Nothing anywhere that asks the client who they are.
   expect(await page.locator("input[type=email], input[type=tel], textarea").count()).toBe(0);
 
@@ -70,6 +70,7 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // AC2 NEG — the second exercise has no media, and says so rather than showing
   // a broken player. Same page, same journey: this is what the client sees.
   await expect(page.getByText("Plank")).toBeVisible();
+  await expect(page.getByText("3 × 45s", { exact: true })).toBeVisible();
   await expect(page.getByText("No video for this exercise.").first()).toBeVisible();
 
   // gy-pgxiv — a THIRD exercise with no LINKED exercise at all (exercise_id
@@ -81,6 +82,9 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   await expect(
     page.locator("section").filter({ hasText: "Farmer carry" }).getByText("No video for this exercise."),
   ).toBeVisible();
+
+  await expect(page.getByText("Intervals")).toBeVisible();
+  await expect(page.getByText("45s-60s-45s", { exact: true })).toBeVisible();
 
   // THE TICK. Then reload — this is the assertion that cannot be faked.
   await page.getByRole("button", { name: "Mark done" }).first().click();

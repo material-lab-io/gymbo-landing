@@ -20,8 +20,10 @@ const WORKOUT_ID = "ffffffff-1111-2222-3333-444444444444";
 const BLOCK_A = "cccccccc-1111-2222-3333-444444444444";
 const BLOCK_B = "cccccccc-1111-2222-3333-555555555555";
 const BLOCK_C = "cccccccc-1111-2222-3333-666666666666";
+const BLOCK_D = "cccccccc-1111-2222-3333-777777777777";
 const EX_A = "dddddddd-1111-2222-3333-444444444444";
 const EX_B = "dddddddd-1111-2222-3333-555555555555";
+const EX_D = "dddddddd-1111-2222-3333-777777777777";
 
 const clip = readFileSync(new URL("../tests/fixtures/clip.mp4", import.meta.url));
 
@@ -65,10 +67,11 @@ const posterJpeg = Buffer.from(
 
 const blocks = [
   { id: BLOCK_A, position: 0, exercise_id: EX_A, exercise_name: "Bench Press", sets: 3, reps: "10", load: "40kg", rest_seconds: 60, notes: null },
-  { id: BLOCK_B, position: 1, exercise_id: EX_B, exercise_name: "Plank", sets: 3, reps: "45s", load: null, rest_seconds: 30, notes: null },
+  { id: BLOCK_B, position: 1, exercise_id: EX_B, exercise_name: "Plank", sets: 3, reps: null, duration_seconds: 45, load: null, rest_seconds: 30, notes: null },
   // gy-pgxiv (pm's eyes-on round, 2026-09-28): a block with NO linked exercise
   // at all, distinct from Plank's "linked exercise, no media row" case above.
   { id: BLOCK_C, position: 2, exercise_id: null, exercise_name: "Farmer carry", sets: 3, reps: "30m", load: null, rest_seconds: 45, notes: null },
+  { id: BLOCK_D, position: 3, exercise_id: EX_D, exercise_name: "Intervals", sets: 3, reps: "45-60-45", duration_seconds: 45, load: null, rest_seconds: 30, notes: null },
 ];
 
 const json = (res, body, status = 200) => {
@@ -125,7 +128,7 @@ const server = createServer((req, res) => {
           completed_at: l.completed_at,
           block_id: blk.id, block_position: blk.position, block_type: "exercise", group_index: null,
           exercise_name: blk.exercise_name, sets: blk.sets, reps: blk.reps, load: blk.load,
-          duration_seconds: null, distance_m: null, rest_seconds: blk.rest_seconds,
+          duration_seconds: blk.duration_seconds ?? null, distance_m: null, rest_seconds: blk.rest_seconds,
           block_done: state.completions.has(blk.id),
           source: src ? src.source : null, asset_kind: src ? src.asset_kind : null,
           author: view ? view.author : null, author_url: view ? view.author_url : null,
