@@ -19,7 +19,7 @@ on:
 
 jobs:
   watch:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, gt2-host]
     steps:
       - uses: actions/checkout@v4
 
