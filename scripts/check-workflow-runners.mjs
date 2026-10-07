@@ -3,7 +3,8 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const approvedRunner = '[self-hosted, gt2]';
+// gt2-host = the gt2-runner-* hosts (no browsers there); gt2 = the anton pool (browser jobs). gy-qgq5g
+const approvedRunners = ['[self-hosted, gt2]', '[self-hosted, gt2-host]'];
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 
 async function workflowFiles(directory) {
@@ -35,8 +36,8 @@ for (const file of files) {
     if (!match) return;
 
     const runner = match[1].trim();
-    if (runner !== approvedRunner) {
-      violations.push(`${file}:${index + 1}: runs-on must be ${approvedRunner}; found ${runner || '(empty)'}`);
+    if (!approvedRunners.includes(runner)) {
+      violations.push(`${file}:${index + 1}: runs-on must be one of ${approvedRunners.join(' | ')}; found ${runner || '(empty)'}`);
     }
   });
 }
@@ -47,4 +48,4 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log(`OK: ${files.length} workflow file(s) use only ${approvedRunner}.`);
+console.log(`OK: ${files.length} workflow file(s) use only ${approvedRunners.join(' | ')}.`);
