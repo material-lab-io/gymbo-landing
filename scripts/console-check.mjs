@@ -6,6 +6,7 @@
 // Usage: node scripts/console-check.mjs <base-url>
 import { isIP } from "node:net";
 import { chromium } from "playwright";
+import { isRunnerNetworkError } from "./runner-network-errors.mjs";
 
 const base = process.argv[2] || "http://127.0.0.1:8788";
 const baseUrl = new URL(base);
@@ -27,6 +28,16 @@ if (testTimeout !== undefined) {
   }
   navigationTimeoutMs = parsed;
 }
+
+// Test seam (loopback only, like the timeout above): lets a fixture server
+// stand in for ERR_NETWORK_CHANGED, which no HTTP server can produce.
+const extraNetworkErrors = (process.env.CONSOLE_CHECK_TEST_NETWORK_ERRORS ?? "")
+  .split(",")
+  .filter(Boolean);
+if (extraNetworkErrors.length && !["127.0.0.1", "localhost", "[::1]", "::1"].includes(baseUrl.hostname)) {
+  throw new Error("CONSOLE_CHECK_TEST_NETWORK_ERRORS is restricted to loopback fixtures");
+}
+const isNetworkFault = (text) => isRunnerNetworkError(text, extraNetworkErrors);
 
 const formatError = (error) => {
   const parts = [];
@@ -114,6 +125,7 @@ const newCheckedPage = async () => {
   const page = await browser.newPage();
   const pendingRequests = new Map();
   const firstPartyFailures = new Map();
+  const networkFaults = new Map();
 
   const detailsFor = (request) => {
     const requestUrl = new URL(request.url());
@@ -139,6 +151,14 @@ const newCheckedPage = async () => {
       request.isNavigationRequest() && request.frame() === page.mainFrame();
     if (new URL(details.url).origin === baseOrigin && !isMainNavigation) {
       const reason = request.failure()?.errorText || "unknown network failure";
+      if (isNetworkFault(reason)) {
+        // The runner's network changed under us; this says nothing about the page.
+        networkFaults.set(
+          `request:${details.url}`,
+          `runner-network fault (${reason}) host=${details.host} url=${details.url}`,
+        );
+        return;
+      }
       firstPartyFailures.set(
         `request:${details.url}`,
         `first-party request failed (${reason}) url=${details.url}`,
@@ -171,6 +191,7 @@ const newCheckedPage = async () => {
     page,
     diagnostics: {
       firstPartyFailures: () => [...firstPartyFailures.values()],
+      networkFaults: () => [...networkFaults.values()],
       pendingRequests: () =>
         [...pendingRequests.values()]
           .map((request) => ({ ...request, ageMs: Date.now() - request.startedAt }))
@@ -181,7 +202,7 @@ const newCheckedPage = async () => {
 
 const couldNotEvaluate = [];
 
-const navigateToLoad = async ({ page, diagnostics }, url, label) => {
+const navigateToLoad = async ({ page, diagnostics }, url, label, willRetry = false) => {
   try {
     const response = await page.goto(url, {
       waitUntil: "load",
@@ -197,7 +218,8 @@ const navigateToLoad = async ({ page, diagnostics }, url, label) => {
     }
 
     const pending = diagnostics.pendingRequests();
-    couldNotEvaluate.push(label);
+    const networkFault = isNetworkFault(formatError(error));
+    if (!willRetry) couldNotEvaluate.push(label);
     if (error?.name === "TimeoutError") {
       console.error(
         `COULD-NOT-EVALUATE: browser load did not complete route=${label} timeout_ms=${navigationTimeoutMs} wait_until=load load_event=not-fired document_ready_state=${readyState}`,
@@ -217,7 +239,7 @@ const navigateToLoad = async ({ page, diagnostics }, url, label) => {
       }
     }
     console.error(`     navigation-error=${formatError(error)}`);
-    return { kind: "could-not-evaluate", error };
+    return { kind: "could-not-evaluate", error, networkFault };
   }
 };
 // gy-pvi8y: tracked separately from `failures`/`paths` on purpose. The
@@ -251,9 +273,16 @@ let darkSeedFailed = null;
     );
   }
   themeErrors.push(...diagnostics.firstPartyFailures());
+  const themeFaults = diagnostics.networkFaults();
   await themePage.close();
+  if (themeFaults.length) {
+    // A runner-network fault means the dark-seed assertion was not evaluated.
+    couldNotEvaluate.push("/ (dark-seeded)");
+    console.error("COULD-NOT-EVALUATE: runner-network fault route=/ (dark-seeded)");
+    [...new Set(themeFaults)].forEach((fault) => console.error(`     ${fault}`));
+  }
 
-  if (navigation.kind === "loaded") {
+  if (navigation.kind === "loaded" && !themeFaults.length) {
     // Light token is #FAFAF7 -> rgb(250, 250, 247). Allow the whole FAFAFx
     // family (a couple of points of anti-aliasing/rounding slack) rather than
     // an exact string match.
@@ -268,12 +297,15 @@ let darkSeedFailed = null;
     darkSeedFailed = "/ (dark-seeded)";
     console.error('FAIL / with localStorage theme="dark" pre-seeded');
     [...new Set(themeErrors)].forEach((error) => console.error(`     ${error}`));
-  } else if (navigation.kind === "loaded") {
+  } else if (navigation.kind === "loaded" && !themeFaults.length) {
     console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
   }
 }
 
-for (const p of paths) {
+// One retry, and only for a runner-network fault with no other finding on the
+// page (gy-18qle.1). A real first-party failure or JS error is never retried,
+// so this cannot turn a product FAIL green. Both attempts are logged.
+const checkRoute = async (p, willRetry) => {
   const checkedPage = await newCheckedPage();
   const { page, diagnostics } = checkedPage;
   const errors = [];
@@ -281,18 +313,41 @@ for (const p of paths) {
     if (m.type() === "error" && !ignore(m.text())) errors.push(m.text());
   });
   page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
-  const navigation = await navigateToLoad(checkedPage, base + p, p);
+  const navigation = await navigateToLoad(checkedPage, base + p, p, willRetry);
   if (navigation.kind === "loaded") {
     await page.waitForTimeout(700); // let hydration settle
   }
   errors.push(...diagnostics.firstPartyFailures());
+  const faults = diagnostics.networkFaults();
   await page.close();
+  return { errors, faults, navigation };
+};
+
+for (const p of paths) {
+  let result = await checkRoute(p, true);
+  const networkOnly = (r) =>
+    r.errors.length === 0 &&
+    (r.faults.length > 0 || (r.navigation.kind !== "loaded" && r.navigation.networkFault));
+  if (networkOnly(result)) {
+    console.error(`RETRY ${p}: runner-network fault on attempt 1, retrying once`);
+    result.faults.forEach((fault) => console.error(`     attempt-1 ${fault}`));
+    result = await checkRoute(p, false);
+  } else if (result.navigation.kind !== "loaded") {
+    couldNotEvaluate.push(p); // not retried: counted here since willRetry deferred it
+  }
+  const { errors, faults, navigation } = result;
 
   if (errors.length) {
     failures.push(p);
     console.error(`FAIL ${p}`);
     [...new Set(errors)].forEach((error) => console.error(`     ${error}`));
-  } else if (navigation.kind === "loaded") {
+  }
+  if (faults.length) {
+    couldNotEvaluate.push(p);
+    console.error(`COULD-NOT-EVALUATE: runner-network fault route=${p}`);
+    [...new Set(faults)].forEach((fault) => console.error(`     ${fault}`));
+  }
+  if (!errors.length && !faults.length && navigation.kind === "loaded") {
     console.log(`OK   ${p}`);
   }
 }

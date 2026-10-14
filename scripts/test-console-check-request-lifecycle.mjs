@@ -4,6 +4,7 @@ import { once } from "node:events";
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
+import { isRunnerNetworkError } from "./runner-network-errors.mjs";
 
 const consoleCheckPath = fileURLToPath(new URL("./console-check.mjs", import.meta.url));
 const fixtureTimeoutMs = "600";
@@ -27,6 +28,10 @@ const htmlFor = (mode) => {
     "first-party-404": '<script src="/broken.js"></script>',
     "first-party-js-error":
       '<script>throw new Error("seeded first-party JS error: __missingGymboFixture")</script>',
+    "net-sub-always": '<script src="/net-fault.js"></script>',
+    "net-sub-once": '<script src="/net-once.js"></script>',
+    "net-sub-plus-404": '<script src="/net-fault.js"></script><script src="/broken.js"></script>',
+    "first-party-500": '<script src="/server-error.js"></script>',
     "isolated-third-party": '<script src="https://analytics.getgymbo.com/stall.js"></script>',
   };
 
@@ -37,8 +42,9 @@ const htmlFor = (mode) => {
 </html>`;
 };
 
-const runFixture = async (mode) => {
+const runFixture = async (mode, env = {}) => {
   const sockets = new Set();
+  let pageLoads = 0;
   const server = createServer((request, response) => {
     if (request.url === "/sitemap.xml") {
       if (mode === "sitemap-network-failure") {
@@ -63,6 +69,30 @@ const runFixture = async (mode) => {
       return;
     }
 
+    if (request.url === "/net-fault.js") {
+      request.socket.destroy();
+      return;
+    }
+
+    if (request.url === "/net-once.js") {
+      // Chromium silently retries one reset on a reused socket, so key the
+      // fault on the page load, not the request count: load 1 = dark-seed
+      // check, load 2 = first route attempt (faulted), load 3 = the retry.
+      if (pageLoads === 2) {
+        request.socket.destroy();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/javascript" });
+      response.end("// ok on retry");
+      return;
+    }
+
+    if (request.url === "/server-error.js") {
+      response.writeHead(500, { "content-type": "text/javascript" });
+      response.end("// deliberate 500");
+      return;
+    }
+
     if (request.url === "/stall.js") {
       response.writeHead(200, { "content-type": "text/javascript" });
       response.write("// deliberately left pending");
@@ -75,6 +105,7 @@ const runFixture = async (mode) => {
       return;
     }
 
+    pageLoads += 1;
     response.writeHead(200, { "content-type": "text/html" });
     response.end(htmlFor(mode));
   });
@@ -94,6 +125,7 @@ const runFixture = async (mode) => {
     env: {
       ...process.env,
       CONSOLE_CHECK_TEST_TIMEOUT_MS: fixtureTimeoutMs,
+      ...env,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -179,4 +211,47 @@ assert.match(
   /isolated non-gating third-party host\(s\): analytics\.getgymbo\.com/,
 );
 
-console.log("console-check request lifecycle controls: 8/8 PASS");
+// gy-18qle.1: runner-network faults are COULD-NOT-EVALUATE, never a product FAIL.
+// No HTTP server can emit ERR_NETWORK_CHANGED, so the seam aliases the two
+// errors a destroyed socket produces onto the runner-network list.
+const netAlias = { CONSOLE_CHECK_TEST_NETWORK_ERRORS: "net::ERR_EMPTY_RESPONSE,net::ERR_CONNECTION_RESET" };
+
+assert.equal(isRunnerNetworkError("net::ERR_NETWORK_CHANGED"), true);
+assert.equal(isRunnerNetworkError("net::ERR_CONNECTION_REFUSED"), false);
+assert.equal(isRunnerNetworkError("first-party response HTTP 500"), false);
+
+const netSub = await runFixture("net-sub-always", netAlias);
+assert.equal(netSub.code, 2, `seeded subresource network fault:\n${netSub.output}`);
+assert.match(netSub.output, /RETRY \/: runner-network fault/);
+assert.match(netSub.output, /COULD-NOT-EVALUATE: runner-network fault route=\//);
+assert.match(netSub.output, /host=127\.0\.0\.1:\d+ url=http:\/\/127\.0\.0\.1:\d+\/net-fault\.js/);
+assert.match(netSub.output, /product verdict incomplete/);
+assert.doesNotMatch(netSub.output, /gate FAIL|^FAIL /m);
+
+const netOnce = await runFixture("net-sub-once", netAlias);
+assert.equal(netOnce.code, 0, `one-shot network fault should pass on retry:\n${netOnce.output}`);
+assert.match(netOnce.output, /RETRY \/: runner-network fault on attempt 1/);
+assert.match(netOnce.output, /net-once\.js/);
+assert.match(netOnce.output, /all 1 pages clean/);
+
+const netNavigation = await runFixture("navigation-failure", netAlias);
+assert.equal(netNavigation.code, 2, "seeded navigation network fault had the wrong classification");
+assert.match(netNavigation.output, /RETRY \/network-reset/);
+assert.match(netNavigation.output, /COULD-NOT-EVALUATE: browser navigation failed/);
+assert.doesNotMatch(netNavigation.output, /gate FAIL/);
+
+const netPlus404 = await runFixture("net-sub-plus-404", netAlias);
+assert.equal(netPlus404.code, 1, "a real 404 beside a network fault must still FAIL");
+assert.match(netPlus404.output, /first-party response HTTP 404/);
+assert.doesNotMatch(netPlus404.output, /RETRY/, "a page with a product failure must not be retried");
+
+const serverError = await runFixture("first-party-500", netAlias);
+assert.equal(serverError.code, 1, "first-party 500 must FAIL");
+assert.match(serverError.output, /first-party response HTTP 500/);
+assert.doesNotMatch(serverError.output, /RETRY|COULD-NOT-EVALUATE/);
+
+// Without the alias the same destroyed socket is a plain first-party failure.
+const noAlias = await runFixture("net-sub-always");
+assert.equal(noAlias.code, 1, "unlisted error must remain a product FAIL");
+
+console.log("console-check request lifecycle controls: 15/15 PASS");
