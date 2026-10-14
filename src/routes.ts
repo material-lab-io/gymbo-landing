@@ -27,6 +27,10 @@ const STATIC_ROUTES: RouteDef[] = [
   { key: "terms", entry: "terms/index.html", url: "/terms/", priority: "0.3", changefreq: "yearly" },
   { key: "blog", entry: "blog/index.html", url: "/blog/", priority: "0.6", changefreq: "weekly" },
   { key: "guide", entry: "guide/index.html", url: "/guide/", priority: "0.7", changefreq: "weekly" },
+  // gy-hqvr4 — Resource 1 (Workout Builder Starter Pack). NOT YET PUBLIC: route exists for
+  // build/review; gy-674s8 (privacy notice) and a PM head-SHA publish authorization are both
+  // still open. Do not link to this route from any live page until both clear.
+  { key: "resourceWorkoutBuilderStarterPack", entry: "resources/workout-builder-starter-pack/index.html", url: "/resources/workout-builder-starter-pack/", priority: "0.6", changefreq: "monthly" },
 ];
 
 // One route per blog post (each needs a matching blog/<slug>/index.html entry).
