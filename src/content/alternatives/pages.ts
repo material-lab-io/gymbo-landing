@@ -33,7 +33,7 @@ const truecoach: Post = {
     },
     {
       q: "Does TrueCoach have scheduling?",
-      a: "No. TrueCoach assigns workouts but has no session-booking or calendar system. Gymbo includes a week-view schedule with one-tap class punches.",
+      a: "No. TrueCoach assigns workouts but has no session-booking or calendar system. Gymbo includes a week-view schedule with class punches in a couple of taps.",
     },
     {
       q: "Is Gymbo cheaper than TrueCoach?",
@@ -47,7 +47,7 @@ const truecoach: Post = {
 | | **Gymbo** | **TrueCoach** |
 |---|---|---|
 | Built for | Independent mobile trainers in India | Remote 1:1 coaches (mainly US/Western) |
-| The main job | Punch a class in one tap; track payments & balances | Remote programming & client engagement |
+| The main job | Punch a class in a couple of taps; track payments & balances | Remote programming & client engagement |
 | Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | Starter ~$26/mo (~₹2,200), caps at **5 clients** |
 | Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | Standard ~$58/mo (**~₹4,870**), caps at **20 clients** |
 | Pricing model | One flat price, no per-client tiers | Tiered by active client count (5 / 20 / 50) |
@@ -57,7 +57,7 @@ const truecoach: Post = {
 | WhatsApp | ✅ Reminders & sharing | ❌ Uses its own in-app chat |
 | Scheduling / session booking | ✅ Week view, day carousel | ❌ No scheduling system |
 | Sign-in | Phone + Face ID, no password | Email/password |
-| Class punches | **One tap**, balance updates itself | Programming-led; logs workouts, not payments |
+| Class punches | A couple of taps, balance updates itself | Programming-led; logs workouts, not payments |
 | Progress tracking | Vitals + photos (shipping this quarter) | ✅ Strong: metrics, photos, compliance |
 | Exercise video library | Growing | ✅ 3,000+ videos |
 | Free trial | ${GYMBO_TRIAL_ROW} | 14 days, no card |
@@ -94,8 +94,8 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
-- You want one-tap class punches with balances that reconcile themselves.
-- You need GST-ready statements, WhatsApp reminders, and a real schedule.
+- You want class punches in a couple of taps, with balances that reconcile themselves.
+- You need GST-ready statements (once you add your GSTIN), WhatsApp reminders, and a real schedule.
 - You want one flat, India-priced subscription with no per-client caps.
 
 ## the price story, plainly
@@ -108,7 +108,7 @@ Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${P
 const trainerize: Post = {
   slug: "trainerize",
   title: "trainerize is built for $100 sessions. gymbo is built for india.",
-  dek: "Trainerize is a genuinely strong coaching platform, used by 400,000+ trainers worldwide. But it's priced and shaped for Western coaching businesses. If you're an independent trainer in India charging ₹500–1,500 a session, the dollars, the missing UPI/GST, and no WhatsApp don't fit.",
+  dek: "Trainerize is a genuinely strong coaching platform, used by 400,000+ trainers worldwide. But it's priced and shaped for Western coaching businesses. If you're an independent trainer in India charging ₹500–2,500 a session, the dollars, the missing UPI/GST, and no WhatsApp don't fit.",
   date: "2026-06-23",
   // metaTitle/metaDescription are unused (no code reads them — see the static
   // build entry instead) but kept in sync so a future edit here isn't a false fix.
@@ -145,7 +145,7 @@ const trainerize: Post = {
 | | **Gymbo** | **Trainerize** |
 |---|---|---|
 | Built for | Independent mobile trainers in India | Coaches → studios → gyms → enterprise (global) |
-| The main job | Punch a class in one tap; track payments & balances | Online coaching, programming & client engagement |
+| The main job | Punch a class in a couple of taps; track payments & balances | Online coaching, programming & client engagement |
 | Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | $9/mo (~₹750), caps at **2 clients** |
 | Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹1,900+)** on Pro, before add-ons |
 | Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
@@ -153,7 +153,7 @@ const trainerize: Post = {
 | GST-ready invoices | ✅ | ❌ |
 | WhatsApp | ✅ Reminders & sharing | ❌ |
 | Sign-in | Phone + Face ID, no password, no email | Email/password |
-| Class punches | **One tap**, balance updates itself | Programming-led; heavier flow |
+| Class punches | A couple of taps, balance updates itself | Programming-led; heavier flow |
 | AI | Ask Gymbo + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
 | Branded client app | Not yet | ✅ (paid add-on) |
@@ -182,13 +182,13 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
-- You want to punch a class in one tap and see who's paid and who owes.
-- You need GST-ready statements and WhatsApp reminders.
+- You want to punch a class in a couple of taps and see who's paid and who owes.
+- You need GST-ready statements (once you add your GSTIN) and WhatsApp reminders.
 - You want one flat, India-priced subscription, not a bill that climbs with every client and add-on.
 
 ## the price story, plainly
 
-A real Trainerize seat for a 5–20 client trainer lands around **₹1,900+/mo** once you're past the 2-client cheap tier and add payments or nutrition. That's 2–5% of a typical Indian independent trainer's monthly income, for software.
+A real Trainerize seat for a 5–20 client trainer lands around **₹1,900+/mo** once you're past the 2-client cheap tier and add payments or nutrition. A real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears, for software.
 
 Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
@@ -213,7 +213,7 @@ const akton: Post = {
     },
     {
       q: "What's the difference between Akton and Gymbo?",
-      a: "Both are India-native (UPI, GST, WhatsApp). The difference is who they're for: Akton runs gyms (members, branches, staff, attendance); Gymbo runs the solo trainer (one-tap class punches, payment tracking, balances) from a phone. Akton is for if you run a gym; Gymbo is for if you are the gym.",
+      a: "Both are India-native (UPI, GST, WhatsApp). The difference is who they're for: Akton runs gyms (members, branches, staff, attendance); Gymbo runs the solo trainer (class punches in a couple of taps, payment tracking, balances) from a phone. Akton is for if you run a gym; Gymbo is for if you are the gym.",
     },
     {
       q: "Is Gymbo cheaper than Akton?",
@@ -238,11 +238,11 @@ Both are made in India, for India. The real question isn't features or price. It
 |---|---|---|
 | Built for | The **solo, mobile** independent trainer | **Gym owners** & facility operators |
 | Where you work | Homes, parks, a society gym, no facility | A physical gym with a door, staff, branches |
-| The main job | Punch a class in one tap; track payments & balances | Run a facility: members, attendance, branches, staff |
-| Anchor features | One-tap class punches, balances, payment ledger, scheduling | QR-turnstile check-in, crowd monitoring, multi-branch, staff payroll |
-| Client scale | Your ~15–25 clients | Hundreds of gym members |
+| The main job | Punch a class in a couple of taps; track payments & balances | Run a facility: members, attendance, branches, staff |
+| Anchor features | A couple of taps to punch a class, balances, payment ledger, scheduling | QR-turnstile check-in, crowd monitoring, multi-branch, staff payroll |
+| Client scale | A roster you know by name | Hundreds of gym members |
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
-| Setup | Productive in ~60 seconds, nothing to configure | Onboard a facility: branches, staff, members |
+| Setup | No setup, nothing to configure | Onboard a facility: branches, staff, members |
 | Platform | iPhone only | iPhone, Android, web |
 | Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | from ₹89/mo (gym suite, unlimited members) |
 | Free trial | ${GYMBO_TRIAL_ROW} | Not clearly stated |
@@ -269,7 +269,7 @@ A facility cockpit assumes a facility. As an independent trainer, here's what Ak
 - **Live crowd / occupancy monitoring**: there's no crowd to monitor.
 - **Multi-branch sync**: you don't have branches.
 - **Staff attendance & payroll**: you're a business of one; there's no staff to pay out.
-- **Membership lifecycle for hundreds of members**: you have a roster of 15–25 people you know by name.
+- **Membership lifecycle for hundreds of members**: you have a roster you know by name, not hundreds of members to manage.
 
 Install a gym-management suite as a solo trainer and you spend your time stepping around the 80% you don't need to reach the 20% that's actually your job: punch the class, record the payment, know the balance.
 
@@ -277,12 +277,12 @@ Install a gym-management suite as a solo trainer and you spend your time steppin
 
 Gymbo strips it down to the one-person business:
 
-- **Punch a class in one tap**: balances update themselves.
+- **Punch a class in a couple of taps**: balances update themselves.
 - **Payment tracking with a running ledger**: see who's paid, who owes, who's running low; send a reminder when you need to.
-- **GST-ready statements and UPI**: built in, India-first.
+- **GST-ready statements (once you add your GSTIN) and UPI**: built in, India-first.
 - **A real schedule**: day, week, and month views with conflict detection.
 - **A workout builder** with voice and paste import, plus a template library.
-- **No setup.** No branches, staff, or turnstiles to configure. You're productive in about a minute.
+- **No setup.** No branches, staff, or turnstiles to configure.
 
 ## when to choose which
 
@@ -294,7 +294,7 @@ Gymbo strips it down to the one-person business:
 **Choose Gymbo if:**
 - You're an independent trainer and the business is *you*.
 - You work out of homes, parks, or a shared gym, with no facility to manage.
-- You want one-tap class punches, clean payment tracking, and a tool you can run from your iPhone in seconds.
+- You want class punches in a couple of taps, clean payment tracking, and a tool you can run from your iPhone in seconds.
 
 ## on price, honestly
 

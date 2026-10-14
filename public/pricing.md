@@ -15,7 +15,7 @@ Gymbo is a business app for independent personal trainers in India. One simple s
 ## What's included on every plan
 
 - **Unlimited clients**: flat price, no per-client tiers or limits.
-- One-tap class punches with automatic balance math.
+- Class punches in a couple of taps, with automatic balance math.
 - Payment tracking (cash or UPI) with running balances and reminders.
 - Scheduling and your full client roster in one place.
 - A workout builder with templates (build and assign workouts), plus Ask Gymbo.
