@@ -12,6 +12,26 @@ import { looksLikeEmail } from "../lib/emailShape.mjs";
 
 type Status = "idle" | "loading" | "done" | "error" | "needs-contact" | "bad-email";
 
+// Why a submit did not go through. A closed set, so the event can never carry what the visitor typed.
+type SubmitErrorReason = "invalid_email" | "missing_contact" | "network" | "server";
+
+// Fire-and-forget, and a no-op where the tracker is absent (#110 scopes umami to production hostnames, so
+// localhost and CI have none). Payloads here are COUNTS ONLY: no name, email or phone value, ever.
+function track(event: string, data?: Record<string, string>) {
+  if (typeof window !== "undefined" && (window as any).umami) {
+    (window as any).umami.track(event, data);
+  }
+}
+
+// gy-becxi / marketer 2026-10-14: the missing mid-funnel step between waitlist_cta_click and waitlist_signup.
+// ONCE PER PAGE LOAD, not per form instance: the footer form is always mounted alongside whichever cluster
+// is revealed, so a per-instance flag would count one visitor twice. Module scope is the page-load scope.
+let formStartFired = false;
+
+function trackSubmitError(reason: SubmitErrorReason) {
+  track("waitlist_submit_error", { reason });
+}
+
 export function WaitlistForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [name, setName] = useState("");
@@ -49,6 +69,7 @@ export function WaitlistForm() {
   // Shared by the client check and a server 400. Keeps every typed value (nothing is cleared) and moves
   // focus to the field that needs fixing, so a keyboard or screen-reader user lands on it.
   function refuseEmail(hadPhone: boolean) {
+    trackSubmitError("invalid_email");
     setBadEmailHadPhone(hadPhone);
     setStatus("bad-email");
     emailRef.current?.focus();
@@ -62,6 +83,7 @@ export function WaitlistForm() {
     // the narrowest link in the chain. Neither field carries `required`, so the
     // browser cannot enforce "email or phone" for us; this does.
     if (!email.trim() && !phone.trim()) {
+      trackSubmitError("missing_contact");
       setStatus("needs-contact");
       // On ANY refused submit focus goes to the FIRST field the error is about (pm, gy-e60uc.7), so a keyboard or
       // screen-reader user lands where the fix is. This error is about the contact PAIR, and the first contact
@@ -98,15 +120,17 @@ export function WaitlistForm() {
           refuseEmail(phone.trim() !== "");
           return;
         }
-        throw new Error("bad status");
+        trackSubmitError("server");
+        setStatus("error");
+        return;
       }
       // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).
-      if (typeof window !== "undefined" && (window as any).umami) {
-        (window as any).umami.track("waitlist_signup");
-      }
+      track("waitlist_signup");
       setPhoneOnly(!gaveEmail);
       setStatus("done");
     } catch {
+      // Only a fetch that never produced a response lands here (the !res.ok branch handles its own).
+      trackSubmitError("network");
       // Real error UX (no silent auto-redirect): show an inline error with an
       // explicit, pre-filled mailto fallback so a lead can still reach us.
       setStatus("error");
@@ -159,6 +183,12 @@ export function WaitlistForm() {
   return (
     <form
       onSubmit={onSubmit}
+      // React's onFocus bubbles, so one handler on the form sees the first focus of any of the three fields.
+      onFocus={() => {
+        if (formStartFired) return;
+        formStartFired = true;
+        track("waitlist_form_start");
+      }}
       // gy-e60uc.2 (content's ruling): ONE ERROR, ONE VOICE. Without this the browser's own type=email check
       // refuses shapes it dislikes (e.g. "a@gmail,com") with ITS tooltip in ITS wording, while "a@b" and
       // "a@gmail" reach our ratified text: the same mistake would read two ways depending on the typo.
