@@ -77,7 +77,8 @@ test('a successful submit emits waitlist_signup and NO submit_error', async ({ p
   await page.goto('/');
   await footer(page).locator('input[name="phone"]').fill('9876543210');
   await footer(page).getByRole('button', { name: 'Request access' }).click();
-  await expect(footer(page).getByRole('status')).toBeVisible();
+  // the form is REPLACED by the role=status line on success, so the form locator no longer matches
+  await expect(page.locator('#cta').getByRole('status')).toBeVisible();
   const names = (await tracked(page)).map((e) => e.name);
   expect(names).toContain('waitlist_signup');
   expect(names).not.toContain('waitlist_submit_error');
