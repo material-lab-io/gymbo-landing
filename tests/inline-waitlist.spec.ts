@@ -1144,7 +1144,7 @@ test('compare page nav reveal stays inside a 390px viewport', async ({ page }) =
   await expect(panel).toBeVisible();
   const box = (await panel.boundingBox())!;
   expect(box.x, 'panel left edge inside the viewport').toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width, 'panel right edge inside the viewport').toBeLessThanOrEqual(390);
+  expect(box.x + box.width, 'panel right edge keeps the 16px margin the home nav panel has').toBeLessThanOrEqual(390 - 16 + 1);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow, 'no horizontal scroll').toBeLessThanOrEqual(0);
   const close = (await page.locator('[data-waitlist-close]').boundingBox())!;
