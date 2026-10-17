@@ -187,10 +187,10 @@ export function InlineWaitlist({
       // like nothing happened. Move the page ONLY as far as it takes to bring the whole panel
       // into view (block: nearest), and not at all when it already fits. This is not the footer
       // jump Damini reported. Overlays (nav, sticky bar) are anchored to the viewport and skip it.
-      // Phones are deliberately excluded: the earlier preventScroll control (the page must not chase a
-      // below-the-fold capture) still holds there, and whether a phone should nudge is designer's call.
+      // Phones nudge too (web_tester 17 Oct: at 360x654 / 390x718 / 412x789 the revealed form was 0 / 63 / 134px
+      // visible without it). scroll-margin-bottom keeps the form clear of the fixed sticky bar.
       const panelEl = panelRef.current;
-      if (panelEl && !dismissible && window.matchMedia("(min-width: 768px)").matches) panelEl.scrollIntoView({ block: "nearest", inline: "nearest" });
+      if (panelEl && !dismissible) panelEl.scrollIntoView({ block: "nearest", inline: "nearest" });
     });
     if (shared) shared.owner.setOpen(shared.id);
     else setLocalRevealed(true);

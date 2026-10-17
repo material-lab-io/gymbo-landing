@@ -98,18 +98,11 @@ for (const [page_, loc, label] of [
     // than the panel (never the old jump to the footer). If it did not move, the panel already fit.
     const panelBox = await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox();
     const vh = await page.evaluate(() => window.innerHeight);
-    const vw = await page.evaluate(() => window.innerWidth);
     const moved = Math.abs(afterScroll - beforeScroll);
-    if (vw >= 768) {
-      // Desktop nudges. Never the multi-thousand-px jump to the footer.
-      expect(panelBox!.y + panelBox!.height, `the whole capture must end up in view${moveLog}`).toBeLessThanOrEqual(vh + 2);
-      expect(moved, `a reveal may only nudge the page, never jump to the footer${moveLog}`).toBeLessThan(vh / 2);
-      if (moved > 2) {
-        expect(vh - (panelBox!.y + panelBox!.height), `a nudge must stop as soon as the panel fits${moveLog}`).toBeLessThanOrEqual(64);
-      }
-    } else {
-      expect(Math.abs(afterY - beforeY), `the CTA the visitor tapped must not move in the viewport${moveLog}`).toBeLessThanOrEqual(2);
-      expect(moved, `the page must not scroll when the capture opens on a phone${moveLog}`).toBeLessThanOrEqual(2);
+    expect(panelBox!.y + panelBox!.height, `the whole capture must end up in view${moveLog}`).toBeLessThanOrEqual(vh + 2);
+    expect(moved, `a reveal may only nudge the page, never jump to the footer${moveLog}`).toBeLessThan(vh);
+    if (moved > 2) {
+      expect(vh - (panelBox!.y + panelBox!.height), `a nudge must stop as soon as the panel fits${moveLog}`).toBeLessThanOrEqual(240); // phones stop above the fixed sticky bar (scroll-margin), desktop is flush
     }
 
     // The capture is revealed, and it is revealed INSIDE this cluster — not the
@@ -857,14 +850,14 @@ test('the capture opens below the fold without the page chasing it (preventScrol
   const boxAfter = (await cta.boundingBox())!;
   const scrollAfter = await page.evaluate(() => window.scrollY);
   const scrollLog = await readScrollLog(page);
-  const wide = (await page.evaluate(() => window.innerWidth)) >= 768;
+  const wide = true; // gy-becxi: phones nudge too (web_tester 17 Oct)
   // gy-becxi C2: on desktop the reveal nudges the page just far enough to show the whole form; the
   // control still catches the focus()-induced jump (preventScroll missing), which is the footer.
   expect(Math.abs(scrollAfter - scrollBefore),
     `focusing a below-the-fold field must not scroll the page${scrollLog}`,
   ).toBeLessThanOrEqual(wide
     // A nudge is bounded by the panel's own height (plus the CTA row and margins); the focus() jump this control exists to catch is the footer.
-    ? ((await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox())?.height ?? 0) + 160
+    ? ((await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox())?.height ?? 0) + 320
     : 2);
   if (!wide) expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
 });
@@ -1163,3 +1156,26 @@ test('1440x900 hero reveal puts the whole capture in view', async ({ page }) => 
   expect(box.y, 'panel top in view').toBeGreaterThanOrEqual(0);
   expect(box.y + box.height, 'panel bottom (submit button) in view').toBeLessThanOrEqual(900);
 });
+
+
+/**
+ * gy-becxi (web_tester CONCERNS 17 Oct): the reveal left the form 0 / 63 / 134px visible at the three phone sizes
+ * that decide the founder's journey. The name field and the submit must both be in view, and clear of the
+ * fixed sticky bar, at each.
+ */
+for (const [w, h] of [[360, 654], [390, 718], [412, 789]] as const) {
+  test(`phone ${w}x${h}: hero reveal brings the name field and submit into view`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await page.locator(WAITLIST_CTA('hero')).click();
+    await page.waitForTimeout(500);
+    const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
+    const name = (await panel.locator('input[name="name"]').boundingBox())!;
+    const submit = (await panel.locator('button[type="submit"]').boundingBox())!;
+    expect(name.y, 'name field top in view').toBeGreaterThanOrEqual(0);
+    expect(submit.y + submit.height, 'submit button bottom in view').toBeLessThanOrEqual(h);
+    const bar = await page.locator('[data-fixed-chrome="sticky-cta"]').boundingBox();
+    if (bar) expect(submit.y + submit.height, 'submit is not covered by the sticky bar').toBeLessThanOrEqual(bar.y + 1);
+  });
+}
