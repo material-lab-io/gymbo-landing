@@ -39,14 +39,18 @@ workflow_line() {
 
 if ! bootstrap_line=$(workflow_line 'name: Bootstrap dependencies') ||
    ! chromium_line=$(workflow_line 'name: Install Chromium (console check)') ||
-   ! regression_line=$(workflow_line 'name: Run prod regression') ||
+   ! regression_line=$(workflow_line 'name: Run console check') ||
+   ! smoke_line=$(workflow_line 'name: Run prod smoke (curl only)') ||
    ! deploy_line=$(workflow_line 'name: Verify live deploy matches main HEAD'); then
-  echo 'FAIL: Prod Watch is missing the bootstrap or one of its three production-facing steps.'
+  echo 'FAIL: Prod Watch is missing the bootstrap or one of its production-facing steps.'
   exit 1
 fi
+# gy-qgq5g: the curl half (smoke + deploy guard, job http-watch) needs no bootstrap and
+# precedes the browser half (job console-watch), where bootstrap -> chromium -> console check.
 if ! [ "$bootstrap_line" -lt "$chromium_line" ] ||
    ! [ "$chromium_line" -lt "$regression_line" ] ||
-   ! [ "$regression_line" -lt "$deploy_line" ]; then
+   ! [ "$smoke_line" -lt "$deploy_line" ] ||
+   ! [ "$deploy_line" -lt "$bootstrap_line" ]; then
   echo 'FAIL: Prod Watch production-facing steps are not ordered after dependency bootstrap.'
   exit 1
 fi
