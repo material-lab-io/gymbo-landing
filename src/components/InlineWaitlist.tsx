@@ -182,10 +182,19 @@ export function InlineWaitlist({
     requestAnimationFrame(() => {
       const first = panelRef.current?.querySelector<HTMLElement>("input, select, textarea");
       first?.focus({ preventScroll: true });
+      // gy-becxi C2 (web_designer 17 Oct): a hero panel opening BELOW its CTA on a 1440x900
+      // desktop left only the top edge of the name field above the fold, so the reveal looked
+      // like nothing happened. Move the page ONLY as far as it takes to bring the whole panel
+      // into view (block: nearest), and not at all when it already fits. This is not the footer
+      // jump Damini reported. Overlays (nav, sticky bar) are anchored to the viewport and skip it.
+      // Phones are deliberately excluded: the earlier preventScroll control (the page must not chase a
+      // below-the-fold capture) still holds there, and whether a phone should nudge is designer's call.
+      const panelEl = panelRef.current;
+      if (panelEl && !dismissible && window.matchMedia("(min-width: 768px)").matches) panelEl.scrollIntoView({ block: "nearest", inline: "nearest" });
     });
     if (shared) shared.owner.setOpen(shared.id);
     else setLocalRevealed(true);
-  }, [shared?.owner, shared?.id]);
+  }, [shared?.owner, shared?.id, dismissible]);
 
   // gy-w77x3 B2c -- closing returns focus to the control that opened the panel.
   // Without it a keyboard or screen-reader visitor is left on a node that has
@@ -258,7 +267,7 @@ export function InlineWaitlist({
             // footer's exact width; from sm up the column is wide enough that
             // the inset costs nothing and the panel sits inside it as designed.
             className={`${reclaimGutter ? "-mx-5 w-[calc(100%+40px)] sm:mx-0 sm:w-full" : "w-[min(calc(100vw-32px),360px)]"} ${above ? "mb-3" : "mt-5"} max-w-[480px] rounded-2xl p-5 ${panelClassName} ${reducedMotion ? "" : "gy-reveal"}`}
-            style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)" }}
+            style={{ background: F.charcoal, boxShadow: "var(--c-elevation-3)", scrollMarginBottom: "var(--gy-sticky-bar-clearance, 16px)" }}
           >
             {dismissible && (
               // The close row eats into the panel's own padding (-mt/-mr) so

@@ -92,8 +92,25 @@ for (const [page_, loc, label] of [
     const afterY = (await cta.boundingBox())!.y;
     const afterScroll = await page.evaluate(() => window.scrollY);
     const moveLog = await readScrollLog(page);
-    expect(Math.abs(afterY - beforeY), `the CTA the visitor tapped must not move in the viewport${moveLog}`).toBeLessThanOrEqual(2);
-    expect(Math.abs(afterScroll - beforeScroll), `the page must not scroll when the capture opens${moveLog}`).toBeLessThanOrEqual(2);
+    // gy-becxi C2 (web_designer 17 Oct): the page may move, but ONLY the minimum that brings the
+    // whole panel into view (scrollIntoView block: nearest). So: if it moved, the panel's bottom edge
+    // must sit flush with the viewport bottom (within the scroll-margin), and the move must be smaller
+    // than the panel (never the old jump to the footer). If it did not move, the panel already fit.
+    const panelBox = await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox();
+    const vh = await page.evaluate(() => window.innerHeight);
+    const vw = await page.evaluate(() => window.innerWidth);
+    const moved = Math.abs(afterScroll - beforeScroll);
+    if (vw >= 768) {
+      // Desktop nudges. Never the multi-thousand-px jump to the footer.
+      expect(panelBox!.y + panelBox!.height, `the whole capture must end up in view${moveLog}`).toBeLessThanOrEqual(vh + 2);
+      expect(moved, `a reveal may only nudge the page, never jump to the footer${moveLog}`).toBeLessThan(vh / 2);
+      if (moved > 2) {
+        expect(vh - (panelBox!.y + panelBox!.height), `a nudge must stop as soon as the panel fits${moveLog}`).toBeLessThanOrEqual(64);
+      }
+    } else {
+      expect(Math.abs(afterY - beforeY), `the CTA the visitor tapped must not move in the viewport${moveLog}`).toBeLessThanOrEqual(2);
+      expect(moved, `the page must not scroll when the capture opens on a phone${moveLog}`).toBeLessThanOrEqual(2);
+    }
 
     // The capture is revealed, and it is revealed INSIDE this cluster — not the
     // footer form becoming visible because the page moved.
@@ -840,10 +857,16 @@ test('the capture opens below the fold without the page chasing it (preventScrol
   const boxAfter = (await cta.boundingBox())!;
   const scrollAfter = await page.evaluate(() => window.scrollY);
   const scrollLog = await readScrollLog(page);
+  const wide = (await page.evaluate(() => window.innerWidth)) >= 768;
+  // gy-becxi C2: on desktop the reveal nudges the page just far enough to show the whole form; the
+  // control still catches the focus()-induced jump (preventScroll missing), which is the footer.
   expect(Math.abs(scrollAfter - scrollBefore),
     `focusing a below-the-fold field must not scroll the page${scrollLog}`,
-  ).toBeLessThanOrEqual(2);
-  expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
+  ).toBeLessThanOrEqual(wide
+    // A nudge is bounded by the panel's own height (plus the CTA row and margins); the focus() jump this control exists to catch is the footer.
+    ? ((await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox())?.height ?? 0) + 160
+    : 2);
+  if (!wide) expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
 });
 
 /**
@@ -1099,9 +1122,44 @@ test('clicking nav and pricing "Request access" emits waitlist_cta_click with it
   // visitor would (B2) before tapping on; the tracking under test is unchanged.
   await page.keyboard.press('Escape');
   await page.locator('[data-cta="waitlist"][data-cta-location="pricing"]').first().click();
-  const tracked = await page.evaluate(() => (window as any).__tracked);
+  // waitlist_form_start (gy-becxi) is its own event, covered in funnel-events.spec.ts; it fires when the revealed panel takes focus.
+  const tracked = (await page.evaluate(() => (window as any).__tracked)).filter((e: { name: string }) => e.name === 'waitlist_cta_click');
   expect(tracked).toEqual([
     { name: 'waitlist_cta_click', data: { location: 'nav' } },
     { name: 'waitlist_cta_click', data: { location: 'pricing' } },
   ]);
+});
+
+
+/**
+ * gy-becxi C1 (web_designer 17 Oct): the compare page's NAV reveal opened full-bleed and overflowed a 390px
+ * viewport (horizontal scroll, close X cut off) because it kept the in-column gutter reclaim that is wrong
+ * for an absolutely positioned panel. Same rule as the home nav.
+ */
+test('compare page nav reveal stays inside a 390px viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/compare/gymbo-vs-wellnessz/');
+  await page.locator(WAITLIST_CTA('nav')).click();
+  const panel = page.locator('[role="group"][aria-label="Request access"]').first();
+  await expect(panel).toBeVisible();
+  const box = (await panel.boundingBox())!;
+  expect(box.x, 'panel left edge inside the viewport').toBeGreaterThanOrEqual(0);
+  expect(box.x + box.width, 'panel right edge inside the viewport').toBeLessThanOrEqual(390);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow, 'no horizontal scroll').toBeLessThanOrEqual(0);
+  const close = (await page.locator('[data-waitlist-close]').boundingBox())!;
+  expect(close.x + close.width, 'close X fully visible').toBeLessThanOrEqual(390);
+});
+
+/** gy-becxi C2: a desktop hero reveal must put the whole form in view, not just its top edge. */
+test('1440x900 hero reveal puts the whole capture in view', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.locator(WAITLIST_CTA('hero')).click();
+  await page.waitForTimeout(400);
+  const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
+  await expect(panel).toBeVisible();
+  const box = (await panel.boundingBox())!;
+  expect(box.y, 'panel top in view').toBeGreaterThanOrEqual(0);
+  expect(box.y + box.height, 'panel bottom (submit button) in view').toBeLessThanOrEqual(900);
 });
