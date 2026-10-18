@@ -69,3 +69,30 @@ test("COULD NOT EVALUATE: a missing served text file is exit 2, never a pass", (
   const result = run(fixture(page(`<p>${CLEAN_TEXT}</p>`), { llms: null }));
   assert.equal(result.status, 2, result.stdout);
 });
+
+// gy-r0h3d: a plainly typed typographic dash must not defeat the day trigger.
+const DASHES = { hyphen: "-", "en dash": "–", "em dash": "—", "figure dash": "‒", "non-breaking hyphen": "‑", "minus sign": "−", space: " " };
+
+test("POSITIVE CONTROL: every dash form, in digit and word, fails unqualified and passes qualified", () => {
+  for (const [name, dash] of Object.entries(DASHES)) {
+    for (const count of ["7", "seven", "Seven"]) {
+      const bare = `Start your ${count}${dash}day free trial.`;
+      assert.equal(scanText(bare, "/", "t").length, 1, `${name} ${count}: ${bare}`);
+      assert.equal(scanText(`If eligible, start your ${count}${dash}day free trial.`, "/", "t").length, 0, `${name} ${count} qualified`);
+    }
+  }
+  assert.equal(scanText("Start your 7 – day free trial.", "/", "t").length, 1, "spaced en dash");
+});
+
+test("POSITIVE CONTROL: week forms of the trial claim fail unqualified", () => {
+  for (const text of ["Try it free for a week.", "A one-week free trial.", "Your 1–week trial is free."]) {
+    assert.equal(scanText(text, "/", "t").length, 1, text);
+  }
+  assert.equal(scanText("Eligible subscribers get a one-week free trial.", "/", "t").length, 0);
+});
+
+test("over-breadth stays green: dashed day text with no free/trial claim", () => {
+  for (const text of ["Pay within 7–day terms.", "Reports run on a seven—day cycle.", "Book a week ahead."]) {
+    assert.equal(scanText(text, "/", "t").length, 0, text);
+  }
+});
