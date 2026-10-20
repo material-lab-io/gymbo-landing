@@ -127,17 +127,23 @@ fi
 # 🔴 READ THIS BEFORE "SIMPLIFYING" IT TO A CHECK ON /w/ OR /m/.
 #
 # /w/<token> and /m/<id> were 100% dead in production from the day they shipped
-# and nothing here noticed, because the Pages production environment had no
-# SUPABASE_SERVICE_ROLE_KEY: every read 401'd and both handlers fell through to
-# their UNIFORM REFUSAL. That refusal is a deliberate privacy property -- an
-# expired-vs-unknown distinction is an oracle for a token guesser -- but it also
-# makes a total outage byte-for-byte identical to a correct refusal.
+# and nothing here noticed: every database read failed and both handlers fell
+# through to their UNIFORM REFUSAL. That refusal is a deliberate privacy property
+# -- an expired-vs-unknown distinction is an oracle for a token guesser -- but it
+# also makes a total outage byte-for-byte identical to a correct refusal.
 #
 # Measured 2026-09-11: a VALID prod-minted token and the string "not-a-token"
 # both returned HTTP 404 at exactly 3884 bytes. Every check we had was a refusal
 # check, and every one of them passed. A control that cannot fail is not a
 # control, so the probe asks the question those routes cannot answer.
 #
+# gy-7a8qs (2026-10-20): BOTH surfaces now read through ANON RPCs and no service
+# key exists on Pages, so the old service-key verdict ("db") and the dated
+# gy-gcr22 allowance that excused it are DELETED. The allowance lapsed on
+# 2026-10-15 exactly as designed and Prod Watch went red for 40 runs on a check
+# for a credential nothing uses. There is deliberately NO allowance to replace
+# it: a red here now means a real surface is dead.
+
 # 🔴 WHEN THIS IS *REQUIRED*, AND WHY IT IS NOT ALWAYS.
 # The first version of this check failed the PRE-DEPLOY gate and the gate
 # self-test fixtures, because both target things that legitimately have no
@@ -167,134 +173,44 @@ HEALTH_FILE="$(mktemp)"
 HCODE="$(curl -sL --compressed --max-time 20 -o "$HEALTH_FILE" -w '%{http_code}' "$ENDPOINT" 2>/dev/null)"
 HBODY="$(tr -d '\n' < "$HEALTH_FILE")"
 
-db_verdict() {
-  if [ "$HCODE" = "200" ] && printf '%s' "$HBODY" | grep -q '"db":"ok"'; then
-    echo "OK|server-side database read succeeds"
-  elif printf '%s' "$HBODY" | grep -q '"db":"unconfigured"'; then
-    echo "FAIL|SUPABASE_SERVICE_ROLE_KEY is NOT BOUND in this environment. /w/ and /m/takedown are refusing EVERY request, including valid ones, and the uniform refusal hides it. This is gy-gcr22; it needs the binding added, not a code change. /m/ itself reads through the anon RPC and is reported separately as m_rpc."
-  elif printf '%s' "$HBODY" | grep -q '"db":"rejected"'; then
-    echo "FAIL|PostgREST REJECTED the service_role key (wrong, rotated or revoked). /w/ and /m/takedown are dead. Not the same as an absent binding. /m/ is reported separately as m_rpc."
+# rpc_verdict <field> <rpc name> <surface>  ->  "STATE|message"
+# Verdicts stay distinct because they need different people: a missing grant is
+# one line of SQL, a missing function is a migration.
+rpc_verdict() {
+  local field="$1" rpc="$2" surface="$3"
+  if printf '%s' "$HBODY" | grep -q "\"$field\":\"ok\""; then
+    echo "OK|anon $rpc RPC answers — $surface can serve"
+  elif printf '%s' "$HBODY" | grep -q "\"$field\":\"denied\""; then
+    echo "FAIL|anon has LOST EXECUTE on $rpc — $surface is dead for every viewer while the rest of the site looks fine. One GRANT fixes it; this is not a code change."
+  elif printf '%s' "$HBODY" | grep -q "\"$field\":\"missing\""; then
+    echo "FAIL|$rpc is not in the schema cache (absent, renamed or re-signatured) — $surface is dead. Needs a migration, not a grant."
+  elif printf '%s' "$HBODY" | grep -q "\"$field\":"; then
+    echo "FAIL|/api/health reports an unhealthy anon $rpc RPC: $(printf '%s' "$HBODY" | head -c 200)"
   elif [ "$HCODE" = "404" ]; then
     # "The check is not there" must never read as "the check passed".
-    echo "FAIL|/api/health returned 404 — the probe itself is not deployed, so DB reachability is UNKNOWN, not OK."
+    echo "FAIL|/api/health returned 404 — the probe itself is not deployed, so $surface reachability is UNKNOWN, not OK."
   else
-    echo "FAIL|/api/health HTTP $HCODE body=$(printf '%s' "$HBODY" | head -c 200)"
+    # An OLD probe has no such field at all. Same rule: UNKNOWN is not OK.
+    echo "UNKNOWN|/api/health carries no $field verdict, so the anon $surface path is UNPROBED. This is an older probe, not a healthy $surface. (HTTP $HCODE body=$(printf '%s' "$HBODY" | head -c 200))"
   fi
 }
-DB_RESULT="$(db_verdict)"
-DB_STATE="${DB_RESULT%%|*}"
-DB_MSG="${DB_RESULT#*|}"
 
-# --- gy-gcr22 AC5: the SECOND credential, reported separately ------------------
-#
-# /m/ stopped using the service_role key and now reads through the anon
-# media_page RPC. So "db" no longer speaks for /m/, and a verdict that pretends
-# it does would recreate the original gy-gcr22 outage on the new path: /m/ dead
-# for every viewer while this script prints OK.
-#
-# 🔴 THIS IS DELIBERATELY OUTSIDE THE gy-gcr22 ALLOWANCE BELOW. That allowance is
-# pinned to db:"unconfigured" — an unbound service key, ruled a non-goal of this
-# cut. A missing anon grant is NOT that condition, is not ruled on by anyone, and
-# is one line of SQL to fix. It must go red on its own even while the db half is
-# being excused, or the allowance quietly widens into a hole.
-m_rpc_verdict() {
-  if printf '%s' "$HBODY" | grep -q '"m_rpc":"ok"'; then
-    echo "OK|anon media_page RPC answers — /m/ can serve"
-  elif printf '%s' "$HBODY" | grep -q '"m_rpc":"denied"'; then
-    echo "FAIL|anon has LOST EXECUTE on media_page — /m/ is dead for every viewer while the rest of the site looks fine. One GRANT fixes it; this is not a code change."
-  elif printf '%s' "$HBODY" | grep -q '"m_rpc":"missing"'; then
-    echo "FAIL|media_page is not in the schema cache (absent, renamed or re-signatured) — /m/ is dead. Needs a migration, not a grant."
-  elif printf '%s' "$HBODY" | grep -q '"m_rpc":'; then
-    echo "FAIL|/api/health reports an unhealthy anon media_page RPC: $(printf '%s' "$HBODY" | head -c 200)"
+# Each surface is judged on its own and neither short-circuits the other: /m/ can
+# be dead while /w/ serves, and vice versa.
+for spec in "w_rpc|shared_workout_page|/w/" "m_rpc|media_page|/m/"; do
+  IFS='|' read -r FIELD RPC SURFACE <<< "$spec"
+  RESULT="$(rpc_verdict "$FIELD" "$RPC" "$SURFACE")"
+  STATE="${RESULT%%|*}"
+  MSG="${RESULT#*|}"
+  if [ "$STATE" = "OK" ]; then
+    log "OK   /api/health $FIELD: $MSG"
+  elif [ "$DB_REQUIRED" = "1" ]; then
+    fail "/api/health $FIELD: $MSG"
   else
-    # An OLD probe that predates AC5 has no m_rpc field at all. "The check is not
-    # there" must never read as "the check passed" — same rule as the 404 above.
-    echo "UNKNOWN|/api/health carries no m_rpc verdict, so the anon /m/ path is UNPROBED. This is a probe older than gy-gcr22 AC5, not a healthy /m/."
+    # Reported, attributable, and explicitly not counted -- not skipped in silence.
+    log "INFO /api/health $FIELD not required for this target (no database expected here; production always requires it). Observed: $MSG"
   fi
-}
-M_RESULT="$(m_rpc_verdict)"
-M_STATE="${M_RESULT%%|*}"
-M_MSG="${M_RESULT#*|}"
-
-# --- THE gy-gcr22 ALLOWANCE: a NAMED, SIGNATURE-PINNED, DATED non-red ---------
-#
-# 🔴 WHY THIS EXISTS AT ALL. gy-gcr22 is real, known, and NOT OURS TO FIX: the
-# Cloudflare Pages production environment has no SUPABASE_SERVICE_ROLE_KEY, so
-# /w/ and /m/ are dead. Binding it is a prod-credential action behind the
-# Kaushik gate, and pm has ruled the no-login web surface a NAMED NON-GOAL of
-# this cut — it ships next. So the condition will persist for a while by
-# decision, not by neglect.
-#
-# The harm in the meantime is WALLPAPER. This script is also prod-watch.yml's
-# hourly regression and every deploy's post-deploy verification, so a permanent
-# red trained everyone to stop reading both: 29 consecutive red Prod Watch runs
-# over ~28 hours by 2026-09-12, and a deploy step that says FAIL while the
-# deploy in fact succeeded. pm dismissed five pages as known-red in one week and
-# found the MASKED COUNT BEHIND THEM HAD MOVED FROM 1 TO 6. A check nobody reads
-# is worse than no check, because it still claims to be watching.
-#
-# 🔴 WHAT MAKES THIS AN ALLOWANCE AND NOT A SUPPRESSION — all four, on purpose:
-#   PINNED TO ONE SIGNATURE. Only "db":"unconfigured" is allowed. "rejected" (a
-#     wrong/rotated/revoked key), a 404 (probe not deployed), and any other HTTP
-#     or body still FAIL. Those are the states that would otherwise hide behind
-#     this one, and they are exactly the failure modes a reader would assume
-#     "the health check is known red" already covers.
-#   STILL LOUD. It prints KNOWN, not OK, and names the bead. Nothing is skipped
-#     in silence and the line cannot be mistaken for a pass.
-#   DATED, SO IT CANNOT OUTLIVE THE DECISION. After the date below it goes RED
-#     again on its own and forces a fresh ruling. An undated allowance is a
-#     permanent one that nobody chose.
-#   SELF-RETIRING. If the key is ever bound, the OK branch says so and tells the
-#     next reader to delete this block, so it does not linger as dead code that
-#     still looks like policy.
-#
-# The date is MY choice, not a ruling, and it is one line to change: pm said the
-# surface "ships next", so this is set to roughly a month out.
-GCR22_ALLOWANCE_UNTIL="2026-10-15"
-# SMOKE_FAKE_TODAY exists so the EXPIRY can itself be a negative control — an
-# allowance whose expiry has never been seen to fire is an allowance nobody has
-# checked is temporary. Setting it is no easier to hide than editing the
-# constant above, and setting it to a PAST date only makes this gate stricter.
-GCR22_TODAY="${SMOKE_FAKE_TODAY:-$(date -u +%Y-%m-%d)}"
-
-if [ "$DB_STATE" = "OK" ]; then
-  log "OK   /api/health: $DB_MSG"
-  # Positive control on the allowance itself: the moment this passes, the block
-  # above is dead code that still reads as policy. Say so, here, where whoever
-  # is looking at a green run will see it.
-  if [ "$GCR22_TODAY" \< "$GCR22_ALLOWANCE_UNTIL" ]; then
-    log "INFO the gy-gcr22 allowance in this script is now UNNECESSARY (the key is bound) — delete it."
-  fi
-elif [ "$DB_REQUIRED" = "1" ] \
-     && printf '%s' "$HBODY" | grep -q '"db":"unconfigured"' \
-     && [ "$GCR22_TODAY" \< "$GCR22_ALLOWANCE_UNTIL" ]; then
-  # The known, ruled-on, non-goal condition. Reported in full, attributed, and
-  # deliberately NOT counted as a failure of THIS deploy or THIS hour.
-  log "KNOWN /api/health: SUPABASE_SERVICE_ROLE_KEY is NOT BOUND (gy-gcr22). /w/ and /m/takedown refuse every request."
-  # 🔴 NARROWED SINCE gy-gcr22 AC5. This line used to say "/w/ and /m/". /m/ no
-  # longer uses the service key, so naming it here asserted an outage on a
-  # surface that is in fact serving — and would have sent the next reader
-  # hunting the wrong credential. /m/ has its own verdict, reported below.
-  log "KNOWN   ruled a non-goal of this cut by pm; binding it is a prod-credential action behind the Kaushik gate."
-  log "KNOWN   NOT counted as a failure until $GCR22_ALLOWANCE_UNTIL, after which this goes RED again by design."
-  log "KNOWN   every OTHER database state (rejected / 404 / any other body) still FAILS — this is pinned to one signature."
-elif [ "$DB_REQUIRED" = "1" ]; then
-  fail "/api/health: $DB_MSG"
-else
-  # Reported, attributable, and explicitly not counted -- not skipped in silence.
-  log "INFO /api/health not required for this target (no database expected here; production always requires it). Observed: $DB_MSG"
-fi
-
-# The anon /m/ verdict, judged on its own. Note this runs for the SAME targets the
-# db verdict is required on, and is NOT gated on DB_STATE: the whole point is that
-# /m/ can be dead while the service path is healthy, and vice versa.
-if [ "$M_STATE" = "OK" ]; then
-  log "OK   /api/health m_rpc: $M_MSG"
-elif [ "$DB_REQUIRED" = "1" ]; then
-  fail "/api/health m_rpc: $M_MSG"
-else
-  log "INFO /api/health m_rpc not required for this target. Observed: $M_MSG"
-fi
+done
 rm -f "$HEALTH_FILE"
 
 echo "=== getgymbo smoke ($URL) ==="

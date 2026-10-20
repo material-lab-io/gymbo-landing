@@ -153,75 +153,58 @@ jobs:
           fi
           echo "OK: baseline fixture passes cleanly (negative controls below are meaningful)."
 
-      # 🔴 THE DB PROBE MUST BE SHOWN CAPABLE OF FAILING (gy-gcr22).
+      # =====================================================================
+      # 🔴 THE REACHABILITY PROBE MUST BE SHOWN CAPABLE OF FAILING (gy-gcr22,
+      # reworked gy-7a8qs).
       #
-      # This PR's entire purpose is a probe, so a green here that never exercised
-      # the probe's failing path would prove nothing about it -- and merging that
-      # would give us a GREEN MONITOR OVER A DEAD SURFACE, which is exactly how
-      # gy-gcr22 stayed invisible from the day it shipped.
+      # A green from a probe that has never been seen to fail proves nothing --
+      # and merging that gives a GREEN MONITOR OVER A DEAD SURFACE, which is how
+      # gy-gcr22 stayed invisible from the day it shipped. The sanity step above
+      # proves the PASS path (the good fixture serves w_rpc:ok and m_rpc:ok).
+      # These prove each FAIL path, with SMOKE_EXPECT_DB=1 because a fixture is
+      # not production and the check is otherwise (correctly) advisory there.
       #
-      # The sanity step above already proves the PASS path: the good fixture
-      # serves {"db":"ok"} and check 9 accepts it. This proves the FAIL path, and
-      # sets SMOKE_EXPECT_DB=1 because a fixture is not production and the check
-      # is otherwise (correctly) advisory there.
-      # 🔴 THE gy-gcr22 ALLOWANCE, AND THE FOUR CONTROLS THAT KEEP IT AN
-      # ALLOWANCE RATHER THAN A SUPPRESSION.
-      #
-      # WHAT CHANGED AND WHY, because this block previously asserted the exact
-      # OPPOSITE and that inversion must not look like an accident. Until
-      # 2026-09-12 the rule was "db:unconfigured MUST fail the gate". It was the
-      # right rule when the probe was new and unproven. It became wallpaper: pm
-      # ruled the no-login web surface a NAMED NON-GOAL of this cut and the
-      # binding a prod-credential action, so the condition now persists BY
-      # DECISION. Meanwhile this script is prod-watch.yml's hourly regression and
-      # every deploy's post-deploy check, so it produced 29 consecutive red Prod
-      # Watch runs in ~28 hours and a deploy step reporting FAIL on a deploy that
-      # succeeded. pm dismissed five pages as known-red in one week and found the
-      # MASKED COUNT BEHIND THEM HAD MOVED FROM 1 TO 6.
-      #
-      # So the gate now reports this ONE signature as KNOWN and does not count
-      # it. Everything below exists to prove that is narrow, loud and temporary.
-      - name: Allowance control 1 — the KNOWN signature does not fail, and says so
+      # gy-7a8qs: the service-key verdict and its dated gy-gcr22 allowance are
+      # GONE. The key is not a dependency of /w/ or /m/takedown any more, and the
+      # allowance lapsed 2026-10-15 into 40 red Prod Watch runs. There is no
+      # allowance now, so there is no allowance to prove narrow.
+      # =====================================================================
+      - name: w_rpc control 1 — a REVOKED anon grant on /w/ FAILS while /m/ is healthy
         run: |
           set -e
           FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
+          bash scripts/build-fixture-site.sh "$FIX" w-rpc-denied
           python3 -m http.server 8907 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if ! CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8907 > /tmp/db-known.log 2>&1; then
-            echo "::error::getgymbo-smoke.sh FAILED on the known gy-gcr22 signature. The allowance is not working, so prod-watch and every deploy stay permanently red."
-            cat /tmp/db-known.log
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8907 > /tmp/w-denied.log 2>&1; then
+            echo "::error::The gate PASSED while /w/ was dead for every viewer. /m/ being healthy is not a verdict about /w/."
+            cat /tmp/w-denied.log
             exit 1
           fi
-          # Passing is not enough — a SILENT pass is the thing being guarded
-          # against. It must still name the condition and its expiry.
-          grep -q 'KNOWN /api/health' /tmp/db-known.log || { echo "::error::The gate passed but never reported the KNOWN condition — that is silence, not an allowance."; cat /tmp/db-known.log; exit 1; }
-          grep -q 'gy-gcr22' /tmp/db-known.log || { echo "::error::The KNOWN line does not name the bead, so a reader cannot chase it."; exit 1; }
-          grep -q 'goes RED again' /tmp/db-known.log || { echo "::error::The KNOWN line does not state its expiry, so nothing marks the allowance as temporary."; exit 1; }
-          echo "OK: the known condition is reported loudly and not counted."
+          grep -q 'w_rpc' /tmp/w-denied.log || { echo "::error::It failed, but not on the anon shared_workout_page verdict."; cat /tmp/w-denied.log; exit 1; }
+          grep -q 'LOST EXECUTE on shared_workout_page' /tmp/w-denied.log || { echo "::error::The failure does not name the cause, so nobody can act on it."; cat /tmp/w-denied.log; exit 1; }
+          grep -q 'OK   /api/health m_rpc' /tmp/w-denied.log || { echo "::error::The healthy /m/ verdict vanished once /w/ failed. Each surface must be reported on its own."; cat /tmp/w-denied.log; exit 1; }
+          echo "OK: a missing anon grant on /w/ turns the gate red on its own."
 
-      # 🔴 THIS IS THE ANTI-MASKING CONTROL AND IT IS THE POINT OF THE WHOLE
-      # CHANGE. A key that EXISTS but is wrong, rotated or revoked is a different
-      # fault from an absent binding, and it is precisely what a reader would
-      # wrongly assume "the health check is known red" already covers.
-      - name: Allowance control 2 — a REJECTED key must still FAIL
+      - name: m_rpc control 1 — a REVOKED anon grant on /m/ FAILS while /w/ is healthy
         run: |
           set -e
           FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" db-rejected
-          python3 -m http.server 8911 --directory "$FIX" &
+          bash scripts/build-fixture-site.sh "$FIX" m-rpc-denied
+          python3 -m http.server 8915 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8911 > /tmp/db-rej.log 2>&1; then
-            echo "::error::The gate PASSED on a REJECTED service_role key. The gy-gcr22 allowance is masking a different database fault — exactly the failure it was written to avoid."
-            cat /tmp/db-rej.log
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8915 > /tmp/m-denied.log 2>&1; then
+            echo "::error::The gate PASSED while /m/ was dead for every viewer. /w/ being healthy is not a verdict about /m/."
+            cat /tmp/m-denied.log
             exit 1
           fi
-          grep -q 'REJECTED the service_role key' /tmp/db-rej.log || { echo "::error::It failed, but not on the rejected key — it does not discriminate between database states."; cat /tmp/db-rej.log; exit 1; }
-          echo "OK: a rejected key still fails; the allowance is pinned to one signature."
+          grep -q 'm_rpc' /tmp/m-denied.log || { echo "::error::It failed, but not on the anon media_page verdict."; cat /tmp/m-denied.log; exit 1; }
+          grep -q 'LOST EXECUTE on media_page' /tmp/m-denied.log || { echo "::error::The failure does not name the cause, so nobody can act on it."; cat /tmp/m-denied.log; exit 1; }
+          grep -q 'OK   /api/health w_rpc' /tmp/m-denied.log || { echo "::error::The healthy /w/ verdict vanished once /m/ failed. Each surface must be reported on its own."; cat /tmp/m-denied.log; exit 1; }
+          echo "OK: a missing anon grant on /m/ turns the gate red on its own."
 
-      # "The check is not there" must never read as "the check passed", and the
-      # allowance must not have quietly widened that hole either.
-      - name: Allowance control 3 — an ABSENT probe must still FAIL
+      # "The check is not there" must never read as "the check passed".
+      - name: Control — an ABSENT probe must FAIL
         run: |
           set -e
           FIX=$(mktemp -d)
@@ -230,135 +213,68 @@ jobs:
           python3 -m http.server 8912 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
           if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8912 > /tmp/db-404.log 2>&1; then
-            echo "::error::The gate PASSED with /api/health absent. DB reachability is UNKNOWN, not OK, and the allowance has widened into a hole."
+            echo "::error::The gate PASSED with /api/health absent. Reachability is UNKNOWN, not OK."
             cat /tmp/db-404.log
             exit 1
           fi
           echo "OK: an absent probe still fails."
 
-      # 🔴 AN ALLOWANCE WHOSE EXPIRY HAS NEVER BEEN SEEN TO FIRE IS A PERMANENT
-      # ONE THAT NOBODY CHOSE. This proves the date is load-bearing.
-      - name: Allowance control 4 — the allowance EXPIRES
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
-          python3 -m http.server 8913 --directory "$FIX" &
-          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 SMOKE_FAKE_TODAY=2099-01-01 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8913 > /tmp/db-exp.log 2>&1; then
-            echo "::error::The gy-gcr22 allowance did NOT expire — it is permanent, and a permanent allowance is a suppression."
-            cat /tmp/db-exp.log
-            exit 1
-          fi
-          grep -q 'SUPABASE_SERVICE_ROLE_KEY is NOT BOUND' /tmp/db-exp.log || { echo "::error::It failed after expiry, but not on the DB probe."; cat /tmp/db-exp.log; exit 1; }
-          echo "OK: past its date the allowance lapses and the condition goes red again."
-
-      # 🔴 THE CONTROL FOR pm's ACTUAL FEAR, stated in their words: "I dismissed
-      # five pages as known-red this week and the masked count had moved from 1
-      # to 6 behind them." The danger of a known-red is never the known fault —
-      # it is the SECOND fault arriving into a surface nobody reads any more.
-      # This proves a real regression still turns the gate red while the known
-      # condition is simultaneously active and being reported.
-      - name: Allowance control 5 — a REAL regression still fails alongside the known condition
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
-          sed -i 's/\xe2\x82\xb9399/\xe2\x82\xb9999/g' "$FIX/index.html"
-          python3 -m http.server 8914 --directory "$FIX" &
-          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914 > /tmp/db-both.log 2>&1; then
-            echo "::error::A broken page PASSED while the gy-gcr22 condition was active. The allowance is hiding real regressions behind a known one — the exact 1-to-6 masking this was written to prevent."
-            cat /tmp/db-both.log
-            exit 1
-          fi
-          grep -q 'FAIL: body missing' /tmp/db-both.log || { echo "::error::It failed, but not on the content regression."; cat /tmp/db-both.log; exit 1; }
-          grep -q 'KNOWN /api/health' /tmp/db-both.log || { echo "::error::The known condition stopped being reported once something else failed — it must stay visible."; cat /tmp/db-both.log; exit 1; }
-          echo "OK: a real regression still turns the gate red, and the known condition is still reported beside it."
-
-      # The other side of the same rule: on a target with no database the check
-      # must REPORT rather than fail -- and must not be silently absent either.
-      - name: Negative control — the DB probe is advisory, not silent, off production
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" db-unconfigured
-          python3 -m http.server 8908 --directory "$FIX" &
-          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8908 > /tmp/db-adv.log 2>&1 || {
-            echo "::error::The smoke gate FAILED on a non-production target for a missing database. That is the defect that blocked every deploy on the first attempt at this change."
-            cat /tmp/db-adv.log; exit 1; }
-          if ! grep -q 'INFO /api/health not required for this target' /tmp/db-adv.log; then
-            echo "::error::The DB probe left NO line in the output. An unreported check and a passing one must not look alike."
-            cat /tmp/db-adv.log; exit 1
-          fi
-          echo "OK: off production the DB probe reports without failing, and is visible in the log."
-
-      # =====================================================================
-      # gy-gcr22 AC5 — THE ANON /m/ PATH IS A SECOND CREDENTIAL, AND ITS GATE
-      # MUST BE SHOWN TO FAIL BEFORE ANY GREEN FROM IT MEANS ANYTHING.
-      #
-      # /m/ stopped using the service_role key and now reads through the anon
-      # media_page RPC. The "db" verdict no longer speaks for it. A gate that has
-      # only ever been observed saying OK about /m/ has not been shown to watch
-      # /m/ at all -- which is precisely how the original gy-gcr22 outage stayed
-      # invisible for as long as it did.
-      # =====================================================================
-      - name: m_rpc control 1 — a REVOKED anon grant FAILS even with a healthy service key
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" m-rpc-denied
-          python3 -m http.server 8915 --directory "$FIX" &
-          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8915 > /tmp/m-denied.log 2>&1; then
-            echo "::error::The gate PASSED while /m/ was dead for every viewer. db:ok is not a verdict about /m/, and treating it as one rebuilds the gy-gcr22 blind spot on the new credential."
-            cat /tmp/m-denied.log
-            exit 1
-          fi
-          grep -q 'm_rpc' /tmp/m-denied.log || { echo "::error::It failed, but not on the anon media_page verdict."; cat /tmp/m-denied.log; exit 1; }
-          grep -q 'LOST EXECUTE' /tmp/m-denied.log || { echo "::error::The failure does not name the cause, so nobody can act on it."; cat /tmp/m-denied.log; exit 1; }
-          echo "OK: a missing anon grant turns the gate red on its own."
-
-      # 🔴 THE ANTI-MASKING CONTROL FOR THE NEW VERDICT. The gy-gcr22 allowance is
-      # pinned to db:"unconfigured". A missing anon grant is a DIFFERENT fault that
-      # nobody has ruled on, and it must not inherit that excuse -- otherwise the
-      # allowance widens into exactly the hole it was written to close.
-      - name: m_rpc control 2 — the gy-gcr22 allowance must NOT excuse a dead /m/
-        run: |
-          set -e
-          FIX=$(mktemp -d)
-          bash scripts/build-fixture-site.sh "$FIX" m-rpc-denied-and-db-unconfigured
-          python3 -m http.server 8916 --directory "$FIX" &
-          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
-          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8916 > /tmp/m-both.log 2>&1; then
-            echo "::error::A dead /m/ PASSED because the service key happened to be unbound. The allowance is masking a second, unruled fault."
-            cat /tmp/m-both.log
-            exit 1
-          fi
-          grep -q 'm_rpc' /tmp/m-both.log || { echo "::error::It failed, but not on the anon media_page verdict."; cat /tmp/m-both.log; exit 1; }
-          grep -q 'KNOWN /api/health' /tmp/m-both.log || { echo "::error::The known db condition stopped being reported once /m/ failed — it must stay visible beside it."; cat /tmp/m-both.log; exit 1; }
-          echo "OK: the allowance still excuses only its own pinned signature."
-
-      # "The check is not there" must never read as "the check passed" -- the same
-      # rule the 404 branch already enforces, applied to a probe deployed from
-      # before AC5 that carries no m_rpc field at all.
-      - name: m_rpc control 3 — an UNPROBED /m/ is not a healthy /m/
+      # The same rule for a probe that exists but predates the verdict: an old
+      # body (including the retired service-key shape) carries no w_rpc/m_rpc
+      # field, so both surfaces are UNPROBED rather than healthy.
+      - name: Control — an UNPROBED surface is not a healthy surface
         run: |
           set -e
           FIX=$(mktemp -d)
           bash scripts/build-fixture-site.sh "$FIX" good
-          # An old probe: db verdict present, m_rpc field absent entirely.
           printf '%s' '{"db":"ok"}' > "$FIX/api/health"
           python3 -m http.server 8917 --directory "$FIX" &
           SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
           if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8917 > /tmp/m-old.log 2>&1; then
-            echo "::error::A probe with NO m_rpc verdict passed as healthy. An unprobed /m/ is UNKNOWN, not OK — that equivalence is the whole gy-gcr22 defect."
+            echo "::error::A probe with NO w_rpc/m_rpc verdict passed as healthy. An unprobed surface is UNKNOWN, not OK -- that equivalence is the whole gy-gcr22 defect."
             cat /tmp/m-old.log
             exit 1
           fi
-          grep -q 'UNPROBED' /tmp/m-old.log || { echo "::error::It failed, but not because the anon verdict was missing."; cat /tmp/m-old.log; exit 1; }
-          echo "OK: a probe older than AC5 reports UNKNOWN and fails, rather than passing silently."
+          grep -q 'UNPROBED' /tmp/m-old.log || { echo "::error::It failed, but not because the verdicts were missing."; cat /tmp/m-old.log; exit 1; }
+          echo "OK: an old-shape probe reports UNKNOWN and fails, rather than passing silently."
+
+      # 🔴 pm's FEAR, in their words: "the masked count behind a known-red had
+      # moved from 1 to 6". With the allowance gone nothing is masked, and this
+      # proves a content regression and a dead surface are BOTH reported at once.
+      - name: Control — a content regression and a dead surface are both reported
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" w-rpc-denied
+          sed -i 's/\xe2\x82\xb9399/\xe2\x82\xb9999/g' "$FIX/index.html"
+          python3 -m http.server 8914 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          if CONTRACT=/dev/null SMOKE_EXPECT_DB=1 bash scripts/getgymbo-smoke.sh http://127.0.0.1:8914 > /tmp/db-both.log 2>&1; then
+            echo "::error::A broken page and a dead /w/ PASSED together."
+            cat /tmp/db-both.log
+            exit 1
+          fi
+          grep -q 'FAIL: body missing' /tmp/db-both.log || { echo "::error::The content regression was not reported."; cat /tmp/db-both.log; exit 1; }
+          grep -q 'LOST EXECUTE on shared_workout_page' /tmp/db-both.log || { echo "::error::The dead /w/ was not reported beside the content failure."; cat /tmp/db-both.log; exit 1; }
+          echo "OK: both faults are reported in the same run."
+
+      # The other side of the same rule: on a target with no database the check
+      # must REPORT rather than fail -- and must not be silently absent either.
+      - name: Negative control — the reachability probe is advisory, not silent, off production
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          bash scripts/build-fixture-site.sh "$FIX" w-rpc-denied
+          python3 -m http.server 8908 --directory "$FIX" &
+          SRV=$!; sleep 1; trap 'kill $SRV 2>/dev/null || true' EXIT
+          CONTRACT=/dev/null bash scripts/getgymbo-smoke.sh http://127.0.0.1:8908 > /tmp/db-adv.log 2>&1 || {
+            echo "::error::The smoke gate FAILED on a non-production target for a missing database. That is the defect that blocked every deploy on the first attempt at the original change."
+            cat /tmp/db-adv.log; exit 1; }
+          if ! grep -q 'INFO /api/health w_rpc not required for this target' /tmp/db-adv.log; then
+            echo "::error::The probe left NO line in the output. An unreported check and a passing one must not look alike."
+            cat /tmp/db-adv.log; exit 1
+          fi
+          echo "OK: off production the probe reports without failing, and is visible in the log."
 
       - name: Negative control — getgymbo-smoke.sh must FAIL on missing <title>
         run: |
