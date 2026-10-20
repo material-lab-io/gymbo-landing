@@ -30,6 +30,8 @@ const htmlFor = (mode) => {
       '<script>throw new Error("seeded first-party JS error: __missingGymboFixture")</script>',
     "net-sub-always": '<script src="/net-fault.js"></script>',
     "net-sub-once": '<script src="/net-once.js"></script>',
+    "net-sub-twice": '<script src="/net-twice.js"></script>',
+    "net-dark-once": '<script src="/net-dark-once.js"></script>',
     "net-sub-plus-404": '<script src="/net-fault.js"></script><script src="/broken.js"></script>',
     "first-party-500": '<script src="/server-error.js"></script>',
     "isolated-third-party": '<script src="https://analytics.getgymbo.com/stall.js"></script>',
@@ -84,6 +86,28 @@ const runFixture = async (mode, env = {}) => {
       }
       response.writeHead(200, { "content-type": "text/javascript" });
       response.end("// ok on retry");
+      return;
+    }
+
+    if (request.url === "/net-twice.js") {
+      // Churn that outlasts one retry: loads 2 and 3 fault, load 4 is clean.
+      if (pageLoads === 2 || pageLoads === 3) {
+        request.socket.destroy();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/javascript" });
+      response.end("// ok after settling");
+      return;
+    }
+
+    if (request.url === "/net-dark-once.js") {
+      // The dark-seed check is load 1; it must be retried like a route.
+      if (pageLoads === 1) {
+        request.socket.destroy();
+        return;
+      }
+      response.writeHead(200, { "content-type": "text/javascript" });
+      response.end("// ok after settling");
       return;
     }
 
@@ -214,7 +238,10 @@ assert.match(
 // gy-18qle.1: runner-network faults are COULD-NOT-EVALUATE, never a product FAIL.
 // No HTTP server can emit ERR_NETWORK_CHANGED, so the seam aliases the two
 // errors a destroyed socket produces onto the runner-network list.
-const netAlias = { CONSOLE_CHECK_TEST_NETWORK_ERRORS: "net::ERR_EMPTY_RESPONSE,net::ERR_CONNECTION_RESET" };
+const netAlias = {
+  CONSOLE_CHECK_TEST_NETWORK_ERRORS: "net::ERR_EMPTY_RESPONSE,net::ERR_CONNECTION_RESET",
+  CONSOLE_CHECK_TEST_SETTLE_MS: "200",
+};
 
 assert.equal(isRunnerNetworkError("net::ERR_NETWORK_CHANGED"), true);
 assert.equal(isRunnerNetworkError("net::ERR_CONNECTION_REFUSED"), false);
@@ -233,6 +260,23 @@ assert.equal(netOnce.code, 0, `one-shot network fault should pass on retry:\n${n
 assert.match(netOnce.output, /RETRY \/: runner-network fault on attempt 1/);
 assert.match(netOnce.output, /net-once\.js/);
 assert.match(netOnce.output, /all 1 pages clean/);
+
+// gy-g58mk: churn that outlasts one retry passes once it settles (3 tries) ...
+const netTwice = await runFixture("net-sub-twice", netAlias);
+assert.equal(netTwice.code, 0, `two-shot network fault should pass on try 3:\n${netTwice.output}`);
+assert.match(netTwice.output, /RETRY \/: runner-network fault on attempt 2/);
+assert.match(netTwice.output, /settling 200 ms before attempt 3\/3/);
+assert.match(netTwice.output, /all 1 pages clean/);
+
+// ... the dark-seed check is retried too ...
+const netDark = await runFixture("net-dark-once", netAlias);
+assert.equal(netDark.code, 0, `dark-seed network fault should pass on retry:\n${netDark.output}`);
+assert.match(netDark.output, /RETRY \/ \(dark-seeded\): runner-network fault on attempt 1/);
+assert.match(netDark.output, /all 1 pages clean/);
+
+// ... and a fault that never clears is still COULD-NOT-EVALUATE after all 3
+// tries (the outage control): the settle delay must not turn a red green.
+assert.match(netSub.output, /settling 200 ms before attempt 3\/3/);
 
 const netNavigation = await runFixture("navigation-failure", netAlias);
 assert.equal(netNavigation.code, 2, "seeded navigation network fault had the wrong classification");

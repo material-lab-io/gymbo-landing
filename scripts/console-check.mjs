@@ -37,6 +37,27 @@ const extraNetworkErrors = (process.env.CONSOLE_CHECK_TEST_NETWORK_ERRORS ?? "")
 if (extraNetworkErrors.length && !["127.0.0.1", "localhost", "[::1]", "::1"].includes(baseUrl.hostname)) {
   throw new Error("CONSOLE_CHECK_TEST_NETWORK_ERRORS is restricted to loopback fixtures");
 }
+// gy-g58mk: a runner-network fault (Chromium ERR_NETWORK_CHANGED) is caused by
+// OTHER CI jobs' docker stacks starting/stopping on the shared gt3 host. A
+// retry ~1 s later lands inside the same churn, so wait for it to settle.
+// A persistent fault still ends COULD-NOT-EVALUATE (exit 2) after the last try.
+const networkAttempts = 3;
+let settleMs = 12_000;
+const testSettle = process.env.CONSOLE_CHECK_TEST_SETTLE_MS;
+if (testSettle !== undefined) {
+  if (!["127.0.0.1", "localhost", "[::1]", "::1"].includes(baseUrl.hostname)) {
+    throw new Error("CONSOLE_CHECK_TEST_SETTLE_MS is restricted to loopback fixtures");
+  }
+  const parsed = Number(testSettle);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 12_000) {
+    throw new Error("CONSOLE_CHECK_TEST_SETTLE_MS must be an integer from 0 to 12000");
+  }
+  settleMs = parsed;
+}
+const settle = (label, attempt) => {
+  console.error(`     settling ${settleMs} ms before attempt ${attempt + 1}/${networkAttempts} of ${label}`);
+  return new Promise((resolve) => setTimeout(resolve, settleMs));
+};
 const isNetworkFault = (text) => isRunnerNetworkError(text, extraNetworkErrors);
 
 const formatError = (error) => {
@@ -257,12 +278,12 @@ let darkSeedFailed = null;
 // flip). Pre-seed localStorage BEFORE the app boots and assert the site
 // still renders light — this is the one check that would have caught the
 // actual incident; a plain page-load check (no seeded storage) never would.
-{
+const checkDarkSeed = async (willRetry) => {
   const checkedThemePage = await newCheckedPage();
   const { page: themePage, diagnostics } = checkedThemePage;
   const themeErrors = [];
   await themePage.addInitScript(() => localStorage.setItem("theme", "dark"));
-  const navigation = await navigateToLoad(checkedThemePage, base + "/", "/ (dark-seeded)");
+  const navigation = await navigateToLoad(checkedThemePage, base + "/", "/ (dark-seeded)", willRetry);
   let bg = "not-evaluated";
   let htmlDark = false;
   if (navigation.kind === "loaded") {
@@ -275,6 +296,14 @@ let darkSeedFailed = null;
   themeErrors.push(...diagnostics.firstPartyFailures());
   const themeFaults = diagnostics.networkFaults();
   await themePage.close();
+  if (
+    willRetry &&
+    themeErrors.length === 0 &&
+    (themeFaults.length > 0 || (navigation.kind !== "loaded" && navigation.networkFault))
+  ) {
+    themeFaults.forEach((fault) => console.error(`     attempt-failed ${fault}`));
+    return false;
+  }
   if (themeFaults.length) {
     // A runner-network fault means the dark-seed assertion was not evaluated.
     couldNotEvaluate.push("/ (dark-seeded)");
@@ -300,9 +329,15 @@ let darkSeedFailed = null;
   } else if (navigation.kind === "loaded" && !themeFaults.length) {
     console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
   }
+  return true;
+};
+for (let attempt = 1; attempt <= networkAttempts; attempt++) {
+  if (await checkDarkSeed(attempt < networkAttempts)) break;
+  console.error(`RETRY / (dark-seeded): runner-network fault on attempt ${attempt}`);
+  await settle("/ (dark-seeded)", attempt);
 }
 
-// One retry, and only for a runner-network fault with no other finding on the
+// Up to networkAttempts tries with a settle delay, and only for a runner-network fault with no other finding on the
 // page (gy-18qle.1). A real first-party failure or JS error is never retried,
 // so this cannot turn a product FAIL green. Both attempts are logged.
 const checkRoute = async (p, willRetry) => {
@@ -324,15 +359,19 @@ const checkRoute = async (p, willRetry) => {
 };
 
 for (const p of paths) {
-  let result = await checkRoute(p, true);
   const networkOnly = (r) =>
     r.errors.length === 0 &&
     (r.faults.length > 0 || (r.navigation.kind !== "loaded" && r.navigation.networkFault));
-  if (networkOnly(result)) {
-    console.error(`RETRY ${p}: runner-network fault on attempt 1, retrying once`);
-    result.faults.forEach((fault) => console.error(`     attempt-1 ${fault}`));
-    result = await checkRoute(p, false);
-  } else if (result.navigation.kind !== "loaded") {
+  let result = await checkRoute(p, true);
+  let retried = false;
+  for (let attempt = 1; attempt < networkAttempts && networkOnly(result); attempt++) {
+    console.error(`RETRY ${p}: runner-network fault on attempt ${attempt}, retrying`);
+    result.faults.forEach((fault) => console.error(`     attempt-${attempt} ${fault}`));
+    await settle(p, attempt);
+    retried = true;
+    result = await checkRoute(p, attempt + 1 < networkAttempts);
+  }
+  if (!retried && result.navigation.kind !== "loaded") {
     couldNotEvaluate.push(p); // not retried: counted here since willRetry deferred it
   }
   const { errors, faults, navigation } = result;
