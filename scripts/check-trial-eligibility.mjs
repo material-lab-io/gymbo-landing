@@ -10,7 +10,10 @@ import { discoverBuiltPages, pageSurfaces } from "./check-no-em-dash.mjs";
 import { matchable } from "./text-normalise.mjs";
 
 const TEXT_ENDPOINTS = ["llms.txt", "pricing.md"];
-const TRIGGER_DAYS = /\b(?:7|seven)[- ]?days?\b/i;
+// gy-r0h3d: any dash (\p{Pd}: hyphen, en, em, figure, non-breaking...) or the minus sign, with optional
+// whitespace around it, so a word processor's autocorrected "7\u2013day" is caught like "7-day".
+const DASH = String.raw`[\p{Pd}\u2212]`;
+const TRIGGER_DAYS = new RegExp(String.raw`\b(?:(?:7|seven)\s*(?:${DASH}\s*)?days?|(?:a|one|1)\s*(?:${DASH}\s*)?weeks?)\b`, "iu");
 const TRIGGER_FREE = /\b(?:free|trial)\b/i;
 const QUALIFIED = /eligib/i;
 
