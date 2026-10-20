@@ -42,15 +42,16 @@ if (extraNetworkErrors.length && !["127.0.0.1", "localhost", "[::1]", "::1"].inc
 // retry ~1 s later lands inside the same churn, so wait for it to settle.
 // A persistent fault still ends COULD-NOT-EVALUATE (exit 2) after the last try.
 const networkAttempts = 3;
-let settleMs = 12_000;
+const defaultSettleMs = 40_000; // pm ruling gy-g58mk: 30-45 s; a 12 s settle was outlasted (16:09Z run)
+let settleMs = defaultSettleMs;
 const testSettle = process.env.CONSOLE_CHECK_TEST_SETTLE_MS;
 if (testSettle !== undefined) {
   if (!["127.0.0.1", "localhost", "[::1]", "::1"].includes(baseUrl.hostname)) {
     throw new Error("CONSOLE_CHECK_TEST_SETTLE_MS is restricted to loopback fixtures");
   }
   const parsed = Number(testSettle);
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 12_000) {
-    throw new Error("CONSOLE_CHECK_TEST_SETTLE_MS must be an integer from 0 to 12000");
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > defaultSettleMs) {
+    throw new Error(`CONSOLE_CHECK_TEST_SETTLE_MS must be an integer from 0 to ${defaultSettleMs}`);
   }
   settleMs = parsed;
 }
