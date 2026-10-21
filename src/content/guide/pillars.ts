@@ -73,7 +73,7 @@ The free stack (WhatsApp, a paper diary, and UPI) runs all five informally, and 
 
 You can run all six steps on WhatsApp, a diary, and UPI, and for your first several clients, you should. It's free and you already know it.
 
-Once you can no longer answer, without checking, who trained, who paid and who owes, the manual version starts costing you time and the occasional missed payment. At that point a single app that keeps the client list, schedule, session counts, and payment balances in one place, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built specifically for the independent trainer in India: you punch a class in a couple of taps, balances update themselves, and payments and statements live alongside each client (add your GSTIN in Business settings and your statements become GST-ready). It's the admin/tracking/payment layer, so your time goes to training, not bookkeeping.
+Once you can no longer answer, without checking, who trained, who paid and who owes, the manual version starts costing you time and the occasional missed payment. At that point a single app that keeps the client list, schedule, session counts, and payment balances in one place, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built specifically for the independent trainer in India: you punch a class in a couple of taps, balances update themselves, and payments and statements live alongside each client (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It's the admin/tracking/payment layer, so your time goes to training, not bookkeeping.
 
 If you run a *gym* rather than train clients yourself, you need facility software instead (members, staff, branches), which is a different tool. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -241,7 +241,7 @@ A spreadsheet can hold this, but it doesn't update a balance quickly between cli
 
 ## where Gymbo fits
 
-[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clear per-client statements (add your GSTIN in Business settings and your statements become GST-ready). It gives you pre-written WhatsApp reminder templates and a workout builder. It's built to be the source of truth, so your business stops living in your head.
+[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clear per-client statements (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It gives you pre-written WhatsApp reminder templates and a workout builder. It's built to be the source of truth, so your business stops living in your head.
 
 ## managing your training business day to day
 
@@ -303,13 +303,13 @@ None of these is training. All of them are the tax on being a one-person busines
 
 **5. Make renewals a signal, not a surprise.** When you can see who's down to their last session or two, you renew before the gap, instead of losing a client to a lapsed package you didn't notice.
 
-**6. Look like a business in two taps.** A professional statement or receipt on request costs you seconds and buys you trust (add your GSTIN in Business settings and your statements become GST-ready). (More on that in [how to brand your training business](/guide/brand-personal-training-business-india).)
+**6. Look like a business in two taps.** A professional statement or receipt on request costs you seconds and buys you trust (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). (More on that in [how to brand your training business](/guide/brand-personal-training-business-india).)
 
 ## doing this without a second full-time job
 
 For your first several clients, the "phone-plus-diary" version of smart is genuinely fine: it's free and you already know it. The question is what happens as you grow.
 
-When the manual stack stops saving time and starts costing it, the re-counting, the payment-chasing and the week-rebuilding turn into hours you can't bill. That's the point where one app that holds the client list, schedule, session counts, and payment balances together, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built for the independent trainer in India and running on iPhone: you punch a class in a couple of taps, balances update themselves, payments and statements sit alongside each client (add your GSTIN in Business settings and your statements become GST-ready), and pre-written reminder templates are ready for you to review and send. It's the admin layer, so your hours go to training, not bookkeeping. (Gymbo doesn't write your programmes or send messages for you; it's the tracking-and-payment engine, and it's honest about that.)
+When the manual stack stops saving time and starts costing it, the re-counting, the payment-chasing and the week-rebuilding turn into hours you can't bill. That's the point where one app that holds the client list, schedule, session counts, and payment balances together, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built for the independent trainer in India and running on iPhone: you punch a class in a couple of taps, balances update themselves, payments and statements sit alongside each client (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), and pre-written reminder templates are ready for you to review and send. It's the admin layer, so your hours go to training, not bookkeeping. (Gymbo doesn't write your programmes or send messages for you; it's the tracking-and-payment engine, and it's honest about that.)
 
 If you run a *gym* rather than train clients yourself (members, staff, multiple branches), you need facility software instead, which is a different tool. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -369,7 +369,7 @@ Notice what's *not* on this list: fonts, colours, a fancy Instagram grid. Those 
 
 You don't need a designer or an agency to build this brand; you need to nail the operational details, every week, without fail. The hard part isn't taste; it's consistency at scale, when you have a full roster and a full day of sessions.
 
-That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running on iPhone, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt (add your GSTIN in Business settings and your statements become GST-ready), so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send with one tap in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
+That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running on iPhone, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send with one tap in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
 
 If you run a *gym* rather than train clients yourself, branding a facility (members, staff, branches) is a different job with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -479,7 +479,7 @@ Work through all four before you name a price. A rate set from only one, usually
 
 ## keeping your pricing straight once clients are in
 
-Deciding the rate is half the job; the other half is holding it, tracking who's on which package, what they've used, and what they owe, without it slipping. Past a handful of clients that's where pricing discipline quietly breaks down. [Gymbo](/) helps with that part: built for the independent trainer in India and running on iPhone, it lets you set each client's package and rate once, then keeps the balance (paid minus used) accurate automatically and turns it into a clean statement (add your GSTIN in Business settings and your statements become GST-ready). It doesn't set your price; that's your call, but it makes sure the price you set is the price you actually collect.`,
+Deciding the rate is half the job; the other half is holding it, tracking who's on which package, what they've used, and what they owe, without it slipping. Past a handful of clients that's where pricing discipline quietly breaks down. [Gymbo](/) helps with that part: built for the independent trainer in India and running on iPhone, it lets you set each client's package and rate once, then keeps the balance (paid minus used) accurate automatically and turns it into a clean statement (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It doesn't set your price; that's your call, but it makes sure the price you set is the price you actually collect.`,
 };
 
 const upiFaq: Post = {
@@ -487,7 +487,7 @@ const upiFaq: Post = {
   title: "how to take payments via upi as a personal trainer",
   dek: "",
   quickAnswer:
-    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting. It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
+    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting. It's recording: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
   date: "2026-07-15",
   metaTitle: "How to Take Payments via UPI as a Personal Trainer | Gymbo",
   metaDescription:
@@ -527,7 +527,7 @@ UPI has solved collecting for everyone. The gap that's still open, and the one t
 
 ## keeping UPI payments straight without a spreadsheet
 
-You can absolutely track payments in a notebook or a spreadsheet, and for a small roster that's fine. It gets hard once you've got enough clients on different packages and cycles that "who owes what" stops fitting in your head. [Gymbo](/) is built for exactly this part: running on iPhone, it lets you record each UPI payment against the client and package in a couple of taps, then keeps the paid-minus-used balance accurate automatically and turns it into a statement (add your GSTIN in Business settings and your statements become GST-ready). To be precise about what it is, Gymbo isn't a payment gateway and doesn't touch the money; your client pays through their own UPI app as usual, and Gymbo keeps the *record* so your balances stay accurate as you go.`,
+You can absolutely track payments in a notebook or a spreadsheet, and for a small roster that's fine. It gets hard once you've got enough clients on different packages and cycles that "who owes what" stops fitting in your head. [Gymbo](/) is built for exactly this part: running on iPhone, it lets you record each UPI payment against the client and package in a couple of taps, then keeps the paid-minus-used balance accurate automatically and turns it into a statement (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). To be precise about what it is, Gymbo isn't a payment gateway and doesn't touch the money; your client pays through their own UPI app as usual, and Gymbo keeps the *record* so your balances stay accurate as you go.`,
 };
 
 const noShowFaq: Post = {
