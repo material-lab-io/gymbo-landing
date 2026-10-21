@@ -96,3 +96,81 @@ test("over-breadth stays green: dashed day text with no free/trial claim", () =>
     assert.equal(scanText(text, "/", "t").length, 0, text);
   }
 });
+
+// ---- gy-id5zl: the classes tester's attack on gy-r0h3d found still fail-open (33/182) ----
+const flagged = (s) => scanText(s, "/", "t").length > 0;
+const QUAL = " Eligible subscribers only.";
+
+test("gy-id5zl class 1: named dash entities are decoded (each RED unqualified, GREEN qualified)", () => {
+  for (const ent of ["ndash", "mdash", "hyphen", "dash", "minus", "horbar"]) {
+    const claim = `Start your 7&${ent};day free trial today.`;
+    assert.equal(flagged(claim), true, `&${ent}; must be caught`);
+    assert.equal(flagged(claim + QUAL), false, `&${ent}; qualified must pass`);
+  }
+});
+
+test("gy-id5zl class 2: filler words between the number and the unit, and the week forms", () => {
+  for (const claim of [
+    "Get 7 free days of Gymbo.", "Enjoy 7 trial days.", "Try seven full days free.", "Try 7 whole days free.",
+    "Try 7 calendar days free.", "Free for 7 consecutive days.", "Enjoy a full week free.", "Enjoy a whole week free.",
+    "Your first week is free.", "The first week free.", "One-week free trial.",
+  ]) {
+    assert.equal(flagged(claim), true, claim);
+    assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
+  }
+});
+
+test("gy-id5zl class 3: a claim split across sentences or separators is read as one", () => {
+  for (const claim of [
+    "Try Gymbo free. Seven days, no card.", "Free trial. Seven days.", "Free. 7-day access.",
+    "Free | 7-day access", "Free · 7-day access", "Free trial\n7-day access",
+  ]) {
+    assert.equal(flagged(claim), true, JSON.stringify(claim));
+    assert.equal(flagged(claim + QUAL), false, `${JSON.stringify(claim)} (qualified)`);
+  }
+});
+
+test("gy-id5zl class 4: only the whole word 'eligible' qualifies ('ineligible' and 'eligibility' alone do not)", () => {
+  assert.equal(flagged("Start your 7-day free trial, ineligible users excluded elsewhere."), true);
+  assert.equal(flagged("Start your 7-day free trial. Eligibility rules apply to some accounts."), true);
+  assert.equal(flagged("Eligible subscribers can try Gymbo free for 7 days."), false);
+  assert.equal(flagged("Start your 7-day free trial if you are eligible."), false);
+});
+
+test("gy-id5zl over-breadth: no free/trial word near a 7-day figure stays green", () => {
+  for (const ok of [
+    "Packages run for 7 days after purchase.", "Your first week of sessions is booked.",
+    "Reminders go out 7 days before a renewal.", "Cancel any time. Then Rs 399 a month.",
+  ]) {
+    assert.equal(flagged(ok), false, ok);
+  }
+});
+
+test("gy-id5zl planted controls: reverting each class turns a case red", async () => {
+  const { readFileSync, writeFileSync, rmSync } = await import("node:fs");
+  const dir = new URL("../scripts/", import.meta.url);
+  const trialSrc = readFileSync(new URL("check-trial-eligibility.mjs", dir), "utf8");
+  const normSrc = readFileSync(new URL("text-normalise.mjs", dir), "utf8");
+  let n = 0;
+  // Writes mutated copies NEXT TO the real scripts (so relative imports resolve), loads them, removes them.
+  async function mutant({ trial = (x) => x, norm = (x) => x }) {
+    const id = `${process.pid}-${++n}`;
+    const t = new URL(`.mutant-trial-${id}.mjs`, dir), m = new URL(`.mutant-norm-${id}.mjs`, dir);
+    const tSrc = trial(trialSrc).replace('"./text-normalise.mjs"', `"./.mutant-norm-${id}.mjs"`);
+    writeFileSync(m, norm(normSrc));
+    writeFileSync(t, tSrc);
+    try { return await import(t.href); } finally { rmSync(t); rmSync(m); }
+  }
+  const swap = (from, to) => (x) => { assert.ok(x.includes(from), `mutation target missing: ${from}`); return x.replace(from, to); };
+
+  const good = await mutant({});
+  assert.equal(good.scanText("7&ndash;day free trial", "/", "t").length, 1, "unmutated copy flags the entity form");
+  assert.equal((await mutant({ norm: swap("const NAMED_DASHES = /&(?:ndash|mdash|hyphen|dash|minus|horbar);/gi;", "const NAMED_DASHES = /(?!)/g;") }))
+    .scanText("7&ndash;day free trial", "/", "t").length, 0, "no entity decoding must miss &ndash;");
+  assert.equal((await mutant({ trial: swap("/\\beligible\\b/i", "/eligib/i") }))
+    .scanText("7-day free trial, ineligible users", "/", "t").length, 0, "/eligib/ must wrongly qualify 'ineligible'");
+  assert.equal((await mutant({ trial: swap("[sentences[i - 1], sentence, sentences[i + 1]]", "[sentence]") }))
+    .scanText("Free trial. Seven days.", "/", "t").length, 0, "a one-sentence window must miss a split claim");
+  assert.equal((await mutant({ trial: (x) => x.replace(/\$\{FILL\}/g, "") }))
+    .scanText("Get 7 free days of Gymbo.", "/", "t").length, 0, "no filler words must miss '7 free days'");
+});
