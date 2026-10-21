@@ -17,20 +17,26 @@ const DASH = String.raw`[\p{Pd}\u2212]`;
 // between the number and the unit ("7 free days", "seven full days free", "7 consecutive days"), and the
 // week forms include "a full week free" / "the first week free".
 const FILL = String.raw`(?:(?:free|trial|full|whole|first|calendar|consecutive|complete|entire|straight|total|paid|risk-free)\s+){0,2}`;
-const TRIGGER_DAYS = new RegExp(String.raw`\b(?:7|seven)\s*(?:${DASH}\s*)?${FILL}days?\b`, "iu");
+// gy-6cc9n: "seven (7) days" / "7 (seven)-day" double notation counts as the same number.
+const NUM = String.raw`(?:7|seven)(?:\s*\(\s*(?:7|seven)\s*\))?`;
+const TRIGGER_DAYS = new RegExp(String.raw`\b${NUM}\s*(?:${DASH}\s*)?${FILL}days?\b`, "iu");
 // "a week" is ordinary English ("hours a week", "once a week"), so a week form only counts when the free/trial
 // word is in the SAME sentence; the number-of-days form may reach into the neighbouring sentences.
 const TRIGGER_WEEK = new RegExp(
   String.raw`\b(?:(?:a|one|1)\s*(?:${DASH}\s*)?${FILL}|(?:the\s+)?first\s+${FILL})weeks?\b`,
   "iu",
 );
-const TRIGGER_FREE = /\b(?:free|trial)\b/i;
+// gy-6cc9n: the promise does not need the word "free" or "trial" ("seven days on us", "at no cost",
+// "complimentary", "for Rs 0", "no card needed"), so the cost-free lexicon counts as a trigger too.
+const TRIGGER_FREE =
+  /\b(?:free|trial|on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
 // "eligible" as a WHOLE word. /eligib/ matched "ineligible" and "eligibility" in any sentence, so a
 // sentence about who is NOT eligible qualified a promise it contradicts.
 const QUALIFIED = /\beligible\b/i;
 
 function normalise(value) {
-  return matchable(value).replace(/[*_`]/g, "");
+  // "Rs. 0" must not be read as a sentence end.
+  return matchable(value).replace(/[*_`]/g, "").replace(/\brs\.\s*/gi, "Rs ");
 }
 
 // A sentence is a finding when it carries the days/week trigger AND the free/trial word sits in it or in

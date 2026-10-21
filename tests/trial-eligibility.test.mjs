@@ -174,3 +174,53 @@ test("gy-id5zl planted controls: reverting each class turns a case red", async (
   assert.equal((await mutant({ trial: (x) => x.replace(/\$\{FILL\}/g, "") }))
     .scanText("Get 7 free days of Gymbo.", "/", "t").length, 0, "no filler words must miss '7 free days'");
 });
+
+// ---- gy-6cc9n: the cost-free lexicon and double notation (tester's re-attack of gy-id5zl) ----
+test("gy-6cc9n: cost-free wording with a 7-day span is RED unqualified, GREEN with 'eligible'", () => {
+  for (const claim of [
+    "Seven days on us.", "Your first 7 days are on us.", "Enjoy 7 days at no cost.", "Seven days, no charge.",
+    "7 days complimentary.", "A complimentary seven-day start.", "Gratis for 7 days.", "7 days for Rs 0.",
+    "Get 7 days for \u20b90.", "7 days for Rs. 0.", "Seven days, no card needed.", "One week on us.", "A week at no cost.",
+  ]) {
+    assert.equal(flagged(claim), true, claim);
+    assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
+  }
+});
+
+test("gy-6cc9n: double notation 'seven (7) days' is the same number", () => {
+  for (const claim of ["Try seven (7) days free.", "Try 7 (seven) days free.", "A seven (7)-day free trial.", "Try 7 (7) days free."]) {
+    assert.equal(flagged(claim), true, claim);
+    assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
+  }
+});
+
+test("gy-6cc9n over-breadth: price figures and cost words without a 7-day span stay green", () => {
+  for (const ok of [
+    "Rs 399 a month.", "Rs 0.50 per message.", "From \u20b9399 a month, no charge for extra clients.",
+    "Pay within 7 days of the invoice date.", "We are on us time zone.", "Your data stays with us.",
+    "Complimentary tea for visitors.", "Rs 0 outstanding.",
+  ]) {
+    assert.equal(flagged(ok), false, ok);
+  }
+});
+
+test("gy-6cc9n planted controls: reverting the lexicon or the double notation turns a case red", async () => {
+  const { readFileSync, writeFileSync, rmSync } = await import("node:fs");
+  const dir = new URL("../scripts/", import.meta.url);
+  const trialSrc = readFileSync(new URL("check-trial-eligibility.mjs", dir), "utf8");
+  let n = 0;
+  async function mutant(fn) {
+    const id = `6cc9n-${process.pid}-${++n}`;
+    const t = new URL(`.mutant-trial-${id}.mjs`, dir);
+    writeFileSync(t, fn(trialSrc));
+    try { return await import(t.href); } finally { rmSync(t); }
+  }
+  const good = await mutant((x) => x);
+  assert.equal(good.scanText("Seven days on us.", "/", "t").length, 1, "unmutated copy flags 'on us'");
+  assert.equal(good.scanText("Try seven (7) days free.", "/", "t").length, 1, "unmutated copy flags double notation");
+  const onlyFree = await mutant((x) => x.replace(/const TRIGGER_FREE =\n\s*\/[^\n]*\n/, "const TRIGGER_FREE = /\\b(?:free|trial)\\b/i;\n"));
+  assert.equal(onlyFree.scanText("Seven days on us.", "/", "t").length, 0, "free/trial-only trigger must miss 'on us'");
+  assert.equal(onlyFree.scanText("7 days for Rs 0.", "/", "t").length, 0, "free/trial-only trigger must miss 'Rs 0'");
+  const noNum = await mutant((x) => x.replace(/const NUM = [^\n]*\n/, "const NUM = String.raw`(?:7|seven)`;\n"));
+  assert.equal(noNum.scanText("Try seven (7) days free.", "/", "t").length, 0, "no double notation must miss 'seven (7) days'");
+});
