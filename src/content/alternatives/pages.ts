@@ -56,7 +56,7 @@ const truecoach: Post = {
 | GST-ready invoices | ✅ | ❌ Not built for Indian GST |
 | WhatsApp | ✅ Reminders & sharing | ❌ Uses its own in-app chat |
 | Scheduling / session booking | ✅ Week view, day carousel | ❌ No scheduling system |
-| Sign-in | Phone + Face ID, no password | Email/password |
+| Sign-in | Phone, Apple, or Google | Email/password |
 | Class punches | A couple of taps, balance updates itself | Programming-led; logs workouts, not payments |
 | Progress tracking | Vitals + photos (shipping this quarter) | ✅ Strong: metrics, photos, compliance |
 | Exercise video library | Growing | ✅ 3,000+ videos |
@@ -152,7 +152,7 @@ const trainerize: Post = {
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing |
 | GST-ready invoices | ✅ | ❌ |
 | WhatsApp | ✅ Reminders & sharing | ❌ |
-| Sign-in | Phone + Face ID, no password, no email | Email/password |
+| Sign-in | Phone, Apple, or Google | Email/password |
 | Class punches | A couple of taps, balance updates itself | Programming-led; heavier flow |
 | AI | Ask Gymbo + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
