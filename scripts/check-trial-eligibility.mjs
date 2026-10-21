@@ -26,10 +26,14 @@ const TRIGGER_WEEK = new RegExp(
   String.raw`\b(?:(?:a|one|1)\s*(?:${DASH}\s*)?${FILL}|(?:the\s+)?first\s+${FILL})weeks?\b`,
   "iu",
 );
+const TRIGGER_FREE = /\b(?:free|trial)\b/i;
 // gy-6cc9n: the promise does not need the word "free" or "trial" ("seven days on us", "at no cost",
-// "complimentary", "for Rs 0", "no card needed"), so the cost-free lexicon counts as a trigger too.
-const TRIGGER_FREE =
-  /\b(?:free|trial|on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
+// "complimentary", "for Rs 0", "no card needed"). Those words are ordinary English elsewhere ("count on us",
+// "no charge to cancel"), so unlike free/trial they only count in the SAME sentence as the 7-day span, and not
+// in a cancellation/refund sentence.
+const TRIGGER_COSTFREE =
+  /\b(?:on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
+const CANCEL_CONTEXT = /\b(?:cancel\w*|refund\w*)\b/i;
 // "eligible" as a WHOLE word. /eligib/ matched "ineligible" and "eligibility" in any sentence, so a
 // sentence about who is NOT eligible qualified a promise it contradicts.
 const QUALIFIED = /\beligible\b/i;
@@ -47,9 +51,13 @@ export function scanText(value, route, surface) {
   const sentences = normalise(value).split(/(?<=[.!?])\s+|\s[·|]\s|\n/).map((x) => x.trim()).filter(Boolean);
   sentences.forEach((sentence, i) => {
     const window = [sentences[i - 1], sentence, sentences[i + 1]].filter(Boolean).join(" ");
+    const span = TRIGGER_DAYS.test(sentence) || TRIGGER_WEEK.test(sentence);
+    const costFree = TRIGGER_COSTFREE.test(sentence) && !CANCEL_CONTEXT.test(sentence);
     const hit =
-      (TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window) && !QUALIFIED.test(window)) ||
-      (TRIGGER_WEEK.test(sentence) && TRIGGER_FREE.test(sentence) && !QUALIFIED.test(window));
+      !QUALIFIED.test(window) &&
+      ((TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window)) ||
+        (TRIGGER_WEEK.test(sentence) && TRIGGER_FREE.test(sentence)) ||
+        (span && costFree));
     if (hit) findings.push({ route, surface, snippet: sentence.slice(0, 200) });
   });
   return findings;

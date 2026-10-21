@@ -199,6 +199,9 @@ test("gy-6cc9n over-breadth: price figures and cost words without a 7-day span s
     "Rs 399 a month.", "Rs 0.50 per message.", "From \u20b9399 a month, no charge for extra clients.",
     "Pay within 7 days of the invoice date.", "We are on us time zone.", "Your data stays with us.",
     "Complimentary tea for visitors.", "Rs 0 outstanding.",
+    // tester #293 false reds, one test per sentence
+    "You can count on us. Support is open 7 days a week.", "No card needed to browse the demo. We reply within 7 days.",
+    "Cancel in the first 7 days with no charge.", "INR 0 platform fee. Payouts arrive in 7 days.",
   ]) {
     assert.equal(flagged(ok), false, ok);
   }
@@ -218,9 +221,13 @@ test("gy-6cc9n planted controls: reverting the lexicon or the double notation tu
   const good = await mutant((x) => x);
   assert.equal(good.scanText("Seven days on us.", "/", "t").length, 1, "unmutated copy flags 'on us'");
   assert.equal(good.scanText("Try seven (7) days free.", "/", "t").length, 1, "unmutated copy flags double notation");
-  const onlyFree = await mutant((x) => x.replace(/const TRIGGER_FREE =\n\s*\/[^\n]*\n/, "const TRIGGER_FREE = /\\b(?:free|trial)\\b/i;\n"));
-  assert.equal(onlyFree.scanText("Seven days on us.", "/", "t").length, 0, "free/trial-only trigger must miss 'on us'");
-  assert.equal(onlyFree.scanText("7 days for Rs 0.", "/", "t").length, 0, "free/trial-only trigger must miss 'Rs 0'");
+  const noCost = await mutant((x) => { assert.ok(x.includes("(span && costFree)")); return x.replace("(span && costFree)", "false"); });
+  assert.equal(noCost.scanText("Seven days on us.", "/", "t").length, 0, "no cost-free trigger must miss 'on us'");
+  assert.equal(noCost.scanText("7 days for Rs 0.", "/", "t").length, 0, "no cost-free trigger must miss 'Rs 0'");
+  const noCancelGuard = await mutant((x) => { assert.ok(x.includes("&& !CANCEL_CONTEXT.test(sentence)")); return x.replace("&& !CANCEL_CONTEXT.test(sentence)", ""); });
+  assert.equal(noCancelGuard.scanText("Cancel in the first 7 days with no charge.", "/", "t").length, 1, "dropping the cancel guard must re-flag the benign sentence");
+  const windowed = await mutant((x) => { assert.ok(x.includes("TRIGGER_COSTFREE.test(sentence)")); return x.replace("TRIGGER_COSTFREE.test(sentence)", "TRIGGER_COSTFREE.test(window)"); });
+  assert.equal(windowed.scanText("You can count on us. Support is open 7 days a week.", "/", "t").length, 1, "a window-wide cost-free test must re-flag 'count on us'");
   const noNum = await mutant((x) => x.replace(/const NUM = [^\n]*\n/, "const NUM = String.raw`(?:7|seven)`;\n"));
   assert.equal(noNum.scanText("Try seven (7) days free.", "/", "t").length, 0, "no double notation must miss 'seven (7) days'");
 });
