@@ -201,7 +201,7 @@ const getOrganized: Post = {
     { q: "Can I run my training business on a spreadsheet?", a: "You can, but spreadsheets don't update a client's balance quickly, send reminders, or reconcile UPI payments on the go. Trainers work on their feet, so a phone-first tool fits better." },
     { q: "How often should I review my client roster?", a: "A short weekly review (about 15 minutes) covering low balances, outstanding dues, and inactive clients is enough to keep an independent practice fully under control." },
     { q: "What records do I need for GST as a trainer?", a: "Keep clear, per-client records of sessions and payments, and keep them current from day one so tax season is a lookup, not a reconstruction. Which records and fields you need depends on your registration: confirm them with a tax professional (CA)." },
-    { q: "How do I manage my personal training business day to day?", a: "Keep one ledger current in the moment: log each session as it ends, record each payment against the client and package as it lands, and do a quick weekly scan of who's due to renew, who owes, and who's gone quiet. That daily-log-plus-weekly-review loop is most of day-to-day management for a solo trainer; the rest is training. Most start on a diary and UPI, then move to a single app once holding the ledger by hand gets heavy." },
+    { q: "How do I manage my personal training business day to day?", a: "Keep one ledger current in the moment: note each session as it ends, record each payment against the client and package as it lands, and do a quick weekly scan of who's due to renew, who owes, and who's gone quiet. That daily-update-plus-weekly-review loop is most of day-to-day management for a solo trainer; the rest is training. Most start on a diary and UPI, then move to a single app once holding the ledger by hand gets heavy." },
     { q: "What's the difference between getting organized and managing my training business?", a: "Getting organized is the one-time setup, consolidating your clients, schedule, sessions, and payments into one place. Managing is the ongoing rhythm on top of it: logging sessions and payments as they happen and reviewing the roster weekly so nothing slips. You organize once; you manage every day." },
   ],
   bodyMd: `${BYLINE}
@@ -487,7 +487,7 @@ const upiFaq: Post = {
   title: "how to take payments via upi as a personal trainer",
   dek: "",
   quickAnswer:
-    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting. It's recording: log every payment against the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
+    "Collect through any UPI app (GPay, PhonePe, Paytm, or your bank's) via your UPI ID or a QR code; it's instant and free for the client. The part trainers get wrong isn't collecting. It's recording: tie every payment to the client and package so your paid-minus-used balance stays accurate. UPI moves the money; your record prevents month-end guesswork.",
   date: "2026-07-15",
   metaTitle: "How to Take Payments via UPI as a Personal Trainer | Gymbo",
   metaDescription:
