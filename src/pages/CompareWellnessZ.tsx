@@ -25,7 +25,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "Class punches", gymbo: "a couple of taps to punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
   { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
   { label: "Nutrition / meal plans", gymbo: "Workout builder + Ask Gymbo (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
-  { label: "Sign-in", gymbo: "passwordless (Apple + Face ID)", wellnessz: "account-based", win: "g" },
+  { label: "Sign-in", gymbo: "phone, Apple, or Google", wellnessz: "account-based", win: null },
   { label: "White-label app", gymbo: "not yet", wellnessz: "₹3,999/mo tier", win: "w" },
   { label: "Platform", gymbo: "iOS-native", wellnessz: "app + web", win: "w" },
 ];
