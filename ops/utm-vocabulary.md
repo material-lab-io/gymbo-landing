@@ -11,7 +11,7 @@ Format: all values lowercase, a-z 0-9 and hyphen only (chatgpt.com is the one ex
 | utm_source | utm_medium | utm_campaign | Emitted by | Live evidence |
 |---|---|---|---|---|
 | instagram | social | bio | /ig redirect (public/_redirects) | 20 views since 08-01 |
-| referral | referral | the TRAINER TOKEN, shape ^[a-z0-9-]{3,32}$, or ABSENT when the token is refused | /r/ function (functions/r/[token].js) | verified by my curl today |
+| referral | referral | the OPAQUE REFERRAL TOKEN, shape ^ref_[0-9a-f]{32}$ (HMAC of the public code, gy-ufxgo.9); an invalid code is entirely untagged, no utm at all | /r/ function (functions/r/[token].js) | non-prod proof only; not yet deployed |
 | appstore | listing | marketing-url | ASC Marketing URL | live per gymbo pm 18:44Z, ASC read-back OK |
 | appstore | listing | support-url | ASC Support URL | 2 views (analyst) |
 
@@ -37,4 +37,4 @@ One owner of the vocabulary; any new value goes through marketer; a value not in
 
 ## Placeholder rule (lesson from the 09-11 to 09-13 junk campaign values)
 
-Any generated link must be checked for leftover placeholder syntax before it ships: a colon-prefixed word, angle brackets, curly braces, and their percent-encoded versions. `/r/` refuses such a token (301 with source=referral and NO utm_campaign); `tests/utm-vocabulary.test.mjs` pins it.
+Any generated link must be checked for leftover placeholder syntax before it ships: a colon-prefixed word, angle brackets, curly braces, and their percent-encoded versions. `/r/` refuses such a code (301 to the plain site with NO utm at all); `tests/utm-vocabulary.test.mjs` pins it.
