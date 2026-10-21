@@ -25,6 +25,8 @@ Format: all values lowercase, a-z 0-9 and hyphen only (chatgpt.com is the one ex
 | linkedin, x, youtube | social | bio | only when a Gymbo profile exists; none does today |
 | any | any | THEME-YYMM, for example launch-2609 | time-boxed pushes |
 
+Emitted since gm-vt0: media-page / product / m-footer (the "Gymbo" backlink in the /m/ footer, functions/m/[id].js). It stays in this table; `tests/utm-vocabulary.test.mjs` pins it on the rendered page.
+
 utm_medium is a closed set of 5: social, email, referral, listing, product. A new medium needs marketer sign-off.
 
 ## KNOWN EXTERNAL SOURCE - EXTERNAL, NOT OURS

@@ -102,7 +102,8 @@ function walk(dir) {
 }
 function checkNoStrayEmitters(vocab, files) {
   for (const [path, text] of Object.entries(files)) {
-    for (const m of text.matchAll(/utm_source=([^&"'`\s]*)&utm_medium=([^&"'`\s]*)(?:&utm_campaign=([^&"'`\s]*))?/g)) {
+    // `&amp;` is how an href carries the ampersand in served HTML; a raw `&` is the redirect/URL form.
+    for (const m of text.matchAll(/utm_source=([^&"'`\s]*)(?:&amp;|&)utm_medium=([^&"'`\s]*)(?:(?:&amp;|&)utm_campaign=([^&"'`\s]*))?/g)) {
       const t = { source: m[1], medium: m[2], campaign: m[3] ?? null };
       assert.ok(inTable(vocab, t, { liveOnly: false }), `${path} emits ${m[0]}, outside the vocabulary`);
     }
@@ -144,6 +145,47 @@ function checkDoc(doc) {
   assert.match(first, /NEVER with utmSource/);
   assert.match(doc, /closed set of 5: social, email, referral, listing, product/);
   assert.match(doc, /utm_source=chatgpt\.com[\s\S]{0,60}we do not emit it and never must/);
+}
+
+// 4. gm-vt0: the /m/ media-page footer backlink. Checked on the RENDERED page, decoded the way a
+//    browser decodes the href (so `&amp;` becomes `&`), on an ok page AND an unavailable page.
+const MEDIA_SRC = read("functions/m/[id].js");
+const MEDIA_ID = "11111111-2222-3333-4444-555555555555";
+const MEDIA_ROW = {
+  state: "ok", source: "wger", asset_kind: "video", author: "Goulart", author_url: null, work_title: null,
+  source_url: "https://wger.de/en/exercise/512/view/", licence_id: "CC-BY-SA-4.0",
+  licence_name: "Creative Commons Attribution Share Alike 4",
+  licence_url: "https://creativecommons.org/licenses/by-sa/4.0/deed.en", is_derivative: false,
+  modification_note: null, video_object_path: "wger/512/720p.mp4", poster_object_path: "wger/512/poster.jpg",
+};
+const decodeAttr = (v) => v.replace(/&amp;/g, "&");
+async function renderMedia(src, id) {
+  // the module's relative imports must resolve from a data: URL
+  const abs = (f) => new URL(`../functions/m/${f}`, import.meta.url).href;
+  const fixed = src.replace('"./_shared.js"', `"${abs("_shared.js")}"`).replace('"../_forge.js"', `"${new URL("../functions/_forge.js", import.meta.url).href}"`);
+  const mod = await loadReferral(fixed);
+  const real = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify([MEDIA_ROW]), { status: 200 });
+  try {
+    const res = await mod.onRequestGet({ env: { MEDIA_BUCKET: "exercise-media" }, params: { id } });
+    return await res.text();
+  } finally { globalThis.fetch = real; }
+}
+async function checkMediaFooter(src, vocab) {
+  for (const id of [MEDIA_ID, "not-a-uuid"]) {
+    const html = await renderMedia(src, id);
+    const foot = html.match(/<p class="foot">([\s\S]*?)<\/p>/);
+    assert.ok(foot, `no footer on ${id}`);
+    const home = [...foot[1].matchAll(/<a href="(https:\/\/getgymbo\.com\/[^"]*)">([^<]*)<\/a>/g)];
+    assert.equal(home.length, 1, "exactly one getgymbo.com backlink in the footer");
+    assert.equal(home[0][2], "Gymbo", "visible text unchanged");
+    const href = decodeAttr(home[0][1]);
+    assert.equal(href, "https://getgymbo.com/?utm_source=media-page&utm_medium=product&utm_campaign=m-footer");
+    assert.ok(inTable(vocab, triple(href), { liveOnly: false }), `${href} is outside the vocabulary`);
+    // nothing else on the page may carry a utm tag, and the takedown link stays untagged
+    assert.equal((html.match(/utm_/g) || []).length, 3, "exactly the three utm params of the one footer link");
+    assert.match(foot[1], /<a href="\/m\/takedown">request its removal<\/a>/);
+  }
 }
 
 // ---- green arm: the real code ----
@@ -209,4 +251,23 @@ test("CONTROL 2': a shape that allows ':' or '%' turns the placeholder guard red
 test("CONTROL 3: a doc that buries or drops the measurement rule turns checkDoc red", () => {
   const bad = mutate(DOC, "NEVER with utmSource", "Sometimes with utmSource");
   assert.throws(() => checkDoc(bad), /NEVER/);
+});
+
+test("gm-vt0: the /m/ footer backlink is media-page/product/m-footer, decoded, on an ok page and an unavailable page", async () => {
+  await checkMediaFooter(MEDIA_SRC, VOCAB);
+});
+test("CONTROL 4: an untagged footer link turns the /m/ check red", async () => {
+  const bad = mutate(MEDIA_SRC, "https://getgymbo.com/?utm_source=media-page&amp;utm_medium=product&amp;utm_campaign=m-footer", "https://getgymbo.com/");
+  await assert.rejects(() => checkMediaFooter(bad, VOCAB), /utm_source=media-page|exactly the three|footer/);
+});
+test("CONTROL 4': a campaign outside the table turns the /m/ check red", async () => {
+  const bad = mutate(MEDIA_SRC, "utm_campaign=m-footer", "utm_campaign=m-footr");
+  await assert.rejects(() => checkMediaFooter(bad, VOCAB), /m-footer|vocabulary/);
+});
+test("CONTROL 4'': a raw '&' in the stray-emitter scan and an '&amp;' one are both seen", () => {
+  for (const sep of ["&", "&amp;"]) {
+    const files = emitterFiles();
+    files["functions/x.js"] = `<a href="https://getgymbo.com/?utm_source=media-page${sep}utm_medium=blog${sep}utm_campaign=m-footer">`;
+    assert.throws(() => checkNoStrayEmitters(VOCAB, files), /outside the vocabulary/, `separator ${sep}`);
+  }
 });
