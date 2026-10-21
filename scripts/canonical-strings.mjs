@@ -355,11 +355,44 @@ export function checkBuiltPricePin(facts, reg, root = "dist") {
     for (const o of priceOccurrences(text)) {
       const k = PRICE_KEYS.find((x) => amt[x] === o.value);
       if (retired.has(o.value) && !current.has(o.value) && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-retired-amount", file, value: o.value, form: shown(o), detail: `${file} states ${JSON.stringify(shown(o))} (${o.value}), a FORMER Gymbo price recorded in priceLedger.retired; update it, or declare it in thirdPartyAmounts with a reason if it is someone else's figure` }); }
+      // gy-76z5i rule 3: the default is REFUSAL. Any other amount on an unlisted file is unclassified until someone
+      // declares it (competitor with source + as-of, or editorial with a reason). A new page, a new literal, a new
+      // bundle cannot be quietly green because nobody thought to list it.
+      if (!k && !current.has(o.value) && !retired.has(o.value) && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unclassified-unlisted", file, value: o.value, form: shown(o), detail: `${file} states ${JSON.stringify(shown(o))} (${o.value}), which is not a ruled Gymbo price and is not declared; declare it in thirdPartyAmounts (a competitor price needs kind: "competitor", competitor, source and asOf; anything else needs a reason), or remove it` }); }
       if (k && !tp.has(`${file}|${o.value}`) && !seen.has(o.value)) { seen.add(o.value); findings.push({ kind: "price-unregistered", file, id: k, detail: `${file} states ${JSON.stringify(shown(o))} (${rupees(o.value)}) but is not in price-surfaces.json; list it (so it is pinned) or declare it thirdPartyAmounts with a reason` }); }
     }
   }
   for (const [file, text] of files) for (const c of savingsClaims(text)) if (c.value !== facts.annualSavingsPercent && !tpPct.has(`${file}|${c.value}`)) findings.push({ kind: "price-stale", file, id: "annualSavingsPercent", form: c.raw.replace(/\s+/g, " ").slice(0, 60), detail: `${file} says ${JSON.stringify(c.raw.replace(/\s+/g, " ").slice(0, 60))}, content ruled ${facts.annualSavingsPercent}%. If this is not Gymbo\'s own annual saving (a competitor\'s advertised discount, or any other percentage that reads as a saving, such as time saved: it is not a price but it sits beside a saving word), declare it in thirdPartyAmounts as { file, amount: ${c.value}, unit: "percent", reason }` });
   return findings;
+}
+
+// gy-76z5i rule 4: a competitor price is a claim WE publish about a third party. A competitor entry names the
+// competitor and records where the figure came from and when. The gate warns LOUDLY (never silently carries) once an
+// entry is older than STALE_DAYS, and prints every entry it cannot date or source, so the gap stays visible.
+export const STALE_DAYS = 90;
+const ASOF = /^(\d{4})-(\d{2})(?:-(\d{2}))?$/;
+export function checkThirdPartyProvenance(reg, today = new Date().toISOString().slice(0, 10)) {
+  const findings = [], warnings = [];
+  const now = Date.parse(today);
+  const comp = (reg.thirdPartyAmounts?.entries || []).filter((e) => e.kind === "competitor");
+  const undated = [], unsourced = [], stale = [];
+  for (const e of comp) {
+    const id = `${e.file}|${e.amount}`;
+    if (!e.competitor || typeof e.competitor !== "string") findings.push({ kind: "price-competitor-unnamed", file: e.file, value: e.amount, detail: `${id} is kind "competitor" but names no competitor` });
+    if (!e.reason) findings.push({ kind: "price-competitor-no-reason", file: e.file, value: e.amount, detail: `${id} has no reason` });
+    if (e.asOf == null) { undated.push(id); } else {
+      const m = String(e.asOf).match(ASOF);
+      const t = m && Date.parse(`${m[1]}-${m[2]}-${m[3] || "01"}`);
+      if (!m || Number.isNaN(t)) findings.push({ kind: "price-competitor-bad-asof", file: e.file, value: e.amount, detail: `${id} asOf ${JSON.stringify(e.asOf)} is not YYYY-MM or YYYY-MM-DD` });
+      else if (t > now) findings.push({ kind: "price-competitor-future-asof", file: e.file, value: e.amount, detail: `${id} asOf ${e.asOf} is in the future` });
+      else if ((now - t) / 86400000 > STALE_DAYS) stale.push(`${id} (as of ${e.asOf})`);
+    }
+    if (!e.source) unsourced.push(id);
+  }
+  if (stale.length) warnings.push(`STALE COMPETITOR PRICES (${stale.length}, older than ${STALE_DAYS} days): we publish these about a third party; re-check and update asOf: ${stale.join(", ")}`);
+  if (undated.length) warnings.push(`UNDATED COMPETITOR PRICES (${undated.length}): no asOf recorded, so staleness cannot be measured: ${undated.join(", ")}`);
+  if (unsourced.length) warnings.push(`UNSOURCED COMPETITOR PRICES (${unsourced.length}): no source recorded: ${unsourced.join(", ")}`);
+  return { findings, warnings, competitor: comp.length };
 }
 
 // The standing negative control: bump every price and require the pin to go RED for EVERY listed
