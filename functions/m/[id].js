@@ -68,7 +68,7 @@ const page = (title, body, status = 200) =>
 <title>${esc(title)} - Gymbo</title>
 <meta name="robots" content="noindex">
 <style>${CSS}</style></head><body><div class="wrap">${body}
-<p class="foot">Shared from <a href="https://getgymbo.com/">Gymbo</a>. If you appear in
+<p class="foot">Shared from <a href="https://getgymbo.com/?utm_source=media-page&amp;utm_medium=product&amp;utm_campaign=m-footer">Gymbo</a>. If you appear in
 this footage or hold rights in it, you can
 <a href="/m/takedown">request its removal</a>.</p>
 </div></body></html>`,
