@@ -132,6 +132,12 @@ jobs:
         # referral, because Pages does not substitute placeholders in a query
         # string. Found by the gy-ufxgo AC4 prod readback, 2026-09-18.
 
+      - name: "gm-7e6: every emitted utm value is in ops/utm-vocabulary.md"
+        run: node --test tests/utm-vocabulary.test.mjs
+        # Target metric: zero emitted utm values outside the table. Covers /ig,
+        # /r/ and any utm literal in public/_redirects or functions/, plus the
+        # placeholder guard. Carries its own in-memory mutation controls.
+
       - name: "gy-0v33y: the lead-source rule is bounded and never guesses"
         run: node --test tests/attribution-source.test.mjs
         # AC5/AC7. public.waitlist.source carried DEFAULT 'getgymbo.com' and was
