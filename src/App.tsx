@@ -38,8 +38,8 @@ import {
 } from "./lib/trialAccess";
 
 /* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. A link with no
-   href is the Support control, which scrolls to the capture form. */
-const FOOTER_GROUPS: { label: string; links: ({ label: string; href: string } | { label: string })[] }[] = [
+   App Review 1.5: "Support" anchors to the support contact (#support), never the waitlist form. */
+const FOOTER_GROUPS: { label: string; links: { label: string; href: string }[] }[] = [
   { label: "Learn", links: [
     { label: "Guides", href: "/guide/" },
     { label: "Research", href: "/research/state-of-indias-independent-trainers-2026/" },
@@ -52,7 +52,7 @@ const FOOTER_GROUPS: { label: string; links: ({ label: string; href: string } | 
     { label: "Akton alternative", href: "/alternatives/akton/" },
   ] },
   { label: "Help", links: [
-    { label: "Support" },
+    { label: "Support", href: "#support" },
     { label: "Contact", href: "mailto:damini@materiallab.io" },
     { label: "Request video removal", href: "/m/takedown" },
   ] },
@@ -670,11 +670,7 @@ export default function App() {
                 <ul aria-labelledby={`footer-${g.label.toLowerCase()}`} className="list-none p-0 m-0">
                   {g.links.map((l) => (
                     <li key={l.label}>
-                      {"href" in l ? (
-                        <a href={l.href} className="block py-1 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
-                      ) : (
-                        <button onClick={() => scrollToId("cta")} className="block py-1 text-[13px] transition-colors text-left" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</button>
-                      )}
+                      <a href={l.href} className="block py-1 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
                     </li>
                   ))}
                 </ul>
