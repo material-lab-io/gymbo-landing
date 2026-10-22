@@ -33,7 +33,8 @@ const TRIGGER_FREE = /\b(?:free|trial)\b/i;
 // in a cancellation-window sentence (cancel/refund before the span).
 const TRIGGER_COSTFREE =
   /\b(?:on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
-const CANCEL_CONTEXT = /\b(?:cancel\w*|refund\w*)\b/i;
+// cancel/refund followed by a window word ("Cancel within the first", "refund in the first"): a cancellation window.
+const CANCEL_CONTEXT = /\b(?:cancel\w*|refund\w*)\b[^.]*?\b(?:within|in|during|for|after)\b/i;
 // "eligible" as a WHOLE word. /eligib/ matched "ineligible" and "eligibility" in any sentence, so a
 // sentence about who is NOT eligible qualified a promise it contradicts.
 const QUALIFIED = /\beligible\b/i;
