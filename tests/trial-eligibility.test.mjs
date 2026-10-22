@@ -180,7 +180,8 @@ test("gy-6cc9n: cost-free wording with a 7-day span is RED unqualified, GREEN wi
   for (const claim of [
     "Seven days on us.", "Your first 7 days are on us.", "Enjoy 7 days at no cost.", "Seven days, no charge.",
     "7 days complimentary.", "A complimentary seven-day start.", "Gratis for 7 days.", "7 days for Rs 0.",
-    "Get 7 days for \u20b90.", "7 days for Rs. 0.", "Seven days, no card needed.", "One week on us.", "A week at no cost.",
+    "Get 7 days for \u20b90.", "7 days for Rs. 0.", "Seven days, no card needed.", "Try Gymbo for seven days at no cost, cancel anytime.", "7 days complimentary - cancel anytime.",
+    "Seven days, no card needed, cancel whenever.", "7 days for Rs 0, refund if not happy.", "One week on us.", "A week at no cost.",
   ]) {
     assert.equal(flagged(claim), true, claim);
     assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
@@ -224,8 +225,10 @@ test("gy-6cc9n planted controls: reverting the lexicon or the double notation tu
   const noCost = await mutant((x) => { assert.ok(x.includes("(span && costFree)")); return x.replace("(span && costFree)", "false"); });
   assert.equal(noCost.scanText("Seven days on us.", "/", "t").length, 0, "no cost-free trigger must miss 'on us'");
   assert.equal(noCost.scanText("7 days for Rs 0.", "/", "t").length, 0, "no cost-free trigger must miss 'Rs 0'");
-  const noCancelGuard = await mutant((x) => { assert.ok(x.includes("&& !CANCEL_CONTEXT.test(sentence)")); return x.replace("&& !CANCEL_CONTEXT.test(sentence)", ""); });
+  const noCancelGuard = await mutant((x) => { assert.ok(x.includes("&& !CANCEL_CONTEXT.test(sentence.slice(0, spanAt))")); return x.replace("&& !CANCEL_CONTEXT.test(sentence.slice(0, spanAt))", ""); });
   assert.equal(noCancelGuard.scanText("Cancel in the first 7 days with no charge.", "/", "t").length, 1, "dropping the cancel guard must re-flag the benign sentence");
+  const anywhere = await mutant((x) => { assert.ok(x.includes("sentence.slice(0, spanAt)")); return x.replace("CANCEL_CONTEXT.test(sentence.slice(0, spanAt))", "CANCEL_CONTEXT.test(sentence)"); });
+  assert.equal(anywhere.scanText("7 days complimentary - cancel anytime.", "/", "t").length, 0, "a whole-sentence cancel guard must miss 'cancel anytime' after the span");
   const windowed = await mutant((x) => { assert.ok(x.includes("TRIGGER_COSTFREE.test(sentence)")); return x.replace("TRIGGER_COSTFREE.test(sentence)", "TRIGGER_COSTFREE.test(window)"); });
   assert.equal(windowed.scanText("You can count on us. Support is open 7 days a week.", "/", "t").length, 1, "a window-wide cost-free test must re-flag 'count on us'");
   const noNum = await mutant((x) => x.replace(/const NUM = [^\n]*\n/, "const NUM = String.raw`(?:7|seven)`;\n"));

@@ -30,7 +30,7 @@ const TRIGGER_FREE = /\b(?:free|trial)\b/i;
 // gy-6cc9n: the promise does not need the word "free" or "trial" ("seven days on us", "at no cost",
 // "complimentary", "for Rs 0", "no card needed"). Those words are ordinary English elsewhere ("count on us",
 // "no charge to cancel"), so unlike free/trial they only count in the SAME sentence as the 7-day span, and not
-// in a cancellation/refund sentence.
+// in a cancellation-window sentence (cancel/refund before the span).
 const TRIGGER_COSTFREE =
   /\b(?:on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
 const CANCEL_CONTEXT = /\b(?:cancel\w*|refund\w*)\b/i;
@@ -52,7 +52,10 @@ export function scanText(value, route, surface) {
   sentences.forEach((sentence, i) => {
     const window = [sentences[i - 1], sentence, sentences[i + 1]].filter(Boolean).join(" ");
     const span = TRIGGER_DAYS.test(sentence) || TRIGGER_WEEK.test(sentence);
-    const costFree = TRIGGER_COSTFREE.test(sentence) && !CANCEL_CONTEXT.test(sentence);
+    // Only a cancel/refund word BEFORE the span is a cancellation window ("Cancel in the first 7 days with no
+    // charge"); "7 days at no cost, cancel anytime" is still a promise.
+    const spanAt = Math.min(...[TRIGGER_DAYS, TRIGGER_WEEK].map((r) => sentence.search(r)).filter((i) => i >= 0));
+    const costFree = TRIGGER_COSTFREE.test(sentence) && !CANCEL_CONTEXT.test(sentence.slice(0, spanAt));
     const hit =
       !QUALIFIED.test(window) &&
       ((TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window)) ||
