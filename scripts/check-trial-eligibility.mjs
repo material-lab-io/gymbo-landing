@@ -57,8 +57,10 @@ export function scanText(value, route, surface) {
     const span = TRIGGER_DAYS.test(sentence) || TRIGGER_WEEK.test(sentence);
     // Only a cancel/refund word BEFORE the span is a cancellation window ("Cancel in the first 7 days with no
     // charge"); "7 days at no cost, cancel anytime" is still a promise.
-    const spanAt = Math.min(...[TRIGGER_DAYS, TRIGGER_WEEK].map((r) => sentence.search(r)).filter((i) => i >= 0));
-    const costFree = TRIGGER_COSTFREE.test(sentence) && !CANCEL_CONTEXT.test(sentence.slice(0, spanAt));
+    const spans = [TRIGGER_DAYS, TRIGGER_WEEK].map((r) => r.exec(sentence)).filter(Boolean);
+    const first = spans.sort((a, b) => a.index - b.index)[0];
+    // The window phrase may END in the span itself ("Cancel within 7 days"), so test up to the span's end.
+    const costFree = TRIGGER_COSTFREE.test(sentence) && !(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)));
     const hit =
       !QUALIFIED.test(window) &&
       ((TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window)) ||

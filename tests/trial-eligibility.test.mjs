@@ -201,6 +201,9 @@ test("gy-6cc9n over-breadth: price figures and cost words without a 7-day span s
     "Rs 399 a month.", "Rs 0.50 per message.", "From \u20b9399 a month, no charge for extra clients.",
     "Pay within 7 days of the invoice date.", "We are on us time zone.", "Your data stays with us.",
     "Complimentary tea for visitors.", "Rs 0 outstanding.",
+    // tester #293 144f238f: natural policy phrasing
+    "Refunds within 7 days, no charge to you.", "Cancel within 7 days at no cost.", "cancel within seven days with no charge",
+    "Full refund within 7 days of purchase, no charge for cancelling.", "If you cancel after 7 days there is no charge.",
     // tester #293 false reds, one test per sentence
     "You can count on us. Support is open 7 days a week.", "No card needed to browse the demo. We reply within 7 days.",
     "Cancel in the first 7 days with no charge.", "INR 0 platform fee. Payouts arrive in 7 days.",
@@ -226,9 +229,9 @@ test("gy-6cc9n planted controls: reverting the lexicon or the double notation tu
   const noCost = await mutant((x) => { assert.ok(x.includes("(span && costFree)")); return x.replace("(span && costFree)", "false"); });
   assert.equal(noCost.scanText("Seven days on us.", "/", "t").length, 0, "no cost-free trigger must miss 'on us'");
   assert.equal(noCost.scanText("7 days for Rs 0.", "/", "t").length, 0, "no cost-free trigger must miss 'Rs 0'");
-  const noCancelGuard = await mutant((x) => { assert.ok(x.includes("&& !CANCEL_CONTEXT.test(sentence.slice(0, spanAt))")); return x.replace("&& !CANCEL_CONTEXT.test(sentence.slice(0, spanAt))", ""); });
+  const noCancelGuard = await mutant((x) => { assert.ok(x.includes('!(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)))')); return x.replace('!(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)))', "true"); });
   assert.equal(noCancelGuard.scanText("Cancel in the first 7 days with no charge.", "/", "t").length, 1, "dropping the cancel guard must re-flag the benign sentence");
-  const anywhere = await mutant((x) => { assert.ok(x.includes("sentence.slice(0, spanAt)")); return x.replace("CANCEL_CONTEXT.test(sentence.slice(0, spanAt))", "CANCEL_CONTEXT.test(sentence)"); });
+  const anywhere = await mutant((x) => { assert.ok(x.includes("sentence.slice(0, first.index + first[0].length)")); return x.replace("CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length))", "CANCEL_CONTEXT.test(sentence)"); });
   assert.equal(anywhere.scanText("7 days complimentary - cancel within the first month.", "/", "t").length, 0, "a whole-sentence cancel guard must miss 'cancel anytime' after the span");
   const windowed = await mutant((x) => { assert.ok(x.includes("TRIGGER_COSTFREE.test(sentence)")); return x.replace("TRIGGER_COSTFREE.test(sentence)", "TRIGGER_COSTFREE.test(window)"); });
   assert.equal(windowed.scanText("You can count on us. Support is open 7 days a week.", "/", "t").length, 1, "a window-wide cost-free test must re-flag 'count on us'");
