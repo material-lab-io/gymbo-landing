@@ -13,6 +13,8 @@ export interface RouteDef {
   url: string;
   priority: string;
   changefreq: string;
+  /** unlisted page: left out of sitemap.xml (its HTML carries the robots noindex meta) */
+  noindex?: boolean;
 }
 
 import { POSTS } from "./content/blog/posts";
@@ -25,6 +27,7 @@ const STATIC_ROUTES: RouteDef[] = [
   { key: "compareWellnessz", entry: "compare/gymbo-vs-wellnessz/index.html", url: "/compare/gymbo-vs-wellnessz/", priority: "0.8", changefreq: "monthly" },
   { key: "privacy", entry: "privacy/index.html", url: "/privacy/", priority: "0.3", changefreq: "yearly" },
   { key: "terms", entry: "terms/index.html", url: "/terms/", priority: "0.3", changefreq: "yearly" },
+  { key: "foundingPartnerTerms", entry: "founding-partner-terms/index.html", url: "/founding-partner-terms/", priority: "0.1", changefreq: "yearly", noindex: true },
   { key: "blog", entry: "blog/index.html", url: "/blog/", priority: "0.6", changefreq: "weekly" },
   { key: "guide", entry: "guide/index.html", url: "/guide/", priority: "0.7", changefreq: "weekly" },
 ];
