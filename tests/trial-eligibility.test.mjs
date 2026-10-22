@@ -181,7 +181,8 @@ test("gy-6cc9n: cost-free wording with a 7-day span is RED unqualified, GREEN wi
     "Seven days on us.", "Your first 7 days are on us.", "Enjoy 7 days at no cost.", "Seven days, no charge.",
     "7 days complimentary.", "A complimentary seven-day start.", "Gratis for 7 days.", "7 days for Rs 0.",
     "Get 7 days for \u20b90.", "7 days for Rs. 0.", "Seven days, no card needed.", "Try Gymbo for seven days at no cost, cancel anytime.", "7 days complimentary - cancel anytime.",
-    "Cancel anytime: your first 7 days are on us.", "Cancel anytime - seven days at no cost.", "7 days complimentary - cancel within the first month.", "Seven days, no card needed, cancel whenever.", "7 days for Rs 0, refund if not happy.", "One week on us.", "A week at no cost.",
+    "Cancel anytime: your first 7 days are on us.", "Cancel anytime - seven days at no cost.", "7 days complimentary - cancel within the first month.", "Cancel anytime: for your first 7 days it's on us.", "Cancel anytime - in your first 7 days there is no cost.",
+    "Cancel in the app whenever you like, then enjoy 7 days complimentary.", "Seven days, no card needed, cancel whenever.", "7 days for Rs 0, refund if not happy.", "One week on us.", "A week at no cost.",
   ]) {
     assert.equal(flagged(claim), true, claim);
     assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
