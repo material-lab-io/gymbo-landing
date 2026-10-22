@@ -1,0 +1,63 @@
+name: Prod Watch Console
+
+# The BROWSER half of the hourly production watch (gy-qgq5g, pm GO option (c), 22 Oct 2026). Prod Watch used to be one job: curl smoke,
+# headless-Chromium console check, deploy-sha check, all on [self-hosted, gt2]. Since 22 Oct `gt2` is carried by the gt3 runners only
+# (anton carries `anton`; gt2-runner-1..3 carry `gt2-host`), and the hold on those runners starved the whole watch: 4 of the last 8
+# hourly runs were cancelled with no runner. A browser does not belong on a gt2-host runner (house rule), so it stays here, on
+# [self-hosted, gt2]; the curl half moved to .github/workflows/prod-watch.yml on [self-hosted, gt2-host] so getgymbo.com is watched
+# even when no gt3 runner is free.
+#
+# EXTERNAL ALERTING: the Gas City `async-watchdog` addresses workflows BY DISPLAY NAME. "Prod Watch" is already configured there;
+# "Prod Watch Console" is NOT until watchdog adds `Prod Watch Console@material-lab-io/gymbo-landing` to SCHEDULED_FAILURE_WORKFLOWS and
+# `...:150` to HEARTBEAT_WORKFLOWS (bead filed on gy-qgq5g). scripts/check-external-watch-contract.mjs pins this file's name and cron
+# so that string keeps matching. Offset to :30 so the two halves never queue for the same slot.
+
+on:
+  schedule:
+    - cron: "30 * * * *"
+  workflow_dispatch:
+    inputs:
+      verify_url:
+        description: "Override target (negative-control testing only — leave blank for normal runs)"
+        required: false
+        default: ""
+
+jobs:
+  watch:
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+
+      # No `cache: npm`: on the persistent gt2 runners this step cost a median
+      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
+      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
+      # already warm on local disk, so the Actions cache was restoring a cache
+      # on top of a cache over the network. See gy-2vvun. Do not re-add.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Bootstrap dependencies
+        # A self-hosted runner account can host concurrent runner services. The
+        # account-global ~/.npm/_cacache let those services race the same rename
+        # destination, leaving Prod Watch unable to evaluate production twice.
+        # The wrapper persists this run-owned value through GITHUB_ENV after a
+        # successful bootstrap so the later npx step uses the same isolation.
+        env:
+          npm_config_cache: ${{ runner.temp }}/gymbo-prod-watch/npm/${{ github.run_id }}/${{ github.run_attempt }}/${{ github.job }}
+        run: bash scripts/prod-watch-bootstrap.sh npm ci
+
+      # --with-deps dropped deliberately: it shells out to apt-get and needs
+      # root, which a self-hosted runner does not grant. The gt2 runners
+      # already carry the Playwright system libraries and a warm
+      # ~/.cache/ms-playwright, so this resolves from cache. Do NOT re-add
+      # --with-deps when moving a job to self-hosted.
+      - name: Install Chromium (console check)
+        run: npx playwright install chromium
+
+      - name: Run console check
+        run: |
+          TARGET="${{ github.event.inputs.verify_url }}"
+          if [ -z "$TARGET" ]; then TARGET="https://getgymbo.com"; fi
+          echo "Checking $TARGET"
+          node scripts/console-check.mjs "$TARGET"
