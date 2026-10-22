@@ -16,8 +16,13 @@ export const INVISIBLES = /[­​-‏⁠﻿]/g;
 // Cyrillic letters that render as Latin ones. The site is English, so nothing legitimate is lost.
 const HOMOGLYPHS = { "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "у": "y", "і": "i", "ј": "j" };
 
+// gy-id5zl: the HTML named dash entities. copy-blocks.decodeEntities leaves these as literal text
+// (so the change detector pins what the author typed), which let "7&ndash;day" walk past the trial
+// gate while the numeric form "7&#8211;day" was caught. Folded to "-" here, for MATCHING only.
+const NAMED_DASHES = /&(?:ndash|mdash|hyphen|dash|minus|horbar);/gi;
+
 export function matchable(value) {
-  return decodeEntities(value)
+  return decodeEntities(String(value).replace(NAMED_DASHES, "-"))
     .normalize("NFKC")
     .replace(INVISIBLES, "")
     .replace(/[аеорсхуіј]/g, (c) => HOMOGLYPHS[c])
