@@ -39,7 +39,7 @@ function sitemap(): Plugin {
     name: 'emit-sitemap',
     generateBundle() {
       const lastmod = new Date().toISOString().slice(0, 10)
-      const urls = ROUTES.map(
+      const urls = ROUTES.filter((p) => !p.noindex).map(
         (p) =>
           `  <url>\n    <loc>${SITE}${p.url}</loc>\n    <lastmod>${lastmod}</lastmod>\n    <changefreq>${p.changefreq}</changefreq>\n    <priority>${p.priority}</priority>\n  </url>`
       ).join('\n')
