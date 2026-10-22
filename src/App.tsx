@@ -37,8 +37,8 @@ import {
   PRICING_LEGIBILITY_LINE,
 } from "./lib/trialAccess";
 
-/* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. A link with no
-   App Review 1.5: "Support" anchors to the support contact (#support), never the waitlist form. */
+/* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
+   to the support contact (#support, App Review 1.5), never the waitlist form. */
 const FOOTER_GROUPS: { label: string; links: { label: string; href: string }[] }[] = [
   { label: "Learn", links: [
     { label: "Guides", href: "/guide/" },
