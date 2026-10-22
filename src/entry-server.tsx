@@ -3,6 +3,7 @@ import App from "./App";
 import { CompareWellnessZ } from "./pages/CompareWellnessZ";
 import { Privacy } from "./pages/Privacy";
 import { Terms } from "./pages/Terms";
+import { FoundingPartnerTerms } from "./pages/FoundingPartnerTerms";
 import { Blog } from "./pages/Blog";
 import { GuideIndex } from "./pages/GuideIndex";
 import { ArticlePage } from "./pages/ArticlePage";
@@ -23,6 +24,7 @@ const ELEMENTS: Record<string, React.ReactElement> = {
   compareWellnessz: <CompareWellnessZ />,
   privacy: <Privacy />,
   terms: <Terms />,
+  foundingPartnerTerms: <FoundingPartnerTerms />,
   blog: <Blog />,
   guide: <GuideIndex />,
 };
