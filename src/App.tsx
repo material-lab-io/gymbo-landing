@@ -666,7 +666,7 @@ export default function App() {
           <nav aria-label="Footer navigation" className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
             {FOOTER_GROUPS.map((g) => (
               <div key={g.label}>
-                <p id={`footer-${g.label.toLowerCase()}`} className="text-[11px] font-bold uppercase mb-2" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.04em" }}>{g.label}</p>
+                <p id={`footer-${g.label.toLowerCase()}`} className="text-[12px] font-bold uppercase mb-2" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.09em" }}>{g.label}</p>
                 <ul aria-labelledby={`footer-${g.label.toLowerCase()}`} className="list-none p-0 m-0">
                   {g.links.map((l) => (
                     <li key={l.label}>
