@@ -49,6 +49,10 @@ jobs:
       - name: Approved self-hosted runner guard
         run: node scripts/check-workflow-runners.mjs
 
+      # gy-ukcqm: the /w/ edge rate-limit rule file must stay valid (offline, node builtins only)
+      - name: /w/ rate-limit rule file self-test
+        run: node scripts/cf-w-ratelimit.mjs --selftest
+
       - name: Negative control — runner guard must FAIL on GitHub-hosted labels
         run: |
           set -e
