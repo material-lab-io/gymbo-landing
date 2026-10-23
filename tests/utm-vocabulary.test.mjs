@@ -30,7 +30,7 @@ function rows(doc, heading) {
     .filter((l) => l.startsWith("|") && !/^\|[-|\s]+\|?$/.test(l) && !/^\|\s*utm_source/.test(l))
     .map((l) => l.split("|").slice(1, -1).map((c) => c.trim()));
 }
-const TOKEN_RE_IN_DOC = /\^\[[^\]]+\]\{\d+,\d+\}\$/;
+const TOKEN_RE_IN_DOC = /\^ref_\[0-9a-f\]\{32\}\$/;
 function vocabulary(doc) {
   const live = rows(doc, "LIVE VALUES");
   const reserved = rows(doc, "RESERVED VALUES");
@@ -54,7 +54,7 @@ function inTable(vocab, { source, medium, campaign }, { liveOnly = true } = {}) 
     if (r.medium !== medium && r.medium !== "any") return false;
     if (campaign === null) return /ABSENT/.test(r.campaign);
     if (/^[a-z0-9-]+$/.test(r.campaign)) return r.campaign === campaign;
-    if (/TRAINER TOKEN/.test(r.campaign)) return vocab.tokenShape.test(campaign);
+    if (/OPAQUE REFERRAL TOKEN/.test(r.campaign)) return vocab.tokenShape.test(campaign);
     return false;
   });
 }
@@ -79,17 +79,22 @@ function checkIg(redirects, vocab) {
   }
 }
 
-// 1b. /r/: for a spread of tokens, every emitted triple is inside the table; the shape is pinned.
-const GOOD_TOKENS = ["priya-jan", "Priya-Jan", "abc", "a".repeat(32), "testtoken001"];
-function checkReferral(mod, vocab) {
-  assert.equal(mod.TOKEN_SHAPE.source, vocab.tokenShape.source, "TOKEN_SHAPE drifted from the doc");
-  for (const raw of [...GOOD_TOKENS, "ab", "a".repeat(33), "", undefined, ":token", "<token>"]) {
-    const t = triple(mod.referralLocation(raw));
+// 1b. /r/ (gy-ufxgo.9): a valid code emits only the opaque ref_<32hex> campaign; anything else is
+//     entirely untagged (no utm at all). Fixture key only.
+const ENV = { REFERRAL_HMAC_KEY_V1: "00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff" };
+const GOOD_CODES = ["ABCD234", "abcd234", " abcd234 ", "ZZZZZZZ", "2345679"];
+const BAD_CODES = ["ab", "a".repeat(33), "", undefined, ":token", "<token>", "ABCD23", "ABCDI23", "priya-jan", "summer20"];
+async function checkReferral(mod, vocab) {
+  for (const raw of GOOD_CODES) {
+    const t = triple((await mod.referralLocation(raw, ENV)).location);
     assert.ok(inTable(vocab, t), `/r/${raw} emitted ${JSON.stringify(t)}, outside the vocabulary`);
+    assert.equal(t.source, "referral");
+    assert.equal(t.medium, "referral");
+    assert.match(t.campaign, vocab.tokenShape);
   }
-  for (const raw of GOOD_TOKENS) {
-    const t = triple(mod.referralLocation(raw));
-    assert.deepEqual(t, { source: "referral", medium: "referral", campaign: String(raw).toLowerCase() });
+  for (const raw of BAD_CODES) {
+    const loc = (await mod.referralLocation(raw, ENV)).location;
+    assert.equal(new URL(loc).search, "", `/r/${raw} must be entirely untagged, got ${loc}`);
   }
 }
 
@@ -121,19 +126,17 @@ const PLACEHOLDERS = [
   "{token}", "{{token}}", "%7Btoken%7D", "%7btoken%7d", "[token]", "anytoken`", "anytoken%60",
   "abc:def", "abc{x}", "abc<x>",
 ];
-function checkPlaceholderGuard(mod) {
+async function checkPlaceholderGuard(mod) {
   for (const raw of PLACEHOLDERS) {
-    const q = new URL(mod.referralLocation(raw)).searchParams;
-    assert.equal(q.get("utm_campaign"), null, `placeholder ${JSON.stringify(raw)} reached utm_campaign`);
-    assert.equal(q.get("utm_source"), "referral");
-    assert.equal(q.get("utm_medium"), "referral");
+    const loc = (await mod.referralLocation(raw, ENV)).location;
+    assert.equal(new URL(loc).search, "", `placeholder ${JSON.stringify(raw)} reached a utm value`);
   }
-  // The live shape today: /r/:token is a 301 with source=referral and NO campaign.
-  const res = mod.onRequestGet({ params: { token: ":token" } });
+  // The live shape: /r/:token is a 301 to the plain site with NO utm at all.
+  const res = await mod.onRequestGet({ request: new Request("https://getgymbo.com/r/:token"), params: { token: ":token" }, env: ENV });
   assert.equal(res.status, 301);
   const loc = new URL(res.headers.get("Location"));
   assert.equal(loc.origin + loc.pathname, "https://getgymbo.com/");
-  assert.equal(loc.searchParams.get("utm_campaign"), null);
+  assert.equal(loc.search, "", "placeholder reached a utm value");
 }
 
 // 3. the doc itself: measurement rule first, closed medium set of 5, chatgpt.com marked external.
@@ -192,14 +195,14 @@ async function checkMediaFooter(src, vocab) {
 test("/ig emits only values in the vocabulary, instagram/social/bio pinned", () => {
   checkIg(REDIRECTS, VOCAB);
 });
-test("/r/ emits only values in the vocabulary, referral/referral/TOKEN-SHAPE pinned", async () => {
-  checkReferral(await loadReferral(REFERRAL_SRC), VOCAB);
+test("/r/ emits only values in the vocabulary, referral/referral/OPAQUE-SHAPE pinned", async () => {
+  await checkReferral(await loadReferral(REFERRAL_SRC), VOCAB);
 });
 test("no other file in public/_redirects or functions/ emits a utm value outside the vocabulary", () => {
   checkNoStrayEmitters(VOCAB, emitterFiles());
 });
-test("a placeholder-shaped token never reaches utm_campaign", async () => {
-  checkPlaceholderGuard(await loadReferral(REFERRAL_SRC));
+test("a placeholder-shaped token never reaches a utm value", async () => {
+  await checkPlaceholderGuard(await loadReferral(REFERRAL_SRC));
 });
 test("the vocabulary doc leads with the measurement rule and keeps the closed sets", () => {
   checkDoc(DOC);
@@ -231,9 +234,13 @@ test("CONTROL 1b: a misspelt /r/ medium turns checkReferral red", async () => {
   const bad = mutate(REFERRAL_SRC, 'url.searchParams.set("utm_medium", "referral")', 'url.searchParams.set("utm_medium", "referal")');
   await assert.rejects(async () => checkReferral(await loadReferral(bad), VOCAB));
 });
-test("CONTROL 1b': a loosened TOKEN_SHAPE turns checkReferral red (shape drifted from the doc)", async () => {
-  const bad = mutate(REFERRAL_SRC, "/^[a-z0-9-]{3,32}$/", "/^[a-z0-9-]{1,64}$/");
-  await assert.rejects(async () => checkReferral(await loadReferral(bad), VOCAB), /drifted/);
+test("CONTROL 1b': a loosened CODE_SHAPE turns checkReferral red", async () => {
+  const bad = mutate(REFERRAL_SRC, "{7}$/;", "{1,64}$/;");
+  await assert.rejects(async () => checkReferral(await loadReferral(bad), VOCAB));
+});
+test("CONTROL 1b'': forwarding the raw code instead of the HMAC turns checkReferral red", async () => {
+  const bad = mutate(REFERRAL_SRC, 'await opaqueCampaign(code, keyHex)', 'code');
+  await assert.rejects(async () => checkReferral(await loadReferral(bad), VOCAB));
 });
 test("CONTROL 1c: a new tagged link in functions/ outside the table turns the stray-emitter scan red", () => {
   const files = emitterFiles();
@@ -241,12 +248,12 @@ test("CONTROL 1c: a new tagged link in functions/ outside the table turns the st
   assert.throws(() => checkNoStrayEmitters(VOCAB, files), /outside the vocabulary/);
 });
 test("CONTROL 2: removing the shape test turns the placeholder guard red", async () => {
-  const bad = mutate(REFERRAL_SRC, "if (TOKEN_SHAPE.test(token)) url", "if (true) url");
-  await assert.rejects(async () => checkPlaceholderGuard(await loadReferral(bad)), /reached utm_campaign/);
+  const bad = mutate(REFERRAL_SRC, "return CODE_SHAPE.test(code) ? code : null;", "return code;");
+  await assert.rejects(async () => checkPlaceholderGuard(await loadReferral(bad)));
 });
 test("CONTROL 2': a shape that allows ':' or '%' turns the placeholder guard red", async () => {
-  const bad = mutate(REFERRAL_SRC, "/^[a-z0-9-]{3,32}$/", "/^[a-z0-9:%{}<>`-]{3,32}$/");
-  await assert.rejects(async () => checkPlaceholderGuard(await loadReferral(bad)), /reached utm_campaign/);
+  const bad = mutate(REFERRAL_SRC, "/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{7}$/", "/^[A-Z:%{}<>`]{7}$/");
+  await assert.rejects(async () => checkPlaceholderGuard(await loadReferral(bad)));
 });
 test("CONTROL 3: a doc that buries or drops the measurement rule turns checkDoc red", () => {
   const bad = mutate(DOC, "NEVER with utmSource", "Sometimes with utmSource");
