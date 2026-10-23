@@ -47,7 +47,7 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "How much should software for an independent trainer cost in India?",
-      a: `It should be a small fraction of monthly income, well under ₹500/mo. Western seats often run ₹1,900+/mo, a real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
+      a: `It should be a small fraction of monthly income, well under ₹500/mo. A Trainerize Pro seat runs ₹1,900+/mo, a real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
     },
   ],
   bodyMd: `## the short version
@@ -138,7 +138,7 @@ const roundupBestApps: Post = {
     },
     {
       q: "How much do personal trainer apps cost in India?",
-      a: `They range widely. Akton advertises from ₹89/mo (gym management). Gymbo is ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.`,
+      a: `They range widely. Akton is gym-management software, so check akton.in for its price. Gymbo is ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.`,
     },
     {
       q: "Do these apps work on Android?",
@@ -170,12 +170,10 @@ The honest truth is that these tools are built for **different people**. The rig
 | App | Best for | Built for the solo trainer? | India-native (UPI/GST/WhatsApp) | Platform | Entry price | Free trial |
 |---|---|---|---|---|---|---|
 | **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${GYMBO_TRIAL_ROW} |
-| **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | from **₹89/mo*** | Not stated |
+| **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | See akton.in | Not stated |
 | **WellnessZ** | Dietitians & nutrition-led coaches | ➖ Nutrition-first, not session-first | ✅ Yes | iPhone, Android, web | **₹499/mo** (40 clients) | 14 days |
 | **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo (~₹750), 2 clients | 30 days |
 | **TrueCoach** | Remote 1:1 programming | ✅ but Western-priced | ❌ No | iPhone, Android, web | ~$26/mo (~₹2,200), 5 clients | 14 days |
-
-*\\*Akton's ₹89/mo is an advertised starting price (single flat tier, unlimited members); renewal and add-on pricing aren't disclosed.*
 
 ## the apps, one by one
 
@@ -195,15 +193,15 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **What it does:** QR-code attendance, member management, automated subscription billing and renewals, a lead pipeline, staff attendance and payroll ("PT split payout"), multi-branch views, retention and live-occupancy analytics, and a branded member app with streaks and leaderboards. It's a genuinely complete **gym-operations** stack at an aggressive price.
 
-**Where it's strong:** Price and operational depth for facilities. ₹89/mo (advertised) with unlimited members is a real draw versus Mindbody or Glofox, and the member-engagement layer is useful for gyms that want retention and community.
+**Where it's strong:** Price and operational depth for facilities. Unlimited members under one plan is a real draw versus Mindbody or Glofox, and the member-engagement layer is useful for gyms that want retention and community.
 
-**Be aware:** Despite some blog copy that mentions "solo trainers," Akton is built around **gym operations**: members, leads, staff, branches, biometric attendance. The trainer is modeled as *staff inside a gym*, not as the business owner. If you're a solo trainer, it's over-built for you. Its ₹89 price is framed as a starting rate, with renewal and add-on pricing undisclosed. (See our full [Akton alternative for solo trainers](/alternatives/akton/).)
+**Be aware:** Despite some blog copy that mentions "solo trainers," Akton is built around **gym operations**: members, leads, staff, branches, biometric attendance. The trainer is modeled as *staff inside a gym*, not as the business owner. If you're a solo trainer, it's over-built for you. We haven't verified its current price, so check akton.in. (See our full [Akton alternative for solo trainers](/alternatives/akton/).)
 
 ### WellnessZ: for dietitians and nutrition-led coaches
 
 **Who it's for:** Dietitians, nutritionists, and coaches whose core offer is **diet and meal planning**.
 
-**What it does:** Nutrition-first client management with a large Indian meal database, meal/diet planning with nutrition AI, two-way WhatsApp, and INR billing. Plans start at ₹499/mo (up to 40 clients) and ₹999/mo (up to 120), with a white-label option around ₹3,999.
+**What it does:** Nutrition-first client management with a large Indian meal database, meal/diet planning with nutrition AI, two-way WhatsApp, and INR billing. Plans start at ₹499/mo (up to 40 clients) and ₹999/mo (up to 120), with a white-label option on custom pricing.
 
 **Where it's strong:** Nutrition. If meal planning is the heart of your service, WellnessZ is built for exactly that, and it's India-native.
 

@@ -25,7 +25,7 @@ const truecoach: Post = {
     },
     {
       q: "How much does TrueCoach cost in India?",
-      a: "TrueCoach bills in US dollars across three client-capped tiers: Starter (~$26/mo, up to 5 clients), Standard (~$58/mo, up to 20 clients), and Pro (~$137/mo, up to 50 clients) on annual billing. For a 5–20 client trainer that's roughly ₹4,870/mo. (Check truecoach.co/pricing for current rates.)",
+      a: "TrueCoach bills in US dollars across three client-capped tiers: Starter (~$26/mo, up to 5 clients), Standard (~$58/mo, up to 20 clients), and Pro (~$137/mo, up to 50 clients) on monthly billing. For a 5–20 client trainer that's roughly ₹4,870/mo. (Check truecoach.co/pricing for current rates.)",
     },
     {
       q: "Does TrueCoach support UPI or GST?",
@@ -62,7 +62,7 @@ const truecoach: Post = {
 | Exercise video library | Growing | ✅ 3,000+ videos |
 | Free trial | ${GYMBO_TRIAL_ROW} | 14 days, no card |
 
-*TrueCoach figures: annual-billed rates verified against truecoach.co/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check truecoach.co/pricing for current pricing.*
+*TrueCoach figures: monthly-billing rates verified against truecoach.co/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check truecoach.co/pricing for current pricing.*
 
 ## where truecoach is genuinely better
 
@@ -100,7 +100,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 ## the price story, plainly
 
-For a working roster of 5–20 clients, TrueCoach lands around **₹4,870/mo** (Standard tier, annual billing). For an independent Indian trainer, that's not a small line item.
+For a working roster of 5–20 clients, TrueCoach lands around **₹4,870/mo** (Standard tier, monthly billing). For an independent Indian trainer, that's not a small line item.
 
 Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
@@ -194,7 +194,7 @@ Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${P
 };
 
 // Akton (branded "Fitrack") — gym-management software. Differentiate on FIT
-// (solo trainer vs gym facility), NOT price (Akton ₹89 < Gymbo ₹${PRICE_MONTHLY_INR}). Both are
+// (solo trainer vs gym facility), NOT price (Akton's price is not verified here). Both are
 // genuinely India-native (UPI/GST/WhatsApp — researcher-verified 2026-06-24), so
 // that's ante, not the wedge. Facts from crew/researcher/output/gymbo-competitor-
 // akton-2026-06-24.md (canonical). Do NOT publish Akton user/member counts.
@@ -217,7 +217,7 @@ const akton: Post = {
     },
     {
       q: "Is Gymbo cheaper than Akton?",
-      a: `No, Akton starts cheaper (from ₹89/mo) because it sells a full gym suite with unlimited members. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) for a focused solo-trainer tool. The right choice is about fit, not the smaller number: a gym suite is wasted on a solo trainer, and a solo tool won't run a facility.`,
+      a: `Akton is priced as a full gym suite with unlimited members; check akton.in for its current price. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) for a focused solo-trainer tool. The right choice is about fit, not the smaller number: a gym suite is wasted on a solo trainer, and a solo tool won't run a facility.`,
     },
     {
       q: "Does Gymbo have the gym features Akton has?",
@@ -244,7 +244,7 @@ Both are made in India, for India. The real question isn't features or price. It
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
 | Setup | No setup, nothing to configure | Onboard a facility: branches, staff, members |
 | Platform | iPhone only | iPhone, Android, web |
-| Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | from ₹89/mo (gym suite, unlimited members) |
+| Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | See akton.in (gym suite, unlimited members) |
 | Free trial | ${GYMBO_TRIAL_ROW} | Not clearly stated |
 
 *Both are India-native: UPI, GST, and WhatsApp aren't the difference here. The difference is who the product is built for.*
@@ -257,7 +257,7 @@ If you run a gym or a studio, Akton is built for exactly that, and it does a lot
 - **Multi-branch and staff.** Manage members across branches and handle staff attendance and trainer payouts from one place.
 - **Lead management.** A pipeline to convert walk-ins and enquiries into members.
 - **A member-facing app.** Branded app with streaks, leaderboards, and progress, useful for gyms that want community and retention.
-- **Aggressive price for a full suite.** From ₹89/mo with unlimited members is a strong deal *if you're running a facility*.
+- **A full suite for one price.** Unlimited members under one plan is a strong deal *if you're running a facility*.
 
 None of this is a knock on Akton. It's a complete tool for a gym owner. It's just built for a different person than you, if you're solo.
 
@@ -298,7 +298,7 @@ Gymbo strips it down to the one-person business:
 
 ## on price, honestly
 
-Yes, Akton starts cheaper (from ₹89/mo). But it's pricing a gym's operating system, with unlimited members, for a facility. You'd be paying for a cockpit and using a corner of it.
+Akton may well list a lower number. But it's pricing a gym's operating system, with unlimited members, for a facility. You'd be paying for a cockpit and using a corner of it.
 
 Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly) for a tool built to do one job (run your one-person training business) well. That's less than the cost of a single recovered no-show. The question isn't which number is smaller; it's which tool fits the business you actually run.`,
 };
