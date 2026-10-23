@@ -34,6 +34,7 @@ import {
   TRIAL_LINE,
   ACCESS_ROUTE_STEPS,
   PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT,
+  CANCEL_ROUTE,
   PRICING_LEGIBILITY_LINE,
 } from "./lib/trialAccess";
 
@@ -167,14 +168,14 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded statements"], highlight: false },
+  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime ${CANCEL_ROUTE}.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded statements"], highlight: false },
   { name: "Annual", tagline: `Save ${ANNUAL_SAVINGS_PERCENT}%`, price: String(PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR), period: "/month", note: `Billed yearly at ₹${PRICE_ANNUAL_INR_DISPLAY} via ${BILLING_CHANNEL}. Save ${ANNUAL_SAVINGS_PERCENT}%.`, features: ["Everything in Monthly", `${ANNUAL_SAVINGS_PERCENT}% savings`, `₹${PRICE_ANNUAL_INR_DISPLAY} billed annually`], highlight: true },
 ];
 
 /* ── FAQ ── */
 export const FAQ = [
   { q: "Is it free?", a: `${TRIAL_PRIMARY} Then Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}. ${TRIAL_ELIGIBILITY_DETAIL}` },
-  { q: "What happens when my trial ends, and can I cancel or get my data out?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
+  { q: "What happens when my trial ends, and can I cancel or export my clients' records?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
   { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
   { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
