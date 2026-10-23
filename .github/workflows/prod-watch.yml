@@ -1,11 +1,17 @@
 name: Prod Watch
 
-# Scheduled regression against the LIVE domain (gy-6stol / G2 of gy-gtyxh).
-# scripts/getgymbo-smoke.sh has said "run on cron against prod" in its own
-# header since gy-kefk3 — this wires that capability up. Dependency-light
-# (curl-only smoke script + the existing console-check.mjs), no credentials.
-# Distinct from gy-7t4sr (external off-infra uptime monitoring, founder-gated
-# on a credential) — this runs in our own CI and must not wait on that.
+# Hourly production watch, CURL HALF ONLY (gy-6stol / G2 of gy-gtyxh; split by gy-qgq5g, pm GO option (c), 22 Oct 2026).
+# scripts/getgymbo-smoke.sh has said "run on cron against prod" in its own header since gy-kefk3 — this wires that capability up.
+# No credentials. Distinct from gy-7t4sr (external off-infra uptime monitoring, founder-gated on a credential) — this runs in our
+# own CI and must not wait on that.
+#
+# WHY gt2-host AND NOT gt2. Since 22 Oct the `gt2` label is carried by the gt3 runners; the hourly job queued behind the hold on
+# them and was cancelled with no runner assigned (4 of the last 8 runs). `gt2-host` is carried by gt2-runner-1..3, which are
+# online and idle. That is only safe because this job is CURL-ONLY: no npm, no Node, no Playwright, no browser (house rule: GT2
+# hosts run no browsers). scripts/check-prod-watch-curl-only.mjs fails the PR if one is added back. The headless-Chromium console
+# check is its own workflow, prod-watch-console.yml, still on [self-hosted, gt2].
+#
+# The display name and the hourly cron are a CONTRACT with the external async-watchdog (scripts/check-external-watch-contract.mjs).
 
 on:
   schedule:
@@ -19,44 +25,16 @@ on:
 
 jobs:
   watch:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, gt2-host]
     steps:
       - uses: actions/checkout@v4
 
-      # No `cache: npm`: on the persistent gt2 runners this step cost a median
-      # 369s (prod-watch, 20/20 runs over 5.7 min) while `npm ci` takes ~7-11s
-      # and got FASTER without it (run 34011955222 vs 34010364422). ~/.npm is
-      # already warm on local disk, so the Actions cache was restoring a cache
-      # on top of a cache over the network. See gy-2vvun. Do not re-add.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Bootstrap dependencies
-        # A self-hosted runner account can host concurrent runner services. The
-        # account-global ~/.npm/_cacache let those services race the same rename
-        # destination, leaving Prod Watch unable to evaluate production twice.
-        # The wrapper persists this run-owned value through GITHUB_ENV after a
-        # successful bootstrap so the later npx step uses the same isolation.
-        env:
-          npm_config_cache: ${{ runner.temp }}/gymbo-prod-watch/npm/${{ github.run_id }}/${{ github.run_attempt }}/${{ github.job }}
-        run: bash scripts/prod-watch-bootstrap.sh npm ci
-
-      # --with-deps dropped deliberately: it shells out to apt-get and needs
-      # root, which a self-hosted runner does not grant. The gt2 runners
-      # already carry the Playwright system libraries and a warm
-      # ~/.cache/ms-playwright, so this resolves from cache. Do NOT re-add
-      # --with-deps when moving a job to self-hosted.
-      - name: Install Chromium (console check)
-        run: npx playwright install chromium
-
-      - name: Run prod regression
+      - name: Run prod smoke (curl only)
         run: |
           TARGET="${{ github.event.inputs.verify_url }}"
           if [ -z "$TARGET" ]; then TARGET="https://getgymbo.com"; fi
           echo "Checking $TARGET"
           bash scripts/getgymbo-smoke.sh "$TARGET"
-          node scripts/console-check.mjs "$TARGET"
 
       # Merged-but-not-deployed guard (gy-sa0fm AC3): the actual gy-sa0fm
       # defect was never a red check — deploy.yml simply never RAN on the
