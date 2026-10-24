@@ -22,3 +22,16 @@ export function looksLikeEmail(value) {
   return typeof value === "string" && value.length <= EMAIL_MAX_LENGTH && EMAIL_SHAPE.test(value);
 }
 // EMAIL_SHAPE-END
+
+// gy-sl9amm — WHAT A VISITOR PASTES IS NOT ALWAYS WHAT THEY SEE. Autofill, paste from a chat app and some
+// phone keyboards add zero-width / bidi marks, a no-break space or a full-width "@" or ".", none of which
+// show on screen but all of which fail the shape check above. Normalise BEFORE the check, in the form and
+// in the Pages Function, so a dotted address that LOOKS right is not refused for what cannot be seen.
+// Outside the EMAIL_SHAPE block on purpose: that block is copied byte-for-byte into the edge function and
+// ported to SQL, and the shape rule itself is unchanged.
+export function normalizeEmail(value) {
+  return String(value ?? "")
+    .normalize("NFKC")
+    .replace(/[​-‏‪-‮⁠﻿]/g, "")
+    .trim();
+}
