@@ -653,7 +653,6 @@ for (const [label, prepare] of [
 for (const [label, fill, expectedField] of [
   ['an empty submit', {}, 'phone'],
   ['a malformed email', { email: 'a@b' }, 'email'],
-  ['a malformed email WITH a phone', { email: 'a@b', phone: '9876543210' }, 'email'],
 ] as const) {
   test(`focus lands on the first field the error is about after ${label} (gy-e60uc.7)`, async ({ page }) => {
     await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
@@ -671,6 +670,46 @@ for (const [label, fill, expectedField] of [
     expect(active, `focus after ${label} should be on the "${expectedField}" input, not on ${JSON.stringify(active)}`).toEqual({ tag: 'input', name: expectedField });
   });
 }
+
+/**
+ * gy-sl9amm — Kaushik 24 Oct 2026 11:46 IST: "they couldn't just enter the phone number and sign up anyway ... they
+ * should be allowed to optionally enter any field and sign up." This REPLACES the gy-e60uc.7 case "a malformed email
+ * WITH a phone => error + focus on the email", which encoded the gy-e60uc.2 ruling that the founder reversed. A
+ * malformed email next to a valid number now submits PHONE-ONLY: success is shown, no error, no focus trap, and the
+ * stray email is not posted.
+ * PLANTED CONTROL: the second test is the old dead-end's input with NO phone. It must still be refused with focus on
+ * the email and NO post, so the first test cannot pass by accepting everything, and reinstating the old rule (refuse
+ * with a phone) turns the first test RED (no post, an alert instead of the success line).
+ */
+test('a malformed email WITH a phone submits phone-only: no error, no focus trap (gy-sl9amm, supersedes gy-e60uc.7 case)', async ({ page }) => {
+  const bodies: any[] = [];
+  await page.route('**/api/waitlist', async (route) => { bodies.push(route.request().postDataJSON()); await route.fulfill({ status: 200, body: '{}' }); });
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@b');
+  await form.locator('input[type="tel"]').fill('9876543210');
+  await form.locator('button[type="submit"]').click();
+  await expect(page.getByRole('status').filter({ hasText: /whatsapp you/i })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: /doesn't look right/i })).toHaveCount(0);
+  expect(bodies).toHaveLength(1);
+  expect(bodies[0]).toMatchObject({ email: '', phone: '9876543210' });
+});
+
+test('PLANTED CONTROL: the same malformed email with NO phone is still refused, focus on the email, no post (gy-sl9amm)', async ({ page }) => {
+  const posts: string[] = [];
+  await page.route('**/api/waitlist', async (route) => { posts.push(route.request().url()); await route.fulfill({ status: 200, body: '{}' }); });
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@b');
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByRole('alert')).toBeVisible();
+  await expect(form.locator('input[type="email"]')).toBeFocused();
+  await expect(form.locator('button[type="submit"]')).toBeEnabled();
+  await page.waitForTimeout(300);
+  expect(posts).toEqual([]);
+});
 
 test('after an empty submit the visitor can type straight into the focused field (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
