@@ -54,3 +54,32 @@ test("DRIFT CONTROL: the comparison can fail (a one-character change to the copy
   assert.notEqual(mutated, shared, "the mutation did not change the block, so this control would be blind");
   assert.notEqual(block("supabase/functions/waitlist-notify/index.ts"), mutated);
 });
+
+// gy-sl9amm (founder, 24 Oct): "servant.id@gmail.com" must be accepted. Pins the AC1 table, and a PLANTED
+// CONTROL: a rule that refuses a dot in the local part (the failure the founder described) must go RED here.
+import { normalizeEmail } from "../src/lib/emailShape.mjs";
+
+const AC1_ACCEPT = [
+  "servant.id@gmail.com", "a.b.c@gmail.com", "a+b@x.com", "first.last+tag@mail.sub.example.co.in",
+  "UPPER.Case@Example.COM", "a_b-c@d-e.io", "x@y.ai",
+];
+test("AC1: dots, plus-tags, subdomains and uppercase are accepted", () => {
+  for (const v of AC1_ACCEPT) assert.equal(looksLikeEmail(v), true, `should accept: ${v}`);
+});
+
+test("PLANTED CONTROL: a no-dot-in-local-part rule would be caught by the AC1 table", () => {
+  const dotless = (v) => looksLikeEmail(v) && !v.split("@")[0].includes(".");
+  assert.ok(AC1_ACCEPT.some((v) => !dotless(v)), "the control rule must reject at least one AC1 address, or this table is blind");
+});
+
+test("normalizeEmail: invisible / full-width characters from paste and autofill no longer fail a dotted address", () => {
+  const withZwsp = "servant.​id@gmail.com";
+  // The shape rule does not refuse a zero-width space, so it would be STORED in the address; normalising strips it.
+  assert.equal(normalizeEmail(withZwsp), "servant.id@gmail.com");
+  assert.equal(looksLikeEmail("servant.id\uff20gmail.com"), false, "raw, a full-width @ fails the shape check (why we normalise)");
+  assert.equal(looksLikeEmail(normalizeEmail("servant.id\uff20gmail.com")), true);
+  assert.equal(normalizeEmail(" servant.id@gmail.com "), "servant.id@gmail.com");
+  assert.equal(normalizeEmail("servant.id＠gmail.com"), "servant.id@gmail.com");
+  assert.equal(normalizeEmail(undefined), "");
+  assert.equal(normalizeEmail(null), "");
+});
