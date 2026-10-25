@@ -19,7 +19,9 @@ function* walk(dir, root) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const st = statSync(p);
-    if (st.isDirectory()) { if (!SKIP_DIRS.has(name)) yield* walk(p, root); }
+    // src/canonical is content's byte-pinned vendored file (sha256 in SOURCE.json); its provenance prose may quote the retired
+    // phrase, and the built-site gates assert the pinned strings, so a scan here would only flag history.
+    if (st.isDirectory()) { if (!SKIP_DIRS.has(name) && relative(root, p).split(sep).join("/") !== "src/canonical") yield* walk(p, root); }
     else if (EXT.test(name) && !/^(?:package(?:-lock)?|tsconfig.*|copy-baseline|copy-ruled-strings|product-contract|canonical-log-verb-registry)\.json$/.test(name)) yield p;
   }
 }
