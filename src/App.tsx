@@ -101,7 +101,7 @@ const PILLARS = [
     title: "Get organized",
     intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
     bullets: [
-      "Punch a class in one tap",
+      "Punch a class in a couple of taps, and balances update themselves",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
       "Save a class location and open directions when you need them.",
@@ -119,7 +119,7 @@ const PILLARS = [
     bullets: [
       "Branded PDF statements: your name, tagline, and details on each one",
       "A shareable QR profile card in three styles",
-      "Send any client their statement with a single tap",
+      "Send any client their statement from the app",
     ],
     brief: "Your brand on a clean statement PDF. Share in a tap (India).",
     dark: false,
