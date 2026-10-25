@@ -219,7 +219,7 @@ The problem isn't that you lack tools. It's that your business is scattered acro
 | Scattered (the leak) | Consolidated (the fix) |
 |----------------------|------------------------|
 | Payments in UPI history | Payments recorded against each client's balance |
-| Sessions in a paper diary | Classes punched in a couple of taps, tied to the balance |
+| Sessions in a paper diary | Classes punched in a couple of taps, tied to the balance |
 | Balances in your memory | Balance visible per client, always current |
 | Records as WhatsApp screenshots | Clean, exportable statements per client |
 
