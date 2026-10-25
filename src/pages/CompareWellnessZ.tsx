@@ -227,7 +227,7 @@ export function CompareWellnessZ() {
                 WellnessZ leads with nutrition. Its homepage calls it "all-in-one software for dietitians, nutritionists & coaches," and its standout features are a 20,000+ ICMR-NIN verified meal database and nutrition AI. If your business is built on diet plans, that depth is genuinely valuable.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.bone, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning: it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a class punch in a couple of taps, a structured client card that does the balance math for you, and pre-written WhatsApp reminders you send with one tap. A workout builder and Ask Gymbo are built in, but the hero is running your training business, not planning nutrition.
+                Gymbo leads with the <b style={{ fontWeight: 600 }}>session</b>. A personal trainer's day isn't meal planning: it's "did Ravi show up, did he pay, how many classes are left." Gymbo is built around that: a class punch in a couple of taps, a structured client card that does the balance math for you, and pre-written WhatsApp reminders ready to send. A workout builder and Ask Gymbo are built in, but the hero is running your training business, not planning nutrition.
               </p>
               <p className="text-[15px] md:text-[16px] pt-2" style={{ color: F.marigold, fontFamily: SANS, fontWeight: 600, lineHeight: 1.6 }}>
                 Bottom line: same country, different jobs. WellnessZ is built for the dietitian's day; Gymbo is built for the trainer's.
