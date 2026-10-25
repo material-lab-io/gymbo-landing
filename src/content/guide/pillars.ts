@@ -219,7 +219,7 @@ The problem isn't that you lack tools. It's that your business is scattered acro
 | Scattered (the leak) | Consolidated (the fix) |
 |----------------------|------------------------|
 | Payments in UPI history | Payments recorded against each client's balance |
-| Sessions in a paper diary | Classes punched in a couple of taps, tied to the balance |
+| Sessions in a paper diary | Classes punched in a couple of taps, tied to the balance |
 | Balances in your memory | Balance visible per client, always current |
 | Records as WhatsApp screenshots | Clean, exportable statements per client |
 
@@ -241,7 +241,7 @@ A spreadsheet can hold this, but it doesn't update a balance by itself between c
 
 ## where Gymbo fits
 
-[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clean, GST-ready statements you can share. It gives you WhatsApp reminder templates to send and a workout builder. It's built to be the source of truth, so your business stops living in your head.
+[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clean, GST-ready statements you can share. It gives you WhatsApp reminder templates to send and a workout builder. It's built to be the source of truth, so your business stops living in your head.
 
 ## managing your training business day to day
 
