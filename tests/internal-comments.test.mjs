@@ -34,7 +34,7 @@ test("NEGATIVE CONTROL: a comment with NO bead id and NO named person is left al
 
 test("SURVIVAL: the public byline, the JSON-LD Person, the grievance contact and the email_off directive are text/directives, not marked comments, and stay", () => {
   const html = `<script type="application/ld+json">{"@type":"Person","name":"Kaushik Naarayan","note":"/* gy-abcde */"}</script>
-<footer><!--email_off-->contact Kaushik at <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a><!--/email_off--></footer><p>By Kaushik Naarayan, founder of Gymbo</p>`;
+<footer><!--email_off-->contact us at <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a><!--/email_off--></footer><p>By Kaushik Naarayan, founder of Gymbo</p>`;
   assert.equal(stripMarkedComments(html, "html"), html, "nothing here is a marked comment; JSON-LD data is never touched even if it contains /* */");
   assert.deepEqual(findMarkedComments(html, "html"), []);
 });
@@ -116,7 +116,7 @@ const okSite = { "/d/index.html": "<html>x</html>" };
 function scan(map, root = "/d") { const read = (p) => { const rel = p.startsWith(root + "/") ? p.slice(root.length + 1) : p; const k = Object.keys(map).find((f) => f.endsWith(rel)); if (k === undefined) throw new Error("nope"); return map[k]; }; return scanDist(root, read, Object.keys(map)); }
 
 test("THE CHECK FAILS on a leaked marked comment, and on missing public text; passes on a clean site with the public text present", () => {
-  const clean = { "/d/index.html": "<html><script type='application/ld+json'>{\"name\":\"Kaushik Naarayan\"}</script>Kaushik Naarayan</html>", "/d/privacy/index.html": "<!--email_off-->grievance@getgymbo.com<!--/email_off-->" };
+  const clean = { "/d/index.html": "<html><script type='application/ld+json'>{\"name\":\"Kaushik Naarayan\"}</script>Kaushik Naarayan</html>", "/d/privacy/index.html": "<!--email_off-->damini@materiallab.io kaushik@materiallab.io<!--/email_off-->" };
   const good = scan(clean); assert.deepEqual(good.leaks, []); assert.deepEqual(good.missing, []); assert.equal(good.scanned, 2);
   const leaky = scan({ ...clean, "/d/index.html": clean["/d/index.html"] + "<style>/* gy-becxi x */</style>" }); assert.equal(leaky.leaks.length, 1); assert.equal(leaky.leaks[0].file, "index.html");
   const eaten = scan({ "/d/index.html": "<html>no byline</html>", "/d/privacy/index.html": "<p>nothing</p>" }); assert.equal(eaten.missing.length, MUST_SURVIVE.length);
@@ -126,7 +126,7 @@ test("CLI: exit 2 on an empty dist (never a vacuous pass), exit 1 on a leak, exi
   const run = (dir) => spawnSync(process.execPath, [new URL("../scripts/check-no-internal-comments.mjs", import.meta.url).pathname, dir], { encoding: "utf8" });
   const empty = join(scratch, "empty"); mkdirSync(empty); assert.equal(run(empty).status, 2);
   const d = join(scratch, "site"); mkdirSync(join(d, "privacy"), { recursive: true });
-  writeFileSync(join(d, "index.html"), "<html>Kaushik Naarayan</html>"); writeFileSync(join(d, "privacy", "index.html"), "<!--email_off-->grievance@getgymbo.com<!--/email_off-->");
+  writeFileSync(join(d, "index.html"), "<html>Kaushik Naarayan</html>"); writeFileSync(join(d, "privacy", "index.html"), "<!--email_off-->damini@materiallab.io kaushik@materiallab.io<!--/email_off-->");
   assert.equal(run(d).status, 0);
   writeFileSync(join(d, "index.html"), "<html>Kaushik Naarayan<!-- gy-abcde --></html>"); const r = run(d); assert.equal(r.status, 1); assert.match(r.stderr, /LEAK index\.html/);
 });
@@ -142,5 +142,5 @@ test("CLI: the check exits 1 (not just reports) when the deliberate public text 
   const d = join(scratch, "eaten"); mkdirSync(join(d, "privacy"), { recursive: true });
   writeFileSync(join(d, "index.html"), "<html>a page with no byline</html>"); writeFileSync(join(d, "privacy", "index.html"), "<p>no contact, no directive</p>");
   const r = spawnSync(process.execPath, [new URL("../scripts/check-no-internal-comments.mjs", import.meta.url).pathname, d], { encoding: "utf8" });
-  assert.equal(r.status, 1); assert.match(r.stderr, /MISSING index\.html: "Kaushik Naarayan"/); assert.match(r.stderr, /MISSING privacy\/index\.html: "grievance@getgymbo\.com"/);
+  assert.equal(r.status, 1); assert.match(r.stderr, /MISSING index\.html: "Kaushik Naarayan"/); assert.match(r.stderr, /MISSING privacy\/index\.html: "damini@materiallab\.io"/);
 });
