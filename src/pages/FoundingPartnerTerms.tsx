@@ -1,14 +1,14 @@
 import { PageShell, Prose } from "../components/PageShell";
 
 /* getgymbo.com/founding-partner-terms (gm-39e / gy-l6hra.10). Text is contractbot's
-   ML-TRM-GYMBO-2026-001 v1.3.1 part B, verbatim. Legal text: do not reword; copy
+   ML-TRM-GYMBO-2026-001 v1.4.0 part B, verbatim. Legal text: do not reword; copy
    questions go to contractbot. Unlisted: noindex, out of the sitemap, no nav link. */
 export function FoundingPartnerTerms() {
   return (
     <PageShell>
       <Prose
         title="Gymbo Founding Design Partner: full terms"
-        intro="Issued by Material Lab Private Limited, the company that builds and runs Gymbo (GSTIN 29AAUCM0118Q1ZQ, Bengaluru, India). Signed for Material Lab by Damini Rathi. You don't sign anything. These terms cover your card, your code and your 6 months of Gymbo Pro."
+        intro="Issued by Material Lab Private Limited, the company that builds and runs Gymbo (GSTIN 29AAUCM0118Q1ZQ, Bengaluru, India). Signed for Material Lab by Damini Rathi. You don't sign anything: redeeming your code means you accept these terms. These terms cover your card, your code and your 6 months of Gymbo Pro."
       >
         <section className="flex flex-col gap-3">
           <h2>What you get</h2>
@@ -60,11 +60,16 @@ export function FoundingPartnerTerms() {
             <li>These terms sit alongside the Gymbo terms of service (<a href="/terms/">getgymbo.com/terms</a>). Where the two differ, these terms apply to your 6 months.</li>
             <li>If we change these terms, we'll tell you first. A change can't shorten your 6 months.</li>
             <li>Governed by the laws of India, courts at Bengaluru. If something goes wrong, write to us first and we'll try to sort it out within 30 days.</li>
-            <li>Questions: <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>. Privacy concerns: <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a>.</li>
+            <li
+              dangerouslySetInnerHTML={{
+                __html:
+                  'Questions: <!--email_off--><a href="mailto:damini@materiallab.io">damini@materiallab.io</a><!--/email_off-->. Privacy concerns: <!--email_off--><a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a><!--/email_off-->.',
+              }}
+            />
           </ul>
         </section>
 
-        <p className="text-[13px]">Terms version 1.3.2, 26 October 2026.</p>
+        <p className="text-[13px]">Terms version 1.4.0, 26 October 2026.</p>
       </Prose>
     </PageShell>
   );
