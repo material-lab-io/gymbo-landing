@@ -118,7 +118,7 @@ export function Privacy() {
           <p
             dangerouslySetInnerHTML={{
               __html:
-                'To raise a privacy question or grievance, contact Kaushik at <!--email_off--><a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a><!--/email_off-->. We aim to respond within 30 days.',
+                'To raise a privacy question or grievance, contact us at <!--email_off--><a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a><!--/email_off-->. We aim to respond within 30 days.',
             }}
           />
           <p>

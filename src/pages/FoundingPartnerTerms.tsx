@@ -60,11 +60,11 @@ export function FoundingPartnerTerms() {
             <li>These terms sit alongside the Gymbo terms of service (<a href="/terms/">getgymbo.com/terms</a>). Where the two differ, these terms apply to your 6 months.</li>
             <li>If we change these terms, we'll tell you first. A change can't shorten your 6 months.</li>
             <li>Governed by the laws of India, courts at Bengaluru. If something goes wrong, write to us first and we'll try to sort it out within 30 days.</li>
-            <li>Questions: <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>. Privacy concerns: <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a>.</li>
+            <li>Questions: <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>. Privacy concerns: <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a>.</li>
           </ul>
         </section>
 
-        <p className="text-[13px]">Terms version 1.3.1, 22 October 2026.</p>
+        <p className="text-[13px]">Terms version 1.3.2, 26 October 2026.</p>
       </Prose>
     </PageShell>
   );
