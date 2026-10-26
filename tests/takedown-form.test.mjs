@@ -178,9 +178,9 @@ test("NEG: an unrecognised RPC answer is NEVER shown as received (a reference mu
   }
 });
 
-// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback points at an address that
-// delivers, never privacy@. 26 Oct (gm-s23, Kaushik): grievance@ is dead (gy-vhxsd bounces
-// 550), so the delivering addresses are damini@ and kaushik@materiallab.io.
+// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback points at the published
+// contact address, never privacy@. grievance@ dropped by Kaushik 26 Oct (gm-s23);
+// replacement addresses per Kaushik: damini@ and kaushik@materiallab.io.
 test("gy-s8z4z: every fallback points at damini@ + kaushik@materiallab.io, never grievance@ or privacy@", async () => {
   const cases = [
     ["rpc http failure", { rpc: { status: 500, body: { message: "x" } } }, 502],
@@ -193,7 +193,7 @@ test("gy-s8z4z: every fallback points at damini@ + kaushik@materiallab.io, never
     assert.equal(status, expected, label);
     assert.match(h, /mailto:damini@materiallab\.io/, `${label}: must offer damini@`);
     assert.match(h, /mailto:kaushik@materiallab\.io/, `${label}: must offer kaushik@`);
-    assert.doesNotMatch(h, /grievance@getgymbo\.com/, `${label}: grievance@ is dead and must not be offered`);
+    assert.doesNotMatch(h, /grievance@getgymbo\.com/, `${label}: grievance@ was dropped (gm-s23) and must not be offered`);
     assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
   }
 });
