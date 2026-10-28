@@ -26,7 +26,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
   { label: "Nutrition / meal plans", gymbo: "Workout builder + Ask Gymbo (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
   { label: "Sign-in", gymbo: "phone, Apple, or Google", wellnessz: "account-based", win: null },
-  { label: "White-label app", gymbo: "not yet", wellnessz: "₹3,999/mo tier", win: "w" },
+  { label: "White-label app", gymbo: "not yet", wellnessz: "custom pricing (white-label)", win: "w" },
   { label: "Platform", gymbo: "iOS-native", wellnessz: "app + web", win: "w" },
 ];
 

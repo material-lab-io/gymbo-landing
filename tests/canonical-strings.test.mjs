@@ -253,19 +253,19 @@ test("PRICE PIN control: a listed page that already states the DRIFTED amount bl
   assert.deepEqual(priceDrill(F, reg, dist).missed, [], "control: clean fixture, no blind spot");
   const p = join(dist, "llms.txt"); writeFileSync(p, readFileSync(p, "utf8") + `\ncompetitor: ${rupees(F.monthlyINR + 37)}\n`);
   assert.deepEqual(priceDrill(F, reg, dist).missed, ["llms.txt|monthlyINR"]);
-  const r = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const r = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(r.status, 1); assert.match(r.stderr, /price-pin-blind.*did NOT go red for 1 listed \(file,key\) or occurrence\(s\).*llms\.txt\|monthlyINR/);
   assert.match(r.stderr, /price-unclassified.*llms\.txt states "\u20b9436"/, "the undeclared figure is also named on its own");
 });
 
 test("CLI end to end: the real gate goes RED on a stale price and prints the drill result on green", () => {
   const dist = fixtureDist(loadCanonical(REAL));
-  const ok = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const ok = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(ok.status, 0, ok.stderr + ok.stdout);
   assert.match(ok.stdout, /PRICE PIN \(gy-53qq5\): \d+ built file\(s\) pinned.*went RED on (\d+) of \1 listed/);
   assert.match(ok.stdout, /DECLARED UNREAD/);
   writeFileSync(join(dist, "llms.txt"), readFileSync(join(dist, "llms.txt"), "utf8").replace("\u20b9399", "\u20b9449"));
-  const bad = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const bad = spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(bad.status, 1); assert.match(bad.stderr, /price-stale monthlyINR.*llms\.txt does not state \u20b9399/);
 });
 
@@ -422,10 +422,10 @@ test("M6 LEDGER: content's facts must equal the ledger the registry was reconcil
 test("M6 CLI end to end: a bumped fact with the ledger left behind fails the REAL gate and names the fix; the real ledger passes", () => {
   const dist = fixtureDist(loadCanonical(REAL));
   const canon = mkdtempSync(join(scratch, "canon-")); cpSync(REAL, canon, { recursive: true });
-  const ok = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const ok = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(ok.status, 0, ok.stderr + ok.stdout);
   const f = join(canon, "price-surfaces.json"), j = JSON.parse(readFileSync(f, "utf8")); j.priceLedger.ruled.monthlyINR += 50; writeFileSync(f, JSON.stringify(j));
-  const bad = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const bad = spawnSync(process.execPath, [SCRIPT, "--canon", canon, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(bad.status, 1); assert.match(bad.stderr, /price-ledger-behind monthlyINR.*retired/i);
 });
 
@@ -467,6 +467,11 @@ test("M4 builtName: a build hash is stripped only from an assets/ file whose 8-c
     "other/terms-6GmOuVPd.js": "other/terms-6GmOuVPd.js",      // outside assets/: left alone
     "assets/logo.svg": "assets/logo.svg", "index.html": "index.html", "assets/terms-6GmOuVP.js": "assets/terms-6GmOuVP.js", // 7 chars: not a hash
     "assets/terms-6GmOuVPdX.js": "assets/terms-6GmOuVPdX.js",  // 9 chars: not a hash
+    // gy-123aq: an all-lowercase 8-letter tail IS a hash when the name without it is a registered surface (the real
+    // build emitted posts-pnqcffbs.js), and stays a word when it is not registered.
+    "assets/posts-pnqcffbs.js": "assets/posts.js",
+    "assets/nothere-abcdefgh.js": "assets/nothere-abcdefgh.js",
+    "other/posts-pnqcffbs.js": "other/posts-pnqcffbs.js",
   };
   for (const [from, to] of Object.entries(cases)) assert.equal(builtName(from), to, from);
 });
@@ -590,7 +595,7 @@ test("NAMED LIMITS: what the price gate deliberately does NOT read is a declared
   for (const [n, inner] of [["opacity:0", `<p style="opacity:0">${P}</p>`], ["font-size:0", `<p style="font-size:0">${P}</p>`], ["off-screen", `<p style="position:absolute;left:-9999px">${P}</p>`], ["clip", `<p style="clip:rect(0,0,0,0);position:absolute">${P}</p>`], ["css comment in style", `<p style="/* x */display:none">${P}</p>`], ["class name", `<p class="hidden">${P}</p>`]]) assert.equal(presence(inner), 0, `limit 2/4 is real: '${n}' still counts as PRESENT (a named limit, not a fix)`);
   const dist = fixtureDist(canon); mkdirSync(join(dist, "blog/how-india-independent-trainers-run-their-business"), { recursive: true }); writeFileSync(join(dist, pinned), `<!doctype html><html><head><title>${P}</title></head><body><p>x</p></body></html>`);
   assert.equal(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === pinned && x.id === key).length, 0, "limit 3 is real: a price only in <title> counts as present");
-  const out = spawnSync(process.execPath, [SCRIPT, "--root", fixtureDist(canon), "--today", "2026-09-24"], { encoding: "utf8" });
+  const out = spawnSync(process.execPath, [SCRIPT, "--root", fixtureDist(canon), "--today", "2026-10-22"], { encoding: "utf8" });
   assert.equal(out.status, 0, out.stderr + out.stdout); for (const l of LIT) assert.ok(out.stdout.includes(l), `a green run prints the named limit: ${l}`);
   assert.match(out.stdout, /NAMED LIMITS/);
 });
@@ -646,7 +651,7 @@ test("R3 BASE FROM CI: the PR base sha or the push 'before' sha, read from the e
 
 test("R3 CLI end to end: --base-ledger, --base <git ref>, and CI with no resolvable base", () => {
   const dist = fixtureDist(loadCanonical(REAL));
-  const run = (args, env = {}) => spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-09-24", ...args], { encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "", GITHUB_EVENT_NAME: "", GITHUB_EVENT_PATH: "", GITHUB_BASE_REF: "", ...env } });
+  const run = (args, env = {}) => spawnSync(process.execPath, [SCRIPT, "--root", dist, "--today", "2026-10-22", ...args], { encoding: "utf8", env: { ...process.env, GITHUB_ACTIONS: "", GITHUB_EVENT_NAME: "", GITHUB_EVENT_PATH: "", GITHUB_BASE_REF: "", ...env } });
   const real = loadPriceSurfaces(REAL).priceLedger, tmp = mkdtempSync(join(scratch, "base-"));
   const same = join(tmp, "same.json"); writeFileSync(same, JSON.stringify(real));
   const ok = run(["--base-ledger", same]); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /append-only/i, "a green run says the check ran");
@@ -682,16 +687,16 @@ test("R3 HOTFIX: the time-fuse harness runs the price gate on a SHALLOW checkout
   const ciEnv = { ...process.env, GITHUB_ACTIONS: "true", GITHUB_EVENT_NAME: "pull_request", GITHUB_EVENT_PATH: ev };
   const g = GATES.find(([label]) => label.startsWith("canonical strings"));
   // the way the harness really invokes it: gateArgs(), the same function its spawn loop uses
-  const viaHarness = spawnSync(process.execPath, [...gateArgs(g, dist), "--today", "2026-09-24"], { encoding: "utf8", env: ciEnv });
+  const viaHarness = spawnSync(process.execPath, [...gateArgs(g, dist), "--today", "2026-10-22"], { encoding: "utf8", env: ciEnv });
   assert.equal(viaHarness.status, 0, "the harness's own invocation must pass on a shallow CI checkout: " + viaHarness.stderr + viaHarness.stdout);
   assert.match(viaHarness.stdout, /ledger append-only.*SKIPPED.*explicit/i, "and it says loudly that it skipped, and why");
   // control: WITHOUT the flag the same environment is refused (fail closed is still the default)
-  const bare = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24"], { encoding: "utf8", env: ciEnv });
+  const bare = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-10-22"], { encoding: "utf8", env: ciEnv });
   assert.equal(bare.status, 1); assert.match(bare.stderr, /price-ledger-base-unknown/);
   // the flag needs a real reason
-  const noReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24", "--skip-ledger-base"], { encoding: "utf8", env: ciEnv });
+  const noReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-10-22", "--skip-ledger-base"], { encoding: "utf8", env: ciEnv });
   assert.equal(noReason.status, 1); assert.match(noReason.stderr, /price-ledger-skip-needs-reason/);
-  const shortReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-09-24", "--skip-ledger-base", "ok"], { encoding: "utf8", env: ciEnv });
+  const shortReason = spawnSync(process.execPath, [g[1], "--root", dist, "--today", "2026-10-22", "--skip-ledger-base", "ok"], { encoding: "utf8", env: ciEnv });
   assert.equal(shortReason.status, 1); assert.match(shortReason.stderr, /price-ledger-skip-needs-reason/);
   // the opt-out lives in ONE place: nothing that enforces (workflows, package scripts, other scripts) may carry it
   const carriers = [];
@@ -761,7 +766,7 @@ function fixtureDist(canon) {
 test("CLI end to end: tampering with the vendored file, or deleting it, is caught; a real byte edit changes the hash", () => {
   const dir = join(scratch, "canon"); cpSync(REAL, dir, { recursive: true });
   const dist = fixtureDist(loadCanonical(REAL));
-  const run = () => spawnSync(process.execPath, [SCRIPT, "--canon", dir, "--root", dist, "--today", "2026-09-24"], { encoding: "utf8" });
+  const run = () => spawnSync(process.execPath, [SCRIPT, "--canon", dir, "--root", dist, "--today", "2026-10-22"], { encoding: "utf8" });
   const ok = run(); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /\d+ waived divergence/);
   const f = join(dir, "gymbo-canonical-strings.json"); const orig = readFileSync(f, "utf8");
   writeFileSync(f, orig.replace("Your week, tap to punch", "Your week, one tap to punch"));
@@ -774,7 +779,7 @@ test("CLI end to end: a drifted price constant fails the real gate; the real con
   const dist = fixtureDist(loadCanonical(REAL));
   const real = readFileSync(new URL("../src/lib/trialAccess.ts", import.meta.url), "utf8");
   const ts = join(scratch, "trialAccess.ts");
-  const run = () => spawnSync(process.execPath, [SCRIPT, "--root", dist, "--constants", ts, "--today", "2026-09-24"], { encoding: "utf8" });
+  const run = () => spawnSync(process.execPath, [SCRIPT, "--root", dist, "--constants", ts, "--today", "2026-10-22"], { encoding: "utf8" });
   writeFileSync(ts, real); const ok = run(); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /5 ruled facts equal the constants/);
   writeFileSync(ts, real.replace("PRICE_MONTHLY_INR = 399", "PRICE_MONTHLY_INR = 449"));
   const bad = run(); assert.equal(bad.status, 1); assert.match(bad.stderr, /fact-mismatch monthlyINR/);
