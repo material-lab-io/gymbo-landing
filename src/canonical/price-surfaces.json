@@ -62,13 +62,6 @@
     "_comment": "Every rupee amount in a LISTED file must be a current ruled Gymbo price or be declared here as { file, amount, reason } (gy-53qq5 M1/M2). An amount that is neither is price-unclassified: if it is Gymbo's OLD price it is stale and must be updated; if it is someone else's figure, declare it with the reason. Declared per (file, amount): a Gymbo price that equals a declared figure in the same file is hidden by the declaration (named limit). For an UNLISTED page, a declaration also exempts a third-party amount that happens to equal a current Gymbo price. Read from each sentence in dist on 2026-09-26.",
     "entries": [
       {
-        "file": "alternatives/akton/index.html",
-        "amount": 89,
-        "reason": "Akton's advertised entry price (competitor, gym-suite plan)",
-        "kind": "competitor",
-        "competitor": "Akton"
-      },
-      {
         "file": "alternatives/trainerize/index.html",
         "amount": 500,
         "reason": "editorial: what an Indian trainer may charge per session (Rs 500-2,500), not a Gymbo price",
@@ -79,36 +72,36 @@
         "amount": 750,
         "reason": "Trainerize's $9/mo tier converted to rupees (competitor)",
         "kind": "competitor",
-        "competitor": "Trainerize"
+        "competitor": "Trainerize",
+        "source": "https://www.trainerize.com/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "alternatives/trainerize/index.html",
         "amount": 1900,
         "reason": "Trainerize Pro tier ($23+/mo) converted to rupees (competitor)",
         "kind": "competitor",
-        "competitor": "Trainerize"
+        "competitor": "Trainerize",
+        "source": "https://www.trainerize.com/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "alternatives/truecoach/index.html",
         "amount": 2200,
         "reason": "TrueCoach Starter ($26/mo) converted to rupees (competitor)",
         "kind": "competitor",
-        "competitor": "TrueCoach"
+        "competitor": "TrueCoach",
+        "source": "https://truecoach.co/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "alternatives/truecoach/index.html",
         "amount": 4870,
         "reason": "TrueCoach cost for a 5-20 client trainer, converted (competitor)",
         "kind": "competitor",
-        "competitor": "TrueCoach"
-      },
-      {
-        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
-        "amount": 89,
-        "reason": "Akton's advertised entry price (competitor, gym-suite plan)",
-        "kind": "competitor",
-        "competitor": "Akton",
-        "asOf": "2026-06"
+        "competitor": "TrueCoach",
+        "source": "https://truecoach.co/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -116,7 +109,8 @@
         "reason": "WellnessZ plan price (competitor), entry plan",
         "kind": "competitor",
         "competitor": "WellnessZ",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -124,15 +118,8 @@
         "reason": "WellnessZ plan price (competitor), 120-client plan",
         "kind": "competitor",
         "competitor": "WellnessZ",
-        "asOf": "2026-06"
-      },
-      {
-        "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
-        "amount": 3999,
-        "reason": "WellnessZ plan price (competitor), white-label option",
-        "kind": "competitor",
-        "competitor": "WellnessZ",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -140,7 +127,8 @@
         "reason": "Trainerize's $9/mo tier converted to rupees (competitor)",
         "kind": "competitor",
         "competitor": "Trainerize",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.trainerize.com/pricing/"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -148,7 +136,8 @@
         "reason": "Trainerize Pro tier ($23+/mo) converted to rupees (competitor)",
         "kind": "competitor",
         "competitor": "Trainerize",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.trainerize.com/pricing/"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -156,7 +145,8 @@
         "reason": "TrueCoach Starter ($26/mo) converted to rupees (competitor)",
         "kind": "competitor",
         "competitor": "TrueCoach",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://truecoach.co/pricing/"
       },
       {
         "file": "blog/best-apps-for-independent-personal-trainers-in-india-2026/index.html",
@@ -164,7 +154,8 @@
         "reason": "TrueCoach cost for a 5-20 client trainer, converted (competitor)",
         "kind": "competitor",
         "competitor": "TrueCoach",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://truecoach.co/pricing/"
       },
       {
         "file": "blog/how-india-independent-trainers-run-their-business/index.html",
@@ -175,9 +166,11 @@
       {
         "file": "blog/how-india-independent-trainers-run-their-business/index.html",
         "amount": 1900,
-        "reason": "Western coaching seats 'Rs 1,900+/mo' (competitor tier, converted)",
+        "reason": "Trainerize Pro coaching seats 'Rs 1,900+/mo' (competitor tier, converted)",
         "kind": "competitor",
-        "competitor": "Western coaching apps (unnamed)"
+        "competitor": "Trainerize",
+        "source": "https://www.trainerize.com/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "compare/gymbo-vs-wellnessz/index.html",
@@ -185,7 +178,8 @@
         "reason": "WellnessZ plan price (competitor), 40-client plan",
         "kind": "competitor",
         "competitor": "WellnessZ",
-        "asOf": "2026-06-22"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "compare/gymbo-vs-wellnessz/index.html",
@@ -193,15 +187,8 @@
         "reason": "WellnessZ plan price (competitor), 120-client plan",
         "kind": "competitor",
         "competitor": "WellnessZ",
-        "asOf": "2026-06-22"
-      },
-      {
-        "file": "compare/gymbo-vs-wellnessz/index.html",
-        "amount": 3999,
-        "reason": "WellnessZ plan price (competitor), white-label tier",
-        "kind": "competitor",
-        "competitor": "WellnessZ",
-        "asOf": "2026-06-22"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "index.html",
@@ -226,14 +213,18 @@
         "amount": 4870,
         "kind": "competitor",
         "competitor": "TrueCoach",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)"
+        "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)",
+        "source": "https://truecoach.co/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "assets/alternatives-main.js",
         "amount": 2200,
         "kind": "competitor",
         "competitor": "TrueCoach",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)"
+        "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)",
+        "source": "https://truecoach.co/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "assets/alternatives-main.js",
@@ -246,14 +237,18 @@
         "amount": 1900,
         "kind": "competitor",
         "competitor": "Trainerize",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)"
+        "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)",
+        "source": "https://www.trainerize.com/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "assets/alternatives-main.js",
         "amount": 750,
         "kind": "competitor",
         "competitor": "Trainerize",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)"
+        "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)",
+        "source": "https://www.trainerize.com/pricing/",
+        "asOf": "2026-10-21"
       },
       {
         "file": "assets/alternatives-main.js",
@@ -262,19 +257,13 @@
         "reason": "mid-career trainer income range start, K11 Academy salary guide (research page and the blog/alternatives copy that cites it), not a Gymbo price"
       },
       {
-        "file": "assets/alternatives-main.js",
-        "amount": 89,
-        "kind": "competitor",
-        "competitor": "Akton",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (Akton)"
-      },
-      {
         "file": "assets/compareWellnessz.js",
         "amount": 499,
         "kind": "competitor",
         "competitor": "WellnessZ",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06-22"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "assets/compareWellnessz.js",
@@ -282,15 +271,8 @@
         "kind": "competitor",
         "competitor": "WellnessZ",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06-22"
-      },
-      {
-        "file": "assets/compareWellnessz.js",
-        "amount": 3999,
-        "kind": "competitor",
-        "competitor": "WellnessZ",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06-22"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "assets/main.js",
@@ -322,7 +304,8 @@
         "kind": "competitor",
         "competitor": "Trainerize",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.trainerize.com/pricing/"
       },
       {
         "file": "assets/posts.js",
@@ -332,19 +315,12 @@
       },
       {
         "file": "assets/posts.js",
-        "amount": 89,
-        "kind": "competitor",
-        "competitor": "Akton",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (Akton)",
-        "asOf": "2026-06"
-      },
-      {
-        "file": "assets/posts.js",
         "amount": 499,
         "kind": "competitor",
         "competitor": "WellnessZ",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "assets/posts.js",
@@ -352,7 +328,8 @@
         "kind": "competitor",
         "competitor": "TrueCoach",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://truecoach.co/pricing/"
       },
       {
         "file": "assets/posts.js",
@@ -360,7 +337,8 @@
         "kind": "competitor",
         "competitor": "Trainerize",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (Trainerize)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.trainerize.com/pricing/"
       },
       {
         "file": "assets/posts.js",
@@ -368,7 +346,8 @@
         "kind": "competitor",
         "competitor": "TrueCoach",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (TrueCoach)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://truecoach.co/pricing/"
       },
       {
         "file": "assets/posts.js",
@@ -376,15 +355,8 @@
         "kind": "competitor",
         "competitor": "WellnessZ",
         "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06"
-      },
-      {
-        "file": "assets/posts.js",
-        "amount": 3999,
-        "kind": "competitor",
-        "competitor": "WellnessZ",
-        "reason": "bundle copy of the page text for a competitor price already declared on the page (WellnessZ)",
-        "asOf": "2026-06"
+        "asOf": "2026-10-21",
+        "source": "https://www.wellnessz.in/pricing"
       },
       {
         "file": "assets/research-state-of-indias-independent-trainers-2026.js",
