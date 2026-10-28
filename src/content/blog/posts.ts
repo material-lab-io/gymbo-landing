@@ -47,7 +47,7 @@ const guideIndiaTrainers: Post = {
     },
     {
       q: "How much should software for an independent trainer cost in India?",
-      a: `It should be a small fraction of monthly income, well under ₹500/mo. A Trainerize Pro seat runs ₹1,900+/mo, a real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
+      a: `It should be a small fraction of monthly income, well under ₹500/mo. A Trainerize Pro seat runs ₹1,900+/mo on annual billing, a real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears. Gymbo is ₹${PRICE_MONTHLY_INR}/mo.`,
     },
   ],
   bodyMd: `## the short version
@@ -138,7 +138,7 @@ const roundupBestApps: Post = {
     },
     {
       q: "How much do personal trainer apps cost in India?",
-      a: `They range widely. Akton is gym-management software, so check akton.in for its price. Gymbo is ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.`,
+      a: `They range widely. Akton is gym-management software, so check akton.in for its price. Gymbo is ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual). WellnessZ starts at ₹499/mo. The global tools are pricier for a real roster: Trainerize lands around ₹1,900+/mo on annual billing and TrueCoach around ₹4,870/mo for a 5–20 client trainer, both in USD.`,
     },
     {
       q: "Do these apps work on Android?",
@@ -172,7 +172,7 @@ The honest truth is that these tools are built for **different people**. The rig
 | **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | iPhone only | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${GYMBO_TRIAL_ROW} |
 | **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | See akton.in | Not stated |
 | **WellnessZ** | Dietitians & nutrition-led coaches | ➖ Nutrition-first, not session-first | ✅ Yes | iPhone, Android, web | **₹499/mo** (40 clients) | 14 days |
-| **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo (~₹750), 2 clients | 30 days |
+| **Trainerize** | Global online coaching at scale | ✅ but Western-priced | ❌ No | iPhone, Android, web | $9/mo on annual billing (~₹750), 2 clients | 30 days |
 | **TrueCoach** | Remote 1:1 programming | ✅ but Western-priced | ❌ No | iPhone, Android, web | ~$26/mo (~₹2,200), 5 clients | 14 days |
 
 ## the apps, one by one
@@ -215,7 +215,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Where it's strong:** Feature depth, ecosystem, and brand. For remote coaching at scale, it's a category leader.
 
-**Be aware:** It's built for **Western economics**. The free tier covers 1 client, $9/mo covers 2, and a realistic 5–20 client seat lands at the Pro tier around $23+/mo (~₹1,900+) before add-ons. There's **no UPI, no INR billing, no GST, and no WhatsApp**. (See our full [Trainerize alternative for India](/alternatives/trainerize/).)
+**Be aware:** It's built for **Western economics**. The free tier covers 1 client, Grow is $9/mo on annual billing ($10 monthly) for 2, and a realistic 5–20 client seat lands at the Pro tier from around $23/mo on annual billing ($25 monthly), roughly ₹1,900+, before add-ons. There's **no UPI, no INR billing, no GST, and no WhatsApp**. (See our full [Trainerize alternative for India](/alternatives/trainerize/).)
 
 ### TrueCoach: for remote 1:1 programming
 
