@@ -161,3 +161,10 @@ test("CLI: stale live + the GitHub API answering 500 exits 1 (fails closed)", as
   const r = await scenario({ liveIsHead: false, ageMin: 2, apiStatus: 500 });
   assert.equal(r.code, 1, r.out); assert.match(r.out, /FAIL \(runs-unreadable\)/);
 });
+
+test("EXEMPTION HONESTY (check-step-order): the guard script only READS the live stamp: it contains no file-write API and no shell redirect into dist/", () => {
+  const src = readFileSync(SCRIPT, "utf8");
+  for (const api of [/writeFile/, /appendFile/, /createWriteStream/, /writeSync/, /copyFile/, /rename(Sync)?\(/, />\s*["']?(\.\/)?dist\//]) {
+    assert.doesNotMatch(src, api, `check-deploy-matches-head.mjs is exempt from the build-sha-mention rule only because it never writes: ${api}`);
+  }
+});
