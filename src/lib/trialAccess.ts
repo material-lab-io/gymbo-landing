@@ -44,6 +44,8 @@ export const ACCESS_CTA_LABEL = "Request access";
 // that line. The second string gives the way out in the same sentence. Wording ratified by content.
 export const EMAIL_SHAPE_ERROR = "That email doesn't look right. Check it and try again.";
 export const EMAIL_SHAPE_ERROR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it to use your WhatsApp number.";
+// gy-sl9amm: shown only when the number is the visitor's sole contact and has fewer than 7 digits.
+export const PHONE_SHAPE_ERROR = "That number doesn't look right. Check it, or add an email instead.";
 export const ACCESS_SUCCESS_MESSAGE_EMAIL = "Request received. Check your inbox for a confirmation.";
 export const ACCESS_SUCCESS_MESSAGE_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
 

@@ -167,7 +167,7 @@ Video by ${authorHtml}, via
 <a href="${esc(m.source_url)}" rel="noopener nofollow">wger</a>.
 <span class="lic">Licensed under
 <a href="${esc(m.licence_url)}" rel="noopener nofollow">${esc(m.licence_name)}</a>.</span>
-${m.is_derivative ? `<br>Modified by Gymbo: ${esc(m.modification_note)}` : ""}
+${String(m.modification_note ?? "").trim() ? `<br>Modified by Gymbo: ${esc(m.modification_note)}` : ""}
 </div>`;
   } else {
     attribution = `<div class="attr">

@@ -7,13 +7,14 @@ import {
   ACCESS_SUCCESS_MESSAGE_PHONE_ONLY,
   EMAIL_SHAPE_ERROR,
   EMAIL_SHAPE_ERROR_WITH_PHONE,
+  PHONE_SHAPE_ERROR,
 } from "../lib/trialAccess";
-import { looksLikeEmail } from "../lib/emailShape.mjs";
+import { looksLikeEmail, normalizeEmail } from "../lib/emailShape.mjs";
 
-type Status = "idle" | "loading" | "done" | "error" | "needs-contact" | "bad-email";
+type Status = "idle" | "loading" | "done" | "error" | "needs-contact" | "bad-email" | "bad-phone";
 
 // Why a submit did not go through. A closed set, so the event can never carry what the visitor typed.
-type SubmitErrorReason = "invalid_email" | "missing_contact" | "network" | "server";
+type SubmitErrorReason = "invalid_email" | "invalid_phone" | "missing_contact" | "network" | "server";
 
 // Fire-and-forget, and a no-op where the tracker is absent (#110 scopes umami to production hostnames, so
 // localhost and CI have none). Payloads here are COUNTS ONLY: no name, email or phone value, ever.
@@ -61,7 +62,7 @@ export function WaitlistForm() {
   // scroll-padding-bottom (theme.css --gy-sticky-bar-clearance), so the error stops ABOVE the bar. That
   // clearance is the one definition of "the space the bar covers"; do not hard-code a second one here.
   useEffect(() => {
-    if (status === "bad-email" || status === "needs-contact") {
+    if (status === "bad-email" || status === "needs-contact" || status === "bad-phone") {
       errorRef.current?.scrollIntoView({ block: "nearest" });
     }
   }, [status]);
@@ -75,6 +76,14 @@ export function WaitlistForm() {
     emailRef.current?.focus();
   }
 
+  // gy-sl9amm: the phone twin of refuseEmail. The server refuses a number with fewer than 7 digits; before
+  // this the form had no inline answer for that and fell through to the generic "Couldn't send" error.
+  function refusePhone() {
+    trackSubmitError("invalid_phone");
+    setStatus("bad-phone");
+    phoneRef.current?.focus();
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     // gy-ds3fn: EITHER identity is enough, but not neither. This mirrors the
@@ -82,25 +91,43 @@ export function WaitlistForm() {
     // than it — the whole point of this change is that the form stopped being
     // the narrowest link in the chain. Neither field carries `required`, so the
     // browser cannot enforce "email or phone" for us; this does.
-    if (!email.trim() && !phone.trim()) {
+    // gy-sl9amm: the email is normalised first (invisible characters from autofill / paste), and the
+    // value that is checked is the value that is SENT.
+    const cleanEmail = normalizeEmail(email);
+    if (!cleanEmail && !phone.trim()) {
       trackSubmitError("missing_contact");
       setStatus("needs-contact");
       // On ANY refused submit focus goes to the FIRST field the error is about (pm, gy-e60uc.7), so a keyboard or
       // screen-reader user lands where the fix is. This error is about the contact PAIR, and the first contact
-      // field is the WhatsApp phone. It used to stay on the submit button that had just been clicked, which left
-      // nowhere to act. The malformed-email refusal already focuses the email field (refuseEmail).
+      // field is the WhatsApp phone.
       phoneRef.current?.focus();
       return;
     }
-    // gy-e60uc.2: an email that is not name@domain.tld is REFUSED here, even when a phone was also
-    // given. Accepting it would tell the visitor to check an inbox we cannot send to (row 29). The
-    // server re-applies the same rule (functions/api/waitlist.js); this is the inline half.
-    if (email.trim() && !looksLikeEmail(email.trim())) {
-      refuseEmail(phone.trim() !== "");
-      return;
+    // gy-e60uc.2 refused a malformed email even when a phone was also given. gy-sl9amm (founder, 24 Oct)
+    // reverses that for the phone case: ANY ONE contact field is enough, so a visitor with a number must
+    // never be held up by an email we cannot read. The email is dropped and the visitor is told the truth
+    // by the phone-only success line (it WhatsApps them; it does not say "check your inbox"). A visitor with
+    // ONLY a malformed email is still refused inline, since there is nothing else to reach them on.
+    let sendEmail = cleanEmail;
+    if (sendEmail && !looksLikeEmail(sendEmail)) {
+      if (phone.trim() === "") {
+        refuseEmail(false);
+        return;
+      }
+      sendEmail = "";
+    }
+    // Same rule for the number, mirrored from functions/api/waitlist.js (7+ digits): a bad number never
+    // blocks a good email, and a bad number with nothing else is refused inline.
+    let sendPhone = phone.trim();
+    if (sendPhone && sendPhone.replace(/\D/g, "").length < 7) {
+      if (!sendEmail) {
+        refusePhone();
+        return;
+      }
+      sendPhone = "";
     }
     // Decided before the request: the fields stay editable while it is in flight.
-    const gaveEmail = email.trim() !== "";
+    const gaveEmail = sendEmail !== "";
     setStatus("loading");
     try {
       const res = await fetch("/api/waitlist", {
@@ -110,15 +137,22 @@ export function WaitlistForm() {
         // by now the visitor may be several client-side navigations past the
         // tagged landing URL. The server re-normalises whatever we send; this
         // value is client-asserted and is attribution, never authorisation.
-        body: JSON.stringify({ name, email, phone, source: getAttributionSource() }),
+        body: JSON.stringify({ name, email: sendEmail, phone: sendPhone, source: getAttributionSource() }),
       });
       if (!res.ok) {
         // The server applies the same shape rule. If it refused the email, say so exactly as the form
         // would; never surface a status code or the server's wording. Anything else is a real failure
         // and keeps the error state and the mailto fallback.
-        if (res.status === 400 && (await res.json().catch(() => null))?.error === "valid email required") {
-          refuseEmail(phone.trim() !== "");
-          return;
+        if (res.status === 400) {
+          const why = (await res.json().catch(() => null))?.error;
+          if (why === "valid email required") {
+            refuseEmail(sendPhone !== "");
+            return;
+          }
+          if (why === "valid phone required") {
+            refusePhone();
+            return;
+          }
         }
         trackSubmitError("server");
         setStatus("error");
@@ -221,12 +255,13 @@ export function WaitlistForm() {
         autoComplete="tel"
         inputMode="tel"
         aria-label="Your WhatsApp phone number"
-        aria-describedby={status === "needs-contact" ? `${contactRuleId} ${errorId}` : contactRuleId}
+        aria-describedby={status === "needs-contact" || status === "bad-phone" ? `${contactRuleId} ${errorId}` : contactRuleId}
+        aria-invalid={status === "bad-phone" ? true : undefined}
         placeholder="Your WhatsApp phone number"
         value={phone}
         onChange={(e) => {
           setPhone(e.target.value);
-          if (status === "needs-contact") setStatus("idle");
+          if (status === "needs-contact" || status === "bad-phone") setStatus("idle");
         }}
         className={field}
         style={fieldStyle}
@@ -385,6 +420,31 @@ export function WaitlistForm() {
           }}
         >
           {badEmailHadPhone ? EMAIL_SHAPE_ERROR_WITH_PHONE : EMAIL_SHAPE_ERROR}
+        </span>
+      )}
+      {status === "bad-phone" && (
+        <span
+          ref={errorRef}
+          id={errorId}
+          role="alert"
+          // Same shape and the same destructive colour as the needs-contact error above, for the same
+          // reasons: leading-5 keeps the row an integer height, and colour is never the only carrier
+          // (role="alert" announces it).
+          className="text-[13px] leading-5"
+          style={{
+            color: "var(--g-color-status-destructive-dark)",
+            fontFamily: "var(--font-sans)",
+            // gy-e60uc.7 (designer): scrollIntoView({block:"nearest"}) stops the moment the error is
+            // inside the viewport, which on a tall desktop left its last pixel FLUSH with the viewport
+            // edge and read as cut off. scroll-margin-bottom gives that scroll breathing room; nearest
+            // honours it exactly as it honours the root's scroll-padding for the sticky bar. A Forge
+            // spacing token (24px), not a second hard-coded constant.
+            scrollMarginBottom: "var(--g-space-6)",
+            // Same reason as the hint above: no one-word orphan ("...reach / you.") on a narrow phone.
+            textWrap: "balance",
+          }}
+        >
+          {PHONE_SHAPE_ERROR}
         </span>
       )}
       {status === "error" && (
