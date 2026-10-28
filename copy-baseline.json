@@ -2704,7 +2704,7 @@
       ["visible block","How we use it","observed"],
       ["visible block","If we make material changes, we'll update this page and the date above. Please check back from time to time.","observed"],
       ["visible block","If you appear in an exercise video shown in Gymbo, or you hold rights in one, you can ask us to remove it with our","observed"],
-      ["visible block","If you request access, we keep the details you submit for up to 180 days after your request or our last contact with you, whichever is later, and then delete them. You can ask us to delete them sooner at any time.","ruled:privacy-request-access-retention"],
+      ["visible block","If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.","ruled:privacy-request-access-retention"],
       ["visible block","kaushik@materiallab.io","observed"],
       ["visible block","Keeping and deleting your data","observed"],
       ["visible block","Last updated 28 October 2026","observed"],
