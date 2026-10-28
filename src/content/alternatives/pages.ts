@@ -123,7 +123,7 @@ const trainerize: Post = {
     },
     {
       q: "How much does Trainerize cost in India?",
-      a: "Trainerize bills in US dollars. The free tier covers 1 client; the $9/mo Grow tier covers 2 clients; a realistic seat for a 5–20 client trainer is the Pro tier at roughly $23+/mo (~₹1,900+), before add-ons like payments or nutrition. (Check trainerize.com/pricing for current pricing.)",
+      a: "Trainerize bills in US dollars. The free tier covers 1 client; Grow is $9/mo billed annually ($10 billed monthly) and covers 2 clients; Pro starts at $23/mo billed annually ($25 billed monthly) for 5 clients and costs more as your roster grows, before add-ons like payments or nutrition. (Check trainerize.com/pricing for current pricing.)",
     },
     {
       q: "Does Trainerize support UPI or GST?",
@@ -159,7 +159,7 @@ const trainerize: Post = {
 | Branded client app | Not yet | ✅ (paid add-on) |
 | Free trial | ${GYMBO_TRIAL_ROW} | 30 days, no card |
 
-*Trainerize figures verified against trainerize.com/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check trainerize.com/pricing for current numbers.*
+*Trainerize figures read from trainerize.com/pricing on 28 October 2026 (per-month rates on annual billing; monthly billing is about 10% higher; ₹ ≈ $ × 84, approximate). Re-check trainerize.com/pricing for current numbers.*
 
 ## where trainerize is genuinely better
 
