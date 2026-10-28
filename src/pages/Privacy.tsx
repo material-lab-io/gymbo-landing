@@ -89,8 +89,8 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Keeping and deleting your data</h2>
-          <p>We keep your data while your account is active. You can export your data from the app at any time, and you can ask us to delete your account. After deletion we remove or anonymise your data within a reasonable period, except where we must keep some records to meet legal obligations.</p>
-          <p>If you request access, we keep the details you submit for up to 180 days after your request or our last contact with you, whichever is later, and then delete them. You can ask us to delete them sooner at any time.</p>
+          <p>We keep your data while your account is active. You can export your clients' attendance and payment records from the app at any time, and you can ask us to delete your account in the app.</p>
+          <p>If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
