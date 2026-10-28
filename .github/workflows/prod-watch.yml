@@ -73,17 +73,10 @@ jobs:
       # our build-sha.txt.
       - name: Verify live deploy matches main HEAD
         if: github.event.inputs.verify_url == ''
-        run: |
-          head_sha=$(git rev-parse HEAD)
-          live_sha=$(curl -sf --max-time 10 https://getgymbo.com/build-sha.txt || echo "")
-          echo "main HEAD:        $head_sha"
-          echo "live build-sha:   $live_sha"
-          if [ -z "$live_sha" ]; then
-            echo "::error::Could not fetch https://getgymbo.com/build-sha.txt at all — either the guard itself hasn't deployed yet, or the site is down (getgymbo-smoke.sh above should already have caught the latter)."
-            exit 1
-          fi
-          if [ "$live_sha" != "$head_sha" ]; then
-            echo "::error::Live site is serving $live_sha but main's HEAD is $head_sha — a merge to main has not reached production. Check whether deploy.yml actually ran on the merge commit (gh run list --branch main) before assuming a fresh push is needed."
-            exit 1
-          fi
-          echo "OK   live site matches main HEAD"
+        # gy-y2ci1: a mismatch is classified by what the deploy run FOR THIS HEAD is doing (in flight = PENDING,
+        # bounded; failed / never ran / succeeded-but-stale = FAIL). Logic and its tests live in
+        # scripts/check-deploy-matches-head.mjs + tests/prod-watch-inflight.test.mjs. The token only lists
+        # workflow runs (the repo is public; it is here to avoid the anonymous API rate limit).
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/check-deploy-matches-head.mjs

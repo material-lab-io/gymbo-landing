@@ -1,0 +1,59 @@
+{
+  "_provenance": "gh api repos/material-lab-io/gymbo-landing actions/runs/<watchRunId>, commits/<headSha>, actions/workflows/deploy.yml/runs?head_sha=<headSha>; fetched 2026-10-28. guardEvaluatedAt = the Prod Watch run updated_at (the guard step failed, so the job ended there). Statuses of the deploy runs are FINAL; the test derives their state AS OF guardEvaluatedAt.",
+  "cases": [
+    {
+      "watchRunId": 36045942532,
+      "headSha": "431f9d8a7fea1f3433013b2c7bc25b4f1936a79e",
+      "headCommittedAt": "2026-09-24T19:06:39Z",
+      "watchStarted": "2026-09-24T19:07:07Z",
+      "guardEvaluatedAt": "2026-09-24T19:08:23Z",
+      "deployRuns": [
+        {
+          "id": 36045895460,
+          "event": "push",
+          "branch": "main",
+          "createdAt": "2026-09-24T19:06:42Z",
+          "updatedAt": "2026-09-24T19:12:02Z",
+          "finalStatus": "completed",
+          "finalConclusion": "success"
+        }
+      ]
+    },
+    {
+      "watchRunId": 36032131543,
+      "headSha": "00c429cb54b5c91741880db39e2f35740d706e32",
+      "headCommittedAt": "2026-09-24T17:05:54Z",
+      "watchStarted": "2026-09-24T17:07:43Z",
+      "guardEvaluatedAt": "2026-09-24T17:17:37Z",
+      "deployRuns": [
+        {
+          "id": 36031927492,
+          "event": "push",
+          "branch": "main",
+          "createdAt": "2026-09-24T17:05:57Z",
+          "updatedAt": "2026-09-24T17:23:35Z",
+          "finalStatus": "completed",
+          "finalConclusion": "success"
+        }
+      ]
+    },
+    {
+      "watchRunId": 36081532952,
+      "headSha": "ff699a9e489e062616ef8c30ffd0e75e9184c4f8",
+      "headCommittedAt": "2026-09-25T01:16:33Z",
+      "watchStarted": "2026-09-25T01:19:53Z",
+      "guardEvaluatedAt": "2026-09-25T01:20:41Z",
+      "deployRuns": [
+        {
+          "id": 36081301700,
+          "event": "push",
+          "branch": "main",
+          "createdAt": "2026-09-25T01:16:36Z",
+          "updatedAt": "2026-09-25T01:21:40Z",
+          "finalStatus": "completed",
+          "finalConclusion": "success"
+        }
+      ]
+    }
+  ]
+}
