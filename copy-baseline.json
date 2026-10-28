@@ -120,6 +120,7 @@
       ["visible block","Add a WhatsApp number or an email: either one is enough.","observed"],
       ["visible block","Akton alternative","observed"],
       ["visible block","Annual","observed"],
+      ["visible block","Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.","ruled:canonical.trial.eligibilityNote"],
       ["visible block","Ask Gymbo","observed"],
       ["visible block","Ask Gymbo AI","observed"],
       ["visible block","Billed monthly via the App Store. Cancel anytime.","observed"],
