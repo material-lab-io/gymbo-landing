@@ -17,7 +17,9 @@ const DASH = String.raw`[\p{Pd}\u2212]`;
 // between the number and the unit ("7 free days", "seven full days free", "7 consecutive days"), and the
 // week forms include "a full week free" / "the first week free".
 const FILL = String.raw`(?:(?:free|trial|full|whole|first|calendar|consecutive|complete|entire|straight|total|paid|risk-free)\s+){0,2}`;
-const TRIGGER_DAYS = new RegExp(String.raw`\b(?:7|seven)\s*(?:${DASH}\s*)?${FILL}days?\b`, "iu");
+// gy-6cc9n: "seven (7) days" / "7 (seven)-day" double notation counts as the same number.
+const NUM = String.raw`(?:7|seven)(?:\s*\(\s*(?:7|seven)\s*\))?`;
+const TRIGGER_DAYS = new RegExp(String.raw`\b${NUM}\s*(?:${DASH}\s*)?${FILL}days?\b`, "iu");
 // "a week" is ordinary English ("hours a week", "once a week"), so a week form only counts when the free/trial
 // word is in the SAME sentence; the number-of-days form may reach into the neighbouring sentences.
 const TRIGGER_WEEK = new RegExp(
@@ -25,12 +27,23 @@ const TRIGGER_WEEK = new RegExp(
   "iu",
 );
 const TRIGGER_FREE = /\b(?:free|trial)\b/i;
+// gy-6cc9n: the promise does not need the word "free" or "trial" ("seven days on us", "at no cost",
+// "complimentary", "for Rs 0", "no card needed"). Those words are ordinary English elsewhere ("count on us",
+// "no charge to cancel"), so unlike free/trial they only count in the SAME sentence as the 7-day span, and not
+// in a cancellation-window sentence (cancel/refund before the span).
+const TRIGGER_COSTFREE =
+  /\b(?:on us|no cost|no charge|complimentary|gratis|no card (?:needed|required)|(?:rs\.?|inr)\s*0(?![\d.]*[1-9]))\b|\u20b9\s*0(?![\d.]*[1-9])/i;
+// A cancellation WINDOW: cancel/refund, at most two plain words, then a window phrase ("Cancel within the first",
+// "refund in the first 7"), with no punctuation between. "Cancel anytime: for your first" and "Cancel in the app" are not.
+const CANCEL_CONTEXT =
+  /\b(?:cancel\w*|refund\w*)\s+(?:\w+\s+){0,2}?(?:within|in|during|for|after)\s+(?:the\s+|your\s+)?(?:first|next|initial|last|\d+|seven|one|a)\b/i;
 // "eligible" as a WHOLE word. /eligib/ matched "ineligible" and "eligibility" in any sentence, so a
 // sentence about who is NOT eligible qualified a promise it contradicts.
 const QUALIFIED = /\beligible\b/i;
 
 function normalise(value) {
-  return matchable(value).replace(/[*_`]/g, "");
+  // "Rs. 0" must not be read as a sentence end.
+  return matchable(value).replace(/[*_`]/g, "").replace(/\brs\.\s*/gi, "Rs ");
 }
 
 // A sentence is a finding when it carries the days/week trigger AND the free/trial word sits in it or in
@@ -41,9 +54,18 @@ export function scanText(value, route, surface) {
   const sentences = normalise(value).split(/(?<=[.!?])\s+|\s[·|]\s|\n/).map((x) => x.trim()).filter(Boolean);
   sentences.forEach((sentence, i) => {
     const window = [sentences[i - 1], sentence, sentences[i + 1]].filter(Boolean).join(" ");
+    const span = TRIGGER_DAYS.test(sentence) || TRIGGER_WEEK.test(sentence);
+    // Only a cancel/refund word BEFORE the span is a cancellation window ("Cancel in the first 7 days with no
+    // charge"); "7 days at no cost, cancel anytime" is still a promise.
+    const spans = [TRIGGER_DAYS, TRIGGER_WEEK].map((r) => r.exec(sentence)).filter(Boolean);
+    const first = spans.sort((a, b) => a.index - b.index)[0];
+    // The window phrase may END in the span itself ("Cancel within 7 days"), so test up to the span's end.
+    const costFree = TRIGGER_COSTFREE.test(sentence) && !(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)));
     const hit =
-      (TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window) && !QUALIFIED.test(window)) ||
-      (TRIGGER_WEEK.test(sentence) && TRIGGER_FREE.test(sentence) && !QUALIFIED.test(window));
+      !QUALIFIED.test(window) &&
+      ((TRIGGER_DAYS.test(sentence) && TRIGGER_FREE.test(window)) ||
+        (TRIGGER_WEEK.test(sentence) && TRIGGER_FREE.test(sentence)) ||
+        (span && costFree));
     if (hit) findings.push({ route, surface, snippet: sentence.slice(0, 200) });
   });
   return findings;
