@@ -182,7 +182,7 @@ A reminder the evening before a session is a low-effort way to head off forgotte
 
 ## where Gymbo fits
 
-[Gymbo](/) keeps your schedule tied to reality. Punch each class against the client's package balance in a couple of taps, so you can see who's due and who's running low, and the app flags overlapping bookings before you confirm one. When a package is nearly used up or a session's coming, Gymbo has pre-written reminder templates: review the message, then send it with one tap in WhatsApp, in your own voice. It turns managing a diary into managing a business.`,
+[Gymbo](/) keeps your schedule tied to reality. Punch each class against the client's package balance in a couple of taps, so you can see who's due and who's running low, and the app flags overlapping bookings before you confirm one. When a package is nearly used up or a session's coming, Gymbo has pre-written reminder templates: review the message, then send it in WhatsApp, in your own voice. It turns managing a diary into managing a business.`,
 };
 
 const getOrganized: Post = {
@@ -369,7 +369,7 @@ Notice what's *not* on this list: fonts, colours, a fancy Instagram grid. Those 
 
 You don't need a designer or an agency to build this brand; you need to nail the operational details, every week, without fail. The hard part isn't taste; it's consistency at scale, when you have a full roster and a full day of sessions.
 
-That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running on iPhone, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send with one tap in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
+That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running on iPhone, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
 
 If you run a *gym* rather than train clients yourself, branding a facility (members, staff, branches) is a different job with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -576,7 +576,7 @@ The exact numbers are yours to set: some trainers use 12 hours, some 48, but eve
 
 ## enforcing it without the awkwardness
 
-The hard part of a no-show policy isn't writing it. It's the small, repeated friction of tracking cancellations and making a missed session count without an argument. That's where a reliable record earns its keep. [Gymbo](/) helps with the mechanics: running on iPhone, it keeps each client's session history and balance accurate, so a no-show that counts against the package is visible to both of you rather than a matter of memory. It also has pre-written reminder templates: review the message, then send it with one tap in WhatsApp, in your own voice, which keeps the message personal; Gymbo doesn't auto-message clients for you. The policy and the judgment stay yours; the record just makes them easy to hold to.`,
+The hard part of a no-show policy isn't writing it. It's the small, repeated friction of tracking cancellations and making a missed session count without an argument. That's where a reliable record earns its keep. [Gymbo](/) helps with the mechanics: running on iPhone, it keeps each client's session history and balance accurate, so a no-show that counts against the package is visible to both of you rather than a matter of memory. It also has pre-written reminder templates: review the message, then send it in WhatsApp, in your own voice, which keeps the message personal; Gymbo doesn't auto-message clients for you. The policy and the judgment stay yours; the record just makes them easy to hold to.`,
 };
 
 export const PILLARS: Post[] = [runBusiness, getClients, schedule, getOrganized, workSmart, brandBusiness, trainSmarter];
