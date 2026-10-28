@@ -39,7 +39,13 @@ fail() { OUT="${OUT}FAIL: $1"$'\n'; FAIL=1; }
 HOME_FILE="$(mktemp)"; trap 'rm -f "$HOME_FILE" "$ROBOTS_FILE" 2>/dev/null' EXIT
 CODE="$(curl -sL --compressed --max-time 20 -o "$HOME_FILE" -w '%{http_code}' "$URL" 2>/dev/null)"
 [ "$CODE" = "200" ] && log "OK   homepage 200" || fail "homepage HTTP $CODE (expected 200)"
+# gy-45fv7: A FAILED FETCH IS NOT MISSING COPY. Every grep below reads what curl wrote; when the fetch failed
+# (connection refused, 5xx, timeout) that file is empty, and a grep over nothing used to report "body missing
+# /trainer/" and friends, sending the reader to the copy when the problem was the fetch. The copy checks run
+# only when there is a body to judge; otherwise ONE failure says so and the gate still blocks.
+HOME_OK=0; [ "$CODE" = "200" ] && [ -s "$HOME_FILE" ] && HOME_OK=1
 
+if [ "$HOME_OK" = 1 ]; then
 # title contains Gymbo
 grep -qiE "<title>[^<]*gymbo" "$HOME_FILE" && log "OK   <title> has 'Gymbo'" || fail "<title> missing 'Gymbo' (page may not have rendered)"
 
@@ -50,6 +56,9 @@ done
 
 # OG tags present (share previews)
 grep -qiE 'property="og:title"' "$HOME_FILE" && log "OK   og:title present" || fail "og:title missing"
+else
+  fail "homepage not fetched (HTTP ${CODE:-none}): title/body/og/theme/price checks NOT RUN on a page that was never received. This is a fetch failure, not missing copy (gy-45fv7)"
+fi
 
 # --- 1b. Light-only theme invariant (PM scope addition, gy-ruxbj, 2026-08-12) ---
 # Kaushik was served a dark site with no escape (gy-31moh removed the toggle
@@ -59,12 +68,16 @@ grep -qiE 'property="og:title"' "$HOME_FILE" && log "OK   og:title present" || f
 # flip (that needs a browser; see console-check.mjs's dark-seed check for
 # the assertion that covers gy-31moh's exact failure mode), but it does
 # catch the theme ever shipping dark by default again.
+if [ "$HOME_OK" = 1 ]; then
 grep -qiE 'theme-color["'"'"'][^>]*content="#FAFAF[0-9A-F]"' "$HOME_FILE" \
   && log "OK   theme-color meta is light (#FAFAFx family)" \
   || fail "theme-color meta missing or not light — dark-by-default regression?"
 grep -qiE 'data-theme="dark"' "$HOME_FILE" \
   && fail "raw HTML ships data-theme=\"dark\" — light-only invariant (gy-uesmd) broken" \
   || log "OK   no data-theme=\"dark\" baked into served HTML"
+else
+  log "SKIP theme checks: homepage not fetched (reported above)"
+fi
 
 # --- 2. robots.txt regression (the CF managed-robots AI-bot block must NOT reappear) ---
 ROBOTS_FILE="$(mktemp)"
@@ -100,9 +113,13 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
   ANNUAL_DISPLAY="$(jq -r '.pricing.annual_inr_display' "$CONTRACT")"
   SAVINGS="$(jq -r '.pricing.annual_savings_percent' "$CONTRACT")"
 
+  if [ "$HOME_OK" = 1 ]; then
   grep -qF "$MONTHLY" "$HOME_FILE" && log "OK   contract: monthly price ($MONTHLY) present" || fail "contract: monthly price ($MONTHLY) missing from rendered site"
   grep -qF "$ANNUAL_DISPLAY" "$HOME_FILE" && log "OK   contract: annual price display ($ANNUAL_DISPLAY) present" || fail "contract: annual price display ($ANNUAL_DISPLAY) missing from rendered site"
   grep -qF "${SAVINGS}%" "$HOME_FILE" && log "OK   contract: annual savings (${SAVINGS}%) present" || fail "contract: annual savings (${SAVINGS}%) missing from rendered site"
+  else
+    log "SKIP contract price checks: homepage not fetched (reported above)"
+  fi
 
   # Anthropic sub-processor disclosure (gy-lucuj) — hard gate (gy-ps60p AC2).
   # gy-lucuj's copy fix landed 2026-08-12 (PR #70); this now fails deploys instead
@@ -110,8 +127,12 @@ if [ -f "$CONTRACT" ] && command -v jq >/dev/null 2>&1; then
   ANTHROPIC_ITEM="$(jq -r '.sub_processors[] | select(.name=="Anthropic") | .data_sent[] | select(. == "today'"'"'s session client names")' "$CONTRACT")"
   if [ -n "$ANTHROPIC_ITEM" ]; then
     PRIVACY_FILE="$(mktemp)"
-    curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" "$URL/privacy" 2>/dev/null
-    if grep -qiE "today(&#x27;|&#39;|'|’)s session client names" "$PRIVACY_FILE"; then
+    PCODE="$(curl -sL --compressed --max-time 15 -o "$PRIVACY_FILE" -w '%{http_code}' "$URL/privacy" 2>/dev/null)"
+    if [ "$PCODE" != "200" ] || [ ! -s "$PRIVACY_FILE" ]; then
+      # gy-45fv7: the page was never received, so its copy cannot be judged. Still a failure (an unjudged
+      # disclosure is not a passing one), but it must not claim the disclosure is absent.
+      fail "contract: could not fetch $URL/privacy (HTTP ${PCODE:-none}); cannot judge the Anthropic disclosure. This is a fetch failure, not missing copy (gy-45fv7)"
+    elif grep -qiE "today(&#x27;|&#39;|'|’)s session client names" "$PRIVACY_FILE"; then
       log "OK   contract: Anthropic disclosure includes 'today's session client names'"
     else
       fail "contract: /privacy does not disclose 'today's session client names' (gy-lucuj)"
