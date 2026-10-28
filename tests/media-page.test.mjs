@@ -127,6 +127,19 @@ test("AC3: a derivative with no modification note does NOT render", async () => 
   assert.doesNotMatch(html, /<video/);
 });
 
+test("gy-a2xps.16 AC2: a re-encode flagged is_derivative=false still shows its modification line", async () => {
+  const note = "Source was already H.264; rendition re-encoded to 720p CRF28 H.264 for delivery.";
+  const { status, html } = await render([{ ...WGER_OK, is_derivative: false, modification_note: note }]);
+  assert.equal(status, 200);
+  assert.match(html, /Modified by Gymbo: Source was already H\.264/);
+});
+
+test("gy-a2xps.16 AC2 NEG: a non-derivative row with a blank note renders no empty 'Modified by' line", async () => {
+  const { status, html } = await render([{ ...WGER_OK, is_derivative: false, modification_note: "  " }]);
+  assert.equal(status, 200);
+  assert.doesNotMatch(html, /Modified by/);
+});
+
 test("AC5: a withdrawn asset is suppressed on the public page and says why", async () => {
   const { status, html } = await render([stateOnly("withdrawn")]);
   assert.equal(status, 404);

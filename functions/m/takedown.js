@@ -239,7 +239,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
 <p>Your reference is</p><p class="ref">already open</p>
-<p class="note">A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> if you want your details added to it.</p>
+<p class="note">A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> if you want your details added to it.</p>
 </div>`);
   }
 
@@ -249,7 +249,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
   if (outcome === "rate_limited") {
     return shell("Request removal", `<h1>Please try again later</h1>
 <p class="note">We could not take another request from your connection just now. Please try
-again later, or email <a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 429);
+again later, or email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> and we will act on it.</p>`, 429);
   }
 
   if (typeof outcome === "string" && CASE_REF_RE.test(outcome)) {
@@ -267,5 +267,5 @@ ${esc(fields.requester_email)} when it is decided.</p>
   // we do not recognise. Say so, and give a route that does not depend on this form.
   return shell("Request removal", `<h1>We could not record your request</h1>
 <p class="note">Something is wrong on our side. Please email
-<a href="mailto:grievance@getgymbo.com">grievance@getgymbo.com</a> and we will act on it.</p>`, 502);
+<a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> and we will act on it.</p>`, 502);
 }
