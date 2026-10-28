@@ -18,18 +18,6 @@
    "kinds": [
     "visible"
    ],
-   "sentence": "It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/",
-   "kinds": [
-    "visible"
-   ],
    "sentence": "Log each session the moment it happens, record every payment against a balance, and review the whole roster once a week.",
    "reason": "advice-to-reader",
    "ruling": {
@@ -40,46 +28,9 @@
   {
    "route": "/guide/get-organized-personal-trainer/",
    "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the roster weekly.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
-    "visible"
-   ],
-   "sentence": "Consolidate your client list, sessions, package balances, and payments into one place; log sessions and payments as they happen; and review the whole roster once a week.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
     "visible"
    ],
    "sentence": "Do it in the moment: log the session as it ends, record the payment against the client and package as it lands, and the \"management\" is already done by the time the day is over.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
-    "json-ld",
-    "visible"
-   ],
-   "sentence": "Keep one ledger current in the moment: log each session as it ends, record each payment against the client and package as it lands, and do a five-minute weekly scan of who's due to renew, who owes, and who's gone quiet.",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
@@ -137,19 +88,6 @@
   {
    "route": "/guide/get-organized-personal-trainer/",
    "kinds": [
-    "json-ld",
-    "visible"
-   ],
-   "sentence": "Managing is the ongoing rhythm on top of it: logging sessions and payments as they happen and reviewing the roster weekly so nothing slips.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
     "metadata"
    ],
    "sentence": "One source of truth for clients, sessions, balances, and payments, log as you go, review weekly, and stop running the business from memory.",
@@ -165,30 +103,6 @@
     "visible"
    ],
    "sentence": "That daily-log-plus-weekly-review loop is managing the business; everything else is training.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
-    "visible"
-   ],
-   "sentence": "That daily-log-plus-weekly-review loop is the whole of day-to-day management for a solo trainer; the rest is training.",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
@@ -225,18 +139,6 @@
     "visible"
    ],
    "sentence": "A payment logged only in your UPI app is money you'll have to reconstruct later.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/take-payments-upi-personal-trainer/",
-   "kinds": [
-    "visible"
-   ],
-   "sentence": "It's *recording*: log every payment against the client and package so your paid-minus-used balance stays accurate.",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
@@ -296,30 +198,6 @@
    "kinds": [
     "visible"
    ],
-   "sentence": "Log each session the moment it ends, record every payment against the client and package, keep one schedule you actually trust, and batch the rest into a single five-minute daily review.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Log each session the moment it ends, record every payment against the client and package, keep one schedule you trust, and batch the rest into a single five-minute daily review.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "visible"
-   ],
    "sentence": "Log each session the moment it happens",
    "reason": "advice-to-reader",
    "ruling": {
@@ -344,31 +222,7 @@
    "kinds": [
     "visible"
    ],
-   "sentence": "Practically, that's running your whole one-person business from one place on your phone, and logging sessions and payments as they happen rather than reconstructing them later.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "visible"
-   ],
    "sentence": "Same time each day: log anything you missed, glance at tomorrow, note who's due to renew or owes.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Shrinking the admin around your training (session-counting, payment-chasing, scheduling, and reminders) so it takes minutes a day instead of hours, by running your one-person business from one place on your phone and logging sessions and payments as they happen.",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
