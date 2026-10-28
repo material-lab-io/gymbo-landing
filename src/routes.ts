@@ -51,7 +51,7 @@ const ALT_ROUTES: RouteDef[] = ALTERNATIVES.map((p) => ({
 }));
 
 // One route per /guide/<slug> AEO how-to pillar (each needs a matching
-// guide/<slug>/index.html carrying its FAQPage + HowTo JSON-LD).
+// guide/<slug>/index.html carrying its FAQPage JSON-LD).
 const GUIDE_ROUTES: RouteDef[] = ALL_GUIDES.map((p) => ({
   key: `guide-${p.slug}`,
   entry: `guide/${p.slug}/index.html`,

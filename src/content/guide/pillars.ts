@@ -14,7 +14,8 @@
 // locked "15 Jul 2026" (DD Mon YYYY) per the facts file, normalized here.
 // The 40-60w quick answer goes in `quickAnswer` (rendered as a callout under the
 // H1 — the AEO citation target); `dek` stays empty for guides. Each pillar's
-// FAQPage + HowTo JSON-LD lives verbatim in its guide/<slug>/index.html <head>.
+// FAQPage JSON-LD lives verbatim in its guide/<slug>/index.html <head> (HowTo was dropped on content's ruling:
+// its steps were never visible on the page; tests/guide-no-howto.test.mjs keeps it out).
 import type { Post } from "../blog/posts";
 
 // Exemplar house-style byline (the tester-blessed live pillar-1 format), identical on all 4.
