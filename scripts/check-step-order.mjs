@@ -84,7 +84,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const wf = read(dir, /\.ya?ml$/i);
     if (!wf.length) throw new Error(`no workflow files in ${dir}; refusing a vacuous pass`);
     const { findings, gates, stamps } = checkStepOrder(wf);
-    const scripts = process.argv[2] ? [] : [...read("scripts", /\.(mjs|cjs|js|sh)$/).filter(([f]) => !/check-step-order|shifted-clock-control/.test(f)), ["vite.config.ts", readFileSync("vite.config.ts", "utf8")]];
+    const scripts = process.argv[2] ? [] : [...read("scripts", /\.(mjs|cjs|js|sh)$/)// check-deploy-matches-head.mjs only READS the live stamp for Prod Watch (it never runs in a build and writes nothing);
+    // tests/prod-watch-inflight.test.mjs pins that it contains no write API, so this exemption cannot quietly grow into a writer.
+    .filter(([f]) => !/check-step-order|shifted-clock-control|check-deploy-matches-head/.test(f)), ["vite.config.ts", readFileSync("vite.config.ts", "utf8")]];
     findings.push(...checkScriptsDoNotStamp(scripts));
     if (findings.length) {
       console.error(`FAIL: ${findings.length} step-order finding(s):`);
