@@ -143,7 +143,9 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   // gy-5kwas part 2 (compliance C1/C2): routes and deletion/export behaviour with no verified operation behind
   // them must not come back. Scans the sources that carry the purchase answer and the cancel route.
-  const BANNED = ['contacting us', 'anonymise', 'export your data', 'get my data out'];
+  // gy-5kwas FAQ swap (content 28 Oct): the home FAQ no longer offers privacy reassurance or a never-contact promise
+  // while DPDP defects gy-wwr2e.27 / gy-66y9r.4 are open; these three must not come back.
+  const BANNED = ['contacting us', 'anonymise', 'export your data', 'get my data out', 'Is my client data private', 'export it anytime', 'we never contact your clients'];
   const bannedIn = (text: string) => BANNED.filter((b) => text.includes(b));
   const pricingMd = readFileSync(path.resolve(__dirname, '../public/pricing.md'), 'utf-8');
 
@@ -162,6 +164,21 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   test('NEGATIVE CONTROL: the banned-phrase guard fails on a planted "anonymise"', () => {
     expect(bannedIn(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT + ' We remove or anonymise it.')).toEqual(['anonymise']);
+  });
+
+  test('NEGATIVE CONTROL: the guard fails when ANY ONE of the FAQ-swap phrases is reintroduced (on every guarded surface)', () => {
+    for (const phrase of ['Is my client data private', 'export it anytime', 'we never contact your clients']) {
+      expect(bannedIn('Some copy. ' + phrase + '?'), phrase).toEqual([phrase]);
+      for (const text of [appSource, privacySource, indexHtml, pricingMd]) expect(bannedIn(text + ' ' + phrase), phrase).toContain(phrase);
+    }
+  });
+
+  test('the home FAQ answers the export question and the JSON-LD carries the same question and answer byte-for-byte', () => {
+    const q = "Can I export my clients' records?", a = "Yes. You can export your clients' attendance and payment records from the app whenever you like.";
+    expect(appSource).toContain(`{ q: "${q}", a: "${a}" }`);
+    expect(indexHtml).toContain(`"name": "${q}"`);
+    expect(indexHtml).toContain(`"text": "${a}"`);
+    expect(a).not.toContain('\u2014');
   });
 
   test('NEGATIVE CONTROL: CANCEL_ROUTE assertion actually fails on a deliberately wrong route', () => {
