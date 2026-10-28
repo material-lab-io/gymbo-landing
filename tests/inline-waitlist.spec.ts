@@ -413,7 +413,6 @@ for (const [label, fill] of [
   ['a@gmail', { email: 'a@gmail' }],
   // Refused by the browser's own type=email check unless the form is noValidate; now OUR text must show for it too.
   ['a@gmail,com', { email: 'a@gmail,com' }],
-  ['malformed email WITH a phone (still refused)', { email: 'a@b', phone: '9876543210' }],
 ] as const) {
   test(`malformed email is refused at the form, no request sent: ${label} (gy-e60uc.2)`, async ({ page }) => {
     await page.goto('/');
@@ -425,14 +424,12 @@ for (const [label, fill] of [
     const form = page.locator('form:has(input[name="phone"])').last();
     await form.scrollIntoViewIfNeeded();
     await form.locator('input[type="email"]').fill(fill.email);
-    if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
     await form.locator('button[type="submit"]').click();
-    await expect(form.getByRole('alert')).toHaveText('phone' in fill ? EMAIL_ERR_WITH_PHONE : EMAIL_ERR);
+    await expect(form.getByRole('alert')).toHaveText(EMAIL_ERR);
     await expect(form.locator('input[type="email"]')).toHaveAttribute('aria-invalid', 'true');
     // Focus lands on the field to fix, and NOTHING the visitor typed is cleared (content's ruling).
     await expect(form.locator('input[type="email"]')).toBeFocused();
     await expect(form.locator('input[type="email"]')).toHaveValue(fill.email);
-    if ('phone' in fill) await expect(form.locator('input[type="tel"]')).toHaveValue(fill.phone);
     // Give a wrongly-permitted request time to happen before asserting it did not.
     await page.waitForTimeout(400);
     expect(posts, 'a malformed email must not be posted').toEqual([]);
@@ -442,6 +439,51 @@ for (const [label, fill] of [
     await expect(form.getByRole('alert')).toHaveCount(0);
   });
 }
+
+/**
+ * gy-sl9amm (founder, 24 Oct 2026): ANY ONE contact field is enough. A malformed email must not hold up a visitor who
+ * gave a number (this reverses the gy-e60uc.2 "still refused with a phone" case), and the stray email is NOT posted.
+ * Symmetric for a too-short number next to a good email. A lone bad value is still refused inline. Dotted emails post.
+ * /api/waitlist is stubbed with a 200: no row is created.
+ */
+for (const [label, fill, expectPost, successText] of [
+  ['bad email + phone -> phone only', { email: 'a@b', phone: '9876543210' }, { email: '', phone: '9876543210' }, /whatsapp you/i],
+  ['dotted email only', { email: 'servant.id@gmail.com' }, { email: 'servant.id@gmail.com', phone: '' }, /check your inbox/i],
+  ['phone only', { phone: '9876543210' }, { email: '', phone: '9876543210' }, /whatsapp you/i],
+  ['both', { email: 'servant.id@gmail.com', phone: '9876543210' }, { email: 'servant.id@gmail.com', phone: '9876543210' }, /check your inbox/i],
+  ['short phone + good email -> email only', { email: 'a.b@c.co', phone: '123' }, { email: 'a.b@c.co', phone: '' }, /check your inbox/i],
+] as const) {
+  test(`any one contact field is enough: ${label} (gy-sl9amm)`, async ({ page }) => {
+    await page.goto('/');
+    const bodies: any[] = [];
+    await page.route('**/api/waitlist', async (route) => {
+      bodies.push(route.request().postDataJSON());
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+    const form = page.locator('form:has(input[name="phone"])').last();
+    await form.scrollIntoViewIfNeeded();
+    if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
+    if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
+    await form.locator('button[type="submit"]').click();
+    await expect(page.getByRole('status').filter({ hasText: successText })).toBeVisible();
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).toMatchObject(expectPost);
+  });
+}
+
+test('a lone too-short phone is refused inline, nothing posted (gy-sl9amm)', async ({ page }) => {
+  await page.goto('/');
+  const posts: string[] = [];
+  await page.route('**/api/waitlist', async (route) => { posts.push(route.request().url()); await route.fulfill({ status: 200, body: '{}' }); });
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="tel"]').fill('123');
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByRole('alert')).toHaveText("That number doesn't look right. Check it, or add an email instead.");
+  await expect(form.locator('button[type="submit"]')).toBeEnabled();
+  await page.waitForTimeout(300);
+  expect(posts).toEqual([]);
+});
 
 // The server applies the same rule. If it refuses an address the form let through, the visitor sees the SAME
 // inline text (never a status code or the server's wording); any other failure keeps the old error + mailto.
@@ -611,7 +653,6 @@ for (const [label, prepare] of [
 for (const [label, fill, expectedField] of [
   ['an empty submit', {}, 'phone'],
   ['a malformed email', { email: 'a@b' }, 'email'],
-  ['a malformed email WITH a phone', { email: 'a@b', phone: '9876543210' }, 'email'],
 ] as const) {
   test(`focus lands on the first field the error is about after ${label} (gy-e60uc.7)`, async ({ page }) => {
     await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
@@ -629,6 +670,46 @@ for (const [label, fill, expectedField] of [
     expect(active, `focus after ${label} should be on the "${expectedField}" input, not on ${JSON.stringify(active)}`).toEqual({ tag: 'input', name: expectedField });
   });
 }
+
+/**
+ * gy-sl9amm — Kaushik 24 Oct 2026 11:46 IST: "they couldn't just enter the phone number and sign up anyway ... they
+ * should be allowed to optionally enter any field and sign up." This REPLACES the gy-e60uc.7 case "a malformed email
+ * WITH a phone => error + focus on the email", which encoded the gy-e60uc.2 ruling that the founder reversed. A
+ * malformed email next to a valid number now submits PHONE-ONLY: success is shown, no error, no focus trap, and the
+ * stray email is not posted.
+ * PLANTED CONTROL: the second test is the old dead-end's input with NO phone. It must still be refused with focus on
+ * the email and NO post, so the first test cannot pass by accepting everything, and reinstating the old rule (refuse
+ * with a phone) turns the first test RED (no post, an alert instead of the success line).
+ */
+test('a malformed email WITH a phone submits phone-only: no error, no focus trap (gy-sl9amm, supersedes gy-e60uc.7 case)', async ({ page }) => {
+  const bodies: any[] = [];
+  await page.route('**/api/waitlist', async (route) => { bodies.push(route.request().postDataJSON()); await route.fulfill({ status: 200, body: '{}' }); });
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@b');
+  await form.locator('input[type="tel"]').fill('9876543210');
+  await form.locator('button[type="submit"]').click();
+  await expect(page.getByRole('status').filter({ hasText: /whatsapp you/i })).toBeVisible();
+  await expect(page.getByRole('alert').filter({ hasText: /doesn't look right/i })).toHaveCount(0);
+  expect(bodies).toHaveLength(1);
+  expect(bodies[0]).toMatchObject({ email: '', phone: '9876543210' });
+});
+
+test('PLANTED CONTROL: the same malformed email with NO phone is still refused, focus on the email, no post (gy-sl9amm)', async ({ page }) => {
+  const posts: string[] = [];
+  await page.route('**/api/waitlist', async (route) => { posts.push(route.request().url()); await route.fulfill({ status: 200, body: '{}' }); });
+  await page.goto('/');
+  const form = page.locator('form:has(input[name="phone"])').last();
+  await form.scrollIntoViewIfNeeded();
+  await form.locator('input[type="email"]').fill('a@b');
+  await form.locator('button[type="submit"]').click();
+  await expect(form.getByRole('alert')).toBeVisible();
+  await expect(form.locator('input[type="email"]')).toBeFocused();
+  await expect(form.locator('button[type="submit"]')).toBeEnabled();
+  await page.waitForTimeout(300);
+  expect(posts).toEqual([]);
+});
 
 test('after an empty submit the visitor can type straight into the focused field (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));

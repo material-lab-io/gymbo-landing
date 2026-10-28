@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_LESS_CONTEXT, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkThirdPartyProvenance, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_LESS_CONTEXT, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
 import { GATES, gateArgs } from "../scripts/shifted-clock-control.mjs";
 // The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
 // an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
@@ -99,7 +99,7 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "f74dd05a322d6ad3790f8bd5cf5d73714fc1f9e9c60e75a5e66022d0d573c768");
+  assert.equal(c.sha, "01d08aa266a5dad539833f8ffaf498f2d77ce12593cd6f57668fc30c31d355ba");
   assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 10);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });
@@ -235,7 +235,9 @@ test("PRICE PIN M1/M2 (tester 09-26): the split-tag and alternate-spelling forms
   const quiet = [`<p>\u20b9${M}0</p>`, `<p>\u20b91,${M}</p>`, `<p>Rs.1${M}</p>`, `<p>${M}0 rupees</p>`, `<p>cars ${M}</p>`, `<p>version ${M} of the guide</p>`, `<p>\u20b9${M}.50</p>`];
   for (const html of quiet) {
     const dist = fixtureDist(canon); mkdirSync(join(dist, "newpage"), { recursive: true }); writeFileSync(join(dist, "newpage/index.html"), html);
-    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html"), [], `${html} is not the ruled price`);
+    // gy-76z5i: a near-miss that still reads as a rupee amount is now REFUSED as an undeclared amount (default fail),
+    // but it must never be mistaken for the ruled price itself.
+    assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "newpage/index.html" && x.kind === "price-unregistered"), [], `${html} is not the ruled price`);
   }
   // a LISTED file whose only monthly mention is the split-tag form still satisfies the pin, and goes red when the price is bumped.
   const dist = fixtureDist(canon), p = join(dist, "compare/gymbo-vs-wellnessz/index.html");
@@ -386,7 +388,8 @@ test("M6 (gy-53qq5.1) A RETIRED PRICE ON AN UNLISTED PAGE: after a bump, a forme
   for (const [name, html] of Object.entries(forms)) {
     const dist = fixtureDist(canon); mkdirSync(join(dist, "oldpage"), { recursive: true }); writeFileSync(join(dist, "oldpage/index.html"), html);
     const before = checkBuiltPricePin(F2, reg, dist).filter((x) => x.file === "oldpage/index.html");
-    assert.deepEqual(before, [], `${name}: control, WITHOUT a retired ledger the old price on an unlisted page passes (the M6 miss, measured)`);
+    // gy-76z5i closed the M6 miss at its root: with no ledger entry the old price is still REFUSED, as an undeclared amount.
+    assert.deepEqual(before.map((x) => `${x.kind} ${x.value}`), [`price-unclassified-unlisted ${OLD}`], `${name}: control, WITHOUT a retired ledger the old price on an unlisted page is refused as undeclared`);
     const after = checkBuiltPricePin(F2, withLedger([{ amount: OLD, was: "monthlyINR", note: "test" }]), dist).filter((x) => x.file === "oldpage/index.html");
     assert.deepEqual(after.map((x) => `${x.kind} ${x.value}`), [`price-retired-amount ${OLD}`], `${name}: a retired amount on an unlisted page must FAIL once`);
   }
@@ -775,4 +778,36 @@ test("CLI end to end: a drifted price constant fails the real gate; the real con
   writeFileSync(ts, real); const ok = run(); assert.equal(ok.status, 0, ok.stderr + ok.stdout); assert.match(ok.stdout, /5 ruled facts equal the constants/);
   writeFileSync(ts, real.replace("PRICE_MONTHLY_INR = 399", "PRICE_MONTHLY_INR = 449"));
   const bad = run(); assert.equal(bad.status, 1); assert.match(bad.stderr, /fact-mismatch monthlyINR/);
+});
+
+test("gy-76z5i RULE 3: on an UNLISTED file every rupee amount that is not a ruled Gymbo price is refused until declared (default FAIL, new page / new bundle / new literal)", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts;
+  assert.deepEqual(checkBuiltPricePin(F, reg, fixtureDist(canon)).filter((x) => x.kind === "price-unclassified-unlisted"), [], "control: the fixture build has none");
+  const dist = fixtureDist(canon); mkdirSync(join(dist, "guide/new"), { recursive: true });
+  writeFileSync(join(dist, "guide/new/index.html"), "<p>Coaches charge \u20b97,777 a session</p>");
+  writeFileSync(join(dist, "assets/fresh.js"), 'const x="Rs.12345 flat";');
+  const got = checkBuiltPricePin(F, reg, dist).filter((x) => x.kind === "price-unclassified-unlisted").map((x) => `${x.file} ${x.value}`).sort();
+  assert.deepEqual(got, ["assets/fresh.js 12345", "guide/new/index.html 7777"], "a page and a bundle nobody listed are caught by default");
+  const declared = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "guide/new/index.html", amount: 7777, kind: "editorial", reason: "test" }] } };
+  assert.deepEqual(checkBuiltPricePin(F, declared, dist).filter((x) => x.kind === "price-unclassified-unlisted").map((x) => x.file), ["assets/fresh.js"], "declaring one (file, amount) clears only that one");
+  const twice = fixtureDist(canon); mkdirSync(join(twice, "g"), { recursive: true }); writeFileSync(join(twice, "g/index.html"), "<p>\u20b97,777</p><p>Rs.7777</p>");
+  assert.equal(checkBuiltPricePin(F, reg, twice).filter((x) => x.kind === "price-unclassified-unlisted").length, 1, "the same amount twice on one file is one finding");
+});
+
+test("gy-76z5i RULE 4: a competitor price carries a competitor name and an as-of date, and goes stale LOUDLY", () => {
+  const entry = (o) => ({ file: "alternatives/x/index.html", amount: 499, kind: "competitor", reason: "r", competitor: "Acme", asOf: "2026-06-22", ...o });
+  const reg = (...e) => ({ thirdPartyAmounts: { entries: e } });
+  const ok = checkThirdPartyProvenance(reg(entry({ source: "https://acme.example/pricing" })), "2026-07-01");
+  assert.deepEqual([ok.findings, ok.warnings], [[], []], "control: dated, sourced, fresh is silent");
+  const stale = checkThirdPartyProvenance(reg(entry({ source: "u" })), "2026-10-21");
+  assert.equal(stale.findings.length, 0); assert.match(stale.warnings[0], /STALE COMPETITOR PRICES \(1, older than 90 days\).*2026-06-22/, "a 121-day-old competitor price warns");
+  assert.match(checkThirdPartyProvenance(reg(entry({ source: "u", asOf: "2026-08-01" })), "2026-10-21").warnings.join(""), /^$/, "81 days is inside the window");
+  assert.match(checkThirdPartyProvenance(reg(entry({ asOf: undefined, source: "u" })), "2026-10-21").warnings.join(""), /UNDATED COMPETITOR PRICES \(1\)/);
+  assert.match(checkThirdPartyProvenance(reg(entry({})), "2026-07-01").warnings.join(""), /UNSOURCED COMPETITOR PRICES \(1\)/, "a missing source is printed on every run, not hidden");
+  assert.match(checkThirdPartyProvenance(reg(entry({ competitor: "" })), "2026-07-01").findings[0].kind, /price-competitor-unnamed/);
+  assert.match(checkThirdPartyProvenance(reg(entry({ asOf: "June 2026" })), "2026-07-01").findings[0].kind, /price-competitor-bad-asof/);
+  assert.match(checkThirdPartyProvenance(reg(entry({ asOf: "2027-01-01" })), "2026-07-01").findings[0].kind, /price-competitor-future-asof/);
+  const real = checkThirdPartyProvenance(loadPriceSurfaces(REAL), "2026-10-21");
+  assert.deepEqual(real.findings, [], "the real registry is well-formed");
+  assert.ok(real.competitor > 0, "and declares competitor prices (a vacuous pass is refused)");
 });

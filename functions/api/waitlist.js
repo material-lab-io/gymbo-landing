@@ -10,7 +10,7 @@
 // that is not a clean slug becomes NULL rather than being stored as a channel.
 import { sourceSlug } from "../../src/lib/sourceSlug.mjs";
 // gy-e60uc.2 — the same name@domain.tld rule the form applies, re-applied here because the client is not trusted.
-import { looksLikeEmail } from "../../src/lib/emailShape.mjs";
+import { looksLikeEmail, normalizeEmail } from "../../src/lib/emailShape.mjs";
 
 const SUPABASE_URL = "https://kpvhnbemumjmgpmmgfjp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdmhuYmVtdW1qbWdwbW1nZmpwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNDMwNjUsImV4cCI6MjA4ODkxOTA2NX0.eQukPgVNv28Anq_hbe_SswQYfAuBdC_qb0bEpJrfskw";
@@ -85,7 +85,7 @@ async function notifyReceipt(context, receipt) {
 export async function onRequestPost(context) {
   try {
     const body = await context.request.json().catch(() => ({}));
-    const email = String(body.email || "").trim();
+    const email = normalizeEmail(body.email);
     const phone = String(body.phone || "").trim();
     const name = String(body.name || "").trim();
 

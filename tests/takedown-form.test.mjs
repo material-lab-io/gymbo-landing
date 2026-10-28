@@ -156,7 +156,8 @@ test("AC-I6: rate_limited -> neutral 'try again later' (429), still offering the
   const { status, h } = await post({ rpc: { status: 200, body: "rate_limited" } });
   assert.equal(status, 429);
   assert.match(h, /try again later/i);
-  assert.match(h, /mailto:grievance@getgymbo\.com/);
+  assert.match(h, /mailto:damini@materiallab\.io/);
+  assert.match(h, /mailto:kaushik@materiallab\.io/);
   assert.doesNotMatch(h, /Request received/i);
   assert.doesNotMatch(h, /\b\d+\s*(minute|minutes|hour|hours|request|requests|submissions)\b/i, "do not teach a script the limit");
 });
@@ -177,9 +178,10 @@ test("NEG: an unrecognised RPC answer is NEVER shown as received (a reference mu
   }
 });
 
-// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback points at the address
-// VERIFIED to deliver (grievance@, gy-vhxsd), never privacy@.
-test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never privacy@", async () => {
+// gy-s8z4z compliance ruling 2026-09-14 (3): every fallback points at the published
+// contact address, never privacy@. grievance@ dropped by Kaushik 26 Oct (gm-s23);
+// replacement addresses per Kaushik: damini@ and kaushik@materiallab.io.
+test("gy-s8z4z: every fallback points at damini@ + kaushik@materiallab.io, never grievance@ or privacy@", async () => {
   const cases = [
     ["rpc http failure", { rpc: { status: 500, body: { message: "x" } } }, 502],
     ["network failure", { throws: true }, 502],
@@ -189,7 +191,9 @@ test("gy-s8z4z: every fallback points at the VERIFIED grievance address, never p
   for (const [label, opts, expected] of cases) {
     const { status, h } = await post(opts);
     assert.equal(status, expected, label);
-    assert.match(h, /mailto:grievance@getgymbo\.com/, `${label}: must offer the verified grievance address`);
+    assert.match(h, /mailto:damini@materiallab\.io/, `${label}: must offer damini@`);
+    assert.match(h, /mailto:kaushik@materiallab\.io/, `${label}: must offer kaushik@`);
+    assert.doesNotMatch(h, /grievance@getgymbo\.com/, `${label}: grievance@ was dropped (gm-s23) and must not be offered`);
     assert.doesNotMatch(h, /privacy@getgymbo\.com/, `${label}: must not offer the unverified privacy@ address`);
   }
 });

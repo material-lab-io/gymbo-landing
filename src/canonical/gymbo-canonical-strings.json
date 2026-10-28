@@ -1,8 +1,8 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 4,
+  "version": 5,
   "guideVersion": "v15",
-  "updated": "2026-09-24",
+  "updated": "2026-10-25",
   "terms": {
     "brandVerb": "punch",
     "aiFeature": "Ask Gymbo",
@@ -110,14 +110,14 @@
     },
     {
       "id": "site.meta.description",
-      "surface": "getgymbo.com home meta description (157 chars)",
-      "text": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients. From ₹399/mo, 7-day free trial for eligible subscribers.",
-      "source": "gy-xmzqr.7 / gy-afarz.1 content ruling 2026-09-24"
+      "surface": "getgymbo.com home meta description (158 chars)",
+      "text": "For independent personal trainers: punch a class in a couple of taps, and balances update themselves. From ₹399/mo, 7-day free trial for eligible subscribers.",
+      "source": "gy-pbnxi content ruling 2026-10-25 (v5: 'one tap' retired, evidence gy-jf8hj); was gy-xmzqr.7 / gy-afarz.1 2026-09-24"
     },
     {
       "id": "site.meta.og",
       "surface": "home og:description and JSON-LD description",
-      "text": "Built for independent personal trainers: punch classes in one tap, see who owes you, manage clients.",
+      "text": "Built for independent personal trainers: punch a class in a couple of taps, and balances update themselves.",
       "source": "same ruling"
     },
     {
