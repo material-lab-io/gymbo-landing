@@ -9,7 +9,8 @@ import { walk } from "./strip-internal-comments.mjs";
 
 export const MUST_SURVIVE = [
   { file: "index.html", text: "Kaushik Naarayan", why: "public founder byline / JSON-LD Person" },
-  { file: "privacy/index.html", text: "grievance@getgymbo.com", why: "privacy grievance contact" },
+  { file: "privacy/index.html", text: "damini@materiallab.io", why: "privacy grievance contact" },
+  { file: "privacy/index.html", text: "kaushik@materiallab.io", why: "privacy grievance contact" },
   { file: "privacy/index.html", text: "<!--email_off-->", why: "Cloudflare e-mail-protection directive that keeps the grievance address readable" },
 ];
 

@@ -37,6 +37,31 @@ import {
   PRICING_LEGIBILITY_LINE,
 } from "./lib/trialAccess";
 
+/* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
+   to the support contact (#support, App Review 1.5), never the waitlist form. */
+const FOOTER_GROUPS: { label: string; links: { label: string; href: string }[] }[] = [
+  { label: "Learn", links: [
+    { label: "Guides", href: "/guide/" },
+    { label: "Research", href: "/research/state-of-indias-independent-trainers-2026/" },
+    { label: "Blog", href: "/blog/" },
+  ] },
+  { label: "Compare", links: [
+    { label: "Gymbo vs WellnessZ", href: "/compare/gymbo-vs-wellnessz/" },
+    { label: "Trainerize alternative", href: "/alternatives/trainerize/" },
+    { label: "TrueCoach alternative", href: "/alternatives/truecoach/" },
+    { label: "Akton alternative", href: "/alternatives/akton/" },
+  ] },
+  { label: "Help", links: [
+    { label: "Support", href: "#support" },
+    { label: "Contact", href: "mailto:damini@materiallab.io" },
+    { label: "Request video removal", href: "/m/takedown" },
+  ] },
+  { label: "Legal", links: [
+    { label: "Privacy", href: "/privacy/" },
+    { label: "Terms", href: "/terms/" },
+  ] },
+];
+
 /* ============================================================================
    getgymbo.com — Forge redesign (epic gy-9bmwm)
    Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
@@ -76,7 +101,7 @@ const PILLARS = [
     title: "Get organized",
     intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
     bullets: [
-      "Punch a class in one tap",
+      "Punch a class in a couple of taps, and balances update themselves",
       "Recurring time slots, sorted by day",
       "No more paper register or notes app",
       "Save a class location and open directions when you need them.",
@@ -94,7 +119,7 @@ const PILLARS = [
     bullets: [
       "Branded PDF statements: your name, tagline, and details on each one",
       "A shareable QR profile card in three styles",
-      "Send any client their statement with a single tap",
+      "Send any client their statement from the app",
     ],
     brief: "Your brand on a clean statement PDF. Share in a tap (India).",
     dark: false,
@@ -631,35 +656,28 @@ export default function App() {
       {/* ───────── footer ───────── */}
       <footer className="gy-clear-sticky-bar" style={{ background: F.charcoal, borderTop: "1px solid rgba(240,240,235,0.06)" }}>
         <div className="max-w-[1100px] mx-auto px-5 md:px-12 py-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <span className="text-[13px]" style={{ color: F.boneMuted, fontFamily: SANS }}>
-              <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
-            </span>
-            <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-              {/* App Review 1.5: "Support" leads to the support CONTACT below, not to the
-                  waitlist form. getgymbo.com is the app's Support URL. */}
-              <a href="#support" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Support</a>
-              <a href="/compare/gymbo-vs-wellnessz/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Gymbo vs WellnessZ</a>
-              {/* gy-2393h — internal ingress. These three are the ENTRY POINTS to an
-                  18-page content estate that had ZERO inbound links from the reachable
-                  site: sitemap.xml carries 22 URLs and the rendered homepage linked only
-                  /compare, /privacy and /terms, so 18 pages were crawlable from the
-                  sitemap alone and unreachable by a human. The estate is densely
-                  interlinked INTERNALLY (/guide/ alone has 10 inbound links), so it is one
-                  disconnected component rather than 18 loose orphans — which is why three
-                  hub links restore all 22. Measured: /blog/ alone also reconnects all 22,
-                  but leaves the guides 3-5 clicks deep behind our thinnest page (92 words);
-                  these three cap the deepest page at 3 and put 18 of 22 within 2. */}
-              <a href="/guide/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Guides</a>
-              <a href="/blog/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Blog</a>
-              <a href="/research/state-of-indias-independent-trainers-2026/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Research</a>
-              <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
-              <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
-              <a href="/m/takedown" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Request video removal</a>
-              <a href="mailto:damini@materiallab.io" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
-            </nav>
-          </div>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
+          <span className="block text-[13px] mb-6" style={{ color: F.boneMuted, fontFamily: SANS }}>
+            <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
+          </span>
+          {/* gm-1w6 slice 3 / gy-3mpvo designer ruling — the footer is the canonical way
+              into the content estate: four labelled groups, no SEO links in the top nav,
+              no in-page band. 2 cols below 1024 (2x2 from 640), 4 at >=1024. Research
+              links the deep slug on purpose: /research/ has no index and 404s. */}
+          <nav aria-label="Footer navigation" className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+            {FOOTER_GROUPS.map((g) => (
+              <div key={g.label}>
+                <p id={`footer-${g.label.toLowerCase()}`} className="text-[12px] font-bold uppercase mb-2" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.09em" }}>{g.label}</p>
+                <ul aria-labelledby={`footer-${g.label.toLowerCase()}`} className="list-none p-0 m-0">
+                  {g.links.map((l) => (
+                    <li key={l.label}>
+                      <a href={l.href} className="block py-1 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-8 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
             {/* App Review guideline 1.5 (pm, 2026-09-18): the Support URL (getgymbo.com)
                 must show a visible contact method. The address was already here; it is
                 now LABELLED as support and anchored, so the footer "Support" link lands on

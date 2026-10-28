@@ -281,7 +281,7 @@ Gymbo strips it down to the one-person business:
 - **Payment tracking with a running ledger**: see who's paid, who owes, who's running low; send a reminder when you need to.
 - **GST-ready statements (once you add your GSTIN) and UPI**: built in, India-first.
 - **A real schedule**: day, week, and month views with conflict detection.
-- **A workout builder** with voice and paste import, plus a template library.
+- **A workout builder** with a template library.
 - **No setup.** No branches, staff, or turnstiles to configure.
 
 ## when to choose which

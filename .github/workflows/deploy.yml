@@ -63,9 +63,19 @@ on:
 # pull_request context, so the expression yields github.ref = refs/heads/main
 # and main is still serialized against itself. That is the race (gy-5e9u6) the
 # warning above is about, and this change does not go near it.
+#
+# gy-ellyl (pm ruling 2026-10-21): the stale shas still BURNED runner minutes
+# after the re-key above, because superseded PR runs kept running. A pull_request
+# run now joins ONE group per PR number and a newer push CANCELS the older run.
+# Everything the warnings above protect is untouched: a push to main (and a
+# manual dispatch) keeps group refs/heads/main with cancel-in-progress FALSE, so
+# main is still serialized against itself and a main deploy is never cancelled.
+# The gy-vewd8 hazard (a cancelled required check reads ABSENT) can only land on
+# a SUPERSEDED sha, whose newer head carries its own run; tests/workflow-
+# concurrency.test.mjs pins both halves and goes red if either is loosened.
 concurrency:
-  group: gymbo-landing-deploy-${{ github.event.pull_request.head.sha || github.ref }}
-  cancel-in-progress: false
+  group: gymbo-landing-deploy-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   deploy:
