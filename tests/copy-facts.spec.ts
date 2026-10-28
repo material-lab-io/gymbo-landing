@@ -129,7 +129,7 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
   });
 
   test('App.tsx FAQ consumes PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT, not a hand-written string', () => {
-    const entry = FAQ.find((f) => f.q === 'What happens when my trial ends, and can I cancel or get my data out?');
+    const entry = FAQ.find((f) => f.q === "What happens when my trial ends, and can I cancel or export my clients' records?");
     expect(entry, 'App.tsx FAQ has no purchase-answer entry').toBeTruthy();
     expect(entry!.a).toBe(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT);
   });
@@ -139,6 +139,29 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(occurrences).toBe(1);
     // AC5 guard: the literal string must not ALSO be hand-written somewhere else in App.tsx.
     expect(appSource).not.toContain(PRICING_LEGIBILITY_LINE);
+  });
+
+  // gy-5kwas part 2 (compliance C1/C2): routes and deletion/export behaviour with no verified operation behind
+  // them must not come back. Scans the sources that carry the purchase answer and the cancel route.
+  const BANNED = ['contacting us', 'anonymise', 'export your data', 'get my data out'];
+  const bannedIn = (text: string) => BANNED.filter((b) => text.includes(b));
+  const pricingMd = readFileSync(path.resolve(__dirname, '../public/pricing.md'), 'utf-8');
+
+  test('gy-5kwas: no unverified-route or over-claim phrase in the purchase answer, App, Privacy, index.html, pricing.md', () => {
+    const surfaces: Record<string, string> = {
+      answer: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT, app: appSource, privacy: privacySource, index: indexHtml, pricing: pricingMd,
+    };
+    for (const [name, text] of Object.entries(surfaces)) expect(bannedIn(text), name).toEqual([]);
+    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).not.toContain('\u2014');
+  });
+
+  test('gy-5kwas: pricing.md and the Monthly card give the cancel route', () => {
+    expect(pricingMd).toContain(`Cancel anytime ${CANCEL_ROUTE}.`);
+    expect(appSource).toContain('Cancel anytime ${CANCEL_ROUTE}.');
+  });
+
+  test('NEGATIVE CONTROL: the banned-phrase guard fails on a planted "anonymise"', () => {
+    expect(bannedIn(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT + ' We remove or anonymise it.')).toEqual(['anonymise']);
   });
 
   test('NEGATIVE CONTROL: CANCEL_ROUTE assertion actually fails on a deliberately wrong route', () => {
