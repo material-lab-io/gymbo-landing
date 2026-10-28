@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 26 October 2026"
+        updated="Last updated 28 October 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -90,11 +90,12 @@ export function Privacy() {
         <section className="flex flex-col gap-3">
           <h2>Keeping and deleting your data</h2>
           <p>We keep your data while your account is active. You can export your data from the app at any time, and you can ask us to delete your account. After deletion we remove or anonymise your data within a reasonable period, except where we must keep some records to meet legal obligations.</p>
+          <p>If you request access, we keep the details you submit for up to 180 days after your request or our last contact with you, whichever is later, and then delete them. You can ask us to delete them sooner at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2>Your choices</h2>
-          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you've requested access and don't want our emails, you can unsubscribe at any time.</p>
+          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you've requested access, you can unsubscribe from our emails or ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
