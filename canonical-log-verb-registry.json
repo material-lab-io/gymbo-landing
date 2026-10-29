@@ -40,33 +40,9 @@
   {
    "route": "/guide/get-organized-personal-trainer/",
    "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Log each session at the end, not in a weekly reconstruction.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
     "visible"
    ],
    "sentence": "Log each session the moment it happens, record every payment against a balance, and review the whole roster once a week.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/get-organized-personal-trainer/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Log sessions as they happen",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
@@ -122,35 +98,11 @@
    }
   },
   {
-   "route": "/guide/run-personal-training-business-india/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Log sessions done and sessions remaining per client immediately, so the count stays accurate.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
    "route": "/guide/take-payments-upi-personal-trainer/",
    "kinds": [
     "visible"
    ],
    "sentence": "A payment logged only in your UPI app is money you'll have to reconstruct later.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "At a fixed time each day, log anything missed, glance at tomorrow, and note who owes or is due to renew.",
    "reason": "advice-to-reader",
    "ruling": {
     "bead": "gy-uu7mt",
@@ -167,30 +119,6 @@
    "ruling": {
     "bead": "gy-uu7mt",
     "comment": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "How a solo personal trainer in India can run a one-person business from their phone and shrink admin: log sessions, track payments, schedule, batch admin, and renew on time.",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d59b-e6e3-7806-a9cd-a8390ab5f7c7"
-   }
-  },
-  {
-   "route": "/guide/work-smart-fitness-trainer-gig/",
-   "kinds": [
-    "json-ld"
-   ],
-   "sentence": "Log each session immediately",
-   "reason": "advice-to-reader",
-   "ruling": {
-    "bead": "gy-uu7mt",
-    "comment": "01a0d595-5767-79d7-b574-c06af40616e1"
    }
   },
   {
