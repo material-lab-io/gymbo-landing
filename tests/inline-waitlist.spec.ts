@@ -407,8 +407,8 @@ for (const [label, fill, expected] of [
  * it. NEGATIVE CONTROL and LIVENESS live together: the valid case must post, or "refused" would be a blanket no.
  * /api/waitlist is intercepted with a stub 200: no row is created, nothing is sent.
  */
-const EMAIL_ERR = "That email doesn't look right. Check it and try again.";
-const EMAIL_ERR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it to use your WhatsApp number.";
+const EMAIL_ERR = "That email doesn't look right. Check for typos, then try again.";
+const EMAIL_ERR_WITH_PHONE = "That email doesn't look right. Fix it, or clear it and we'll use your WhatsApp number.";
 for (const [label, fill] of [
   ['a@b', { email: 'a@b' }],
   ['a@gmail', { email: 'a@gmail' }],
@@ -480,7 +480,7 @@ test('a lone too-short phone is refused inline, nothing posted (gy-sl9amm)', asy
   await form.scrollIntoViewIfNeeded();
   await form.locator('input[type="tel"]').fill('123');
   await form.locator('button[type="submit"]').click();
-  await expect(form.getByRole('alert')).toHaveText("That number doesn't look right. Check it, or add an email instead.");
+  await expect(form.getByRole('alert')).toHaveText("That number looks too short. Check it, or add an email instead.");
   await expect(form.locator('button[type="submit"]')).toBeEnabled();
   await page.waitForTimeout(300);
   expect(posts).toEqual([]);
@@ -516,7 +516,9 @@ test('a generic server failure keeps the existing error state and its mailto fal
   await form.scrollIntoViewIfNeeded();
   await form.locator('input[type="email"]').fill('a@b.co');
   await form.locator('button[type="submit"]').click();
-  await expect(form.getByText(/couldn't send your request just now/i)).toBeVisible();
+  await expect(form.getByText(/that didn't send\. what you typed is still here/i)).toBeVisible();
+  // gy-sl9amm: a failed send is announced to a screen reader, like the validation errors are.
+  await expect(form.getByRole('alert')).toContainText(/that didn't send/i);
   await expect(form.getByRole('link', { name: /email us to request access/i })).toHaveAttribute('href', /^mailto:hello@getgymbo\.com/);
   // NOT mistaken for the email error.
   await expect(form.getByText(/doesn't look right/i)).toHaveCount(0);
@@ -847,7 +849,7 @@ test('the phone field says WhatsApp, and keeps "phone" in its accessible name (g
   const form = page.locator('form:has(input[name="phone"])').last();
   await form.scrollIntoViewIfNeeded();
   await form.locator('button[type="submit"]').click();
-  await expect(form.getByRole('alert')).toHaveText('Add a WhatsApp number or an email so we can reach you.');
+  await expect(form.getByRole('alert')).toHaveText('Nothing to reach you on yet. Add a WhatsApp number or an email.');
 });
 
 /**
