@@ -7,6 +7,7 @@
 // The happy path is proved for real in the browser journey (client-journey.spec.ts).
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { prescription } from "../functions/w/_workout.js";
 
 const MOD = "../functions/w/[token].js";
 const ENV = { SUPABASE_SERVICE_ROLE_KEY: "test-key", SUPABASE_URL: "https://stub.invalid" };
@@ -55,10 +56,28 @@ test("POSITIVE CONTROL: a valid token shows the workout, the video and the tick 
   assert.equal(status, 200);
   assert.match(html, /Push day/);
   assert.match(html, /Bench Press/);
-  assert.match(html, /3 × 10 @ 40kg/, "the prescription must render from the stored fields");
+  assert.match(html, /3×10 @ 40kg/, "the prescription must render from the stored fields");
   assert.match(html, /<video[^>]+autoplay[^>]+muted[^>]+loop/, "short MP4 must behave like the GIF the founder pictured");
   assert.match(html, /playsinline/, "without playsinline iOS takes the video fullscreen on play");
   assert.match(html, /Mark done/);
+});
+
+test("AC1/AC2: timed prescriptions match iOS, while reps retain their compact format", () => {
+  assert.equal(
+    prescription({ sets: 3, reps: null, duration_seconds: 45 }),
+    "3 × 45s",
+    "uniform timed sets use one seconds suffix after the spaced multiplication sign",
+  );
+  assert.equal(
+    prescription({ sets: 3, reps: "45-60-45", duration_seconds: 45 }),
+    "45s-60s-45s",
+    "non-uniform timed sets retain every set's own seconds suffix",
+  );
+  assert.equal(
+    prescription({ sets: 4, reps: "12", duration_seconds: null }),
+    "4×12",
+    "reps stay compact; do not apply the timed spacing to this branch",
+  );
 });
 
 test("AC1 NEG: an unknown (tampered) token is refused", async () => {
@@ -322,6 +341,11 @@ test("gy-16f0e: the clip query asks for a TOTAL order — a partial one still ra
   const order = decodeURIComponent(mediaUrl.match(/[?&]order=([^&]+)/)[1]);
   assert.match(order, /(^|,)id\./,
     "the order has no tie-break on id, so two clips of equal size still race — a partial order is nondeterminism with extra steps");
+
+  const blocksUrl = urls.find((u) => u.includes("workout_blocks?"));
+  assert.ok(blocksUrl, "the page never queried workout blocks");
+  assert.match(blocksUrl, /duration_seconds/,
+    "timed prescriptions cannot be rendered if the page never requests duration_seconds");
 });
 
 test("gy-16f0e: a later motion clip must NOT displace an earlier one", async () => {

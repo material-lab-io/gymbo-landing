@@ -60,7 +60,7 @@ export async function loadWorkout(env, link) {
   const [wo, blocks, done] = await Promise.all([
     q(env, `workouts?id=eq.${workoutId}&select=name,notes`),
     q(env, `workout_blocks?workout_id=eq.${workoutId}&is_deleted=eq.false&order=position.asc` +
-           `&select=id,position,exercise_id,exercise_name,sets,reps,load,rest_seconds,notes`),
+           `&select=id,position,exercise_id,exercise_name,sets,reps,load,duration_seconds,rest_seconds,notes`),
     q(env, `workout_share_block_completions?share_link_id=eq.${link.id}&select=block_id`),
   ]);
   if (!wo?.[0] || !blocks) return null;
@@ -121,12 +121,21 @@ export async function loadWorkout(env, link) {
   };
 }
 
-// The prescription line, built only from fields that are actually present.
-// "3 × 10 @ 40kg" reads naturally; "3 × null" does not, and a client seeing
-// "null" concludes the app is broken.
+// The prescription line mirrors BuilderBlock.summary in the shipped iOS app.
+// Timed blocks use duration_seconds; when individual sets differ, the storage
+// codec carries their dash-separated seconds in reps so the original ladder can
+// round-trip losslessly. See Workout.swift:229-238 and :257-262.
 export function prescription(b) {
   const bits = [];
-  if (b.sets && b.reps) bits.push(`${b.sets} × ${b.reps}`);
+  if (b.duration_seconds) {
+    const perSetSeconds = String(b.reps || "").split("-");
+    const hasCompletePerSetSeconds =
+      perSetSeconds.length === Number(b.sets) && perSetSeconds.every((seconds) => /^\d+$/.test(seconds));
+    return hasCompletePerSetSeconds
+      ? perSetSeconds.map((seconds) => `${seconds}s`).join("-")
+      : `${b.sets} × ${b.duration_seconds}s`;
+  }
+  if (b.sets && b.reps) bits.push(`${b.sets}×${b.reps}`);
   else if (b.sets) bits.push(`${b.sets} sets`);
   else if (b.reps) bits.push(`${b.reps} reps`);
   if (b.load) bits.push(`@ ${b.load}`);
