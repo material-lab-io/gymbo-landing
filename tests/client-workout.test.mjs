@@ -310,7 +310,12 @@ test("a malformed token is refused before any RPC call", async () => {
   assert.equal(calls.length, 0, "a malformed token must never reach the database");
 });
 
-test("AC3 NEG: the RPC refusing a block (e.g. from ANOTHER workout) maps to the SAME refusal as a bad token", async () => {
+test("FUNCTION LAYER (fetch stubbed, no database): when the RPC reports a block refused, /w/ answers the SAME 404 as a bad token", async () => {
+  // 🔴 This proves only how the Pages Function MAPS a refusal. It is NOT the proof that Postgres refuses a block
+  // from another workout: gy-b0126 AC3 says a Function-level check is not enough on its own, and this is one
+  // (fetch is stubbed; this file is static by design). That proof is the trigger
+  // trg_workout_share_completion_scope (Gymbo-v1 supabase/migrations/20260909110000_gy-nm6ii-share-link-issuer.sql),
+  // run by Gymbo-v1's ci-test.yml step that executes supabase/tests/gy-nm6ii-share-link-issuer.sql (gy-rwslt).
   // set_shared_workout_block_done does its own workout-scope check inside the
   // function now; a false here IS that refusal, whatever caused it.
   stubWrite({ tickResult: false });
@@ -319,7 +324,7 @@ test("AC3 NEG: the RPC refusing a block (e.g. from ANOTHER workout) maps to the 
   assert.match(await res.text(), /not available/i);
 });
 
-test("AC3 POSITIVE CONTROL: a block the RPC accepts still ticks", async () => {
+test("FUNCTION LAYER POSITIVE CONTROL: a block the RPC accepts still ticks", async () => {
   // Without this, the refusal above is equally explained by "no tick ever works".
   const calls = stubWrite({ tickResult: true });
   const res = await post([["block", WRITE_BLOCK_ID]]);
