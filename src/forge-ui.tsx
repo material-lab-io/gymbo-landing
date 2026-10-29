@@ -151,7 +151,7 @@ export function WhatsAppButton({ location, children }: { location: CtaLocation; 
       onClick={() => trackCta("whatsapp_cta_click", location)}
       data-cta="whatsapp"
       data-cta-location={location}
-      className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]"
+      className="inline-flex items-center justify-center gap-2.5 h-12 px-7 rounded-full text-[14px] font-medium transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]"
       style={{ background: "var(--g-color-neutral-dark-1)", color: F.bone, border: "1px solid var(--g-color-grey-placeholder-dark)", fontFamily: SANS }}
     >
       <WhatsAppGlyph />
