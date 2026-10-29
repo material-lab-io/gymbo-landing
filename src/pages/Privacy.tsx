@@ -42,7 +42,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -70,6 +70,7 @@ export function Privacy() {
           <h3>The rest of our infrastructure</h3>
           <ul>
             <li><strong>Supabase</strong>: hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
+            <li><strong>Resend</strong>: delivers the emails we send you (sign-in codes, PIN-reset codes, reminders and account notices).</li>
             <li><strong>Google</strong>: used only for Google Sign-In, if you choose it, to authenticate your account.</li>
             <li><strong>PostHog</strong>: product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU. A data-processing agreement with PostHog is in place.</li>
           </ul>
@@ -90,11 +91,12 @@ export function Privacy() {
         <section className="flex flex-col gap-3">
           <h2>Keeping and deleting your data</h2>
           <p>We keep your data while your account is active. You can export your clients' attendance and payment records from the app at any time, and you can ask us to delete your account in the app.</p>
+          <p>If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2>Your choices</h2>
-          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you've requested access and don't want our emails, you can unsubscribe at any time.</p>
+          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you've requested access, you can unsubscribe from our emails or ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">

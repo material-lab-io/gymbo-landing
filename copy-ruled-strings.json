@@ -25,6 +25,19 @@
       "route": "/privacy/",
       "ref": "content ruling gy-uu7mt 2026-09-24T12:48Z ('Ask Gymbo (AI chat)' is the ruled processor heading)",
       "equals": "Ask Gymbo (AI chat): Anthropic (Claude)"
+    },
+    {
+      "id": "privacy-request-access-retention",
+      "route": "/privacy/",
+      "surface": "visible block",
+      "equals": "If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.",
+      "ref": "compliance gy-ybxce 2026-10-28 cond-2 ruling OPTION A (replacement paragraph 1; supersedes 14:20 text)"
+    },
+    {
+      "id": "privacy-request-access-delete-on-request",
+      "route": "/privacy/",
+      "contains": "If you've requested access, you can unsubscribe from our emails or ask us to delete your details at any time.",
+      "ref": "compliance gy-ybxce 2026-10-28 (sentence 2 of Your choices; unchanged by Option A)"
     }
   ]
 }
