@@ -23,12 +23,17 @@ const WA_HREF = /^https:\/\/wa\.me\/918050131733\b/;
 
 const isPhone = (page: Page) => (page.viewportSize()?.width ?? 0) < 768;
 
-/** Count the visible, in-viewport [data-cta] controls (outside the pricing cards) with a filled amber/marigold background. */
-async function filledAmberInViewport(page: Page): Promise<string[]> {
-  return page.evaluate(() => {
+/**
+ * Count the visible, in-viewport [data-cta] controls with a filled amber/marigold background.
+ * Pricing cards are excluded (N4, a plan card's own action) EXCEPT when the pricing section is the
+ * screen being read: there the Monthly card's filled button is one of the filled CTAs sharing the
+ * screen, and the sticky bar must not be a second (designer P1 on #316, 393 pricing).
+ */
+async function filledAmberInViewport(page: Page, { includePricing = false } = {}): Promise<string[]> {
+  return page.evaluate((includePricing) => {
     const out: string[] = [];
     for (const el of document.querySelectorAll('[data-cta]')) {
-      if (el.getAttribute('data-cta-location') === 'pricing') continue; // N4, a plan card's own action
+      if (!includePricing && el.getAttribute('data-cta-location') === 'pricing') continue;
       const r = el.getBoundingClientRect();
       const inView = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
       if (!inView) continue;
@@ -39,7 +44,7 @@ async function filledAmberInViewport(page: Page): Promise<string[]> {
       if (Number(a) > 0.5 && rr >= 230 && g >= 140 && b <= 60) out.push(`${el.getAttribute('data-cta')}:${el.getAttribute('data-cta-location')}`);
     }
     return out;
-  });
+  }, includePricing);
 }
 
 async function settle(page: Page) {
@@ -128,6 +133,12 @@ test.describe('phone sticky bar is the WhatsApp primary (N2)', () => {
     await settle(page);
     expect(await offscreen(), 'positive control: the bar IS shown mid-page').toBe(false);
 
+    // gy-e9h9y designer P1 on #316: a plan choice is not the moment to push a different conversion, and
+    // the amber bar over the full-amber Annual card loses its edge. Hidden while pricing is in view too.
+    await page.evaluate(() => document.getElementById('pricing')!.scrollIntoView({ block: 'start' }));
+    await settle(page);
+    expect(await offscreen(), 'hidden while the pricing section is in view').toBe(true);
+
     await page.locator('#cta').scrollIntoViewIfNeeded();
     await page.evaluate(() => document.getElementById('cta')!.scrollIntoView({ block: 'start' }));
     await settle(page);
@@ -135,14 +146,15 @@ test.describe('phone sticky bar is the WhatsApp primary (N2)', () => {
   });
 });
 
-for (const where of ['top', 'middle', 'closing section'] as const) {
+for (const where of ['top', 'middle', 'pricing', 'closing section'] as const) {
   test(`at most one filled amber CTA in the viewport: ${where} (gy-e9h9y per-screen rule)`, async ({ page }) => {
     await page.goto('/');
     await settle(page);
     if (where === 'middle') await page.evaluate(() => window.scrollTo(0, Math.floor(document.documentElement.scrollHeight / 2)));
+    if (where === 'pricing') await page.evaluate(() => document.getElementById('pricing')!.scrollIntoView({ block: 'start' }));
     if (where === 'closing section') await page.evaluate(() => document.getElementById('cta')!.scrollIntoView({ block: 'start' }));
     await settle(page);
-    const filled = await filledAmberInViewport(page);
+    const filled = await filledAmberInViewport(page, { includePricing: where === 'pricing' });
     expect(filled.length, `filled amber CTAs sharing this screen: ${JSON.stringify(filled)}`).toBeLessThanOrEqual(1);
     if (where === 'top') {
       // Positive control: the count is not vacuous. The hero WhatsApp primary is the one filled CTA on the first screen

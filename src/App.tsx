@@ -203,8 +203,10 @@ function HeroDeviceArt({ alt = "", priority = false }: { alt?: string; priority?
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
-  // gy-e9h9y N2: the phone bar is hidden while the closing section (its own WhatsApp link + the form) is in view.
-  const [ctaSectionInView, setCtaSectionInView] = useState(false);
+  // gy-e9h9y N2: the phone bar is hidden while a section that must not share its screen is in view:
+  // the closing section (its own WhatsApp link + the form) and, per designer's P1 on #316, pricing (a
+  // plan choice is not the moment to push a different conversion, and amber-on-amber over the Annual card).
+  const [barHiddenBySection, setBarHiddenBySection] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
   const galleryNavigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -259,10 +261,16 @@ export default function App() {
   }, [prefersReduced]);
 
   useEffect(() => {
-    const el = document.getElementById("cta");
-    if (!el || typeof IntersectionObserver === "undefined") return;
-    const io = new IntersectionObserver(([entry]) => setCtaSectionInView(entry.isIntersecting));
-    io.observe(el);
+    if (typeof IntersectionObserver === "undefined") return;
+    const inView = new Set<string>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) (e.isIntersecting ? inView.add(e.target.id) : inView.delete(e.target.id));
+      setBarHiddenBySection(inView.size > 0);
+    });
+    for (const id of ["pricing", "cta"]) {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    }
     return () => io.disconnect();
   }, []);
 
@@ -708,7 +716,7 @@ export default function App() {
       </footer>
 
       {/* ───────── mobile sticky CTA ───────── */}
-      <StickyCtaBar show={showStickyCTA && !ctaSectionInView} />
+      <StickyCtaBar show={showStickyCTA && !barHiddenBySection} />
     </div>
     </WaitlistOverlayProvider>
   );
@@ -803,7 +811,9 @@ function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
  * from the nav outline button, which reveals the capture panel.
  *
  * SAME show/hide as before (hidden while the hero pair is in view), PLUS hidden while the cta-section
- * is in view: it would duplicate that section's own WhatsApp link and cover its form.
+ * is in view (it would duplicate that section's own WhatsApp link and cover its form) and while the
+ * pricing section is in view (designer P1 on #316: the Monthly plan's filled button would be a second
+ * filled CTA on the screen, and the amber bar loses its edge over the full-amber Annual card).
  *
  * It is no longer a capture surface, so the D1 machinery (in-place expansion, keyboard lift, the
  * "sticky" overlay owner) is gone from here. data-cta-location stays "footer": waitlist_cta_click
