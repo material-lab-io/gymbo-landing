@@ -189,10 +189,11 @@ test('N1: every waitlist CTA on the served page reveals in place (no unwrapped s
   );
 
   // POSITIVE CONTROL. An empty query passes .every() vacuously, and a selector
-  // typo or a page that failed to hydrate would produce exactly that. The six
-  // are hero, gallery, nav, footer (sticky bar) and two pricing cards — one
-  // cluster per card, per designer.
-  expect(ctas.length, 'positive control: the page must actually carry waitlist CTAs').toBeGreaterThanOrEqual(6);
+  // typo or a page that failed to hydrate would produce exactly that. The five
+  // are hero, gallery, nav and two pricing cards — one cluster per card, per
+  // designer. (The sixth, the phone sticky bar, became the WhatsApp primary in
+  // gy-e9h9y N2 and is no longer a waitlist CTA, so the floor is five.)
+  expect(ctas.length, 'positive control: the page must actually carry waitlist CTAs').toBeGreaterThanOrEqual(5);
 
   const notRevealing = ctas.filter((c) => c.behaviour !== 'reveal');
   expect(
@@ -623,13 +624,6 @@ for (const [label, prepare] of [
     await cta.click();
     return page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
   }],
-  ["the sticky bar's own capture", async (page: import('@playwright/test').Page) => {
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.2));
-    const bar = page.locator('[data-fixed-chrome="sticky-cta"]');
-    await expect(bar).toBeVisible();
-    await bar.locator('[data-cta="waitlist"]').click();
-    return bar.locator('form');
-  }],
 ] as const) {
   test(`a refused submit is seen in ${label} at 375x740 (gy-e60uc.7)`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'the sticky bar only exists on a phone');
@@ -1021,24 +1015,13 @@ test('every revealed capture fits inside the viewport (the too-wide direction)',
 
   const offenders: string[] = [];
   const measured: string[] = [];
-  for (const loc of ['hero', 'gallery', 'nav', 'pricing', 'footer'] as const) {
+  for (const loc of ['hero', 'gallery', 'nav', 'pricing'] as const) {
     const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
-    // 🔴 THE STICKY BAR IS PHONE-ONLY, AND ITS ABSENCE MUST NOT LOOK LIKE A
-    // PASS. Two things were wrong in the first version of this loop: it clicked
-    // the bar blindly and hung for 30s on desktop, and the obvious guard —
-    // count() === 0 — does not work, because `md:hidden` is display:none and
-    // the element is still IN THE DOM at desktop width. Visibility is the
-    // question being asked, so visibility is what is measured. Absence is
-    // allowed for exactly one control at exactly one width; anything else
-    // absent is a failure, because a control that vanished is the silent
-    // revert this file exists to catch.
-    if (!(await cta.isVisible())) {
-      expect(
-        loc === 'footer' && vw >= 768,
-        `${loc} has no VISIBLE CTA on this viewport (${vw}px) — only the phone-only sticky bar may be hidden, and only on desktop`,
-      ).toBe(true);
-      continue;
-    }
+    // Visibility is the question being asked (not count(): `md:hidden` is display:none and the element
+    // stays IN THE DOM). gy-e9h9y N2 removed the one control that was allowed to be absent (the phone-only
+    // sticky bar, no longer a waitlist CTA), so every listed cluster must be visible at every width: a
+    // control that vanished is the silent revert this file exists to catch.
+    expect(await cta.isVisible(), `${loc} has no VISIBLE CTA on this viewport (${vw}px)`).toBe(true);
     measured.push(loc);
     await cta.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
@@ -1121,11 +1104,9 @@ test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set'
   const EXPECTED: Record<string, 'reveal' | 'scroll'> = {
     hero: 'reveal',
     gallery: 'reveal',
-    // gy-w77x3 D1 — the mobile sticky bar reveals too, and its panel opens
-    // UPWARD. It was the one control gy-becxi deliberately skipped, because a
-    // panel below a fixed viewport-bottom bar renders off-screen; that is a
-    // different shape, not a different decision.
-    footer: 'reveal',
+    // (footer: removed by gy-e9h9y N2 — the phone sticky bar is now the WhatsApp
+    // primary, a real <a>, not a waitlist CTA. Its WhatsApp event keeps
+    // data-cta-location="footer"; see tests/cta-hierarchy.spec.ts.)
     // gy-w77x3 D3 — the two hand-styled "Request access" buttons (formerly "Get Gymbo"). These read
     // 'scroll' until 2026-09-16 with a comment saying the ruling waited on AC1
     // (which control Damini actually tapped). D5 retired that dependency: if

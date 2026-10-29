@@ -562,8 +562,11 @@ export function WaitlistCTA({ dark, size = "md", location, className = "", child
 /**
  * PRIMARY + SCROLL — a lone waitlist CTA.
  *
- * Kept, and kept primary, at the three placements where it is the ONLY call to
- * action (gallery, footer, compare-page hero is a pair and is handled there).
+ * Kept, and kept primary, only where it is the ONLY call to action on its screen.
+ * Designer ruling 29 Oct (gy-e9h9y N1/N3): the rule is per SCREEN, not per
+ * placement, and the nav + gallery waitlist CTAs share a screen with the WhatsApp
+ * primary, so both moved to the secondary visual. What is left is the sticky
+ * footer bar (N2, waits pm scope) and the compare-page hero pair.
  * See the commit message for why a lone waitlist CTA was not converted to
  * WhatsApp: demoting the only on-site capture at a placement where nothing
  * competes with it would reduce waitlist reachability, which AC8 and Damini's

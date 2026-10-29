@@ -533,7 +533,7 @@ jobs:
           #
           # A spec that runs no tests must not read green: Playwright exits
           # non-zero on "no tests found", and this step's RC catches it.
-          scripts/pw-test.sh tests/smoke.spec.ts tests/overlay-dismiss.spec.ts tests/support-contact.spec.ts --project=desktop --project=mobile || RC=1
+          scripts/pw-test.sh tests/smoke.spec.ts tests/overlay-dismiss.spec.ts tests/support-contact.spec.ts tests/cta-hierarchy.spec.ts --project=desktop --project=mobile || RC=1
 
           # Visual regression is CHANGE DETECTION, not a correctness check: it
           # fails by design whenever a design change is intentional, until the

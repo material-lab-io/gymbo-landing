@@ -34,7 +34,9 @@ const CLOSE = '[data-waitlist-close]';
 // the regression this guards is the 40px gallery size (h-10), which still fails.
 const MIN_TARGET = 43.5;
 
-async function openSticky(page: Page) {
+// gy-e9h9y N2: the phone sticky bar is now the WhatsApp link, not a capture surface. This only scrolls
+// past the hero and waits for the bar to settle, so the nav tests below can assert how the bar behaves.
+async function showSticky(page: Page) {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   // The bar slides in once the hero is scrolled past; scroll a screen and wait
@@ -44,8 +46,6 @@ async function openSticky(page: Page) {
   await expect
     .poll(() => bar.evaluate((el) => getComputedStyle(el).transform), { timeout: 5_000 })
     .toMatch(/matrix\(1, 0, 0, 1, 0, 0\)|none/);
-  await bar.locator(CTA('footer')).click();
-  await expect(bar.locator(PANEL)).toBeVisible();
   return bar;
 }
 
@@ -58,48 +58,12 @@ async function openNav(page: Page, url: string) {
   return nav;
 }
 
-test.describe('sticky bar (phone only)', () => {
-  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar is md:hidden');
-
-  test('B1: while the sticky panel is open, the bar holds exactly one "Request access", and it submits', async ({ page }) => {
-    const bar = await openSticky(page);
-    const labelled = bar.getByRole('button', { name: 'Request access', exact: true });
-    await expect(labelled, 'exactly one Request access inside the open bar').toHaveCount(1);
-    expect(
-      await labelled.evaluate((b) => (b as HTMLButtonElement).type === 'submit' && !!b.closest('form')),
-      'the one remaining Request access must be the form submit, not the trigger pill',
-    ).toBe(true);
-    // Unmounted, not hidden: a visually hidden pill is still a button to a
-    // screen reader, and designer's B1 counts the rendered page.
-    await expect(bar.locator(CTA('footer')), 'the trigger pill must not be in the DOM while open').toHaveCount(0);
-  });
-
-  test('B2a + B2c: the sticky panel closes from its control and from Escape, and focus lands on the RE-RENDERED pill', async ({ page }) => {
-    let bar = await openSticky(page);
-    const close = bar.locator(CLOSE);
-    await expect(close).toHaveAccessibleName('Close');
-    const box = (await close.boundingBox())!;
-    expect(box.width, 'close target width').toBeGreaterThanOrEqual(MIN_TARGET);
-    expect(box.height, 'close target height').toBeGreaterThanOrEqual(MIN_TARGET);
-    await close.click();
-    await expect(bar.locator(PANEL)).toHaveCount(0);
-    await expect(bar.locator(CTA('footer')), 'the pill comes back after close').toHaveCount(1);
-
-    // Keyboard arm, the one E9f captures: Escape from inside the panel.
-    bar = await openSticky(page);
-    await page.keyboard.press('Escape');
-    await expect(bar.locator(PANEL)).toHaveCount(0);
-    await expect
-      .poll(() => page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        if (!el) return 'none';
-        const cs = getComputedStyle(el);
-        const drawn = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
-        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${drawn}`;
-      }))
-      .toBe('footer|true|ring=true');
-  });
-});
+// RETIRED (gy-e9h9y N2, designer ruling + pm scope OK, 29 Oct): the two tests that lived here, B1 (an open
+// sticky panel holds exactly one "Request access", and it submits) and B2a + B2c (the sticky panel closes from its
+// control and from Escape, focus lands on the re-rendered pill), guarded the sticky bar's in-place capture. The bar
+// is now the WhatsApp primary, so there is no capture, panel, pill or submit in it to guard. What remains of the
+// bar's contract is asserted in tests/cta-hierarchy.spec.ts and in the B5 / B7 tests below. If a capture ever
+// returns to the bar, restore these from git history (the commit that retired them is named in the bead).
 
 for (const url of ['/', '/compare/gymbo-vs-wellnessz/']) {
   test(`B2a + B2c: the nav panel on ${url} closes from its control and from Escape, focus returns to the nav button`, async ({ page }) => {
@@ -170,8 +134,8 @@ const visibleCaptures = (page: Page) =>
 test.describe('B5: one capture overlay at a time (phone)', () => {
   test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar only exists below md');
 
-  test('sticky open, then the nav CTA: exactly one form (the nav one), sticky bar gone, Escape returns focus to the nav CTA', async ({ page }) => {
-    await openSticky(page);
+  test('bar showing, then the nav CTA: exactly one form (the nav one), sticky bar gone, Escape returns focus to the nav CTA', async ({ page }) => {
+    await showSticky(page);
     await page.locator(`nav ${CTA('nav')}`).first().click();
     await page.waitForTimeout(300);
     expect(await visibleCaptures(page)).toEqual({ forms: 1, submits: 1, stickyBarInDom: false });
