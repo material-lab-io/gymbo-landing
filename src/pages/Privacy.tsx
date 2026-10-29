@@ -42,7 +42,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -70,6 +70,7 @@ export function Privacy() {
           <h3>The rest of our infrastructure</h3>
           <ul>
             <li><strong>Supabase</strong>: hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
+            <li><strong>Resend</strong>: delivers the emails we send you (sign-in codes, PIN-reset codes, reminders and account notices).</li>
             <li><strong>Google</strong>: used only for Google Sign-In, if you choose it, to authenticate your account.</li>
             <li><strong>PostHog</strong>: product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU. A data-processing agreement with PostHog is in place.</li>
           </ul>
