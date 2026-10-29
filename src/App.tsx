@@ -799,8 +799,8 @@ function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
  * conversion is WhatsApp the filled one is never the waitlist when a WhatsApp CTA can hold the spot.
  * This bar is on screen for the whole page past the hero, so a filled "Request access" here put the
  * waitlist on top of every phone screen except the first. It now carries the hero's WhatsApp link
- * (amber, full glyph, real <a target=_blank>, whatsapp_cta_click). The waitlist stays one tap away
- * through the nav outline button, which reveals the capture panel.
+ * (amber, full glyph, real <a target=_blank>, whatsapp_cta_click). The waitlist stays reachable
+ * from the nav outline button, which reveals the capture panel.
  *
  * SAME show/hide as before (hidden while the hero pair is in view), PLUS hidden while the cta-section
  * is in view: it would duplicate that section's own WhatsApp link and cover its form.
