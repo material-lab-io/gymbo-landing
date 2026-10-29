@@ -533,7 +533,7 @@ export default function App() {
                 Built in India for Indian trainers
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
-                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
+                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: Gymbo does not send messages to your clients.
               </p>
             </Reveal>
           </div>
