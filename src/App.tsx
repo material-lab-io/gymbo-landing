@@ -596,6 +596,7 @@ export default function App() {
             </div>
             <Reveal className="text-center mt-8">
               <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS}-day free trial for eligible subscribers · billed via {BILLING_CHANNEL}.</p>
+              <p className="text-[13px] mt-2 mx-auto max-w-[56ch]" style={{ color: F.boneLabel, fontFamily: SANS }}>{TRIAL_ELIGIBILITY_DETAIL}</p>
             </Reveal>
           </div>
         </section>
