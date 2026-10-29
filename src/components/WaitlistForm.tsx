@@ -241,8 +241,8 @@ export function WaitlistForm() {
         // today and it is a side effect of a copy string, so emptying that
         // string in a copy pass leaves the field with no name at all and
         // nothing goes red.
-        aria-label="Your name"
-        placeholder="Your name"
+        aria-label="Your name (optional)"
+        placeholder="Your name (optional)"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className={field}
@@ -394,7 +394,7 @@ export function WaitlistForm() {
             textWrap: "balance",
           }}
         >
-          Add a WhatsApp number or an email so we can reach you.
+          Nothing to reach you on yet. Add a WhatsApp number or an email.
         </span>
       )}
       {status === "bad-email" && (
@@ -448,8 +448,11 @@ export function WaitlistForm() {
         </span>
       )}
       {status === "error" && (
-        <span className="text-[13px]" style={{ color: "var(--g-color-grey-muted-fg-dark)", fontFamily: "var(--font-sans)" }}>
-          Couldn't send your request just now. Try again, or{" "}
+        // role="alert" + the destructive token, like the three validation errors above (content,
+        // gy-sl9amm 29 Oct): a failed send was the one error a screen reader was never told about,
+        // and muted grey made it read as a note rather than a failure.
+        <span role="alert" className="text-[13px] leading-5" style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)", textWrap: "balance" }}>
+          That didn't send. What you typed is still here. Try again, or{" "}
           <a
             href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo private alpha access request")}&body=${encodeURIComponent(`Name: ${name}\nWhatsApp number: ${phone}\nEmail: ${email}`)}`}
             className="underline"

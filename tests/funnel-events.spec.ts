@@ -58,7 +58,7 @@ test('a 500 emits reason server; an aborted request emits reason network', async
 
   await page.route('**/api/waitlist', (r) => r.fulfill({ status: 500, body: '{}' }));
   await f.getByRole('button', { name: 'Request access' }).click();
-  await expect(f.getByText("Couldn't send your request just now.")).toBeVisible();
+  await expect(f.getByText("That didn't send. What you typed is still here.")).toBeVisible();
 
   await page.unroute('**/api/waitlist');
   await page.route('**/api/waitlist', (r) => r.abort('failed'));
