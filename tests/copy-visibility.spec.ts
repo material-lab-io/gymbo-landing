@@ -109,7 +109,8 @@ test.describe('AC3 positive control', () => {
 // allowance covers ONLY this exact reason -- any other failure reason on these ids (a real
 // hiding regression) still fails the gate.
 const PENDING_PM_RULING_ACCORDION_GATED = new Set([
-  'canonical.trial.eligibilityNote',
+  // gy-9yl8u: canonical.trial.eligibilityNote left this list when it moved next to the price
+  // (pm ruling gy-vawlh 2026-10-01 12:44Z: legal-weight, visible without interaction).
   'canonical.site.home.faq.clientsDownload.answer',
   'wellnessz-session-first',
 ]);
