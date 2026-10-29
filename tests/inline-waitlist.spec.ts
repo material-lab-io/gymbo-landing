@@ -515,7 +515,9 @@ test('a generic server failure keeps the existing error state and its mailto fal
   await form.scrollIntoViewIfNeeded();
   await form.locator('input[type="email"]').fill('a@b.co');
   await form.locator('button[type="submit"]').click();
-  await expect(form.getByText(/couldn't send your request just now/i)).toBeVisible();
+  await expect(form.getByText(/that didn't send\. what you typed is still here/i)).toBeVisible();
+  // gy-sl9amm: a failed send is announced to a screen reader, like the validation errors are.
+  await expect(form.getByRole('alert')).toContainText(/that didn't send/i);
   await expect(form.getByRole('link', { name: /email us to request access/i })).toHaveAttribute('href', /^mailto:hello@getgymbo\.com/);
   // NOT mistaken for the email error.
   await expect(form.getByText(/doesn't look right/i)).toHaveCount(0);

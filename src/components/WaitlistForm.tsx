@@ -77,7 +77,7 @@ export function WaitlistForm() {
   }
 
   // gy-sl9amm: the phone twin of refuseEmail. The server refuses a number with fewer than 7 digits; before
-  // this the form had no inline answer for that and fell through to the generic "Couldn't send" error.
+  // this the form had no inline answer for that and fell through to the generic send-failed error.
   function refusePhone() {
     trackSubmitError("invalid_phone");
     setStatus("bad-phone");
