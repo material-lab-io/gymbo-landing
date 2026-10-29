@@ -143,8 +143,10 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   // gy-5kwas part 2 (compliance C1/C2): routes and deletion/export behaviour with no verified operation behind
   // them must not come back. Scans the sources that carry the purchase answer and the cancel route.
-  const BANNED = ['contacting us', 'anonymise', 'export your data', 'get my data out'];
-  const bannedIn = (text: string) => BANNED.filter((b) => text.includes(b));
+  // gy-5kwas FAQ swap (content 28 Oct): the home FAQ no longer offers privacy reassurance or a never-contact promise
+  // while DPDP defects gy-wwr2e.27 / gy-66y9r.4 are open; these three must not come back.
+  const BANNED = ['contacting us', 'anonymise', 'export your data', 'get my data out', 'Is my client data private', 'export it anytime', 'we never contact your clients', 'we never contact them directly'];
+  const bannedIn = (text: string) => { const t = text.toLowerCase(); return BANNED.filter((b) => t.includes(b.toLowerCase())); };
   const pricingMd = readFileSync(path.resolve(__dirname, '../public/pricing.md'), 'utf-8');
 
   test('gy-5kwas: no unverified-route or over-claim phrase in the purchase answer, App, Privacy, index.html, pricing.md', () => {
@@ -162,6 +164,32 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   test('NEGATIVE CONTROL: the banned-phrase guard fails on a planted "anonymise"', () => {
     expect(bannedIn(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT + ' We remove or anonymise it.')).toEqual(['anonymise']);
+  });
+
+  test('NEGATIVE CONTROL: the guard fails when ANY ONE of the FAQ-swap phrases is reintroduced (on every guarded surface)', () => {
+    for (const phrase of ['Is my client data private', 'export it anytime', 'we never contact your clients', 'we never contact them directly']) {
+      expect(bannedIn('Some copy. ' + phrase + '?'), phrase).toEqual([phrase]);
+      for (const text of [appSource, privacySource, indexHtml, pricingMd]) expect(bannedIn(text + ' ' + phrase), phrase).toContain(phrase);
+    }
+  });
+
+  test('NEGATIVE CONTROL: the guard is case-insensitive, so the sentence-initial forms that shipped in Privacy and the home about paragraph are caught', () => {
+    expect(bannedIn('We never contact your clients.')).toEqual(['we never contact your clients']);
+    expect(bannedIn('Your client list stays yours too: we never contact them directly.')).toEqual(['we never contact them directly']);
+    expect(bannedIn('Gymbo does not send messages to your clients.')).toEqual([]);
+  });
+
+  test('gy-5kwas: the never-contact sentences say what Gymbo does as sender, byte-for-byte (content 28 Oct)', () => {
+    expect(appSource).toContain('Your client list stays yours too: Gymbo does not send messages to your clients.');
+    expect(privacySource).toContain('Gymbo does not send messages to your clients.');
+  });
+
+  test('the home FAQ answers the export question and the JSON-LD carries the same question and answer byte-for-byte', () => {
+    const q = "Can I export my clients' records?", a = "Yes. You can export your clients' attendance and payment records from the app whenever you like.";
+    expect(appSource).toContain(`{ q: "${q}", a: "${a}" }`);
+    expect(indexHtml).toContain(`"name": "${q}"`);
+    expect(indexHtml).toContain(`"text": "${a}"`);
+    expect(a).not.toContain('\u2014');
   });
 
   test('NEGATIVE CONTROL: CANCEL_ROUTE assertion actually fails on a deliberately wrong route', () => {

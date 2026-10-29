@@ -178,7 +178,7 @@ export const FAQ = [
   { q: "What happens when my trial ends, and can I cancel or export my clients' records?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
   { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
-  { q: "Is my client data private?", a: "Your client data is yours. You can export it anytime, and we never contact your clients." },
+  { q: "Can I export my clients' records?", a: "Yes. You can export your clients' attendance and payment records from the app whenever you like." },
   { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
   { q: "Can I import my existing clients?", a: "If your clients are saved in your phone's contacts, yes. Gymbo adds each client's name and phone number." },
@@ -533,7 +533,7 @@ export default function App() {
                 Built in India for Indian trainers
               </h2>
               <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
-                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: we never contact them directly.
+                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: Gymbo does not send messages to your clients.
               </p>
             </Reveal>
           </div>
@@ -596,6 +596,7 @@ export default function App() {
             </div>
             <Reveal className="text-center mt-8">
               <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS}-day free trial for eligible subscribers · billed via {BILLING_CHANNEL}.</p>
+              <p className="text-[13px] mt-2 mx-auto max-w-[56ch]" style={{ color: F.boneLabel, fontFamily: SANS }}>{TRIAL_ELIGIBILITY_DETAIL}</p>
             </Reveal>
           </div>
         </section>

@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 28 October 2026"
+        updated="Last updated 29 October 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -42,7 +42,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>We never contact your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">

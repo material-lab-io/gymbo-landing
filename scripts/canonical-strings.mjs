@@ -90,7 +90,25 @@ export function checkFacts(doc, factsMap, tsSource) {
 // 8-letter word ('data-analysis.js') is never mistaken for one; if two files still reduce to one name the
 // scan throws instead of guessing.
 const SCANNED = /\.(html?|md|txt|xml|json|m?js|css|svg|webmanifest)$/i;
-export const builtName = (rel) => rel.replace(/^(assets\/.*?)-(?=[A-Za-z0-9_-]*[0-9A-Z])[A-Za-z0-9_-]{8}(\.[A-Za-z0-9]+)$/, "$1$2");
+// gy-123aq: a build hash that happens to be 8 lowercase letters ('posts-pnqcffbs.js', which is what the
+// real build emitted for this content, deterministically) carries no digit or capital, so the strict rule above
+// leaves it unstripped and the gate then reports the registered 'assets/posts.js' missing and 'posts-pnqcffbs.js'
+// undeclared. Such a tail is treated as a hash ONLY when the name without it is one the registry already lists,
+// so 'assets/data-analysis.js' (not in the registry) is still never renamed.
+let knownAssetNames;
+const registeredAssetNames = () => {
+  if (!knownAssetNames) {
+    try { knownAssetNames = new Set([...readFileSync(join(CANON_DIR, "price-surfaces.json"), "utf8").matchAll(/"(assets\/[^"]+\.(?:m?js|css))"/g)].map((m) => m[1])); }
+    catch { knownAssetNames = new Set(); }
+  }
+  return knownAssetNames;
+};
+export const builtName = (rel) => {
+  const strict = rel.replace(/^(assets\/.*?)-(?=[A-Za-z0-9_-]*[0-9A-Z])[A-Za-z0-9_-]{8}(\.[A-Za-z0-9]+)$/, "$1$2");
+  if (strict !== rel) return strict;
+  const m = rel.match(/^(assets\/.*?)-[a-z]{8}(\.[A-Za-z0-9]+)$/);
+  return m && registeredAssetNames().has(m[1] + m[2]) ? m[1] + m[2] : rel;
+};
 export function findBuiltPrices(root = "dist") {
   const out = [];
   const walk = (d) => {

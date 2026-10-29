@@ -174,3 +174,67 @@ test("gy-id5zl planted controls: reverting each class turns a case red", async (
   assert.equal((await mutant({ trial: (x) => x.replace(/\$\{FILL\}/g, "") }))
     .scanText("Get 7 free days of Gymbo.", "/", "t").length, 0, "no filler words must miss '7 free days'");
 });
+
+// ---- gy-6cc9n: the cost-free lexicon and double notation (tester's re-attack of gy-id5zl) ----
+test("gy-6cc9n: cost-free wording with a 7-day span is RED unqualified, GREEN with 'eligible'", () => {
+  for (const claim of [
+    "Seven days on us.", "Your first 7 days are on us.", "Enjoy 7 days at no cost.", "Seven days, no charge.",
+    "7 days complimentary.", "A complimentary seven-day start.", "Gratis for 7 days.", "7 days for Rs 0.",
+    "Get 7 days for \u20b90.", "7 days for Rs. 0.", "Seven days, no card needed.", "Try Gymbo for seven days at no cost, cancel anytime.", "7 days complimentary - cancel anytime.",
+    "Cancel anytime: your first 7 days are on us.", "Cancel anytime - seven days at no cost.", "7 days complimentary - cancel within the first month.", "Cancel anytime: for your first 7 days it's on us.", "Cancel anytime - in your first 7 days there is no cost.",
+    "Cancel in the app whenever you like, then enjoy 7 days complimentary.", "Seven days, no card needed, cancel whenever.", "7 days for Rs 0, refund if not happy.", "One week on us.", "A week at no cost.",
+  ]) {
+    assert.equal(flagged(claim), true, claim);
+    assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
+  }
+});
+
+test("gy-6cc9n: double notation 'seven (7) days' is the same number", () => {
+  for (const claim of ["Try seven (7) days free.", "Try 7 (seven) days free.", "A seven (7)-day free trial.", "Try 7 (7) days free."]) {
+    assert.equal(flagged(claim), true, claim);
+    assert.equal(flagged(claim + QUAL), false, `${claim} (qualified)`);
+  }
+});
+
+test("gy-6cc9n over-breadth: price figures and cost words without a 7-day span stay green", () => {
+  for (const ok of [
+    "Rs 399 a month.", "Rs 0.50 per message.", "From \u20b9399 a month, no charge for extra clients.",
+    "Pay within 7 days of the invoice date.", "We are on us time zone.", "Your data stays with us.",
+    "Complimentary tea for visitors.", "Rs 0 outstanding.",
+    // tester #293 144f238f: natural policy phrasing
+    "Refunds within 7 days, no charge to you.", "Cancel within 7 days at no cost.", "cancel within seven days with no charge",
+    "Full refund within 7 days of purchase, no charge for cancelling.", "If you cancel after 7 days there is no charge.",
+    // tester #293 false reds, one test per sentence
+    "You can count on us. Support is open 7 days a week.", "No card needed to browse the demo. We reply within 7 days.",
+    "Cancel in the first 7 days with no charge.", "INR 0 platform fee. Payouts arrive in 7 days.",
+  ]) {
+    assert.equal(flagged(ok), false, ok);
+  }
+});
+
+test("gy-6cc9n planted controls: reverting the lexicon or the double notation turns a case red", async () => {
+  const { readFileSync, writeFileSync, rmSync } = await import("node:fs");
+  const dir = new URL("../scripts/", import.meta.url);
+  const trialSrc = readFileSync(new URL("check-trial-eligibility.mjs", dir), "utf8");
+  let n = 0;
+  async function mutant(fn) {
+    const id = `6cc9n-${process.pid}-${++n}`;
+    const t = new URL(`.mutant-trial-${id}.mjs`, dir);
+    writeFileSync(t, fn(trialSrc));
+    try { return await import(t.href); } finally { rmSync(t); }
+  }
+  const good = await mutant((x) => x);
+  assert.equal(good.scanText("Seven days on us.", "/", "t").length, 1, "unmutated copy flags 'on us'");
+  assert.equal(good.scanText("Try seven (7) days free.", "/", "t").length, 1, "unmutated copy flags double notation");
+  const noCost = await mutant((x) => { assert.ok(x.includes("(span && costFree)")); return x.replace("(span && costFree)", "false"); });
+  assert.equal(noCost.scanText("Seven days on us.", "/", "t").length, 0, "no cost-free trigger must miss 'on us'");
+  assert.equal(noCost.scanText("7 days for Rs 0.", "/", "t").length, 0, "no cost-free trigger must miss 'Rs 0'");
+  const noCancelGuard = await mutant((x) => { assert.ok(x.includes('!(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)))')); return x.replace('!(first && CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length)))', "true"); });
+  assert.equal(noCancelGuard.scanText("Cancel in the first 7 days with no charge.", "/", "t").length, 1, "dropping the cancel guard must re-flag the benign sentence");
+  const anywhere = await mutant((x) => { assert.ok(x.includes("sentence.slice(0, first.index + first[0].length)")); return x.replace("CANCEL_CONTEXT.test(sentence.slice(0, first.index + first[0].length))", "CANCEL_CONTEXT.test(sentence)"); });
+  assert.equal(anywhere.scanText("7 days complimentary - cancel within the first month.", "/", "t").length, 0, "a whole-sentence cancel guard must miss 'cancel anytime' after the span");
+  const windowed = await mutant((x) => { assert.ok(x.includes("TRIGGER_COSTFREE.test(sentence)")); return x.replace("TRIGGER_COSTFREE.test(sentence)", "TRIGGER_COSTFREE.test(window)"); });
+  assert.equal(windowed.scanText("You can count on us. Support is open 7 days a week.", "/", "t").length, 1, "a window-wide cost-free test must re-flag 'count on us'");
+  const noNum = await mutant((x) => x.replace(/const NUM = [^\n]*\n/, "const NUM = String.raw`(?:7|seven)`;\n"));
+  assert.equal(noNum.scanText("Try seven (7) days free.", "/", "t").length, 0, "no double notation must miss 'seven (7) days'");
+});
