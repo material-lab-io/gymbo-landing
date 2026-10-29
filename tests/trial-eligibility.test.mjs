@@ -4,12 +4,27 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { scanHtmlTrial, scanText } from "../scripts/check-trial-eligibility.mjs";
 
 const SCRIPT = new URL("../scripts/check-trial-eligibility.mjs", import.meta.url).pathname;
 const scratch = mkdtempSync(join(tmpdir(), "gymbo-trial-eligibility-"));
 process.on("exit", () => rmSync(scratch, { recursive: true, force: true }));
 let serial = 0;
+
+// gy-e5kk2z: the planted-control tests load MUTATED COPIES of the scripts. They used to be written into scripts/
+// itself (so relative imports resolve), and tests/step-order.test.mjs scans scripts/ in a sibling process:
+// `node --test` runs files in parallel, so it lost the race to a file that vanished between readdir and read
+// ("COULD NOT EVALUATE step order: ENOENT ... scripts/.mutant-norm-*.mjs") and red-gated the deploy of a valid tree.
+// Mutants now live in a UNIQUE dir under `scratch` (per process, per mutant), outside scripts/ entirely, and every
+// relative import in the copy is rewritten to the real script's absolute URL so it still resolves.
+const SCRIPTS_DIR = new URL("../scripts/", import.meta.url);
+const absolutizeImports = (src) => src.replace(/(from\s+)"\.\/([^"]+)"/g, (_, kw, name) => `${kw}"${new URL(name, SCRIPTS_DIR).href}"`);
+function mutantDir(id) {
+  const d = join(scratch, `mutant-${id}`);
+  mkdirSync(d, { recursive: true });
+  return d;
+}
 
 const CLEAN_TEXT = "Eligible subscribers can try Gymbo free for 7 days. Then Rs 399 a month.";
 
@@ -148,18 +163,20 @@ test("gy-id5zl over-breadth: no free/trial word near a 7-day figure stays green"
 
 test("gy-id5zl planted controls: reverting each class turns a case red", async () => {
   const { readFileSync, writeFileSync, rmSync } = await import("node:fs");
-  const dir = new URL("../scripts/", import.meta.url);
+  const dir = SCRIPTS_DIR;
   const trialSrc = readFileSync(new URL("check-trial-eligibility.mjs", dir), "utf8");
   const normSrc = readFileSync(new URL("text-normalise.mjs", dir), "utf8");
   let n = 0;
-  // Writes mutated copies NEXT TO the real scripts (so relative imports resolve), loads them, removes them.
+  // Writes mutated copies into a UNIQUE temp dir (NOT scripts/, see SCRIPTS_DIR above), loads them, removes them.
   async function mutant({ trial = (x) => x, norm = (x) => x }) {
     const id = `${process.pid}-${++n}`;
-    const t = new URL(`.mutant-trial-${id}.mjs`, dir), m = new URL(`.mutant-norm-${id}.mjs`, dir);
-    const tSrc = trial(trialSrc).replace('"./text-normalise.mjs"', `"./.mutant-norm-${id}.mjs"`);
-    writeFileSync(m, norm(normSrc));
+    const d = mutantDir(`id5zl-${id}`);
+    const t = join(d, "trial.mjs"), m = join(d, "norm.mjs");
+    const normHref = new URL("text-normalise.mjs", dir).href;
+    const tSrc = absolutizeImports(trial(trialSrc)).replace(`"${normHref}"`, '"./norm.mjs"');
+    writeFileSync(m, absolutizeImports(norm(normSrc)));
     writeFileSync(t, tSrc);
-    try { return await import(t.href); } finally { rmSync(t); rmSync(m); }
+    try { return await import(pathToFileURL(t).href); } finally { rmSync(d, { recursive: true, force: true }); }
   }
   const swap = (from, to) => (x) => { assert.ok(x.includes(from), `mutation target missing: ${from}`); return x.replace(from, to); };
 
@@ -214,14 +231,15 @@ test("gy-6cc9n over-breadth: price figures and cost words without a 7-day span s
 
 test("gy-6cc9n planted controls: reverting the lexicon or the double notation turns a case red", async () => {
   const { readFileSync, writeFileSync, rmSync } = await import("node:fs");
-  const dir = new URL("../scripts/", import.meta.url);
+  const dir = SCRIPTS_DIR;
   const trialSrc = readFileSync(new URL("check-trial-eligibility.mjs", dir), "utf8");
   let n = 0;
   async function mutant(fn) {
     const id = `6cc9n-${process.pid}-${++n}`;
-    const t = new URL(`.mutant-trial-${id}.mjs`, dir);
-    writeFileSync(t, fn(trialSrc));
-    try { return await import(t.href); } finally { rmSync(t); }
+    const d = mutantDir(id);
+    const t = join(d, "trial.mjs");
+    writeFileSync(t, absolutizeImports(fn(trialSrc)));
+    try { return await import(pathToFileURL(t).href); } finally { rmSync(d, { recursive: true, force: true }); }
   }
   const good = await mutant((x) => x);
   assert.equal(good.scanText("Seven days on us.", "/", "t").length, 1, "unmutated copy flags 'on us'");
