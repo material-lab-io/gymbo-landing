@@ -16,9 +16,8 @@ import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMock
 import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
-import { useKeyboardInset } from "./lib/keyboardInset";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SHADOW, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, PrimaryCTA, WaitlistCTA, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
+import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, ctaVisual, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
 import {
   TRIAL_DAYS,
   TRIAL_PRIMARY,
@@ -204,6 +203,10 @@ function HeroDeviceArt({ alt = "", priority = false }: { alt?: string; priority?
 export default function App() {
   const prefersReduced = useReducedMotion();
   const [showStickyCTA, setShowStickyCTA] = useState(false);
+  // gy-e9h9y N2: the phone bar is hidden while a section that must not share its screen is in view:
+  // the closing section (its own WhatsApp link + the form) and, per designer's P1 on #316, pricing (a
+  // plan choice is not the moment to push a different conversion, and amber-on-amber over the Annual card).
+  const [barHiddenBySection, setBarHiddenBySection] = useState(false);
   const galleryRef = useRef<HTMLDivElement>(null);
   const galleryNavigationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -258,6 +261,20 @@ export default function App() {
   }, [prefersReduced]);
 
   useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const inView = new Set<string>();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) (e.isIntersecting ? inView.add(e.target.id) : inView.delete(e.target.id));
+      setBarHiddenBySection(inView.size > 0);
+    });
+    for (const id of ["pricing", "cta"]) {
+      const el = document.getElementById(id);
+      if (el) io.observe(el);
+    }
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => setShowStickyCTA(window.scrollY > window.innerHeight * 0.8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -309,7 +326,7 @@ export default function App() {
             raised keyboard is the same hazard wherever the cluster lives. */}
         <div className="flex items-center gap-2.5">
           <InlineWaitlist overlay="nav" dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
-            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ background: F.amber, color: F.onCta, fontFamily: SANS, boxShadow: SHADOW.cta }}>
+            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={ctaVisual("secondary").style}>
               Request access
             </WaitlistPlainButton>
           </InlineWaitlist>
@@ -518,7 +535,7 @@ export default function App() {
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <InlineWaitlist className="flex flex-col items-center" reducedMotion={prefersReduced}>
-                <PrimaryCTA dark size="lg" location="gallery" />
+                <WaitlistCTA dark size="lg" location="gallery" />
               </InlineWaitlist>
             </Reveal>
           </div>
@@ -699,7 +716,7 @@ export default function App() {
       </footer>
 
       {/* ───────── mobile sticky CTA ───────── */}
-      <StickyCtaBar show={showStickyCTA} reducedMotion={prefersReduced} />
+      <StickyCtaBar show={showStickyCTA && !barHiddenBySection} />
     </div>
     </WaitlistOverlayProvider>
   );
@@ -784,53 +801,38 @@ function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
 }
 
 /**
- * gy-w77x3 D1 — THE STICKY BAR CAPTURES IN PLACE, EXPANDING UPWARD.
+ * gy-e9h9y N2 (designer ruling + pm scope OK, 29 Oct) — THE PHONE STICKY BAR IS THE WHATSAPP PRIMARY.
  *
- * designer, 2026-09-16: "the capture renders ABOVE the button inside the fixed
- * container, the button stays under the thumb, the page behind does not
- * scroll." The bar is pinned to the bottom of the viewport, so the default
- * below-the-CTA panel would render off-screen — which is exactly why gy-becxi
- * left this control alone and filed it rather than absorbing it.
+ * The rule is per SCREEN: at most one filled amber CTA in any viewport, and on a page whose primary
+ * conversion is WhatsApp the filled one is never the waitlist when a WhatsApp CTA can hold the spot.
+ * This bar is on screen for the whole page past the hero, so a filled "Request access" here put the
+ * waitlist on top of every phone screen except the first. It now carries the hero's WhatsApp link
+ * (amber, full glyph, real <a target=_blank>, whatsapp_cta_click). The waitlist stays reachable
+ * from the nav outline button, which reveals the capture panel.
  *
- * 🔴 THE KEYBOARD IS THE LOAD-BEARING CONSTRAINT, NOT THE EXPANSION. A `fixed`
- * element is pinned to the LAYOUT viewport; the software keyboard shrinks only
- * the VISUAL one. So without the lift below, the moment the email field takes
- * focus the whole bar — capture included — sits UNDER the keyboard, and a
- * visitor who cannot see herself typing is worse off than with the scroll this
- * bead removes. K1 is "keyboard up, email field AND submit both fully visible".
+ * SAME show/hide as before (hidden while the hero pair is in view), PLUS hidden while the cta-section
+ * is in view (it would duplicate that section's own WhatsApp link and cover its form) and while the
+ * pricing section is in view (designer P1 on #316: the Monthly plan's filled button would be a second
+ * filled CTA on the screen, and the amber bar loses its edge over the full-amber Annual card).
  *
- * 🔴 `bottom` IS SET, NOT `transform`, AND IT IS DELIBERATELY NOT TRANSITIONED.
- * The className already animates `transform` for the show/hide slide; reusing
- * transform for the keyboard lift would make the two fight, and animating the
- * offset at all would make the bar LAG the keyboard — which reads as the bar
- * tearing away from the keyboard edge and is precisely what K2 forbids. Setting
- * `bottom` tracks 1:1 and leaves the slide animation untouched.
+ * It is no longer a capture surface, so the D1 machinery (in-place expansion, keyboard lift, the
+ * "sticky" overlay owner) is gone from here. data-cta-location stays "footer": waitlist_cta_click
+ * {footer} history ENDS at the deploy of this change; whatsapp_cta_click {footer} starts there.
+ *
+ * data-fixed-chrome="sticky-cta" is kept: tests/visual.spec.ts hides the fixed chrome by that hook,
+ * and it is deliberately NOT a style class (see D1: a gate keyed on how a value is written cannot see
+ * the same value written another way).
  */
-function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: boolean }) {
-  const [revealed, setRevealed] = useState(false);
-  // Only while the capture is open: a bar still holding a keyboard-sized gap
-  // after dismissal would float above the safe area.
-  const keyboardInset = useKeyboardInset(revealed);
-  // gy-w77x3 B5: while the NAV panel is open the bar is not rendered at all.
-  // All it offers is a second capture, and one is already open (B1's
-  // hide-the-pill reasoning applied to the whole bar). It returns when the nav
-  // panel closes. Returned after the hooks, so hook order never changes.
+function StickyCtaBar({ show }: { show: boolean }) {
+  // gy-w77x3 B5: while the NAV panel is open the bar is not rendered at all. Returned after the hook,
+  // so hook order never changes. It returns when the nav panel closes.
   const overlay = useWaitlistOverlayOwner();
   if (overlay?.open === "nav") return null;
   return (
     <div
-      // 🔴 THE NEUTRALIZER'S HOOK, AND IT IS DELIBERATELY NOT A STYLE CLASS.
-      // tests/visual.spec.ts hides the fixed chrome before capturing a section,
-      // and it used to find this bar with `.fixed.bottom-0`. D1 moved bottom-0
-      // out of the className into the inline style (same computed 0px, because
-      // the offset now tracks the keyboard) and the selector silently stopped
-      // matching — so the bar painted into every section screenshot and the
-      // footer-cta baseline came back 12% different. A gate keyed on HOW a value
-      // is written cannot see the same value written another way.
       data-fixed-chrome="sticky-cta"
-      className="md:hidden fixed left-0 right-0 z-50 px-4 pt-3 transition-transform duration-300"
+      className="md:hidden fixed left-0 right-0 bottom-0 z-50 px-4 pt-3 transition-transform duration-300"
       style={{
-        bottom: keyboardInset,
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
         background: "var(--c-nav-bg)",
         backdropFilter: "saturate(140%) blur(12px)",
@@ -839,9 +841,7 @@ function StickyCtaBar({ show, reducedMotion }: { show: boolean; reducedMotion: b
         transform: show ? "translateY(0)" : "translateY(120%)",
       }}
     >
-      <InlineWaitlist overlay="sticky" above dismissible hideTriggerWhileRevealed reclaimGutter={false} reducedMotion={reducedMotion} onRevealedChange={setRevealed}>
-        <PrimaryCTA size="lg" className="w-full" location="footer" />
-      </InlineWaitlist>
+      <WhatsAppCTA size="lg" className="w-full" location="footer">Talk to the founder</WhatsAppCTA>
     </div>
   );
 }
