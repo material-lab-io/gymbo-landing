@@ -64,4 +64,4 @@ In `src/pages/index.astro`, replace `UMAMI_WEBSITE_ID` with the real ID:
 |---|---|
 | `cta_try_web_app` | Click "try the web app →" hero button |
 | `cta_join_waitlist_hero` | Click "join the waitlist" hero button |
-| `waitlist_signup` | Successful waitlist form submission |
+| `waitlist_signup` | Accepted waitlist submit. NOT a lead count: a duplicate contact fires it with no row (gy-rh2rj, gy-6smup). Leads = rows in `public.waitlist` |

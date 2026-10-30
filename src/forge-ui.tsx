@@ -233,6 +233,18 @@ const FORGE_CSS = `
            tabindex=0, which is what makes it keyboard-scrollable. */
         .article-prose table{width:100%;border-collapse:collapse;font-size:14px}
         .article-prose .table-scroll{overflow-x:auto}
+        /* gy-gf6j6 AC1: scroll cue. Edge shadows that show only on a side that still has
+           content to scroll to (background-attachment:local covers them at the ends), so the
+           cue is present at every width where the table overflows and gone when it fits. */
+        .table-scroll{background:
+          linear-gradient(to right,var(--c-bg) 30%,transparent) left center/32px 100% no-repeat local,
+          linear-gradient(to left,var(--c-bg) 30%,transparent) right center/32px 100% no-repeat local,
+          linear-gradient(to right,rgba(26,26,26,.16),transparent) left center/14px 100% no-repeat scroll,
+          linear-gradient(to left,rgba(26,26,26,.16),transparent) right center/14px 100% no-repeat scroll}
+        /* gy-gf6j6 AC2: the prose column is 664px at desktop and the best-apps table needs
+           ~770px, which hid the Free trial column at rest. Let the scroller use the width it
+           needs on wide viewports; narrower ones keep the cue above. Content unchanged. */
+        @media (min-width:1024px){.article-prose .table-scroll{margin-inline:-90px}}
         /* A tabbable element must show where focus is (WCAG 2.4.7). Focus-visible only, so
            mouse users never see a ring on a plain click. */
         /* UNSCOPED on purpose: .table-scroll is also used outside .article-prose (the
