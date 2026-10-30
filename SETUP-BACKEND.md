@@ -52,7 +52,7 @@ The waitlist form (`src/components/WaitlistForm.tsx`) POSTs to `/api/waitlist`
     `SELECT`, so no email can be read back. The prod catalog read-back (0 policies,
     no anon privilege on the table) is posted on gy-rh2rj; read it there rather than
     trusting this paragraph to stay current. Do not re-add a direct insert path.
-- On success the client fires the Umami event `waitlist_signup` (visit→signup CVR).
+- On success the client fires the Umami event `waitlist_signup` (visit→submit rate). It counts ACCEPTED SUBMITS, not new leads: a duplicate contact gets the same 2xx and fires it with no row (the gy-rh2rj property, do not change it). Lead count = rows in `public.waitlist`. gy-6smup.
 
 ## Read entries / verify
 
