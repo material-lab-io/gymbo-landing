@@ -3,7 +3,10 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const approvedRunner = '[self-hosted, gt2]';
+// Both are self-hosted label sets, never GitHub-hosted. `gt2-host` is carried by gt2-runner-1..3 (gy-qgq5g, 22 Oct 2026): the only jobs
+// that may use it are CURL-ONLY ones (scripts/check-prod-watch-curl-only.mjs pins prod-watch.yml to that), because GT2 hosts run no browsers.
+const approvedRunners = ['[self-hosted, gt2]', '[self-hosted, gt2-host]'];
+const approvedRunner = approvedRunners.join(' or ');
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 
 async function workflowFiles(directory) {
@@ -35,7 +38,7 @@ for (const file of files) {
     if (!match) return;
 
     const runner = match[1].trim();
-    if (runner !== approvedRunner) {
+    if (!approvedRunners.includes(runner)) {
       violations.push(`${file}:${index + 1}: runs-on must be ${approvedRunner}; found ${runner || '(empty)'}`);
     }
   });

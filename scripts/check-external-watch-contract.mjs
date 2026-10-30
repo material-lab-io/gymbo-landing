@@ -28,44 +28,49 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-const EXPECTED_NAME = 'Prod Watch';
-const EXPECTED_CRON = '0 * * * *';
+// The workflows the external watcher is (or must be) configured against. "Prod Watch" is configured today; "Prod Watch Console" (the browser
+// half, split out by gy-qgq5g) is pinned here so that the string the watchdog bead adds keeps matching. Both hourly, 30 minutes apart.
+const WATCHED = [
+  { file: 'prod-watch.yml', name: 'Prod Watch', cron: '0 * * * *' },
+  { file: 'prod-watch-console.yml', name: 'Prod Watch Console', cron: '30 * * * *' },
+];
 const WATCHER = 'custom-packs/gymbo-crew/orders/async-watchdog.toml (gascity repo)';
 
 const workflowsDir = process.argv[2] ?? '.github/workflows';
-const file = path.join(workflowsDir, 'prod-watch.yml');
-
-let text;
-try {
-  text = await readFile(file, 'utf8');
-} catch (error) {
-  console.error(`::error::${file} is unreadable: ${error.message}. The external watcher in ${WATCHER} is configured against this workflow; if it was deleted or renamed, update SCHEDULED_FAILURE_WORKFLOWS and HEARTBEAT_WORKFLOWS in the same change.`);
-  process.exit(1);
-}
-
-const lines = text.split(/\r?\n/);
 const violations = [];
 
-// Display name: the string `gh run list --workflow` is given, verbatim.
-const nameLine = lines.find((line) => /^name:\s*/.test(line));
-const name = nameLine ? nameLine.replace(/^name:\s*/, '').replace(/^["']|["']$/g, '').trim() : null;
-if (name !== EXPECTED_NAME) {
-  violations.push(
-    `${file}: workflow display name is ${name === null ? '(absent)' : JSON.stringify(name)}, expected ${JSON.stringify(EXPECTED_NAME)}. ` +
-    `check6/check7 address this surface by that exact string.`,
-  );
-}
+for (const { file: base, name: EXPECTED_NAME, cron: EXPECTED_CRON } of WATCHED) {
+  const file = path.join(workflowsDir, base);
+  let text;
+  try {
+    text = await readFile(file, 'utf8');
+  } catch (error) {
+    console.error(`::error::${file} is unreadable: ${error.message}. The external watcher in ${WATCHER} is configured against this workflow; if it was deleted or renamed, update SCHEDULED_FAILURE_WORKFLOWS and HEARTBEAT_WORKFLOWS there in the same change.`);
+    process.exit(1);
+  }
+  const lines = text.split(/\r?\n/);
 
-// Cron: the cadence the 150-minute heartbeat tolerance was chosen against.
-const crons = lines
-  .map((line) => line.match(/^\s*-\s*cron:\s*(.*?)\s*(?:#.*)?$/))
-  .filter(Boolean)
-  .map((match) => match[1].trim().replace(/^["']|["']$/g, ''));
-if (crons.length !== 1 || crons[0] !== EXPECTED_CRON) {
-  violations.push(
-    `${file}: schedule is ${crons.length ? JSON.stringify(crons) : '(none)'}, expected exactly one entry ${JSON.stringify(EXPECTED_CRON)}. ` +
-    `HEARTBEAT_WORKFLOWS tolerates a 150-minute gap because this is hourly.`,
-  );
+  // Display name: the string `gh run list --workflow` is given, verbatim.
+  const nameLine = lines.find((line) => /^name:\s*/.test(line));
+  const name = nameLine ? nameLine.replace(/^name:\s*/, '').replace(/^["']|["']$/g, '').trim() : null;
+  if (name !== EXPECTED_NAME) {
+    violations.push(
+      `${file}: workflow display name is ${name === null ? '(absent)' : JSON.stringify(name)}, expected ${JSON.stringify(EXPECTED_NAME)}. ` +
+      `check6/check7 address this surface by that exact string.`,
+    );
+  }
+
+  // Cron: the cadence the 150-minute heartbeat tolerance was chosen against.
+  const crons = lines
+    .map((line) => line.match(/^\s*-\s*cron:\s*(.*?)\s*(?:#.*)?$/))
+    .filter(Boolean)
+    .map((match) => match[1].trim().replace(/^["']|["']$/g, ''));
+  if (crons.length !== 1 || crons[0] !== EXPECTED_CRON) {
+    violations.push(
+      `${file}: schedule is ${crons.length ? JSON.stringify(crons) : '(none)'}, expected exactly one entry ${JSON.stringify(EXPECTED_CRON)}. ` +
+      `HEARTBEAT_WORKFLOWS tolerates a 150-minute gap because this is hourly.`,
+    );
+  }
 }
 
 if (violations.length > 0) {
@@ -75,4 +80,4 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log(`OK: prod-watch.yml still matches the external watcher contract (name ${JSON.stringify(EXPECTED_NAME)}, cron ${JSON.stringify(EXPECTED_CRON)}).`);
+console.log(`OK: ${WATCHED.map((w) => `${w.file} (${JSON.stringify(w.name)}, cron ${JSON.stringify(w.cron)})`).join(' and ')} match the external watcher contract.`);
