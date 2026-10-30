@@ -3,7 +3,9 @@
 // gy-qgq5g — prod-watch.yml runs on [self-hosted, gt2-host] (gt2-runner-1..3), which is a GT2 host: no browsers there. The browser half
 // lives in prod-watch-console.yml. This gate fails when the curl workflow stops being curl-only, or leaves gt2-host:
 //   * its runs-on must be exactly [self-hosted, gt2-host]
-//   * outside comments, it must not mention npm, npx, node, setup-node, playwright, chromium or console-check
+//   * outside comments, it must not mention npm, npx, node, setup-node, playwright, chromium or console-check,
+//     EXCEPT the one build-sha guard `node scripts/check-deploy-matches-head.mjs` (gy-oab3e): it uses only node: built-ins,
+//     no npm install, and /usr/bin/node is on the gt2-host runner hosts. Anything else naming node still fails.
 // Comments are ignored on purpose: they explain why those words are absent.
 
 import { readFile } from 'node:fs/promises';
@@ -11,6 +13,7 @@ import path from 'node:path';
 
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 const file = path.join(workflowsDir, 'prod-watch.yml');
+const ALLOWED_SHA_GUARD = /\bnode scripts\/check-deploy-matches-head\.mjs\b/;
 const BANNED = /\b(npm|npx|node|setup-node|playwright|chromium|console-check)\b/i;
 
 let text;
@@ -29,7 +32,7 @@ for (const r of runsOn) {
   if (r !== '[self-hosted, gt2-host]') violations.push(`${file}: runs-on is ${r}, expected exactly [self-hosted, gt2-host] (the curl half must not depend on the gt3 runners).`);
 }
 lines.forEach((line, i) => {
-  const code = line.replace(/(^|\s)#.*$/, '');
+  const code = line.replace(/(^|\s)#.*$/, '').replace(ALLOWED_SHA_GUARD, '');
   const hit = code.match(BANNED);
   if (hit) violations.push(`${file}:${i + 1}: "${hit[0]}" in the curl-only workflow. Browsers and Node tooling belong in prod-watch-console.yml.`);
 });
