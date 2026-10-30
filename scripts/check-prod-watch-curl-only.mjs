@@ -4,7 +4,7 @@
 // lives in prod-watch-console.yml. This gate fails when the curl workflow stops being curl-only, or leaves gt2-host:
 //   * its runs-on must be exactly [self-hosted, gt2-host]
 //   * outside comments, it must not mention npm, npx, node, setup-node, playwright, chromium or console-check,
-//     EXCEPT the one build-sha guard `node scripts/check-deploy-matches-head.mjs` (gy-oab3e): it uses only node: built-ins,
+//     EXCEPT the one live-vs-main deploy guard `node scripts/check-deploy-matches-head.mjs` (gy-oab3e): it uses only node: built-ins,
 //     no npm install, and /usr/bin/node is on the gt2-host runner hosts. Anything else naming node still fails.
 // Comments are ignored on purpose: they explain why those words are absent.
 
