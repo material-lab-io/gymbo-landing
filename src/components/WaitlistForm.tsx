@@ -159,6 +159,9 @@ export function WaitlistForm() {
         return;
       }
       // Custom event so the analyst can measure visit→signup CVR (gy-uh9os).
+      // gy-6smup: this counts ACCEPTED SUBMITS, NOT NEW LEADS. A duplicate contact gets the same 2xx and
+      // fires it with no row written, and that sameness is the gy-rh2rj anti-enumeration property, so it
+      // must not be "fixed". The lead count is ROWS in public.waitlist, never this event.
       track("waitlist_signup");
       setPhoneOnly(!gaveEmail);
       setStatus("done");
