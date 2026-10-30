@@ -6,6 +6,7 @@
 // Gymbo framing: "one flat price, no per-client tiers" (never "unlimited clients").
 import type { Post } from "../blog/posts";
 import { GYMBO_TRIAL_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, PRICE_ANNUAL_INR_DISPLAY } from "../../lib/trialAccess";
+import { inrFromUsd, FX_FOOTNOTE } from "../../lib/fx";
 
 const truecoach: Post = {
   slug: "truecoach",
@@ -25,7 +26,7 @@ const truecoach: Post = {
     },
     {
       q: "How much does TrueCoach cost in India?",
-      a: "TrueCoach bills in US dollars across three client-capped tiers: Starter (~$26/mo, up to 5 clients), Standard (~$58/mo, up to 20 clients), and Pro (~$137/mo, up to 50 clients) on annual billing. For a 5–20 client trainer that's roughly ₹4,870/mo. (Check truecoach.co/pricing for current rates.)",
+      a: `TrueCoach bills in US dollars across three client-capped tiers: Starter (~$26/mo, up to 5 clients), Standard (~$58/mo, up to 20 clients), and Pro (~$137/mo, up to 50 clients) on annual billing. For a 5–20 client trainer that's roughly ₹${inrFromUsd(57.99)}/mo. (Check truecoach.co/pricing for current rates.)`,
     },
     {
       q: "Does TrueCoach support UPI or GST?",
@@ -37,7 +38,7 @@ const truecoach: Post = {
     },
     {
       q: "Is Gymbo cheaper than TrueCoach?",
-      a: `For an Indian trainer, by a wide margin. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) with no per-client caps. TrueCoach's tiers put a 5–20 client trainer at roughly ₹4,870/mo.`,
+      a: `For an Indian trainer, by a wide margin. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) with no per-client caps. TrueCoach's tiers put a 5–20 client trainer at roughly ₹${inrFromUsd(57.99)}/mo.`,
     },
   ],
   bodyMd: `If you train clients in India and get paid in rupees, here's an honest comparison so you can choose well.
@@ -48,8 +49,8 @@ const truecoach: Post = {
 |---|---|---|
 | Built for | Independent mobile trainers in India | Remote 1:1 coaches (mainly US/Western) |
 | The main job | Punch a class in a couple of taps; track payments & balances | Remote programming & client engagement |
-| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | Starter ~$26/mo (~₹2,200), caps at **5 clients** |
-| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | Standard ~$58/mo (**~₹4,870**), caps at **20 clients** |
+| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | Starter ~$26/mo (~₹${inrFromUsd(26.34)}), caps at **5 clients** |
+| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | Standard ~$58/mo (**~₹${inrFromUsd(57.99)}**), caps at **20 clients** |
 | Pricing model | One flat price, no per-client tiers | Tiered by active client count (5 / 20 / 50) |
 | Payment fees | UPI via Razorpay (standard rates) | Stripe-based |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing, no UPI |
@@ -62,7 +63,7 @@ const truecoach: Post = {
 | Exercise video library | Growing | ✅ 3,000+ videos |
 | Free trial | ${GYMBO_TRIAL_ROW} | 14 days, no card |
 
-*TrueCoach figures: annual-billed rates verified against truecoach.co/pricing on 23 June 2026 (₹ ≈ $ × 84, approximate). Re-check truecoach.co/pricing for current pricing.*
+*TrueCoach figures: annual-billed rates verified against truecoach.co/pricing on 23 June 2026 (${FX_FOOTNOTE}). Re-check truecoach.co/pricing for current pricing.*
 
 ## where truecoach is genuinely better
 
@@ -79,7 +80,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 ## where it doesn't fit an indian trainer
 
-- **Priced in dollars, and not cheap.** A realistic seat for a 5–20 client trainer is the Standard tier at roughly **₹4,870/mo**. That's a large share of an independent Indian trainer's monthly income.
+- **Priced in dollars, and not cheap.** A realistic seat for a 5–20 client trainer is the Standard tier at roughly **₹${inrFromUsd(57.99)}/mo**. That's a large share of an independent Indian trainer's monthly income.
 - **Client caps.** Plans are capped at 5, 20, and 50 active clients. Grow past a tier and your price jumps.
 - **No UPI, no INR, no GST.** Billing is USD and Stripe-based; there's no UPI option and nothing built for Indian GST invoicing.
 - **No WhatsApp.** It replaces WhatsApp with its own chat, but your clients are already on WhatsApp.
@@ -100,7 +101,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 ## the price story, plainly
 
-For a working roster of 5–20 clients, TrueCoach lands around **₹4,870/mo** (Standard tier, annual billing). For an independent Indian trainer, that's not a small line item.
+For a working roster of 5–20 clients, TrueCoach lands around **₹${inrFromUsd(57.99)}/mo** (Standard tier, annual billing). For an independent Indian trainer, that's not a small line item.
 
 Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
@@ -135,7 +136,7 @@ const trainerize: Post = {
     },
     {
       q: "Is Gymbo cheaper than Trainerize?",
-      a: `For an Indian trainer, substantially. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) regardless of how many clients you have. Trainerize's per-client tiers and add-ons typically put a working trainer at ₹1,900+/mo on annual billing.`,
+      a: `For an Indian trainer, substantially. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) regardless of how many clients you have. Trainerize's per-client tiers and add-ons typically put a working trainer at ₹${inrFromUsd(23)}+/mo on annual billing.`,
     },
   ],
   bodyMd: `Here's an honest look at both, so you can pick what's actually right for you.
@@ -146,8 +147,8 @@ const trainerize: Post = {
 |---|---|---|
 | Built for | Independent mobile trainers in India | Coaches → studios → gyms → enterprise (global) |
 | The main job | Punch a class in a couple of taps; track payments & balances | Online coaching, programming & client engagement |
-| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | $9/mo (~₹750), caps at **2 clients** |
-| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹1,900+)** on Pro, before add-ons |
+| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | $9/mo (~₹${inrFromUsd(9)}), caps at **2 clients** |
+| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹${inrFromUsd(23)}+)** on Pro, before add-ons |
 | Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing |
 | GST-ready invoices | ✅ | ❌ |
@@ -159,7 +160,7 @@ const trainerize: Post = {
 | Branded client app | Not yet | ✅ (paid add-on) |
 | Free trial | ${GYMBO_TRIAL_ROW} | 30 days, no card |
 
-*Trainerize figures read from trainerize.com/pricing on 28 October 2026 (per-month rates on annual billing; monthly billing is about 10% higher; ₹ ≈ $ × 84, approximate). Re-check trainerize.com/pricing for current numbers.*
+*Trainerize figures read from trainerize.com/pricing on 28 October 2026 (per-month rates on annual billing; monthly billing is about 10% higher; ${FX_FOOTNOTE}). Re-check trainerize.com/pricing for current numbers.*
 
 ## where trainerize is genuinely better
 
@@ -188,7 +189,7 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 
 ## the price story, plainly
 
-A real Trainerize seat for a 5–20 client trainer lands around **₹1,900+/mo** on annual billing once you're past the 2-client cheap tier and add payments or nutrition. A real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears, for software.
+A real Trainerize seat for a 5–20 client trainer lands around **₹${inrFromUsd(23)}+/mo** on annual billing once you're past the 2-client cheap tier and add payments or nutrition. A real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears, for software.
 
 Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
