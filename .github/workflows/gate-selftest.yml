@@ -71,6 +71,35 @@ jobs:
           fi
           echo "OK: runner guard correctly rejected windows-latest."
 
+      - name: Positive control — runner guard must ACCEPT [self-hosted, gt2-host] (gy-qgq5g)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt2-host]' > "$FIX/ok.yml"
+          node scripts/check-workflow-runners.mjs "$FIX"
+
+      - name: Negative control — runner guard must FAIL on a bare [self-hosted]
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Any self-hosted' 'jobs:' '  any:' '    runs-on: [self-hosted]' > "$FIX/bare.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on a bare [self-hosted] — any self-hosted runner, including ones we do not own, would be approved."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected a bare [self-hosted]."
+
+      - name: Negative control — runner guard must FAIL on an unlisted self-hosted label set
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Unlisted labels' 'jobs:' '  odd:' '    runs-on: [self-hosted, gt2-host, gpu]' > "$FIX/odd.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on [self-hosted, gt2-host, gpu] — only the two approved label sets may be used."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected an unlisted label set."
+
   prod-watch-bootstrap-control:
     name: Prod Watch bootstrap classification (offline)
     runs-on: [self-hosted, gt2]
@@ -499,7 +528,8 @@ jobs:
           set -e
           FIX=$(mktemp -d)
           mkdir -p "$FIX/wf"
-          sed 's/^name: Prod Watch/name: Production Watch/' .github/workflows/prod-watch.yml > "$FIX/wf/prod-watch.yml"
+          cp .github/workflows/prod-watch-console.yml "$FIX/wf/"
+          sed 's/^name: Prod Watch$/name: Production Watch/' .github/workflows/prod-watch.yml > "$FIX/wf/prod-watch.yml"
           if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
             echo "::error::Contract gate PASSED on a renamed Prod Watch — async-watchdog addresses that surface by display name, so a rename silently unwatches getgymbo.com."
             exit 1
@@ -511,6 +541,7 @@ jobs:
           set -e
           FIX=$(mktemp -d)
           mkdir -p "$FIX/wf"
+          cp .github/workflows/prod-watch-console.yml "$FIX/wf/"
           sed 's|cron: "0 \* \* \* \*"|cron: "0 */6 * * *"|' .github/workflows/prod-watch.yml > "$FIX/wf/prod-watch.yml"
           if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
             echo "::error::Contract gate PASSED on a six-hourly cron — the external heartbeat tolerates 150 min because this surface is HOURLY; a slower cron makes it page every run, and a muted heartbeat is the fail-open gy-p7edn exists to close."
@@ -523,11 +554,85 @@ jobs:
           set -e
           FIX=$(mktemp -d)
           mkdir -p "$FIX/wf"
+          cp .github/workflows/prod-watch-console.yml "$FIX/wf/"
           if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
             echo "::error::Contract gate PASSED with prod-watch.yml absent — a deleted scheduled probe must not read as healthy."
             exit 1
           fi
           echo "OK: contract gate correctly rejected an absent prod-watch.yml."
+
+      - name: Negative control — external-watch contract must FAIL on a renamed Prod Watch Console (gy-qgq5g)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          cp .github/workflows/prod-watch.yml "$FIX/wf/"
+          sed 's/^name: Prod Watch Console$/name: Console Watch/' .github/workflows/prod-watch-console.yml > "$FIX/wf/prod-watch-console.yml"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED on a renamed Prod Watch Console — the watchdog addresses it by display name, so a rename silently unwatches the console check."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected a renamed console workflow."
+
+      - name: Negative control — external-watch contract must FAIL on a changed console cron (gy-qgq5g)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          cp .github/workflows/prod-watch.yml "$FIX/wf/"
+          sed 's|cron: "30 \* \* \* \*"|cron: "30 */6 * * *"|' .github/workflows/prod-watch-console.yml > "$FIX/wf/prod-watch-console.yml"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED on a six-hourly console cron — its 150-minute heartbeat would page every run."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected a changed console cron."
+
+      - name: Negative control — external-watch contract must FAIL when the console workflow is gone (gy-qgq5g)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          mkdir -p "$FIX/wf"
+          cp .github/workflows/prod-watch.yml "$FIX/wf/"
+          if node scripts/check-external-watch-contract.mjs "$FIX/wf"; then
+            echo "::error::Contract gate PASSED with prod-watch-console.yml absent — a deleted browser watch must not read as healthy."
+            exit 1
+          fi
+          echo "OK: contract gate correctly rejected an absent console workflow."
+
+      - name: Curl-only gate (positive control on the real tree, gy-qgq5g)
+        run: node scripts/check-prod-watch-curl-only.mjs
+
+      - name: Negative control — curl-only gate must FAIL when a browser comes back
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          sed 's|bash scripts/getgymbo-smoke.sh "$TARGET"|npx playwright install chromium|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
+            echo "::error::Curl-only gate PASSED with a Playwright step on a GT2 host — browsers do not belong there."
+            exit 1
+          fi
+          echo "OK: curl-only gate correctly rejected a browser step."
+
+      - name: Negative control — curl-only gate must FAIL when the job leaves gt2-host
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          sed 's|runs-on: \[self-hosted, gt2-host\]|runs-on: [self-hosted, gt2]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
+            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt2] — the curl half would again depend on the gt3 runners."
+            exit 1
+          fi
+          echo "OK: curl-only gate correctly rejected a move off gt2-host."
+
+      - name: Negative control — curl-only gate must FAIL when the workflow is absent
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
+            echo "::error::Curl-only gate PASSED with prod-watch.yml absent."
+            exit 1
+          fi
+          echo "OK: curl-only gate correctly rejected an absent workflow."
 
       - name: Photoreal-device gate self-test
         run: node scripts/check-photoreal-device.selftest.mjs
