@@ -27,6 +27,8 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // touches the table, so the answer cannot depend on membership. This handler therefore must not branch on
 // anything it gets back from a 200: there is nothing left to branch on, and a branch added later is exactly
 // how the oracle reopens. The visitor's answer is built ONCE, here, so no call site can drift.
+// gy-6smup: the same sameness means the client's `waitlist_signup` event counts accepted submits, not new
+// leads (a duplicate fires it with no row). Do not "fix" that by making this answer differ. Leads = rows.
 const SUCCESS_BODY = { ok: true };
 const successResponse = () => Response.json(SUCCESS_BODY, { status: 200 });
 
