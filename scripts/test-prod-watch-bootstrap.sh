@@ -8,7 +8,7 @@ set -u
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 bootstrap="$script_dir/prod-watch-bootstrap.sh"
-workflow="$script_dir/../.github/workflows/prod-watch.yml"
+workflow="$script_dir/../.github/workflows/prod-watch-console.yml"  # the browser half (gy-qgq5g); prod-watch.yml is curl-only and has no bootstrap
 fixture=$(mktemp -d)
 trap 'rm -rf -- "$fixture"' EXIT
 
@@ -39,14 +39,12 @@ workflow_line() {
 
 if ! bootstrap_line=$(workflow_line 'name: Bootstrap dependencies') ||
    ! chromium_line=$(workflow_line 'name: Install Chromium (console check)') ||
-   ! regression_line=$(workflow_line 'name: Run prod regression') ||
-   ! deploy_line=$(workflow_line 'name: Verify live deploy matches main HEAD'); then
-  echo 'FAIL: Prod Watch is missing the bootstrap or one of its three production-facing steps.'
+   ! regression_line=$(workflow_line 'name: Run console check'); then
+  echo 'FAIL: Prod Watch Console is missing the bootstrap or one of its two production-facing steps.'
   exit 1
 fi
 if ! [ "$bootstrap_line" -lt "$chromium_line" ] ||
-   ! [ "$chromium_line" -lt "$regression_line" ] ||
-   ! [ "$regression_line" -lt "$deploy_line" ]; then
+   ! [ "$chromium_line" -lt "$regression_line" ]; then
   echo 'FAIL: Prod Watch production-facing steps are not ordered after dependency bootstrap.'
   exit 1
 fi

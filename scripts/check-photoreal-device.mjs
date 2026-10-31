@@ -118,7 +118,7 @@ if (!output) {
     const yaml = await readFile(workflow, "utf8");
     for (const line of yaml.split("\n").filter((candidate) => /^\s*runs-on\s*:/.test(candidate))) {
       runnerDeclarations += 1;
-      if (!/self-hosted/.test(line) || !/gt2/.test(line) || /(?:ubuntu|macos|windows)-latest/.test(line)) {
+      if (!/self-hosted/.test(line) || !/\bgt[23]\b/.test(line) || /(?:ubuntu|macos|windows)-latest/.test(line)) {
         absent.push(`unapproved runner declaration in ${workflow}: ${line.trim()}`);
       }
     }
