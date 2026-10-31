@@ -125,7 +125,7 @@ export function Privacy() {
           />
           <p>
             If you appear in an exercise video shown in Gymbo, or you hold rights in one, you can ask us to remove it with our{" "}
-            <a href="/m/takedown">video removal request form</a>, and we hide that video from the app and from its public link while we review your request.
+            <a href="/m/takedown">video removal request form</a>, and we stop serving that video from our servers while we review your request. A takedown stops new delivery from our servers. Copies that were already cached on a CDN or on a device may remain available until their cache lifetime ends, which is up to one year for the exercise images and videos.
           </p>
         </section>
       </Prose>

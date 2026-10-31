@@ -260,3 +260,34 @@ test("gy-wwr2e.57 NEG: the pair is form-only, so neither sentence is repeated on
 test("gy-wwr2e.57: no em dash in the new copy", () => {
   assert.ok(!LIMITER.includes("\u2014"));
 });
+
+// gy-0a4s2 AC5 — the takedown copy must not promise that a video is GONE. Compliance's rule
+// (31 Oct 2026): no 'immediately' / 'instantly' / 'within minutes' / 'removed everywhere' and no
+// promise that cached copies are gone; the approved caveat sentence appears where a reader is told
+// what the takedown did.
+import { readFileSync } from "node:fs";
+const PROMISES = /immediate|instant|within minutes|everywhere|take it down|taken down|is hidden|already hidden|we hide /i;
+
+test("gy-0a4s2 AC5: the form page makes no 'it is gone' promise", async () => {
+  assert.doesNotMatch(await html(), PROMISES);
+});
+
+test("gy-0a4s2 AC5: the confirmation carries the approved caveat and no 'gone' promise", async () => {
+  const { CACHE_NOTICE } = await import(MOD);
+  const { status, h } = await post({ env: SIGN_ENV, headers: {} });
+  assert.equal(status, 200);
+  assert.ok(h.includes(CACHE_NOTICE), "confirmation must carry the cache caveat");
+  assert.doesNotMatch(h, PROMISES);
+});
+
+test("gy-0a4s2 AC5: /privacy/ carries the SAME caveat word for word (the two copies cannot drift)", async () => {
+  const { CACHE_NOTICE } = await import(MOD);
+  const privacy = readFileSync(new URL("../src/pages/Privacy.tsx", import.meta.url), "utf8");
+  assert.ok(privacy.includes(CACHE_NOTICE));
+  assert.doesNotMatch(privacy, /we hide that video/);
+});
+
+test("gy-0a4s2 AC5 NEG: the check bites (a page with the old wording is flagged)", () => {
+  for (const bad of ["we will take it down while", "The video is hidden from the Gymbo app", "removed immediately", "gone everywhere"])
+    assert.match(bad, PROMISES, bad);
+});
