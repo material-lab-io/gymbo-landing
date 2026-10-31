@@ -106,7 +106,7 @@ async function db(path: string, init: RequestInit = {}): Promise<Response> {
 // gy-e60uc.4: who this send was FOR, for the structured log line below. Row ids only --
 // never the address -- so "sent vs delivered" can be checked without the Resend dashboard
 // and without putting an email address in the logs.
-interface SendCtx { kind: "confirmation" | "team_alert"; rowIds: number[] }
+interface SendCtx { kind: "confirmation" | "team_alert" | "launch"; rowIds: number[] }
 
 // gy-e60uc.4 AC1: one structured line per send attempt, machine-parseable (JSON on one
 // line, not interpolated into a sentence), naming the row(s), the Resend message id when
@@ -120,7 +120,7 @@ function logSend(ctx: SendCtx, outcome: "sent" | "failed", status: number, resen
 // AC6: Resend's real status must reach the caller, never be swallowed. A non-2xx
 // returns an error WITH the provider status and the body is logged. A path that can
 // only ever report success has not been shown to detect anything.
-async function sendMail(to: string[], subject: string, html: string, ctx: SendCtx) {
+async function sendMail(to: string[], subject: string, html: string, ctx: SendCtx, headers?: Record<string, string>) {
   const resendKey = Deno.env.get("RESEND_API_KEY")
   if (!resendKey) {
     console.error("[waitlist-notify] RESEND_API_KEY not set")
@@ -130,7 +130,7 @@ async function sendMail(to: string[], subject: string, html: string, ctx: SendCt
   const res = await fetch(RESEND_ENDPOINT, {
     method: "POST",
     headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: `Gymbo <${FROM}>`, to, subject, html }),
+    body: JSON.stringify({ from: `Gymbo <${FROM}>`, to, subject, html, ...(headers ? { headers } : {}) }),
   })
   if (!res.ok) {
     const detail = await res.text().catch(() => "<unreadable>")
@@ -312,6 +312,59 @@ async function claimConfirmation(receipt: string): Promise<Row | null> {
   return rows[0] ?? null
 }
 
+
+// ── gy-f3limw.1: campaign-1 launch notice ─────────────────────────────────────────────────────────
+// SEND-FREE UNTIL ARMED. Compliance (gy-f3limw 2026-10-30): C1 pure "access is open" notice, no trial/free/7-day
+// wording; C3 suppression proven; hard cap of 2 sends per address EVER. The cap is the database's job:
+// waitlist_launch_sends has UNIQUE(waitlist_id, send_no) and CHECK(send_no IN (1,2)), and a row is INSERTED
+// (claimed) BEFORE the mail is sent. A 409 means "already sent": skip. A failed send is NOT retried.
+// Recipients come from the RPC waitlist_launch_recipients (email present, not opted out, not bounced/complained,
+// no earlier send >= this one); phone-only rows can never be returned by it.
+// Default is dry_run: counts only, never an address. A real run needs LAUNCH_ACTIVATION_ID (the pm activation
+// record), APP_STORE_URL, LAUNCH_UNSUB_SECRET AND body.confirm === "SEND". Nobody arms this from here.
+interface Recipient { id: number; name: string | null; email: string }
+
+async function unsubToken(id: number): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(Deno.env.get("LAUNCH_UNSUB_SECRET") ?? ""),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"])
+  const sig = new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(`unsub:${id}`)))
+  return Array.from(sig, (b) => b.toString(16).padStart(2, "0")).join("")
+}
+
+async function runLaunch(body: { send_no?: number; dry_run?: boolean; confirm?: string }): Promise<Response> {
+  const sendNo = Number(body.send_no)
+  if (sendNo !== 1 && sendNo !== 2) return json({ error: "bad_send_no" }, 400)
+  const dry = body.dry_run !== false
+  if (!dry) {
+    const armed = !!Deno.env.get("LAUNCH_ACTIVATION_ID") && !!Deno.env.get("APP_STORE_URL") &&
+      !!Deno.env.get("LAUNCH_UNSUB_SECRET") && body.confirm === "SEND"
+    if (!armed) return json({ error: "launch_not_armed" }, 403)
+  }
+  const rpc = await db("rpc/waitlist_launch_recipients", { method: "POST", body: JSON.stringify({ p_send_no: sendNo }) })
+  if (!rpc.ok) throw new Error(`recipients_failed_${rpc.status}`)
+  const recipients = await rpc.json() as Recipient[]
+  if (dry) return json({ ok: true, mode: "launch", dry_run: true, send_no: sendNo, recipients: recipients.length })
+
+  let sent = 0, failed = 0, skipped = 0
+  for (const r of recipients) {
+    const claim = await db("waitlist_launch_sends", {
+      method: "POST", headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ waitlist_id: r.id, send_no: sendNo, claimed_at: new Date().toISOString() }),
+    })
+    if (claim.status === 409) { skipped++; continue }
+    if (!claim.ok) { failed++; continue }
+    const unsub = `https://getgymbo.com/unsubscribe?id=${r.id}&t=${await unsubToken(r.id)}`
+    const html = `<p>${r.name ? "Hi " + esc(r.name) + "," : "Hi,"}</p>` +
+      `<p>Gymbo is open. You asked us to tell you when access is ready.</p>` +
+      `<p><a href="${esc(Deno.env.get("APP_STORE_URL")!)}">Get the app</a></p>` +
+      `<p style="font-size:12px"><a href="${esc(unsub)}">Unsubscribe</a></p>`
+    const res = await sendMail([r.email], "gymbo is open", html, { kind: "launch", rowIds: [r.id] },
+      { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" })
+    if (res.ok) sent++; else failed++
+  }
+  return json({ ok: failed === 0, mode: "launch", dry_run: false, send_no: sendNo, sent, failed, skipped })
+}
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 Deno.serve(async (req: Request) => {
@@ -323,7 +376,7 @@ Deno.serve(async (req: Request) => {
     return json({ error: "unauthorized" }, 401)
   }
 
-  let body: { mode?: string; receipt?: string }
+  let body: { mode?: string; receipt?: string; send_no?: number; dry_run?: boolean; confirm?: string }
   try { body = await req.json() } catch { return json({ error: "bad_json" }, 400) }
   const mode = body.mode ?? "signup"
 
@@ -435,6 +488,8 @@ Deno.serve(async (req: Request) => {
       await markAlerted(rows.map((r) => r.id))
       return json({ ok: true, mode: "sweep", digest_mode: digest, alerted: rows.length, ids: rows.map((r) => r.id) })
     }
+
+    if (mode === "launch") return await runLaunch(body)
 
     return json({ error: "unknown_mode", mode }, 400)
   } catch (err) {
