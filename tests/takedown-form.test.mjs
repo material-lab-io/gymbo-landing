@@ -266,7 +266,7 @@ test("gy-wwr2e.57: no em dash in the new copy", () => {
 // promise that cached copies are gone; the approved caveat sentence appears where a reader is told
 // what the takedown did.
 import { readFileSync } from "node:fs";
-const PROMISES = /immediate|instant|within minutes|everywhere|take it down|taken down|is hidden|already hidden|we hide /i;
+const PROMISES = /immediate|instant|within minutes|everywhere|take it down|taken down|is hidden|already hidden|we hide |have (already )?stopped/i;
 
 test("gy-0a4s2 AC5: the form page makes no 'it is gone' promise", async () => {
   assert.doesNotMatch(await html(), PROMISES);
@@ -288,6 +288,6 @@ test("gy-0a4s2 AC5: /privacy/ carries the SAME caveat word for word (the two cop
 });
 
 test("gy-0a4s2 AC5 NEG: the check bites (a page with the old wording is flagged)", () => {
-  for (const bad of ["we will take it down while", "The video is hidden from the Gymbo app", "removed immediately", "gone everywhere"])
+  for (const bad of ["we will take it down while", "The video is hidden from the Gymbo app", "removed immediately", "gone everywhere", "We have stopped serving the video", "we have already stopped serving"])
     assert.match(bad, PROMISES, bad);
 });

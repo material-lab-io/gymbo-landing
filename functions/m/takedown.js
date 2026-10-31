@@ -247,7 +247,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
 <p>Your reference is</p><p class="ref">already open</p>
-<p class="note">A removal request for this video is already open and we have already stopped serving the video from our servers while it is reviewed. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> if you want your details added to it.</p>
+<p class="note">A removal request for this video is already open and we are already stopping delivery of the video from our servers while it is reviewed. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> if you want your details added to it.</p>
 </div>`);
   }
 
@@ -264,7 +264,7 @@ again later, or email <a href="mailto:damini@materiallab.io">damini@materiallab.
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
 <p>Your reference is</p><p class="ref">${esc(outcome)}</p>
-<p class="note">Keep this reference. We have stopped serving the video from our servers while we
+<p class="note">Keep this reference. We are stopping delivery of the video from our servers while we
 review your request. We will email you at ${esc(fields.requester_email)} when it is decided.</p>
 <p class="note">${CACHE_NOTICE}</p>
 <p class="note">${RETENTION_NOTICE}</p>
