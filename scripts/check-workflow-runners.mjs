@@ -3,9 +3,9 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-// Both are self-hosted label sets, never GitHub-hosted. `gt2-host` is carried by gt2-runner-1..3 (gy-qgq5g, 22 Oct 2026): the only jobs
-// that may use it are CURL-ONLY ones (scripts/check-prod-watch-curl-only.mjs pins prod-watch.yml to that), because GT2 hosts run no browsers.
-const approvedRunners = ['[self-hosted, gt2]', '[self-hosted, gt2-host]'];
+// Both are self-hosted label sets, never GitHub-hosted. `gt3` (gy-s8rfcl, 31 Oct 2026) is the lane the CURL-ONLY
+// prod-watch.yml runs on (scripts/check-prod-watch-curl-only.mjs pins it); `gt2-host` is no longer approved: no CI on GT2.
+const approvedRunners = ['[self-hosted, gt2]', '[self-hosted, gt3]'];
 const approvedRunner = approvedRunners.join(' or ');
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 

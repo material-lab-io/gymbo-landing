@@ -5,10 +5,9 @@ name: Prod Watch
 # No credentials. Distinct from gy-7t4sr (external off-infra uptime monitoring, founder-gated on a credential) — this runs in our
 # own CI and must not wait on that.
 #
-# WHY gt2-host AND NOT gt2. Since 22 Oct the `gt2` label is carried by the gt3 runners; the hourly job queued behind the hold on
-# them and was cancelled with no runner assigned (4 of the last 8 runs). `gt2-host` is carried by gt2-runner-1..3, which are
-# online and idle. That is only safe because this job is CURL-ONLY: no npm, no Node, no Playwright, no browser (house rule: GT2
-# hosts run no browsers). scripts/check-prod-watch-curl-only.mjs fails the PR if one is added back. The headless-Chromium console
+# WHY gt3 AND NOT gt2. gy-s8rfcl (Kaushik 31 Oct): no CI on GT2, so the curl half runs on [self-hosted, gt3] (it used to sit on a GT2-only label after the
+# `gt2` pool starved it on 22 Oct; if a hold on the gt3 runners starves it again, route the overflow to GT4). It stays CURL-ONLY: no npm, no
+# Node, no Playwright, no browser. scripts/check-prod-watch-curl-only.mjs fails the PR if one is added back. The headless-Chromium console
 # check is its own workflow, prod-watch-console.yml, still on [self-hosted, gt2].
 #
 # The display name and the hourly cron are a CONTRACT with the external async-watchdog (scripts/check-external-watch-contract.mjs).
@@ -25,7 +24,7 @@ on:
 
 jobs:
   watch:
-    runs-on: [self-hosted, gt2-host]
+    runs-on: [self-hosted, gt3]  # gy-s8rfcl: no CI on GT2
     steps:
       - uses: actions/checkout@v4
 
