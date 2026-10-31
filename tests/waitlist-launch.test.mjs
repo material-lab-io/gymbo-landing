@@ -75,3 +75,11 @@ test("CLAIM BEFORE SEND, NO AUTO-RETRY: a failed send is recorded as claimed and
   assert.equal(out.resend.filter((m) => m.to[0] === "ravi@example.com").length, 0);
   assert.equal(out.results[1].json.sent, 0, "no retry of the failed address");
 });
+
+test("CAP HOLDS UNDER A RACE: a STALE recipient list (RPC says yes, store already has the send) mails nobody twice", () => {
+  const prior = [{ waitlist_id: 1, send_no: 1 }];
+  const out = run([SEND], { priorSends: prior, staleRpc: true });
+  assert.ok(!out.resend.some((m) => m.to[0] === "asha@example.com"), "claim refused (409) must stop the mail");
+  assert.equal(out.results[0].json.sent, 2);
+  assert.equal(out.results[0].json.skipped, 1);
+});

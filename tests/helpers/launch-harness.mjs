@@ -23,7 +23,7 @@ globalThis.fetch = async (url, init = {}) => {
   }
   if (u.includes("/rest/v1/rpc/waitlist_launch_recipients")) {
     const { p_send_no } = JSON.parse(init.body); rpcCalls.push(p_send_no);
-    const out = sc.recipients.filter((r) => !sends.some((s) => s.waitlist_id === r.id && s.send_no >= p_send_no));
+    const out = sc.staleRpc ? sc.recipients : sc.recipients.filter((r) => !sends.some((s) => s.waitlist_id === r.id && s.send_no >= p_send_no));
     return new Response(JSON.stringify(out), { status: 200 });
   }
   if (init.method === "POST" && u.includes("/rest/v1/waitlist_launch_sends")) {
