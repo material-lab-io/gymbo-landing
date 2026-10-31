@@ -116,6 +116,14 @@ export async function signedIpHeaders(request, env, nowSeconds = Math.floor(Date
 export const RETENTION_NOTICE =
   "Your name and email are deleted 90 days after your case is resolved. A record that this clip was reported, and how it was resolved, is kept without your personal details.";
 
+// gy-0a4s2 AC5 -- what a takedown does and does not do to COPIES, in the words compliance
+// approved on gy-0a4s2 (31 Oct 2026, option c). Never say a video is gone, immediately removed
+// or removed everywhere: a copy cached on a CDN or a phone can be served for up to the cache
+// lifetime. The same sentence is on /privacy/ (src/pages/Privacy.tsx); tests/takedown-form.test.mjs
+// fails if the two drift. The video number is from code, not yet observed on a real video.
+export const CACHE_NOTICE =
+  "A takedown stops new delivery from our servers. Copies that were already cached on a CDN or on a device may remain available until their cache lifetime ends, which is up to one year for the exercise images and videos.";
+
 // gy-wwr2e.57 (gy-gu3pm) -- the IP-limiter disclosure, BOTH sentences, in the words pm
 // approved on gy-gu3pm (sentence one 16:36Z, sentence two 16:40Z, 2026-09-23). They ship
 // TOGETHER or not at all: sentence one alone reads as "my IP is gone after an hour", and
@@ -137,7 +145,7 @@ export const IP_LIMITER_NOTICE_HTML = `${IP_LIMITER_SENTENCE_ONE} ${IP_LIMITER_S
 
 const FORM = (mediaId) => `<h1>Request removal of a video</h1>
 <p class="note">If you appear in a video shared through Gymbo, or you hold rights in
-one, use this form and we will take it down while we review your request. You do not
+one, use this form and we will stop serving it from our servers while we review your request. You do not
 need a Gymbo account, and we will not ask you to create one.</p>
 <form method="POST" class="card">
 ${mediaId ? `<input type="hidden" name="media_id" value="${esc(mediaId)}">` : `
@@ -239,7 +247,7 @@ what the problem is.</p>` + FORM(match ? match[0] : ""), 400);
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
 <p>Your reference is</p><p class="ref">already open</p>
-<p class="note">A removal request for this video is already open and the video is already hidden while it is reviewed. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> if you want your details added to it.</p>
+<p class="note">A removal request for this video is already open and we are already stopping delivery of the video from our servers while it is reviewed. Email <a href="mailto:damini@materiallab.io">damini@materiallab.io</a> or <a href="mailto:kaushik@materiallab.io">kaushik@materiallab.io</a> if you want your details added to it.</p>
 </div>`);
   }
 
@@ -256,9 +264,9 @@ again later, or email <a href="mailto:damini@materiallab.io">damini@materiallab.
     return shell("Request received", `<h1>Request received</h1>
 <div class="card">
 <p>Your reference is</p><p class="ref">${esc(outcome)}</p>
-<p class="note">Keep this reference. The video is hidden from the Gymbo app and from its public
-link from now, while we review your request. We will email you at
-${esc(fields.requester_email)} when it is decided.</p>
+<p class="note">Keep this reference. We are stopping delivery of the video from our servers while we
+review your request. We will email you at ${esc(fields.requester_email)} when it is decided.</p>
+<p class="note">${CACHE_NOTICE}</p>
 <p class="note">${RETENTION_NOTICE}</p>
 </div>`);
   }

@@ -2571,7 +2571,7 @@
       ["metadata twitter:image","https://getgymbo.com/og-image-v2.png","observed"],
       ["metadata twitter:title","Privacy policy | Gymbo","observed"],
       ["metadata viewport","width=device-width, initial-scale=1.0","observed"],
-      ["visible block",", and we hide that video from the app and from its public link while we review your request.","observed"],
+      ["visible block",", and we stop serving that video from our servers while we review your request. A takedown stops new delivery from our servers. Copies that were already cached on a CDN or on a device may remain available until their cache lifetime ends, which is up to one year for the exercise images and videos.","observed"],
       ["visible block",".","observed"],
       ["visible block",". This policy covers the Gymbo iOS app and the getgymbo.com website.","observed"],
       ["visible block",". We aim to respond within 30 days.","observed"],
