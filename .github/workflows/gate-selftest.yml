@@ -71,11 +71,11 @@ jobs:
           fi
           echo "OK: runner guard correctly rejected windows-latest."
 
-      - name: Positive control — runner guard must ACCEPT [self-hosted, gt2-host] (gy-qgq5g)
+      - name: Positive control — runner guard must ACCEPT [self-hosted, gt3] (gy-s8rfcl)
         run: |
           set -e
           FIX=$(mktemp -d)
-          printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt2-host]' > "$FIX/ok.yml"
+          printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt3]' > "$FIX/ok.yml"
           node scripts/check-workflow-runners.mjs "$FIX"
 
       - name: Negative control — runner guard must FAIL on a bare [self-hosted]
@@ -93,9 +93,9 @@ jobs:
         run: |
           set -e
           FIX=$(mktemp -d)
-          printf '%s\n' 'name: Unlisted labels' 'jobs:' '  odd:' '    runs-on: [self-hosted, gt2-host, gpu]' > "$FIX/odd.yml"
+          printf '%s\n' 'name: Unlisted labels' 'jobs:' '  odd:' '    runs-on: [self-hosted, gt3, gpu]' > "$FIX/odd.yml"
           if node scripts/check-workflow-runners.mjs "$FIX"; then
-            echo "::error::Runner guard PASSED on [self-hosted, gt2-host, gpu] — only the two approved label sets may be used."
+            echo "::error::Runner guard PASSED on [self-hosted, gt3, gpu] — only the two approved label sets may be used."
             exit 1
           fi
           echo "OK: runner guard correctly rejected an unlisted label set."
@@ -613,16 +613,16 @@ jobs:
           fi
           echo "OK: curl-only gate correctly rejected a browser step."
 
-      - name: Negative control — curl-only gate must FAIL when the job leaves gt2-host
+      - name: Negative control — curl-only gate must FAIL when the job leaves gt3
         run: |
           set -e
           FIX=$(mktemp -d)
-          sed 's|runs-on: \[self-hosted, gt2-host\]|runs-on: [self-hosted, gt2]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          sed 's|runs-on: \[self-hosted, gt3\]|runs-on: [self-hosted, gt2]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
           if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
-            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt2] — the curl half would again depend on the gt3 runners."
+            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt2] — the curl half would leave its pinned GT3 lane."
             exit 1
           fi
-          echo "OK: curl-only gate correctly rejected a move off gt2-host."
+          echo "OK: curl-only gate correctly rejected a move off gt3."
 
       - name: Negative control — curl-only gate must FAIL when the workflow is absent
         run: |

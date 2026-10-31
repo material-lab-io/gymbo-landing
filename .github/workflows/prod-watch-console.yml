@@ -2,10 +2,9 @@ name: Prod Watch Console
 
 # The BROWSER half of the hourly production watch (gy-qgq5g, pm GO option (c), 22 Oct 2026). Prod Watch used to be one job: curl smoke,
 # headless-Chromium console check, deploy-sha check, all on [self-hosted, gt2]. Since 22 Oct `gt2` is carried by the gt3 runners only
-# (anton carries `anton`; gt2-runner-1..3 carry `gt2-host`), and the hold on those runners starved the whole watch: 4 of the last 8
-# hourly runs were cancelled with no runner. A browser does not belong on a gt2-host runner (house rule), so it stays here, on
-# [self-hosted, gt2]; the curl half moved to .github/workflows/prod-watch.yml on [self-hosted, gt2-host] so getgymbo.com is watched
-# even when no gt3 runner is free.
+# (anton carries `anton`; the GT2 runners carried a host-only label), and the hold on those runners starved the whole watch: 4 of the last 8
+# hourly runs were cancelled with no runner. A browser does not belong on a host-pinned runner (house rule), so it stays here, on
+# [self-hosted, gt2]; the curl half is .github/workflows/prod-watch.yml on [self-hosted, gt3] (gy-s8rfcl: no CI on GT2).
 #
 # EXTERNAL ALERTING: the Gas City `async-watchdog` addresses workflows BY DISPLAY NAME. "Prod Watch" is already configured there;
 # "Prod Watch Console" is NOT until watchdog adds `Prod Watch Console@material-lab-io/gymbo-landing` to SCHEDULED_FAILURE_WORKFLOWS and
