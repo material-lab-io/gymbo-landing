@@ -1,3 +1,5 @@
+import { esc } from "../m/_shared.js";
+
 // gy-t9mm8 — small shared pieces of the no-login client workout page that
 // have nothing to do with a data-access path (so they didn't move when the
 // read and write paths did): the token shape and the prescription line.
@@ -36,3 +38,17 @@ export function prescription(b) {
   if (b.rest_seconds) bits.push(`· ${b.rest_seconds}s rest`);
   return bits.join(" ");
 }
+
+// gy-d012n: the link card WhatsApp and iMessage draw from this page's Open Graph tags. Without them a share shows a bare URL.
+// The workout NAME is public here already (it is the h1); the trainer's and the client's names are NOT on this page, so they are NOT in the card
+// either (an unauthenticated URL forwarded in group chats). The image is the existing brand card the landing page uses, at its absolute URL
+// (crawlers do not resolve relative ones). No og:url: it would copy the secret token into a second place.
+const OG_IMAGE = "https://getgymbo.com/og-image.png";
+export const ogTags = (name) => {
+  const title = name || "Your workout";
+  const desc = "A workout from your trainer. Open it, tick each exercise as you go, and tell them when you are done. No sign-in.";
+  return `<meta property="og:type" content="website"><meta property="og:site_name" content="Gymbo">
+<meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${OG_IMAGE}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(desc)}"><meta name="twitter:image" content="${OG_IMAGE}">`;
+};

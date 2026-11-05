@@ -28,7 +28,7 @@
 // works on our machines and nowhere else.
 import { esc } from "../m/_shared.js";
 import { rootVars } from "../_forge.js";
-import { prescription, TOKEN_RE } from "./_workout.js";
+import { ogTags, prescription, TOKEN_RE } from "./_workout.js";
 import { fetchSharedWorkout, creditHtml } from "./_workout_rpc.js";
 import { setBlockDone, finishWorkout } from "./_workout_write_rpc.js";
 import { isRateLimited } from "./_ratelimit.js";
@@ -72,11 +72,11 @@ button.tick[data-done="1"]{color:var(--done);border-color:var(--done);font-weigh
 .notice{background:var(--card);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:12px}
 `;
 
-const shell = (title, body, status = 200) =>
+const shell = (title, body, status = 200, head = "") =>
   new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)}</title><meta name="robots" content="noindex,nofollow">
+<title>${esc(title)}</title><meta name="robots" content="noindex,nofollow">${head}
 <style>${CSS}</style></head><body><div class="wrap">${body}</div></body></html>`,
     { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } },
   );
@@ -191,7 +191,7 @@ ${wo.notes ? `<p class="sub">${esc(wo.notes)}</p>` : ""}
 ${notice}
 ${parts.join("")}
 ${finish}
-<p class="foot">Powered by Gymbo</p>`);
+<p class="foot">Powered by Gymbo</p>`, 200, ogTags(wo.name));
 }
 
 export async function onRequestPost(context) {
