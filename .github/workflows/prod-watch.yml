@@ -8,7 +8,7 @@ name: Prod Watch
 # WHY gt3 AND NOT gt2. gy-s8rfcl (Kaushik 31 Oct): no CI on GT2, so the curl half runs on [self-hosted, gt3] (it used to sit on a GT2-only label after the
 # `gt2` pool starved it on 22 Oct; if a hold on the gt3 runners starves it again, route the overflow to GT4). It stays CURL-ONLY: no npm, no
 # Node, no Playwright, no browser. scripts/check-prod-watch-curl-only.mjs fails the PR if one is added back. The headless-Chromium console
-# check is its own workflow, prod-watch-console.yml, still on [self-hosted, gt2].
+# check is its own workflow, prod-watch-console.yml, on [self-hosted, pool].
 #
 # The display name and the hourly cron are a CONTRACT with the external async-watchdog (scripts/check-external-watch-contract.mjs).
 

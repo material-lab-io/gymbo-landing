@@ -16,7 +16,7 @@ name: Web Audit
 # gy-7anl3 AC4. Landing it non-required first also lets it prove it can pass and
 # can fail before it is given teeth.
 #
-# Runners: [self-hosted, gt2] per the standing Kaushik rule. Never *-latest.
+# Runners: [self-hosted, pool] per the standing Kaushik rule. Never *-latest.
 
 on:
   pull_request:
@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   audit:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - uses: actions/checkout@v4
 

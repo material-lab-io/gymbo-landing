@@ -28,7 +28,7 @@ on:
 
 jobs:
   refresh:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     permissions:
       contents: write   # needed to commit + push the regenerated baselines
 

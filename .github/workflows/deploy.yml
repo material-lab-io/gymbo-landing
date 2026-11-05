@@ -79,7 +79,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       # fetch-depth: 0 (gy-7anl3) — the screenshot gate needs to know which
       # artifacts THIS change touches, and a depth-1 clone cannot answer that.
@@ -367,7 +367,7 @@ jobs:
       - name: Pre-deploy smoke gate
         run: |
           # gy-cjdtw: per-run free ports so concurrent jobs on the shared
-          # [self-hosted, gt2] host never collide on a FIXED :8788 (Pages
+          # [self-hosted, pool] host never collide on a FIXED :8788 (Pages
           # emulator) or :4173 (Playwright preview). A fixed-port collision
           # surfaced as 'localhost:4173 already used' and 'Pages emulator never
           # became ready' -> a degraded/racey render (e.g. hero 650px vs 679px).
