@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.css
- * Pinned at commit: 1381fd8963b710d5e573f16ca3b631a54bf948d8
+ * Pinned at commit: a7034c050a82fb2588d653c8f9955a53e7707da5
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -107,6 +107,10 @@
   --g-font-size-amount: 32px;
   --g-font-size-page-header: 36px;
   --g-font-size-hero: 48px;
+  --g-tracking-tight: -0.7px; /** page header title (Figma -0.02em at 36px) */
+  --g-tracking-section: 1.5px; /** section label / subtitle (0.14em at 11px) */
+  --g-tracking-wide: 2px; /** uppercase labels / chips */
+  --g-tracking-wider: 3px; /** widest iOS tracking step */
   --g-shadow-cta: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** 🔴 NOT AN ACCESSIBILITY BOUNDARY — this is the raw shadow value only. Its former role as the primary-CTA 1.4.11 boundary is RETIRED (FORGE §7, amended 2026-09-06; gy-w2luq): the soft-neutral-shadow route measures 1.36:1 at absolute-maximum stacking against a 3:1 requirement, which is a measured impossibility rather than a tuning gap. What ships for the primary CTA is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose any shadow route for that boundary. ⚠️ STILL OPEN, NOT RETIRED BY THE ABOVE: the light status-fill boundary (see color.status.warning-light, fill-vs-card 2.95:1) also routes through this token, and the §7 amendment was scoped to the PRIMARY CTA only. Whether the same impossibility applies there is UNMEASURED (designer 2026-09-08, gy-3p7w8). This token neither ratifies nor retires that use — it needs a measurement, and until then do not cite this description either way. Not consumed by iOS: iOS has its own adaptive gShadow. Full ruling lives on the semantic aliases (cta-shadow in semantic/light.json and semantic/dark.json). 🔴 THIS DESCRIPTION CITES §7 RATHER THAN RESTATING IT, DELIBERATELY. The previous text restated §7's content, so when §7 was amended on 2026-09-06 it aged SILENTLY and kept publishing the retired instruction under a founder's name in dist/forge.css while the semantic aliases already said RETIRED. A restatement ages invisibly; a citation ages visibly. Do not replace this with a paraphrase. */
   --g-background: var(--g-color-neutral-light-0);
   --g-card: var(--g-color-neutral-light-1);
