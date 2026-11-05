@@ -416,3 +416,33 @@ test("🔴 the DPDP notice is present and appears BEFORE the first tap control",
   // completion IS attributable via workout_assignments.client_id.
   assert.doesNotMatch(html, /anonymous/i);
 });
+
+// gy-d012n: the link card. WhatsApp reads these tags from the raw HTML (no JS), so the assertions parse the served HTML the way a card crawler does.
+const ogOf = (html) => Object.fromEntries([...html.matchAll(/<meta (?:property|name)="((?:og|twitter):[a-z:_]+)" content="([^"]*)"/g)].map((m) => [m[1], m[2]]));
+
+test("gy-d012n: a valid link carries the Open Graph card: workout name, a description, the absolute brand image at 1200x630", async () => {
+  const { html } = await get([row(BLOCK, { media: MEDIA_OK })]);
+  const og = ogOf(html);
+  assert.equal(og["og:title"], "Push day");
+  assert.ok(og["og:description"] && og["og:description"].length > 20 && og["og:description"].length <= 160, "a description a card can show");
+  assert.equal(og["og:image"], "https://getgymbo.com/og-image.png", "crawlers do not resolve a relative image");
+  assert.equal(og["og:image:width"], "1200");
+  assert.equal(og["og:image:height"], "630");
+  assert.equal(og["twitter:card"], "summary_large_image");
+  assert.equal(og["twitter:title"], "Push day");
+  assert.equal(og["og:url"], undefined, "no og:url: it would copy the secret token into a second place");
+});
+
+test("gy-d012n: the card escapes the workout name (a quote cannot break out of the attribute) and says nothing about the trainer or client", async () => {
+  const { html } = await get([row(BLOCK, { media: MEDIA_OK, workoutName: 'Legs "A" <b>&' })]);
+  const head = html.slice(0, html.indexOf("</head>"));
+  assert.match(head, /og:title" content="Legs &quot;A&quot; &lt;b&gt;&amp;"/);
+  assert.doesNotMatch(head, /<b>/);
+  assert.doesNotMatch(head, /client|trainee/i, "no person is named in the card");
+});
+
+test("gy-d012n: a refused link gets no card (nothing about a workout that may not exist)", async () => {
+  const { status, html } = await get([]);
+  assert.equal(status, 404);
+  assert.doesNotMatch(html, /og:title|og:image/);
+});
