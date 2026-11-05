@@ -17,7 +17,7 @@ jobs:
   tracked-symlinks:
     # Self-hosted only (standing rule). gt2 has spare capacity; this job is
     # seconds long and must not be the thing that puts us on a billed runner.
-    runs-on: pool-gt10
+    runs-on: vm4-gt9
     steps:
       - uses: actions/checkout@v4
         with:

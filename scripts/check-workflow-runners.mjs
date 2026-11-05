@@ -5,8 +5,8 @@ import path from 'node:path';
 
 // Both are self-hosted label sets, never GitHub-hosted. `gt3` (gy-s8rfcl, 31 Oct 2026) is the lane the CURL-ONLY
 // prod-watch.yml runs on (scripts/check-prod-watch-curl-only.mjs pins it); `pool` is the GARM/Incus VM pool (gcf-y4eyq.28.3); `gt2` and `gt2-host` are no longer approved: no CI on GT2.
-// 'pool-gt10' is a GARM scale-set name (runs-on targets a scale set by name; scale-set runners are self-hosted, never GitHub-hosted). Proof job: repo-hygiene (gcf-y4eyq.28.3).
-const approvedRunners = ['[self-hosted, pool]', '[self-hosted, gt3]', 'pool-gt10'];
+// 'vm4-gt9' is a GARM scale-set name (runs-on targets a scale set by name; scale-set runners are self-hosted, never GitHub-hosted). Proof job: repo-hygiene (gcf-y4eyq.28.3).
+const approvedRunners = ['[self-hosted, pool]', '[self-hosted, gt3]', 'vm4-gt9'];
 const approvedRunner = approvedRunners.join(' or ');
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 
