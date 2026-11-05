@@ -14,7 +14,7 @@ name: Forge Tokens
 # not be deployed".
 #
 # No build, no browser — node only, so it is cheap enough to run on every push.
-# Runners: [self-hosted, gt2] per the standing rule. Never *-latest.
+# Runners: [self-hosted, pool] per the standing rule. Never *-latest.
 
 on:
   pull_request:
@@ -24,7 +24,7 @@ on:
 
 jobs:
   forge-tokens:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - uses: actions/checkout@v4
 

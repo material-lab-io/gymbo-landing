@@ -98,5 +98,5 @@ test("WIRED: deploy.yml runs the verifier and its forced-red test on gt2 (the fi
   const yml = readFileSync(join(ROOT, ".github/workflows/deploy.yml"), "utf8");
   assert.match(yml, /node scripts\/verify-waitlist-oracle\.mjs/);
   assert.match(yml, /node --test tests\/waitlist-oracle-verifier\.test\.mjs/);
-  assert.match(yml, /runs-on: \[self-hosted, gt2\]/);
+  assert.match(yml, /runs-on: \[self-hosted, pool\]/);
 });

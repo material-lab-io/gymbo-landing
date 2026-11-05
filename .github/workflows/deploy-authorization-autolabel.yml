@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   label:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       # main's copy of the script, never a PR's: workflow_run and schedule both check out the default branch
       - uses: actions/checkout@v4

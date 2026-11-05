@@ -27,7 +27,7 @@ on:
 
 jobs:
   flip:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - name: Allow AI crawlers on getgymbo.com (bot_management)
         env:

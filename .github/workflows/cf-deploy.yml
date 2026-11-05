@@ -5,7 +5,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - name: Trigger CF Pages deployment
         run: |
