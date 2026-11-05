@@ -104,7 +104,7 @@ test('run: an unreadable check list is an error and the PR is not labelled', asy
 test('the workflow can write labels and nothing else, runs self-hosted, never checks out a PR head', () => {
   const y = readFileSync(new URL('../.github/workflows/deploy-authorization-autolabel.yml', import.meta.url), 'utf8').replace(/^\s*#.*$/gm, '');
   assert.doesNotMatch(y, /contents:\s*write/);
-  assert.match(y, /runs-on: \[self-hosted, gt2\]/);
+  assert.match(y, /runs-on: \[self-hosted, pool\]/);
   assert.doesNotMatch(y, /ubuntu-latest|macos-latest|windows-latest/);
   assert.doesNotMatch(y, /^\s*pull_request(_target)?:/m);
   assert.match(y, /ref: main/);

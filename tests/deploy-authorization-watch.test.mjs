@@ -250,7 +250,7 @@ test('WORKFLOW: threshold_minutes is a dispatch input only, is handed to the scr
   assert.match(yml, /schedule:\s*\n\s*- cron: "0 \* \* \* \*"/);
   assert.match(yml, /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*threshold_minutes:/);
   assert.match(yml, /DEPLOY_AUTH_THRESHOLD_MINUTES: \$\{\{ inputs\.threshold_minutes \}\}/);
-  assert.match(yml, /runs-on: \[self-hosted, gt2\]/);
+  assert.match(yml, /runs-on: \[self-hosted, pool\]/);
   assert.match(yml, /TEST ONLY/);
   assert.doesNotMatch(yml, /DEPLOY_AUTH_THRESHOLD_MINUTES: ["']?\d/, 'no hardcoded override');
 });

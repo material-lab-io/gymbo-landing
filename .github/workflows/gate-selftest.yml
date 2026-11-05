@@ -42,7 +42,7 @@ jobs:
   # cannot block is not a guard.
   runner-policy:
     name: Runner policy (self-hosted only)
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - uses: actions/checkout@v4
 
@@ -102,7 +102,7 @@ jobs:
 
   prod-watch-bootstrap-control:
     name: Prod Watch bootstrap classification (offline)
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - uses: actions/checkout@v4
 
@@ -113,7 +113,7 @@ jobs:
   # Decides whether the EXPENSIVE suite below needs to run. Kept out of
   # runner-policy so that job stays dependency-free and fast.
   scope:
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     outputs:
       run_full: ${{ steps.f.outputs.run_full }}
     steps:
@@ -141,7 +141,7 @@ jobs:
   negative-controls:
     needs: scope
     if: needs.scope.outputs.run_full == 'true'
-    runs-on: [self-hosted, gt2]
+    runs-on: [self-hosted, pool]
     steps:
       - uses: actions/checkout@v4
 
