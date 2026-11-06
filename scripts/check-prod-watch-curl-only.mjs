@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-// gy-qgq5g — prod-watch.yml runs on [self-hosted, gt3] (gt2-runner-1..3), which is a shared GT3 runner: no browsers on this lane. The browser half
-// lives in prod-watch-console.yml. This gate fails when the curl workflow stops being curl-only, or leaves gt3:
-//   * its runs-on must be exactly [self-hosted, gt3]
+// gy-qgq5g — prod-watch.yml runs on [self-hosted, pool] (the GARM/Incus VM pool; GT3 was cancelled 6 Nov 2026, gy-3cerrq): no browsers on this lane. The browser half
+// lives in prod-watch-console.yml. This gate fails when the curl workflow stops being curl-only, or leaves the pool lane (a dead gt3 label or gt2 included):
+//   * its runs-on must be exactly [self-hosted, pool]
 //   * outside comments, it must not mention npm, npx, node, setup-node, playwright, chromium or console-check,
 //     EXCEPT the one live-vs-main deploy guard `node scripts/check-deploy-matches-head.mjs` (gy-oab3e): it uses only node: built-ins,
-//     no npm install, and /usr/bin/node is on the gt3 runner hosts. Anything else naming node still fails.
+//     no npm install, and /usr/bin/node is on the pool runner hosts. Anything else naming node still fails.
 // Comments are ignored on purpose: they explain why those words are absent.
 
 import { readFile } from 'node:fs/promises';
@@ -29,7 +29,7 @@ const lines = text.split(/\r?\n/);
 const runsOn = lines.map((l) => l.match(/^\s*runs-on:\s*(.*?)\s*(?:#.*)?$/)).filter(Boolean).map((m) => m[1].trim());
 if (runsOn.length === 0) violations.push(`${file}: no runs-on found; the gate could not look.`);
 for (const r of runsOn) {
-  if (r !== '[self-hosted, gt3]') violations.push(`${file}: runs-on is ${r}, expected exactly [self-hosted, gt3] (the curl half is pinned to GT3, never GT2).`);
+  if (r !== '[self-hosted, pool]') violations.push(`${file}: runs-on is ${r}, expected exactly [self-hosted, pool] (the curl half is pinned to the pool lane: never GT2, and GT3 no longer exists).`);
 }
 lines.forEach((line, i) => {
   const code = line.replace(/(^|\s)#.*$/, '').replace(ALLOWED_SHA_GUARD, '');
@@ -38,8 +38,8 @@ lines.forEach((line, i) => {
 });
 
 if (violations.length > 0) {
-  console.error('::error::prod-watch.yml is no longer curl-only on gt3.');
+  console.error('::error::prod-watch.yml is no longer curl-only on the pool lane.');
   for (const v of violations) console.error(v);
   process.exit(1);
 }
-console.log(`OK: ${file} is curl-only and runs on [self-hosted, gt3] (${runsOn.length} job runs-on).`);
+console.log(`OK: ${file} is curl-only and runs on [self-hosted, pool] (${runsOn.length} job runs-on).`);

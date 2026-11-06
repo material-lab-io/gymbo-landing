@@ -3,9 +3,10 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-// Both are self-hosted label sets, never GitHub-hosted. `gt3` (gy-s8rfcl, 31 Oct 2026) is the lane the CURL-ONLY
-// prod-watch.yml runs on (scripts/check-prod-watch-curl-only.mjs pins it); `pool` is the GARM/Incus VM pool (gcf-y4eyq.28.3); `gt2` and `gt2-host` are no longer approved: no CI on GT2.
-const approvedRunners = ['[self-hosted, pool]', '[self-hosted, gt3]'];
+// One approved label set, self-hosted, never GitHub-hosted: `pool`, the GARM/Incus VM pool (gcf-y4eyq.28.3), which also carries the CURL-ONLY
+// prod-watch.yml (scripts/check-prod-watch-curl-only.mjs pins it). `gt3` is NOT approved: GT3 was cancelled on 6 Nov 2026 and a job pinned to it never starts
+// (gy-3cerrq: prod watch went blind). `gt2` and `gt2-host` are not approved either: no CI on GT2 (gy-s8rfcl).
+const approvedRunners = ['[self-hosted, pool]'];
 const approvedRunner = approvedRunners.join(' or ');
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 
