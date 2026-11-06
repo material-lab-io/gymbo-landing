@@ -17,7 +17,7 @@ jobs:
   tracked-symlinks:
     # Self-hosted only (standing rule). gt2 has spare capacity; this job is
     # seconds long and must not be the thing that puts us on a billed runner.
-    runs-on: [self-hosted, pool]
+    runs-on: [self-hosted, pool-gt15]  # gcf-y4eyq.28.3 proof: GARM-only label (scale set pool-gt15-l, max 1)
     steps:
       - uses: actions/checkout@v4
         with:

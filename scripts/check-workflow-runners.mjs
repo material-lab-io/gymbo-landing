@@ -4,8 +4,8 @@ import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 // Both are self-hosted label sets, never GitHub-hosted. `gt3` (gy-s8rfcl, 31 Oct 2026) is the lane the CURL-ONLY
-// prod-watch.yml runs on (scripts/check-prod-watch-curl-only.mjs pins it); `pool` is the GARM/Incus VM pool (gcf-y4eyq.28.3); `gt2` and `gt2-host` are no longer approved: no CI on GT2.
-const approvedRunners = ['[self-hosted, pool]', '[self-hosted, gt3]'];
+// prod-watch.yml runs on (scripts/check-prod-watch-curl-only.mjs pins it); `pool` is the GARM/Incus VM pool (gcf-y4eyq.28.3); `gt2` and `gt2-host` are no longer approved: no CI on GT2. `pool-gt15` is the single-runner GARM proof scale set pool-gt15-l (gcf-y4eyq.28.3, mayor ruling B: GARM-only label per scale set).
+const approvedRunners = ['[self-hosted, pool]', '[self-hosted, pool-gt15]', '[self-hosted, gt3]'];
 const approvedRunner = approvedRunners.join(' or ');
 const workflowsDir = process.argv[2] ?? '.github/workflows';
 
