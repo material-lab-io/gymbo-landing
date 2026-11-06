@@ -134,6 +134,8 @@ try {
   // gy-s8rfcl: GT3 is an approved self-hosted lane; an unknown self-hosted label set still is not.
   await writeFile(path.join(fixture, ".github", "workflows", "gate.yml"), "jobs:\n  gate:\n    runs-on: [self-hosted, gt3]\n");
   expectResult("gt3 runner accepted", runGate(), true);
+  await writeFile(path.join(fixture, ".github", "workflows", "gate.yml"), "jobs:\n  gate:\n    runs-on: [self-hosted, pool-gt15]\n");
+  expectResult("pool-gt15 runner accepted", runGate(), true);
   await writeFile(path.join(fixture, ".github", "workflows", "gate.yml"), "jobs:\n  gate:\n    runs-on: [self-hosted, gt9]\n");
   expectResult("unknown self-hosted label set", runGate(), false);
   await restoreSourceContracts();
@@ -141,7 +143,7 @@ try {
   await writeFile(path.join(fixture, "public", "mockups", "hero-three-panel-unapproved.png"), "fixture");
   expectResult("unexpected device art", runGate(), false);
 
-  if (positiveCases !== 3 || negativeCases !== 10) {
+  if (positiveCases !== 4 || negativeCases !== 10) {
     throw new Error(`nonzero coverage assertion failed: ${positiveCases} positive, ${negativeCases} negative`);
   }
   console.log(`Photoreal-device gate self-test: ${positiveCases} positive and ${negativeCases} negative cases passed.`);
