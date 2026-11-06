@@ -71,12 +71,36 @@ jobs:
           fi
           echo "OK: runner guard correctly rejected windows-latest."
 
-      - name: Positive control — runner guard must ACCEPT [self-hosted, gt3] (gy-s8rfcl)
+      - name: Positive control — runner guard must ACCEPT [self-hosted, pool] (gy-s8rfcl, gy-3cerrq)
         run: |
           set -e
           FIX=$(mktemp -d)
-          printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt3]' > "$FIX/ok.yml"
+          printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, pool]' > "$FIX/ok.yml"
           node scripts/check-workflow-runners.mjs "$FIX"
+
+      # gy-3cerrq: GT3 was cancelled on 6 Nov 2026. A watch pinned to a lane that no longer exists is not red, it never starts: getgymbo.com prod watch sat
+      # queued and BLIND from 03:06Z. The guard must therefore keep refusing gt3 (and gt2: no CI on GT2, gy-s8rfcl) so neither label comes back.
+      - name: Negative control — runner guard must FAIL on the cancelled gt3 lane (gy-3cerrq)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: Dead lane' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt3]' > "$FIX/dead.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on [self-hosted, gt3] — GT3 is cancelled; a job pinned to it never starts and its watch goes blind."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected the cancelled gt3 lane."
+
+      - name: Negative control — runner guard must FAIL on gt2 (no CI on GT2, gy-s8rfcl)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: GT2 CI' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt2]' > "$FIX/gt2.yml"
+          if node scripts/check-workflow-runners.mjs "$FIX"; then
+            echo "::error::Runner guard PASSED on [self-hosted, gt2] — no CI on GT2."
+            exit 1
+          fi
+          echo "OK: runner guard correctly rejected gt2."
 
       - name: Negative control — runner guard must FAIL on a bare [self-hosted]
         run: |
@@ -93,9 +117,9 @@ jobs:
         run: |
           set -e
           FIX=$(mktemp -d)
-          printf '%s\n' 'name: Unlisted labels' 'jobs:' '  odd:' '    runs-on: [self-hosted, gt3, gpu]' > "$FIX/odd.yml"
+          printf '%s\n' 'name: Unlisted labels' 'jobs:' '  odd:' '    runs-on: [self-hosted, pool, gpu]' > "$FIX/odd.yml"
           if node scripts/check-workflow-runners.mjs "$FIX"; then
-            echo "::error::Runner guard PASSED on [self-hosted, gt3, gpu] — only the two approved label sets may be used."
+            echo "::error::Runner guard PASSED on [self-hosted, pool, gpu] — only the one approved label set may be used."
             exit 1
           fi
           echo "OK: runner guard correctly rejected an unlisted label set."
@@ -613,16 +637,31 @@ jobs:
           fi
           echo "OK: curl-only gate correctly rejected a browser step."
 
-      - name: Negative control — curl-only gate must FAIL when the job leaves gt3
+      # Each mutation below must CHANGE the real file (cmp): a sed that matches nothing leaves a clean copy, the gate then passes it, and the control reds for the
+      # wrong reason or not at all. gy-3cerrq moved the lane from gt3 to pool, so the patterns follow the real text.
+      - name: Negative control — curl-only gate must FAIL when the job leaves the pool for gt2
         run: |
           set -e
           FIX=$(mktemp -d)
-          sed 's|runs-on: \[self-hosted, gt3\]|runs-on: [self-hosted, gt2]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          sed 's|runs-on: \[self-hosted, pool\]|runs-on: [self-hosted, gt2]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          if cmp -s .github/workflows/prod-watch.yml "$FIX/prod-watch.yml"; then echo "::error::CONTROL-BROKEN: the gt2 mutation changed nothing, so this control proves nothing."; exit 1; fi
           if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
-            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt2] — the curl half would leave its pinned GT3 lane."
+            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt2] — the curl half would leave its pinned pool lane for a GT2 host."
             exit 1
           fi
-          echo "OK: curl-only gate correctly rejected a move off gt3."
+          echo "OK: curl-only gate correctly rejected a move to gt2."
+
+      - name: Negative control — curl-only gate must FAIL when the job goes back to the cancelled gt3 lane
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          sed 's|runs-on: \[self-hosted, pool\]|runs-on: [self-hosted, gt3]|' .github/workflows/prod-watch.yml > "$FIX/prod-watch.yml"
+          if cmp -s .github/workflows/prod-watch.yml "$FIX/prod-watch.yml"; then echo "::error::CONTROL-BROKEN: the gt3 mutation changed nothing, so this control proves nothing."; exit 1; fi
+          if node scripts/check-prod-watch-curl-only.mjs "$FIX"; then
+            echo "::error::Curl-only gate PASSED on runs-on [self-hosted, gt3] — GT3 is cancelled, so the watch would queue forever and be blind."
+            exit 1
+          fi
+          echo "OK: curl-only gate correctly rejected the cancelled gt3 lane."
 
       - name: Negative control — curl-only gate must FAIL when the workflow is absent
         run: |

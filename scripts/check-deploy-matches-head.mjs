@@ -24,7 +24,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const LIMITS = {
-  // A deploy for HEAD may legitimately run this long (observed 5 to 17.6 min; gt3 queueing can add more).
+  // A deploy for HEAD may legitimately run this long (observed 5 to 17.6 min; runner queueing can add more).
   inFlightMaxMin: 60,
   // After a SUCCESSFUL deploy, how long the live site may still serve the old stamp (Pages edge propagation).
   settleMin: 10,
