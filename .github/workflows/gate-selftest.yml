@@ -78,6 +78,13 @@ jobs:
           printf '%s\n' 'name: Curl-only watch' 'jobs:' '  watch:' '    runs-on: [self-hosted, gt3]' > "$FIX/ok.yml"
           node scripts/check-workflow-runners.mjs "$FIX"
 
+      - name: Positive control — runner guard must ACCEPT [self-hosted, pool-gt15] (gcf-y4eyq.28.3)
+        run: |
+          set -e
+          FIX=$(mktemp -d)
+          printf '%s\n' 'name: GARM proof lane' 'jobs:' '  proof:' '    runs-on: [self-hosted, pool-gt15]' > "$FIX/ok.yml"
+          node scripts/check-workflow-runners.mjs "$FIX"
+
       - name: Negative control — runner guard must FAIL on a bare [self-hosted]
         run: |
           set -e
