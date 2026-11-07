@@ -36,6 +36,13 @@ jobs:
           echo "Checking $TARGET"
           bash scripts/getgymbo-smoke.sh "$TARGET"
 
+      # Analytics ingest chain (gy-38qovk): tracker tag on the page -> script.js served -> POST /api/send answers. Curl only, and the
+      # probe uses a bot UA so Umami drops it without a database write (it never adds a pageview). It cannot see whether a real visit
+      # lands a row or whether any visitor came; that passive "no events for N hours" check needs the database (gy-38qovk follow-up).
+      - name: Analytics ingest chain alive (curl only)
+        if: github.event.inputs.verify_url == ''
+        run: bash scripts/check-analytics-ingest.sh https://getgymbo.com
+
       # Merged-but-not-deployed guard (gy-sa0fm AC3): the actual gy-sa0fm
       # defect was never a red check — deploy.yml simply never RAN on the
       # merge (suppressed by inherited [skip ci], or wedged on the visual
