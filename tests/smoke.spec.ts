@@ -156,7 +156,7 @@ test('a pre-seeded dark localStorage value is ignored — site is light only (gy
   await page.goto('/');
   const html = page.locator('html');
   await expect(html).not.toHaveAttribute('data-theme', /.+/);
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 250, 247)'); // --c-bg #fafaf7
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)'); // --c-bg #ffffff (token set B; was #fafaf7)
 });
 
 test('pillar-organized keeps its fixed dark accent band (unrelated to page theme)', async ({ page }) => {
@@ -169,7 +169,7 @@ test('pillar-organized keeps its fixed dark accent band (unrelated to page theme
   const pillar = page.locator('[data-testid="pillar-organized"]');
   await pillar.scrollIntoViewIfNeeded();
   await expect(pillar).toBeVisible();
-  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)'); // F.charcoal #0a0a0a
+  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(0, 0, 0)'); // F.charcoal = --g-color-neutral-dark-0 #000000 (token set B; was #0a0a0a)
   await expect(pillar.locator('video')).toHaveAttribute('data-theme-variant', 'dark');
 });
 

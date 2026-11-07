@@ -225,8 +225,20 @@ jobs:
           FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp src/App.tsx /tmp/App.selftest.bak
-          # Substitute a token's exact value back in as a raw literal.
-          sed -i '0,/color: F.bone/s//color: "#f0f0eb"/' src/App.tsx
+          # Substitute a token's exact value back in as a raw literal. F.bone IS --g-color-neutral-dark-fg, so its
+          # value is READ from forge.css: this step hard-coded #f0f0eb, which stopped being any token's value the day
+          # token set B moved it to #ffffff, and the control then "failed" for the wrong reason (gy-0ho2lx).
+          bone="$(sed -n 's/.*--g-color-neutral-dark-fg:[[:space:]]*\(#[0-9a-fA-F]\{6\}\);.*/\1/p' src/forge/forge.css | head -1)"
+          if [ -z "$bone" ]; then
+            echo "::error::COULD-NOT-LOOK: --g-color-neutral-dark-fg not readable from src/forge/forge.css, so the negative control has nothing to seed."
+            exit 1
+          fi
+          sed -i "0,/color: F.bone/s//color: \"$bone\"/" src/App.tsx
+          if ! grep -q "color: \"$bone\"" src/App.tsx; then
+            cp /tmp/App.selftest.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the seed did not apply to src/App.tsx (no 'color: F.bone' left to replace), so the control proves nothing."
+            exit 1
+          fi
           if node scripts/check-forge-tokens.mjs > /tmp/selftest.log 2>&1; then
             cp /tmp/App.selftest.bak src/App.tsx
             echo "::error::NEGATIVE CONTROL FAILED — the token gate passed a file with a known duplicate literal. The gate is not working; do not trust its green."

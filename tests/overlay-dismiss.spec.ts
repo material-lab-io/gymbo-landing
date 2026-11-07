@@ -195,8 +195,8 @@ test('B6: both pricing buttons draw a focus ring in the colour of their ground',
     );
   }
   expect(seen.map((s) => s.split('|').slice(0, 4).join('|'))).toEqual([
-    'true|solid|true|rgb(240, 240, 235)', // Monthly: bone ring, dark card ground
-    'true|solid|true|rgb(10, 10, 10)', // Annual: charcoal ring, amber card ground
+    'true|solid|true|rgb(255, 255, 255)', // Monthly: bone ring (--g-color-neutral-dark-fg, #fff in token set B; was #f0f0eb), dark card ground
+    'true|solid|true|rgb(0, 0, 0)', // Annual: charcoal ring (--g-color-neutral-dark-0, #000 in set B; was #0a0a0a), amber card ground
   ]);
 });
 
