@@ -255,6 +255,15 @@ const EXEMPTIONS = [
     reason: 'generated from forge.css; drift gated by gen-functions-forge-tokens.mjs --check',
     test: (f) => f === GENERATED,
   },
+  {
+    name: 'demo-art-surface',
+    // FOR: src/figure-surface.ts only (gy-0ho2lx). The two colours the approved pillar demo art was COMPOSED on, baked into every pixel of public/demos/*.png and
+    // the MP4s. They equal a Forge token's value by coincidence (dark #0A0A0A is --g-color-button-active-text) but are NOT that role: the art does not move when
+    // Forge moves, which is exactly why set B turned them into visible boxes. Pointing them at a token would reintroduce the drift this gate exists to stop.
+    // NOT FOR: any other file. Fidelity is gated by tests/figure-surface.test.mjs, which reads the real corner pixel of every poster.
+    reason: 'the colours baked into the demo art, not a design decision; gated against the art pixels by tests/figure-surface.test.mjs',
+    test: (f) => f === join(ROOT, 'src/figure-surface.ts'),
+  },
 ];
 const exemptedBy = new Map();
 
