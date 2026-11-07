@@ -71,18 +71,49 @@ async function revealSection(page: Page, locator: Locator) {
 async function scrollHorizontalCarousels(page: Page, locator: Locator) {
   const hasCarousel = await locator.locator('.carousel').count();
   if (!hasCarousel) return;
+  // gy-okffji: no fixed waits. Each jump is followed by "the strip is at rest and
+  // its position cue has not changed for two frames", which a fast runner meets
+  // at once and a slow one meets when it has actually caught up. After the jump
+  // back to the start the cue must also read the first card, so a runner that has
+  // not yet processed the scroll event cannot be mistaken for a settled one.
+  const settle = (target: 'end' | 'start') =>
+    locator.evaluate(
+      (el, which) =>
+        new Promise<void>((resolve, reject) => {
+          const strips = Array.from(el.querySelectorAll<HTMLElement>('.carousel'));
+          const cue = () => el.querySelector('[aria-live="polite"]')?.textContent?.trim() ?? '';
+          const snapshot = () => JSON.stringify([strips.map((c) => c.scrollLeft), cue()]);
+          const deadline = Date.now() + 10000;
+          let last = '';
+          let calm = 0;
+          const tick = () => {
+            const now = snapshot();
+            calm = now === last ? calm + 1 : 0;
+            last = now;
+            const atRest = strips.every((c) =>
+              which === 'start' ? c.scrollLeft === 0 : c.scrollLeft > 0,
+            );
+            const cueOk = which === 'start' ? /^1 of \d+$/.test(cue()) : true;
+            if (calm >= 2 && atRest && cueOk) return resolve();
+            if (Date.now() > deadline) return reject(new Error(`carousel never settled at ${which}: ${now}`));
+            requestAnimationFrame(tick);
+          };
+          tick();
+        }),
+      target,
+    );
   await locator.evaluate((el) => {
     el.querySelectorAll<HTMLElement>('.carousel').forEach((c) => {
       c.scrollLeft = c.scrollWidth;
     });
   });
-  await page.waitForTimeout(200);
+  await settle('end');
   await locator.evaluate((el) => {
     el.querySelectorAll<HTMLElement>('.carousel').forEach((c) => {
       c.scrollLeft = 0;
     });
   });
-  await page.waitForTimeout(200); // let the position cue resync to the first card
+  await settle('start');
 }
 
 /** Wait for every <img> inside the locator to finish loading (real natural
