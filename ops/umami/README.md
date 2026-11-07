@@ -55,7 +55,7 @@ In Cloudflare DNS: add CNAME `analytics` → `gymbo-analytics.pages.dev`
 In `src/pages/index.astro`, replace `UMAMI_WEBSITE_ID` with the real ID:
 
 ```html
-<script defer src="https://analytics.getgymbo.com/script.js" data-website-id="YOUR-ID-HERE"></script>
+<script async src="https://analytics.getgymbo.com/script.js" data-website-id="YOUR-ID-HERE"></script>
 ```
 
 ## Custom events tracked
