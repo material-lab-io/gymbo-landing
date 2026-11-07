@@ -47,7 +47,7 @@ h1{font-family:Merriweather,Georgia,serif;font-size:20px;margin:0 0 4px}
 .ex{background:var(--card);border-radius:20px;padding:14px;margin:0 0 14px}
 .ex h2{font-size:16px;margin:0 0 2px;font-weight:700}
 .rx{color:var(--muted);font-size:12px;margin:0 0 10px}
-video,img.asset{width:100%;border-radius:12px;display:block;background:#000}
+video,img.asset{width:100%;border-radius:12px;display:block;background:var(--g-color-neutral-dark-0)}
 /* AC2's defined empty state. It has a border and a label so it can never be
    mistaken for a video that failed to load, which is the whole point. */
 .nomedia{border:1px dashed var(--line);border-radius:12px;padding:20px;

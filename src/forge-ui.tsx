@@ -40,9 +40,9 @@ export const F = {
   green: "var(--g-color-status-green-text)",
   red: "var(--g-color-status-destructive-light)",
   white: "var(--g-color-absolute-white)",
-  // No Forge token for pure black; 0 usages. Kept so the object stays
-  // exhaustive, flagged so nobody reads it as an approved brand value.
-  black: "#000000",
+  // Pure black IS a Forge token since set B (tier-B contrast, Gymbo-v1 #2783):
+  // the dark page background. 0 usages; kept so the object stays exhaustive.
+  black: "var(--g-color-neutral-dark-0)",
 };
 
 // Forge radius scale (--g-radius-sm/md/lg/xl/xxl/full in src/forge/forge.css:

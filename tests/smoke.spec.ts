@@ -156,7 +156,7 @@ test('a pre-seeded dark localStorage value is ignored — site is light only (gy
   await page.goto('/');
   const html = page.locator('html');
   await expect(html).not.toHaveAttribute('data-theme', /.+/);
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(250, 250, 247)'); // --c-bg #fafaf7
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)'); // --c-bg #ffffff (token set B; was #fafaf7)
 });
 
 test('pillar-organized keeps its fixed dark accent band (unrelated to page theme)', async ({ page }) => {
@@ -169,8 +169,19 @@ test('pillar-organized keeps its fixed dark accent band (unrelated to page theme
   const pillar = page.locator('[data-testid="pillar-organized"]');
   await pillar.scrollIntoViewIfNeeded();
   await expect(pillar).toBeVisible();
-  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)'); // F.charcoal #0a0a0a
+  // gy-0ho2lx: a demo band is drawn on the colour its art was composed on (src/figure-surface.ts, tied to the poster pixels by tests/figure-surface.test.mjs),
+  // NOT on the set-B token (#000): the baked #0A0A0A frame would otherwise show as a box on it.
+  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)');
   await expect(pillar.locator('video')).toHaveAttribute('data-theme-variant', 'dark');
+});
+
+test('pillar-brand (a light demo band) sits on the colour its art was composed on, not the white page', async ({ page }) => {
+  // gy-0ho2lx: the demo posters bake #FAFAF7 into every pixel; on set B's #FFF page that frame showed as a box. The band, not the page, takes the art's colour.
+  await page.goto('/');
+  const pillar = page.locator('[data-testid="pillar-brand"]');
+  await pillar.scrollIntoViewIfNeeded();
+  await expect(pillar).toBeVisible();
+  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(250, 250, 247)');
 });
 
 test('retired demo-frame badges are absent', async ({ page }) => {

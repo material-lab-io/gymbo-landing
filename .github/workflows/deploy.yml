@@ -173,6 +173,9 @@ jobs:
           node scripts/verify-waitlist-oracle.mjs
           node --test tests/waitlist-oracle-verifier.test.mjs tests/email-shape.test.mjs tests/waitlist-notify.test.mjs
 
+      - name: "gy-0ho2lx: pillar band colour equals the baked corner of every demo poster"
+        run: node --test tests/figure-surface.test.mjs
+
       - name: "gy-iit8q: asset-drift check LOGIC is tested (the check itself is UNWIRED, gy-1je63)"
         run: node --test tests/master-asset-drift.test.mjs tests/screenshot-freshness-relocation.test.mjs
         # 🔴 THIS STEP TESTS THE INSTRUMENT, NOT THE SITE. It builds synthetic git
