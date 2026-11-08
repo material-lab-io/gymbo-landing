@@ -73,9 +73,10 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
   if (!hasCarousel) return;
   // gy-okffji: no fixed waits. Each jump is followed by "the strip is at rest and
   // its position cue has not changed for two frames", which a fast runner meets
-  // at once and a slow one meets when it has actually caught up. After the jump
-  // back to the start the cue must also read the first card, so a runner that has
-  // not yet processed the scroll event cannot be mistaken for a settled one.
+  // at once and a slow one meets when it has actually caught up. The cue
+  // must also equal the card nearest the strip's centre at the current scroll
+  // position, so a runner that has not yet processed the scroll event cannot be
+  // mistaken for a settled one.
   const settle = (target: 'end' | 'start') =>
     locator.evaluate(
       (el, which) =>
@@ -93,7 +94,23 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
             const atRest = strips.every((c) =>
               which === 'start' ? c.scrollLeft === 0 : c.scrollLeft > 0,
             );
-            const cueOk = which === 'start' ? /^1 of \d+$/.test(cue()) : true;
+            // The cue is "the card closest to the strip's centre" (App.tsx
+            // syncGalleryPosition), so at rest on a wide viewport it can read
+            // "2 of N" at scrollLeft 0. Require it to equal that same
+            // function of the CURRENT scroll position: a runner that has not
+            // processed the scroll event yet still shows the old cue.
+            const cueOk = strips.every((c) => {
+              const cards = Array.from(c.querySelectorAll<HTMLElement>('[data-gallery-index]'));
+              if (!cards.length) return true;
+              const centre = c.scrollLeft + c.clientWidth / 2;
+              let best = 0;
+              cards.forEach((card, i) => {
+                const d = Math.abs(card.offsetLeft + card.offsetWidth / 2 - centre);
+                const b = Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - centre);
+                if (d < b) best = i;
+              });
+              return cue() === `${best + 1} of ${cards.length}`;
+            });
             if (calm >= 2 && atRest && cueOk) return resolve();
             if (Date.now() > deadline) return reject(new Error(`carousel never settled at ${which}: ${now}`));
             requestAnimationFrame(tick);
