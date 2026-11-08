@@ -92,7 +92,12 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
             calm = now === last ? calm + 1 : 0;
             last = now;
             const atRest = strips.every((c) =>
-              which === 'start' ? c.scrollLeft === 0 : c.scrollLeft > 0,
+              // scroll-snap-type: x mandatory + snap-center parks the strip a few px
+              // off 0 (6 px in run 42430915162), so "at start/end" is within one
+              // snap residue, not exactly 0.
+              which === 'start'
+                ? c.scrollLeft <= 24
+                : c.scrollLeft >= c.scrollWidth - c.clientWidth - 24,
             );
             // The cue is "the card closest to the strip's centre" (App.tsx
             // syncGalleryPosition), so at rest on a wide viewport it can read
