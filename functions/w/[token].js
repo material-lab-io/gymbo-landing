@@ -52,6 +52,9 @@ video,img.asset{width:100%;border-radius:12px;display:block;background:#000}
    mistaken for a video that failed to load, which is the whole point. */
 .nomedia{border:1px dashed var(--line);border-radius:12px;padding:20px;
   text-align:center;color:var(--muted);font-size:12px}
+.demo img.asset{background:var(--line)}
+.steps{margin:10px 0 0;padding-left:20px;color:var(--fg)}
+.steps li{margin:0 0 6px}
 /* 11px is the smallest legitimate stop (no 13px token, no 600 weight in the
    SSOT). De-emphasis is the muted FOREGROUND token, never opacity. */
 .attr{font-size:11px;color:var(--muted);margin-top:10px}
@@ -144,9 +147,12 @@ export async function onRequestGet({ env, params, request }) {
     // muted+loop+playsinline are kept for once the client DOES tap play: loop
     // still gives the GIF-like replay the founder pictured, playsinline still
     // stops iOS Safari from forcing fullscreen.
+    // gy-b0126.2: no clip -> the library still + instructions (no play affordance, and never the word "video"); no library row at all -> the
+    // name and sets and NOTHING else (no empty box that reads as a failure). The old "No video for this exercise." box is gone.
+    const d = b.demo;
     const asset =
       !m
-        ? `<div class="nomedia">No video for this exercise.</div>`
+        ? !d ? "" : `<div class="demo">${d.stillUrl ? `<img class="asset" loading="lazy" decoding="async" alt="${esc(`Movement demo, ${b.exercise_name || "Exercise"}: ${d.hold ? "hold position" : "start position"}`)}" src="${esc(d.stillUrl)}">` : ""}${d.steps.length ? `<ol class="steps">${d.steps.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>` : ""}</div>`
         : m.assetKind === "still"
           ? `<img class="asset" alt="" src="${esc(m.stillUrl)}">`
           : `<video src="${esc(m.videoUrl)}" controls muted loop playsinline preload="metadata"${m.posterUrl ? ` poster="${esc(m.posterUrl)}"` : ""}></video>`;
