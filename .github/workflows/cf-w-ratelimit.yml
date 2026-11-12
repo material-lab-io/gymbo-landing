@@ -1,0 +1,77 @@
+name: CF rate-limit POST /w/* (edge)
+
+# gy-ukcqm. Applies ops/cloudflare/w-ratelimit.json to the getgymbo.com zone's
+# http_ratelimit phase, then proves the N+1th POST is refused and a normal GET is not.
+#
+# Manual trigger only; defaults to a READ-ONLY dry run that prints the merge it WOULD make.
+# Apply needs pm deploy authorisation (an account/zone-level change).
+# Uses the zone-scoped CLOUDFLARE_ZONE_TOKEN (same one as cf-allow-ai-crawlers.yml), which
+# additionally needs: Zone > Zone WAF > Edit. The token is only ever sent in the
+# Authorization header, never printed.
+#
+# PUT on an entrypoint REPLACES the phase's rules, so this fetches the current rules and
+# keeps every one whose ref is not ours: re-running is idempotent and never drops others.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Apply? false = dry run (reads current rules, prints the merge)"
+        type: boolean
+        default: false
+
+jobs:
+  ratelimit:
+    runs-on: [self-hosted, gt2]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rule file self-test
+        run: node scripts/cf-w-ratelimit.mjs --selftest
+      - name: Merge and (optionally) apply
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_ZONE_TOKEN }}
+        run: |
+          set -euo pipefail
+          [ -n "${CF_TOKEN:-}" ] || { echo "::error::CLOUDFLARE_ZONE_TOKEN is not set."; exit 1; }
+          B=$RUNNER_TEMP/cf.json
+          api() { curl -sS -o "$B" -w "%{http_code}" -H "Authorization: Bearer $CF_TOKEN" -H "Content-Type: application/json" "$@" || true; }
+
+          code=$(api "https://api.cloudflare.com/client/v4/zones?name=getgymbo.com")
+          ZID=$(jq -r '.result[0].id // empty' "$B" 2>/dev/null || true)
+          [ -n "$ZID" ] || { echo "::error::zone not resolved (HTTP $code); token needs Zone:Read on getgymbo.com."; exit 1; }
+          EP="https://api.cloudflare.com/client/v4/zones/$ZID/rulesets/phases/http_ratelimit/entrypoint"
+
+          code=$(api "$EP")
+          echo "current entrypoint: HTTP $code"
+          if [ "$code" = "404" ]; then echo '{"result":{"rules":[]}}' > "$B"
+          elif [ "$code" != "200" ]; then
+            jq -c '.errors' "$B"; echo "::error::cannot read http_ratelimit entrypoint (needs Zone WAF read)."; exit 1; fi
+          jq '[.result.rules // [] | .[] | select((.ref // "") | startswith("gy-ukcqm-") | not)]' "$B" > $RUNNER_TEMP/keep.json
+          echo "keeping $(jq length $RUNNER_TEMP/keep.json) foreign rule(s)"
+
+          node scripts/cf-w-ratelimit.mjs --body > $RUNNER_TEMP/ours.json
+          jq -s '{rules: (.[0] + .[1].rules)}' $RUNNER_TEMP/keep.json $RUNNER_TEMP/ours.json > $RUNNER_TEMP/put.json
+          jq -c '.rules[] | {ref, action, ratelimit}' $RUNNER_TEMP/put.json
+
+          if [ "${{ inputs.apply }}" != "true" ]; then echo "DRY RUN: re-run with apply=true."; exit 0; fi
+
+          code=$(api -X PUT --data @$RUNNER_TEMP/put.json "$EP")
+          echo "PUT: HTTP $code"
+          jq -c '{success, errors:((.errors//[])|map(.message))}' "$B"
+          [ "$code" = "200" ] || { echo "::error::PUT failed. A lower plan may reject the ip+path characteristic or the 60s period; read the message above."; exit 1; }
+
+      - name: Prove N+1 refusal and no effect on normal use
+        if: ${{ inputs.apply }}
+        run: |
+          set -euo pipefail
+          sleep 20 # rule propagation
+          # normal use: a read is never limited, and a single POST is answered by the function
+          [ "$(curl -s -o /dev/null -w '%{http_code}' https://getgymbo.com/w/this-is-a-malformed-token)" != "429" ]
+          [ "$(curl -s -o /dev/null -w '%{http_code}' -X POST -d block=x https://getgymbo.com/w/zzzzzzzzzzzzzzzzzzzzzzzz-probe)" != "429" ]
+          sleep 65 # let that count age out of the window
+          # malformed-length token: refused by the function itself, so nothing is written
+          node scripts/cf-w-ratelimit.mjs --probe https://getgymbo.com/w/gy-ukcqm-probe
+          # reads still fine while the POST is blocked
+          [ "$(curl -s -o /dev/null -w '%{http_code}' https://getgymbo.com/w/this-is-a-malformed-token)" != "429" ]
