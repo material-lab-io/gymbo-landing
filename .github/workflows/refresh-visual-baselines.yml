@@ -67,13 +67,6 @@ jobs:
       - name: Regenerate visual regression baselines
         run: scripts/pw-test.sh tests/visual.spec.ts --project=desktop --project=mobile --update-snapshots
 
-      - name: Upload regenerated baselines (for review before commit)
-        uses: actions/upload-artifact@v4
-        with:
-          name: visual-baselines-${{ github.run_number }}
-          path: tests/visual.spec.ts-snapshots/
-          retention-days: 14
-
       - name: Commit and push regenerated baselines
         run: |
           git config user.name "github-actions[bot]"
@@ -93,3 +86,14 @@ jobs:
             git commit -m "chore(ci): refresh visual regression baselines"
             git push origin HEAD:${{ inputs.ref }}
           fi
+
+      # gy-0k2lyu: the job commits the baselines itself, so nothing reads an upload on a green run. Keep them one day only when the
+      # commit/push failed, and never let an artifact-quota failure red the job.
+      - name: Upload regenerated baselines (commit/push failed)
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-${{ github.run_number }}
+          path: tests/visual.spec.ts-snapshots/
+          retention-days: 1
