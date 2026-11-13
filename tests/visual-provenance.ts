@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { Locator, TestInfo } from '@playwright/test';
 // @ts-expect-error — plain .mjs, no type declarations; see the file for why
 // the decision logic lives there instead of here.
-import { decideProvenance, fingerprintPayload } from '../scripts/visual-provenance-core.mjs';
+import { decideProvenance, fingerprintPayload, stableRead } from '../scripts/visual-provenance-core.mjs';
 
 /**
  * gy-h2z6x: a committed visual baseline (.png) carries no record of which
@@ -49,13 +49,24 @@ function currentCommit(): string {
  * shared so a browser run and the node:test unit tests hash identically; this
  * half only extracts {text, imgs} from the live DOM. */
 export async function fingerprintSection(locator: Locator): Promise<string> {
-  const { text, imgs }: { text: string; imgs: string[] } = await locator.evaluate((el) => {
-    const text = el.textContent || '';
-    const imgs = Array.from(el.querySelectorAll('img')).map(
-      (img) => `${img.getAttribute('src') ?? ''}|${img.getAttribute('alt') ?? ''}`,
-    );
-    return { text, imgs };
+  const read = (): Promise<{ text: string; imgs: string[] }> =>
+    locator.evaluate((el) => {
+      const text = el.textContent || '';
+      const imgs = Array.from(el.querySelectorAll('img')).map(
+        (img) => `${img.getAttribute('src') ?? ''}|${img.getAttribute('alt') ?? ''}`,
+      );
+      return { text, imgs };
+    });
+  // gy-okffji: one read hashes whatever the page showed at that instant, and the
+  // gallery's "N of M" position cue (set from scroll events) is not the same
+  // instant on a slow runner as on a fast one. Hash only a value two
+  // consecutive reads agree on; one animation frame between reads, no fixed sleep.
+  const { text, imgs } = await stableRead(read, {
+    label: 'section fingerprint payload',
+    pause: () => locator.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => r()))),
   });
+  const cue = /\b\d+ of \d+\b/.exec(text)?.[0] ?? 'none';
+  console.log(`[gy-okffji] fingerprint position-cue=${cue} text-len=${text.length} imgs=${imgs.length}`);
   return fingerprintPayload(text, imgs);
 }
 

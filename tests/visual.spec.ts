@@ -71,18 +71,71 @@ async function revealSection(page: Page, locator: Locator) {
 async function scrollHorizontalCarousels(page: Page, locator: Locator) {
   const hasCarousel = await locator.locator('.carousel').count();
   if (!hasCarousel) return;
+  // gy-okffji: no fixed waits. Each jump is followed by "the strip is at rest and
+  // its position cue has not changed for two frames", which a fast runner meets
+  // at once and a slow one meets when it has actually caught up. The cue
+  // must also equal the card nearest the strip's centre at the current scroll
+  // position, so a runner that has not yet processed the scroll event cannot be
+  // mistaken for a settled one.
+  const settle = (target: 'end' | 'start') =>
+    locator.evaluate(
+      (el, which) =>
+        new Promise<void>((resolve, reject) => {
+          const strips = Array.from(el.querySelectorAll<HTMLElement>('.carousel'));
+          const cue = () => el.querySelector('[aria-live="polite"]')?.textContent?.trim() ?? '';
+          const snapshot = () => JSON.stringify([strips.map((c) => c.scrollLeft), cue()]);
+          const deadline = Date.now() + 10000;
+          let last = '';
+          let calm = 0;
+          const tick = () => {
+            const now = snapshot();
+            calm = now === last ? calm + 1 : 0;
+            last = now;
+            const atRest = strips.every((c) =>
+              // scroll-snap-type: x mandatory + snap-center parks the strip a few px
+              // off 0 (6 px in run 42430915162), so "at start/end" is within one
+              // snap residue, not exactly 0.
+              which === 'start'
+                ? c.scrollLeft <= 24
+                : c.scrollLeft >= c.scrollWidth - c.clientWidth - 24,
+            );
+            // The cue is "the card closest to the strip's centre" (App.tsx
+            // syncGalleryPosition), so at rest on a wide viewport it can read
+            // "2 of N" at scrollLeft 0. Require it to equal that same
+            // function of the CURRENT scroll position: a runner that has not
+            // processed the scroll event yet still shows the old cue.
+            const cueOk = strips.every((c) => {
+              const cards = Array.from(c.querySelectorAll<HTMLElement>('[data-gallery-index]'));
+              if (!cards.length) return true;
+              const centre = c.scrollLeft + c.clientWidth / 2;
+              let best = 0;
+              cards.forEach((card, i) => {
+                const d = Math.abs(card.offsetLeft + card.offsetWidth / 2 - centre);
+                const b = Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - centre);
+                if (d < b) best = i;
+              });
+              return cue() === `${best + 1} of ${cards.length}`;
+            });
+            if (calm >= 2 && atRest && cueOk) return resolve();
+            if (Date.now() > deadline) return reject(new Error(`carousel never settled at ${which}: ${now}`));
+            requestAnimationFrame(tick);
+          };
+          tick();
+        }),
+      target,
+    );
   await locator.evaluate((el) => {
     el.querySelectorAll<HTMLElement>('.carousel').forEach((c) => {
       c.scrollLeft = c.scrollWidth;
     });
   });
-  await page.waitForTimeout(200);
+  await settle('end');
   await locator.evaluate((el) => {
     el.querySelectorAll<HTMLElement>('.carousel').forEach((c) => {
       c.scrollLeft = 0;
     });
   });
-  await page.waitForTimeout(200); // let the position cue resync to the first card
+  await settle('start');
 }
 
 /** Wait for every <img> inside the locator to finish loading (real natural
