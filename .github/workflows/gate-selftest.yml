@@ -27,6 +27,11 @@ on:
     - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
   workflow_dispatch:
 
+concurrency:
+  # ci-diet (gcf-ykivt): a newer push to the same PR supersedes the older run; a push to main or a dispatch never cancels one.
+  group: gate-selftest-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   # gy-707yq: THE REQUIRED-CHECK CANDIDATE. Split out of negative-controls so it
   # runs on EVERY pull_request in seconds. It needs no npm and no Playwright —
