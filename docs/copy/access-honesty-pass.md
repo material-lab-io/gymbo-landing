@@ -134,3 +134,4 @@ text lines (piece 2, piece 3); the rest are string-only edits to existing elemen
 Checked against gm-mva's spec (both versions, including today's status
 re-verification): no contradiction. Different claims (CTA/access clarity vs.
 factual overclaims), same hero area, no overlapping strings.
+<!-- gcf-i272q planted control: docs-only -->
