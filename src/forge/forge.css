@@ -140,3 +140,4 @@
   --g-text-link: var(--g-color-neutral-light-fg); /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
   --g-cta-shadow: var(--g-shadow-cta); /** 🔴 RETIRED AS THE PRIMARY-CTA BOUNDARY (FORGE §7, amended 2026-09-06; gy-w2luq). The soft-neutral-shadow route CANNOT carry a 1.4.11 boundary: measured 1.36:1 at absolute-maximum stacking against a 3:1 requirement, and reaching 3:1 needs ~3x the token alpha, which renders as the hard grey edge §7 existed to avoid. What ships instead is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose either shadow route for that boundary. This token remains only for any non-boundary decorative use; it is NOT the CTA's accessibility boundary and must not be cited as one. */
 }
+/* gcf-i272q planted control */
