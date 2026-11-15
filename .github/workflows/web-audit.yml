@@ -77,12 +77,13 @@ jobs:
           scripts/pw-test.sh tests/audit-perf.spec.ts --project=desktop
 
       - name: Upload report
-        if: always()
+        if: failure()   # gy-0k2lyu: nothing reads the report of a green audit
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: web-audit-report
           path: |
             playwright-report/
             test-results/
-          retention-days: 14
+          retention-days: 1
           if-no-files-found: warn
