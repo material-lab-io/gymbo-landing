@@ -227,6 +227,15 @@ test.describe('visual baselines', () => {
       await revealSection(page, locator);
       await scrollHorizontalCarousels(page, locator);
       await waitImagesLoaded(locator);
+      if (section.testId === 'gallery-section') {
+        // gy-okffji AC1: the gallery's "N of M" position cue is the value that was
+        // runner-speed dependent. Assert it by name so a run that never saw it is
+        // red, not a silent "none" in the log.
+        await expect(
+          locator.locator('[aria-live="polite"]'),
+          'GALLERY POSITION CUE IS PRESENT AND SETTLED',
+        ).toHaveText(/^\d+ of \d+$/);
+      }
       const snapshotName = `${section.name}-light.png`;
       // gy-h2z6x: refuse (or record) BEFORE the pixel comparison — see
       // tests/visual-provenance.ts for why a baseline with no/mismatched

@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { loadavg } from 'node:os';
 import type { Locator, TestInfo } from '@playwright/test';
 // @ts-expect-error — plain .mjs, no type declarations; see the file for why
 // the decision logic lives there instead of here.
@@ -66,7 +67,11 @@ export async function fingerprintSection(locator: Locator): Promise<string> {
     pause: () => locator.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => r()))),
   });
   const cue = /\b\d+ of \d+\b/.exec(text)?.[0] ?? 'none';
-  console.log(`[gy-okffji] fingerprint position-cue=${cue} text-len=${text.length} imgs=${imgs.length}`);
+  const where = (await locator.getAttribute('data-testid').catch(() => null)) ?? 'section';
+  console.log(
+    `[gy-okffji] fingerprint section=${where} position-cue=${cue} text-len=${text.length} imgs=${imgs.length} ` +
+      `runner=${process.env.RUNNER_NAME ?? 'local'} load1=${loadavg()[0].toFixed(1)}`,
+  );
   return fingerprintPayload(text, imgs);
 }
 
