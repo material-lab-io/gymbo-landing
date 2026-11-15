@@ -155,14 +155,17 @@ jobs:
             --output "$GITHUB_WORKSPACE/public/hero-demo-poster.png"
 
       # ── 8. Upload artifact (always — review before deploying) ──────────────
+      # gy-0k2lyu: only a review-first run (deploy=false) has a reader; with deploy=true the files are committed below. A quota failure must never red the render.
       - name: Upload video artifact
+        if: inputs.deploy != true
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: hero-video-${{ github.run_number }}
           path: |
             public/hero-demo.mp4
             public/hero-demo-poster.png
-          retention-days: 7
+          retention-days: 1
 
       # ── 9. Commit + push (only when deploy == true) ────────────────────────
       # Pushes to main → triggers deploy.yml → Cloudflare Pages redeploy.
