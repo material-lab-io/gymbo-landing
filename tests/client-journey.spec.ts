@@ -71,7 +71,8 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // a broken player. Same page, same journey: this is what the client sees.
   await expect(page.getByText("Plank")).toBeVisible();
   await expect(page.getByText("3 × 45s", { exact: true })).toBeVisible();
-  await expect(page.getByText("No video for this exercise.").first()).toBeVisible();
+  // gy-b0126.2: no clip and no library demo is the name + sets only; the old "No video" box is gone.
+  await expect(page.getByText("No video for this exercise.")).toHaveCount(0);
 
   // gy-pgxiv — a THIRD exercise with no LINKED exercise at all (exercise_id
   // NULL). Same defined empty state as the "no media" case above, by design
@@ -79,9 +80,7 @@ test("a client opens a shared link, watches an exercise and ticks it off", async
   // (152/164 legacy blocks), so it gets its own journey assertion rather than
   // being folded silently into Plank's.
   await expect(page.getByText("Farmer carry")).toBeVisible();
-  await expect(
-    page.locator("section").filter({ hasText: "Farmer carry" }).getByText("No video for this exercise."),
-  ).toBeVisible();
+  await expect(page.locator("section").filter({ hasText: "Farmer carry" }).locator("img, video, ol")).toHaveCount(0);
 
   await expect(page.getByText("Intervals")).toBeVisible();
   await expect(page.getByText("45s-60s-45s", { exact: true })).toBeVisible();

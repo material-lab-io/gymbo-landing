@@ -16,8 +16,24 @@ name: Forge Tokens
 # No build, no browser — node only, so it is cheap enough to run on every push.
 # Runners: [self-hosted, pool] per the standing rule. Never *-latest.
 
+# gcf-i272q (CI-diet path filters): on a pull request this runs only when the diff touches an input of one of its
+# gates. This workflow holds NO required check (required on main: `deploy` and `Runner policy (self-hosted only)`),
+# so a workflow-level `paths:` allow-list is safe; a required workflow would need a job-level gate instead.
+#   src/**                    check-forge-tokens SCAN root + sync-forge-tokens vendored mirror + src/forge/forge.pin.json
+#   functions/**              check-forge-tokens SCAN root, gen-functions-forge-tokens (functions/_forge.js)
+#   public/**                 check-forge-tokens ASSET_SCAN root (committed .svg)
+#   scripts/*forge*.mjs       the gates themselves and scripts/forge-producer.mjs
+#   this workflow file
+# tests/forge-tokens-paths.test.mjs derives every input from the gates and fails if one stops matching.
+# push to main and workflow_dispatch are unchanged and always run the full gate.
 on:
   pull_request:
+    paths:
+      - 'src/**'
+      - 'functions/**'
+      - 'public/**'
+      - 'scripts/*forge*.mjs'
+      - '.github/workflows/forge-tokens.yml'
   push:
     branches: [main]
   workflow_dispatch:

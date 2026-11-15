@@ -91,6 +91,7 @@ export async function fetchSharedWorkout(env, token, { TOKEN_RE } = {}) {
       rest_seconds: r.rest_seconds,
       done: !!r.block_done,
       media: shapeMedia(env, r),
+      demo: shapeDemo(env, r),
     }));
 
   return {
@@ -132,6 +133,33 @@ function shapeMedia(env, r) {
       isDerivative: r.is_derivative, modificationNote: r.modification_note,
     },
   };
+}
+
+// gy-b0126.2: an exercise with NO clip still has its LIBRARY still and instructions (docs/design-system/exercise-video-data-policy-spec.md,
+// "No video for this exercise": poster + title + instructions, no play affordance). The RPC returns demo_* columns for a LIBRARY exercise only
+// (NULL for a custom or unlinked block), so a typed name with no library row has no demo and the page shows its name and sets and nothing else.
+// Same eligibility as the app's movementDemo (business-web/lib/workouts/media.ts): the Free Exercise DB still at its pinned commit, 0.jpg =
+// start and 1.jpg = end BY NAME, push/pull need BOTH stills (we show the start), static shows the END still alone, any other force shows none.
+// An OLD RPC (no demo_* columns) gives undefined here, which is "no demo": the deployed page and the database can ship in either order.
+export const FEDB_PINNED_COMMIT = "a859101d633a01c4a1a920d6a8ce41dabba0705f";
+export const DEMO_DENYLIST = new Set(["Freehand_Jump_Squat"]);
+export function shapeDemo(env, r) {
+  const steps = (Array.isArray(r.demo_instructions) ? r.demo_instructions : []).map((s) => String(s ?? "").trim()).filter(Boolean);
+  const images = (Array.isArray(r.demo_images) ? r.demo_images : []).map((i) => String(i ?? "").trim()).filter((i) => i && !i.includes(".."));
+  const named = (n) => images.find((i) => i.split("/").pop().toLowerCase() === n);
+  const s = named("0.jpg"), e = named("1.jpg");
+  const start = s ?? (e === undefined ? images[0] : undefined);
+  const end = e ?? (s === undefined && images.length > 1 ? images[1] : undefined);
+  let path = null, hold = false;
+  if (!(r.demo_external_id && DEMO_DENYLIST.has(r.demo_external_id))) {
+    switch (String(r.demo_force ?? "").trim().toLowerCase()) {
+      case "push": case "pull": path = start && end ? start : null; break;
+      case "static": path = end ?? null; hold = !!end; break;
+      default: path = null;
+    }
+  }
+  if (!path && steps.length === 0) return null;
+  return { stillUrl: path ? publicObjectUrl(env, `fedb/${FEDB_PINNED_COMMIT}/${path}`) : null, hold, steps };
 }
 
 // Same rendering rule as /m/'s attributionHtml (_workout.js): two sources,

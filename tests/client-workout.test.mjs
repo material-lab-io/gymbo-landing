@@ -133,7 +133,9 @@ test("AC2 NEG: an exercise with NO qualifying media shows a defined empty state,
   const { status, html } = await get([row(BLOCK, { media: null })]);
   assert.equal(status, 200, "the rest of the workout must still be usable");
   assert.match(html, /Bench Press/);
-  assert.match(html, /No video for this exercise/);
+  // gy-b0126.2: the old "No video for this exercise." box is gone. No clip and no library demo = the name and sets and nothing else.
+  assert.doesNotMatch(html, /No video for this exercise/, "no bare empty box (gy-b0126.2)");
+  assert.doesNotMatch(html, /class="nomedia"/);
   assert.doesNotMatch(html, /<video/, "a broken or empty player is exactly what this AC forbids");
 });
 
@@ -149,8 +151,8 @@ test("gy-pgxiv: a block whose exercise is unlinked (exercise_id NULL) renders as
   const { status, html } = await get([row(unlinked, { media: null })]);
   assert.equal(status, 200);
   assert.match(html, /Farmer carry/);
-  assert.match(html, /No video for this exercise/);
-  assert.doesNotMatch(html, /<video/);
+  assert.doesNotMatch(html, /No video for this exercise/, "an unlinked name shows its name + sets only (gy-b0126.2)");
+  assert.doesNotMatch(html, /<video|<img|<ol/);
   assert.doesNotMatch(html, /undefined|null/i, "no raw field leakage for a block with nothing to prescribe");
 });
 
@@ -445,4 +447,77 @@ test("gy-d012n: a refused link gets no card (nothing about a workout that may no
   const { status, html } = await get([]);
   assert.equal(status, 404);
   assert.doesNotMatch(html, /og:title|og:image/);
+});
+
+// ---------------------------------------------------------------------------------------------------------------------------------------
+// gy-b0126.2: an exercise with NO clip shows its library still + title + instructions (no play affordance); a name with no library row shows
+// name + sets only. Fixtures are the RPC's real demo_* columns (library exercise only; NULL for a custom or unlinked block).
+const DEMO_BLOCK = { id: "dededede-1111-2222-3333-444444444444", exercise_name: "Push Press", sets: 3, reps: "12", load: null, rest_seconds: null };
+const demoRow = (extra) => ({ ...row(DEMO_BLOCK, { media: null }), demo_external_id: "Push_Press", demo_force: "push",
+  demo_images: ["Push_Press/0.jpg", "Push_Press/1.jpg"], demo_instructions: ["Stand with the bar at your shoulders.", "Dip, drive, press it overhead."], ...extra });
+
+test("gy-b0126.2: a library exercise with NO clip shows its still, title and instructions, with no play affordance and no empty box", async () => {
+  const { status, html } = await get([demoRow()]);
+  assert.equal(status, 200);
+  assert.match(html, /<h2>Push Press<\/h2>/, "the title stays");
+  assert.match(html, /3×12/, "the sets stay");
+  assert.match(html, /<img class="asset"[^>]+src="https:\/\/stub\.invalid\/storage\/v1\/object\/public\/[^"]*fedb\/a859101d633a01c4a1a920d6a8ce41dabba0705f\/Push_Press\/0\.jpg"/, "the START still at the pinned commit");
+  assert.match(html, /<ol class="steps"><li>Stand with the bar at your shoulders\.<\/li><li>Dip, drive, press it overhead\.<\/li><\/ol>/, "the instructions as an ordered list");
+  assert.doesNotMatch(html, /No video for this exercise/, "the bare empty box is gone");
+  assert.doesNotMatch(html, /<video|controls|autoplay|poster=/, "a still is not a player: no play affordance");
+  const card = html.match(/<section class="ex">[\s\S]*?<\/section>/)[0];
+  assert.doesNotMatch(card, /video/i, "the demo never says 'video' (iOS ExerciseMovementDemo rule)");
+  assert.match(html, /Mark done/, "the tick control stays");
+});
+
+test("gy-b0126.2: a hold exercise (force static) shows its END still alone; push/pull with a single still shows none but keeps the steps", async () => {
+  const hold = (await get([demoRow({ demo_force: "static", demo_images: ["Plank/0.jpg", "Plank/1.jpg"] })])).html;
+  assert.match(hold, /Plank\/1\.jpg/);
+  assert.doesNotMatch(hold, /Plank\/0\.jpg/);
+  const half = (await get([demoRow({ demo_images: ["Push_Press/0.jpg"] })])).html;
+  assert.doesNotMatch(half, /<img/, "a push exercise needs both stills; half a pair is not a demo");
+  assert.match(half, /<ol class="steps">/, "the instructions still show");
+  const denied = (await get([demoRow({ demo_external_id: "Freehand_Jump_Squat" })])).html;
+  assert.doesNotMatch(denied, /<img/, "a denylisted still never shows");
+});
+
+test("gy-b0126.2: no library row (custom or unlinked name) = name + sets only; an OLD RPC without demo_* columns is the same", async () => {
+  const typed = { id: "ababab01-1111-2222-3333-444444444444", exercise_name: "Hand release push up", sets: 3, reps: "12", load: null, rest_seconds: null };
+  const { html } = await get([{ ...row(typed, { media: null }), demo_external_id: null, demo_force: null, demo_images: null, demo_instructions: null }]);
+  assert.match(html, /Hand release push up/);
+  assert.match(html, /3×12/);
+  assert.doesNotMatch(html, /No video for this exercise|<img|<ol|<video/);
+  const old = (await get([row(typed, { media: null })])).html; // no demo_* keys at all (deployed before the migration)
+  assert.match(old, /Hand release push up/);
+  assert.doesNotMatch(old, /No video for this exercise|<img|<ol|undefined|null/i);
+});
+
+test("gy-b0126.2: a clip still wins; the demo is only for an exercise with no clip", async () => {
+  const { html } = await get([{ ...row(BLOCK, { media: MEDIA_OK }), demo_external_id: "Bench", demo_force: "push", demo_images: ["B/0.jpg", "B/1.jpg"], demo_instructions: ["x"] }]);
+  assert.match(html, /<video/);
+  assert.doesNotMatch(html, /fedb|<ol/, "no demo next to a real clip");
+});
+
+// PLANTED CONTROL: put the bare box back (copy functions/ to a unique tmp dir, mutate the copy, never scripts/) and require the demo test's
+// assertion to go RED by name. Without this the three tests above could pass against a page that never changed.
+test("gy-b0126.2 PLANTED CONTROL: with the bare 'No video' box back, the demo assertions fail", async () => {
+  const { cpSync, readFileSync, writeFileSync, mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { pathToFileURL } = await import("node:url");
+  const src = new URL("../functions/", import.meta.url);
+  const dir = mkdtempSync(join(tmpdir(), "gy-b0126-2-"));
+  cpSync(src, join(dir, "functions"), { recursive: true });
+  const f = join(dir, "functions", "w", "[token].js");
+  const text = readFileSync(f, "utf8");
+  const needle = "!m\n        ? !d ? \"\" :";
+  assert.ok(text.includes(needle), "the planted control's find text must exist, or it proves nothing");
+  writeFileSync(f, text.replace(needle, "!m\n        ? true ? `<div class=\"nomedia\">No video for this exercise.</div>` :"));
+  _resetRateLimitStateForTests();
+  stub([demoRow()]);
+  const mutated = await import(pathToFileURL(f).href + "?m=" + Date.now());
+  const res = await mutated.onRequestGet({ env: ENV, params: { token: TOKEN } });
+  const html = await res.text();
+  assert.match(html, /No video for this exercise/, "the planted mutant must show the bare box");
+  assert.doesNotMatch(html, /<ol class="steps">/, "...and so lose the instructions that the real page shows");
 });
