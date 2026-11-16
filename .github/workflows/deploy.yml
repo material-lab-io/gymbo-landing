@@ -200,6 +200,25 @@ jobs:
         # additionally verified by hand against the real pre-swap commit
         # (ba239851) — see gy-h2z6x for the transcript.
 
+      - name: "gy-okffji: the visual fingerprint is a stable read, independent of runner speed"
+        run: node --test tests/stable-read.test.mjs
+      - name: "gy-okffji: planted control - the old fixed-wait single read must FAIL by name"
+        run: |
+          set +e
+          out="$(PLANT_FIXED_WAIT_READ=1 node --test tests/stable-read.test.mjs 2>&1)"
+          rc=$?
+          set -e
+          if [ "$rc" -eq 0 ]; then
+            echo "::error::gy-okffji CONTROL-BROKEN: a fixed-wait single read passed the stability test, so the test cannot see the runner-speed defect."
+            exit 1
+          fi
+          if ! printf '%s\n' "$out" | grep -q "not ok 1 - FINGERPRINT IS INDEPENDENT OF RUNNER SPEED"; then
+            echo "::error::gy-okffji CONTROL-BROKEN: the planted fixed-wait read failed, but not in the test built for it."
+            printf '%s\n' "$out" | tail -30
+            exit 1
+          fi
+          echo "planted fixed-wait read failed by name: FINGERPRINT IS INDEPENDENT OF RUNNER SPEED"
+
       - name: "gy-a2xps.9 / gy-t9mm8: media + client pages render attribution and fail closed"
         run: node --test tests/media-page.test.mjs tests/client-workout.test.mjs tests/health-probe.test.mjs tests/takedown-form.test.mjs tests/cross-page-references.test.mjs
         # AC1/AC2/AC3/AC5/AC7. Proves the page RENDERS a complete credit from

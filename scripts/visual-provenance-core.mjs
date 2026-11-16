@@ -49,3 +49,39 @@ export function decideProvenance({ mode, existingRecord, liveFingerprint, viewpo
 
   return { action: 'pass' };
 }
+
+/**
+ * gy-okffji: read a value until two CONSECUTIVE reads agree, then return it.
+ * No fixed sleep decides "settled": a fast runner returns after two reads, a
+ * slow one keeps reading until the page stops moving. A value that never
+ * settles within `timeoutMs` throws a message that starts with
+ * "STABLE-READ NEVER SETTLED" so the red is attributable by name instead of
+ * surfacing later as a provenance mismatch against a baseline that is fine.
+ *
+ * `pause` yields between reads (a browser frame in the Playwright caller, a
+ * resolved promise in the unit tests); `now` is injectable for the same reason.
+ *
+ * @template T
+ * @param {() => Promise<T>} read
+ * @param {{timeoutMs?: number, pause?: () => Promise<void>, now?: () => number, label?: string}} [opts]
+ * @returns {Promise<T>}
+ */
+export async function stableRead(read, opts = {}) {
+  const { timeoutMs = 10000, pause = () => Promise.resolve(), now = Date.now, label = 'value' } = opts;
+  const deadline = now() + timeoutMs;
+  let previous = JSON.stringify(await read());
+  let latest;
+  for (;;) {
+    await pause();
+    latest = await read();
+    const serialised = JSON.stringify(latest);
+    if (serialised === previous) return latest;
+    if (now() > deadline) {
+      throw new Error(
+        `STABLE-READ NEVER SETTLED: ${label} was still changing after ${timeoutMs} ms ` +
+          `(last two reads differed: ${previous.slice(0, 120)} -> ${serialised.slice(0, 120)}).`,
+      );
+    }
+    previous = serialised;
+  }
+}
