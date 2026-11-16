@@ -66,7 +66,8 @@ export async function fingerprintSection(locator: Locator): Promise<string> {
     label: 'section fingerprint payload',
     pause: () => locator.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => r()))),
   });
-  const cue = /\b\d+ of \d+\b/.exec(text)?.[0] ?? 'none';
+  // \s covers the nbsp / markup gap textContent leaves between the numbers (tester 15 Nov: printed none while the assertion saw a cue)
+  const cue = (/\b\d+\s*of\s*\d+\b/.exec(text)?.[0] ?? 'none').replace(/\s+/g, " ");
   const where = (await locator.getAttribute('data-testid').catch(() => null)) ?? 'section';
   console.log(
     `[gy-okffji] fingerprint section=${where} position-cue=${cue} text-len=${text.length} imgs=${imgs.length} ` +
