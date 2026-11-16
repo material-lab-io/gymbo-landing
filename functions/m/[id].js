@@ -42,7 +42,7 @@ body{margin:0;background:var(--bg);color:var(--fg);
 .wrap{max-width:720px;margin:0 auto;padding:24px 16px 48px}
 h1{font-family:Merriweather,Georgia,serif;font-size:20px;margin:0 0 4px;font-weight:700}
 .card{background:var(--card);border-radius:20px;padding:16px;margin:16px 0}
-video,img.asset{width:100%;border-radius:12px;display:block;background:#000}
+video,img.asset{width:100%;border-radius:12px;display:block;background:var(--g-color-neutral-dark-0)}
 /* ATTRIBUTION. 11px is the smallest legitimate stop -- there is no 13px token
    and 600 is absent from the SSOT. De-emphasis is the MUTED FOREGROUND token,
    never opacity on the body token: opacity is what produced the 2.05:1 and

@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.css
- * Pinned at commit: a7034c050a82fb2588d653c8f9955a53e7707da5
+ * Pinned at commit: 0e53b62034bdea8f2dcf5c21ec36ce9e326c187a
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -28,31 +28,36 @@
   --g-color-brand-marigold-text-dark-hc: #fcd34d; /** dark brand-as-text HIGH-CONTRAST — GYM-592. amber-300. 13.73:1 on #0A0A0A / 12.78:1 on card — AAA ✓. (NORMAL = marigold-500 #FBBF24.) */
   --g-color-mark-amber: #ff9800; /** mark glyph color for DARK grounds (gy-c571s). Backs GymboMarkOnDark.imageset (iOS) / gymbo-mark-amber-ff9800.svg (web). */
   --g-color-mark-deep: #9d3900; /** mark glyph color for LIGHT grounds (gy-c571s). Backs GymboMarkOnBrand.imageset (iOS) / gymbo-mark-darkorange-9d3900.svg (web). */
-  --g-color-neutral-dark-0: #0a0a0a; /** page bg / near-black */
-  --g-color-neutral-dark-1: #141414; /** card */
-  --g-color-neutral-dark-2: #1c1c1e; /** floating card */
-  --g-color-neutral-dark-3: #2c2c2e; /** muted / sheet */
-  --g-color-neutral-dark-fg: #f0f0eb; /** primary text on dark */
-  --g-color-neutral-light-0: #fafaf7;
-  --g-color-neutral-light-1: #eaeae5; /** card — one notch darker for page separation */
-  --g-color-neutral-light-2: #e8e8e3;
-  --g-color-neutral-light-3: #dcdcd9;
-  --g-color-neutral-light-fg: #1a1a1a;
-  --g-color-grey-muted-fg-dark: #b8b8b8;
-  --g-color-grey-muted-fg-light: #555555;
-  --g-color-grey-label-dark: #a0a0a0;
-  --g-color-grey-label-light: #595959;
-  --g-color-grey-placeholder-dark: #808080;
-  --g-color-grey-placeholder-dark-elevated: #9a9a9a;
-  --g-color-grey-placeholder-light: #666666;
+  --g-color-neutral-dark-0: #000000; /** page bg / pure black — tier B (gy-k4eq9c.2.4) */
+  --g-color-neutral-dark-1: #111111; /** card — tier B */
+  --g-color-neutral-dark-2: #171719; /** floating card — tier B (also glass pills, tab bar, search bar fill) */
+  --g-color-neutral-dark-3: #242426; /** muted / sheet — tier B */
+  --g-color-neutral-dark-fg: #ffffff; /** primary text on dark — tier B */
+  --g-color-neutral-light-0: #ffffff; /** tier B */
+  --g-color-neutral-light-1: #f5f5f1; /** card — tier B, one notch darker for page separation */
+  --g-color-neutral-light-2: #f3f3ef; /** floating card — tier B (also glass pills, tab bar, search bar fill) */
+  --g-color-neutral-light-3: #ecece7; /** tier B */
+  --g-color-neutral-light-fg: #000000; /** primary text on light — tier B */
+  --g-color-grey-muted-fg-dark: #d0d0d0; /** secondary text, tier B floor 10:1 */
+  --g-color-grey-muted-fg-light: #373737; /** secondary text, tier B floor 10:1 */
+  --g-color-grey-label-dark: #afafaf; /** tertiary text, tier B floor 7:1 */
+  --g-color-grey-label-light: #4e4e4e; /** tertiary text, tier B floor 7:1 */
+  --g-color-grey-placeholder-dark: #afafaf; /** tertiary text, tier B floor 7:1 — same value as label-dark (gy-k4eq9c.2.4) */
+  --g-color-grey-placeholder-dark-elevated: #afafaf; /** tertiary text, tier B floor 7:1 — same value as label-dark */
+  --g-color-grey-placeholder-light: #4e4e4e; /** tertiary text, tier B floor 7:1 — same value as label-light */
+  --g-color-grey-icon-muted-dark: #858585; /** icon/chevron role, tier B, UI floor 4.5:1 (gy-k4eq9c.2.4) */
+  --g-color-grey-icon-muted-light: #6a6a6a; /** icon/chevron role, tier B, UI floor 4.5:1 */
+  --g-color-grey-separator-dark: #646464; /** solid hairline/separator role, tier B, UI floor 3:1 — replaces border-at-alpha (gy-k4eq9c.2.4) */
+  --g-color-grey-separator-light: #8c8c8c; /** solid hairline/separator role, tier B, UI floor 3:1 — replaces border-at-alpha */
   --g-color-status-green-fill-dark: #4ade80;
   --g-color-status-green-fill-light: #22c55e;
-  --g-color-status-green-text: #15803d; /** status-green AS TEXT (AA on light) */
+  --g-color-status-green-text: #166534; /** status-green AS TEXT (AA on light) — tier B (gy-k4eq9c.2.4, was #15803D: 4.59 card, 4.23 muted) */
   --g-color-status-destructive-dark: #ff6961;
   --g-color-status-destructive-light: #b80f34;
   --g-color-status-warning-dark: #ea580c; /** warning fill (kaushik) — VALIDATED GYM-592. 5.56:1 vs #0A0A0A bg (1.4.11 ✓); dark label #0A0A0A on fill 5.56:1 (AA ✓). Hue 21° vs destructive 347° — always icon+label (1.4.1). */
   --g-color-status-warning-light: #ea580c; /** warning fill (kaushik) — VALIDATED GYM-592, kept as-is (NOT darkened: darkening drops dark-text-on-fill below AA — #C2410C gives only 3.36:1). Dark label #1a1a1a on fill 4.89:1 (AA ✓). Fill-vs-card 2.95:1 → soft neutral shadow/boundary for 1.4.11 (per FORGE §7 light treatment, kaushik 2026-06-16), NOT a colored border. Always icon+label (1.4.1). */
-  --g-color-system-blue: #007aff; /** cursor / tint only */
+  --g-color-system-blue: #007aff; /** iOS system blue — cursor/tint SSOT. gy-k4eq9c.2.4 tier B briefly repointed this primitive to #0A58CA (the AA-on-light text value) on the mistaken belief that cursor had no consumer; cursor DOES consume it (SemanticTokens.cursor, both themes), so that change was a real regression (designer ruling, gy-k4eq9c.2.4 tester FAIL). Restored to #007AFF; the AA-on-light text value now lives in its own primitive below. */
+  --g-color-system-blue-text-light: #0a58ca; /** system-blue AS TEXT (AA on light, 4.02 page / 3.61 floating) — tier B (gy-k4eq9c.2.4). Split out from color.system.blue so it feeds ONLY text-system-blue's light value, never the cursor/tint primitive. */
   --g-color-system-blue-text-dark: #409cff; /** system-blue AS TEXT (AA on dark) */
   --g-color-button-inactive-bg-dark: #333333;
   --g-color-button-inactive-bg-light: #e5e5e5;
@@ -116,7 +121,8 @@
   --g-card: var(--g-color-neutral-light-1);
   --g-card-floating: var(--g-color-neutral-light-2);
   --g-surface-muted: var(--g-color-neutral-light-3);
-  --g-border: var(--g-color-neutral-light-fg);
+  --g-border: var(--g-color-grey-separator-light); /** tier B (gy-k4eq9c.2.4): SOLID separator/hairline, UI floor 3:1 — replaces border-at-alpha. Distinct from iOS's unchanged, stronger Color.gBorder. */
+  --g-icon-muted: var(--g-color-grey-icon-muted-light); /** tier B (gy-k4eq9c.2.4): icon/chevron role, UI floor 4.5:1 */
   --g-text-primary: var(--g-color-neutral-light-fg);
   --g-text-muted: var(--g-color-grey-muted-fg-light);
   --g-text-label: var(--g-color-grey-label-light);
@@ -127,7 +133,7 @@
   --g-mark-on-light: var(--g-color-mark-deep); /** brand MARK glyph color for use on a LIGHT ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule. Same value in semantic/dark.json. */
   --g-text-healthy: var(--g-color-status-green-text);
   --g-text-destructive: var(--g-color-status-destructive-light);
-  --g-text-system-blue: var(--g-color-system-blue);
+  --g-text-system-blue: var(--g-color-system-blue-text-light);
   --g-text-on-primary-cta: var(--g-color-button-active-text);
   --g-button-inactive-text: var(--g-color-button-inactive-text-light);
   --g-primary-cta-fill: var(--g-color-brand-amber-500);

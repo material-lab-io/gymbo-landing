@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.dark.css
- * Pinned at commit: a7034c050a82fb2588d653c8f9955a53e7707da5
+ * Pinned at commit: 0e53b62034bdea8f2dcf5c21ec36ce9e326c187a
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -14,16 +14,17 @@
  */
 
 [data-theme="dark"] {
-  --g-background: #0a0a0a;
-  --g-card: #141414;
-  --g-card-floating: #1c1c1e;
-  --g-surface-muted: #2c2c2e;
-  --g-border: #f0f0eb;
-  --g-text-primary: #f0f0eb;
-  --g-text-muted: #b8b8b8;
-  --g-text-label: #a0a0a0;
-  --g-text-placeholder: #808080;
-  --g-text-placeholder-elevated: #9a9a9a;
+  --g-background: #000000;
+  --g-card: #111111;
+  --g-card-floating: #171719;
+  --g-surface-muted: #242426;
+  --g-border: #646464; /** tier B (gy-k4eq9c.2.4): SOLID separator/hairline, UI floor 3:1 — replaces border-at-alpha. Distinct from iOS's unchanged, stronger Color.gBorder. */
+  --g-icon-muted: #858585; /** tier B (gy-k4eq9c.2.4): icon/chevron role, UI floor 4.5:1 */
+  --g-text-primary: #ffffff;
+  --g-text-muted: #d0d0d0;
+  --g-text-label: #afafaf;
+  --g-text-placeholder: #afafaf;
+  --g-text-placeholder-elevated: #afafaf;
   --g-text-brand: #fbbf24; /** DARK-mode brand = marigold */
   --g-mark-on-dark: #ff9800; /** brand MARK glyph color for use on a DARK ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule — same value in semantic/light.json (ground-named tokens are theme-independent by design). */
   --g-mark-on-light: #9d3900; /** brand MARK glyph color for use on a LIGHT ground (gy-c571s, ratified 2026-08-12). Ground-named per FORGE §7 naming rule. Same value in semantic/light.json. */
@@ -39,6 +40,6 @@
   --g-button-inactive-bg: #333333;
   --g-focus-ring: #fbbf24;
   --g-cursor: #007aff;
-  --g-text-link: #f0f0eb; /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
+  --g-text-link: #ffffff; /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
   --g-cta-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** 🔴 RETIRED AS THE PRIMARY-CTA BOUNDARY (FORGE §7, amended 2026-09-06; gy-w2luq). The soft-neutral-shadow route CANNOT carry a 1.4.11 boundary: measured 1.36:1 at absolute-maximum stacking against a 3:1 requirement, and reaching 3:1 needs ~3x the token alpha, which renders as the hard grey edge §7 existed to avoid. What ships instead is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose either shadow route for that boundary. This token remains only for any non-boundary decorative use; it is NOT the CTA's accessibility boundary and must not be cited as one. */
 }

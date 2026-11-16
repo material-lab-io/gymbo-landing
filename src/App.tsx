@@ -18,6 +18,7 @@ import { InlineWaitlist } from "./components/InlineWaitlist";
 import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
 import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, ctaVisual, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
+import { FIGURE_SURFACE } from "./figure-surface";
 import {
   TRIAL_DAYS,
   TRIAL_PRIMARY,
@@ -434,7 +435,7 @@ export default function App() {
             // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
             const hasDemo = p.demoId !== "log-payment";
             return (
-              <div key={p.id} style={{ background: dark ? F.charcoal : F.beige }}>
+              <div key={p.id} data-testid={`pillar-band-${p.id}`} style={{ background: hasDemo ? (dark ? FIGURE_SURFACE.dark : FIGURE_SURFACE.light) : (dark ? F.charcoal : F.beige) }}>
                 <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-10 md:gap-16 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                   <Reveal className={hasDemo ? undefined : "md:text-center md:mx-auto md:max-w-[640px]"}>
                     <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>

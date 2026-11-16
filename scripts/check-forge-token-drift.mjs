@@ -20,18 +20,18 @@ const forge = readFileSync("src/forge/forge.css", "utf8");
 
 // token name in forge.css -> the value we inlined, per theme.
 const EXPECT = {
-  "--g-color-neutral-light-0":  "#fafaf7",
-  "--g-color-neutral-light-1":  "#eaeae5",
-  "--g-color-neutral-light-3":  "#dcdcd9",
-  "--g-color-neutral-light-fg": "#1a1a1a",
-  "--g-color-grey-muted-fg-light": "#555555",
+  "--g-color-neutral-light-0":  "#ffffff",
+  "--g-color-neutral-light-1":  "#f5f5f1",
+  "--g-color-neutral-light-3":  "#ecece7",
+  "--g-color-neutral-light-fg": "#000000",
+  "--g-color-grey-muted-fg-light": "#373737",
   "--g-color-brand-amber-text-light": "#92400e",
   "--g-color-status-destructive-light": "#b80f34",
-  "--g-color-neutral-dark-0":  "#0a0a0a",
-  "--g-color-neutral-dark-1":  "#141414",
-  "--g-color-neutral-dark-3":  "#2c2c2e",
-  "--g-color-neutral-dark-fg": "#f0f0eb",
-  "--g-color-grey-muted-fg-dark": "#b8b8b8",
+  "--g-color-neutral-dark-0":  "#000000",
+  "--g-color-neutral-dark-1":  "#111111",
+  "--g-color-neutral-dark-3":  "#242426",
+  "--g-color-neutral-dark-fg": "#ffffff",
+  "--g-color-grey-muted-fg-dark": "#d0d0d0",
   "--g-color-brand-marigold-500": "#fbbf24",
   "--g-color-status-destructive-dark": "#ff6961",
   "--g-color-brand-amber-500": "#f59e0b",
@@ -43,8 +43,10 @@ const read = (name) => {
 };
 
 // POSITIVE CONTROL, first and unconditional.
+// The expected value comes from EXPECT, not a second literal here: this control hard-coded #fafaf7 and went
+// red (exit 2, blocking deploy) the day token set B made the light page #ffffff (gy-0ho2lx).
 const control = read("--g-color-neutral-light-0");
-if (control !== "#fafaf7") {
+if (control !== EXPECT["--g-color-neutral-light-0"].toLowerCase()) {
   console.error(
     `FAIL (positive control): could not read --g-color-neutral-light-0 out of ` +
     `src/forge/forge.css (got ${control}). The parser is broken or the file moved, ` +
