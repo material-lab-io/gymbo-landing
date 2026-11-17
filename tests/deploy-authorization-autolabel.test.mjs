@@ -128,3 +128,35 @@ test('a draft marked ready is labelled by an event, not by an hourly cron: the w
   assert.match(min, /^\d+$/, 'cron minute is fixed');
   assert.match(hour, /^\d+$/, `the safety cron runs at most daily, got "${crons[0]}" (hourly on the CI pool is what gy-wjtz4b removed)`);
 });
+
+// gy-wjtz4b.1 (tester follow-up on #341): the chain above only holds while gate-selftest runs on EVERY pull_request. A paths / paths-ignore
+// filter on its pull_request trigger would skip it on most PRs, so nothing fires the autolabel for a draft marked ready, and nothing goes red:
+// the PR just never reaches the deploy-authorisation queue until the daily safety cron. Checked on the `on:` block of the real file; the planted
+// controls below are in-memory copies (never written into scripts/, gy-e5kk2z).
+export function gateSelftestTriggerProblems(yml) {
+  const text = yml.replace(/^\s*#.*$/gm, '');
+  const on = /^on:\s*\n([\s\S]*?)^\S/m.exec(text + '\nEND\n')?.[1];
+  if (on === undefined) return ['gate-selftest.yml: no top-level `on:` block found (cannot check the trigger autolabel depends on)'];
+  const pr = /^ {2}pull_request:[^\n]*\n((?: {4,}[^\n]*\n|\s*\n)*)/m.exec(on);
+  if (!pr) return ['gate-selftest.yml: no pull_request trigger, so a draft marked ready fires nothing for autolabel'];
+  return [...pr[1].matchAll(/^ {4}(paths|paths-ignore):/gm)].map((m) =>
+    `gate-selftest.yml: its pull_request trigger has a ${m[1]} filter, so most PRs skip it and autolabel is never fired for a draft marked ready (gy-wjtz4b.1)`);
+}
+
+test('gate-selftest pull_request trigger has no paths / paths-ignore filter (autolabel depends on it, gy-wjtz4b.1)', () => {
+  assert.deepEqual(gateSelftestTriggerProblems(readFileSync(new URL('../.github/workflows/gate-selftest.yml', import.meta.url), 'utf8')), []);
+});
+
+test('planted: a paths or paths-ignore filter on gate-selftest pull_request is named; one on another trigger or in a comment is not', () => {
+  const real = readFileSync(new URL('../.github/workflows/gate-selftest.yml', import.meta.url), 'utf8');
+  const types = '    types: [opened, synchronize, reopened, ready_for_review]\n';
+  assert.ok(real.includes(types), 'the real file changed shape: update this control');
+  const withPaths = real.replace(types, types + "    paths:\n      - 'src/**'\n");
+  const withIgnore = real.replace(types, types + "    paths-ignore:\n      - '**/*.md'\n");
+  assert.match(gateSelftestTriggerProblems(withPaths).join('\n'), /has a paths filter/);
+  assert.match(gateSelftestTriggerProblems(withIgnore).join('\n'), /has a paths-ignore filter/);
+  const commented = real.replace(types, types + "    # paths:\n    #   - 'src/**'\n");
+  assert.deepEqual(gateSelftestTriggerProblems(commented), [], 'a commented-out filter is not a filter');
+  const noPr = real.replace(/^ {2}pull_request:\n(?: {4,}[^\n]*\n)*/m, '');
+  assert.match(gateSelftestTriggerProblems(noPr).join('\n'), /no pull_request trigger/);
+});
