@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.dark.css
- * Pinned at commit: 0e53b62034bdea8f2dcf5c21ec36ce9e326c187a
+ * Pinned at commit: e578a3f27237a1e8e75fb328eb19de20cd0373e5
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -20,6 +20,8 @@
   --g-surface-muted: #242426;
   --g-border: #646464; /** tier B (gy-k4eq9c.2.4): SOLID separator/hairline, UI floor 3:1 — replaces border-at-alpha. Distinct from iOS's unchanged, stronger Color.gBorder. */
   --g-icon-muted: #858585; /** tier B (gy-k4eq9c.2.4): icon/chevron role, UI floor 4.5:1 */
+  --g-border-on-muted: #757575; /** use ONLY for a separator/hairline drawn on surface-muted (bg-secondary / bg-muted fills, sheets); on background/card/card-floating keep border (gy-k4eq9c.2) */
+  --g-icon-muted-on-muted: #939393; /** use ONLY for a muted icon drawn on surface-muted (bg-secondary / bg-muted fills, sheets); on background/card/card-floating keep icon-muted (gy-k4eq9c.2) */
   --g-text-primary: #ffffff;
   --g-text-muted: #d0d0d0;
   --g-text-label: #afafaf;
