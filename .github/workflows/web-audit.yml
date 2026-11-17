@@ -77,7 +77,8 @@ jobs:
           scripts/pw-test.sh tests/audit-perf.spec.ts --project=desktop
 
       - name: Upload report
-        if: failure()   # ci-diet (gcf-ykivt): a passing audit's report is read by no one
+        if: failure()   # gy-0k2lyu: nothing reads the report of a green audit
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: web-audit-report

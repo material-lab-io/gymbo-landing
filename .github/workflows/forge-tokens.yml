@@ -16,8 +16,24 @@ name: Forge Tokens
 # No build, no browser — node only, so it is cheap enough to run on every push.
 # Runners: [self-hosted, pool] per the standing rule. Never *-latest.
 
+# gcf-i272q (CI-diet path filters): on a pull request this runs only when the diff touches an input of one of its
+# gates. This workflow holds NO required check (required on main: `deploy` and `Runner policy (self-hosted only)`),
+# so a workflow-level `paths:` allow-list is safe; a required workflow would need a job-level gate instead.
+#   src/**                    check-forge-tokens SCAN root + sync-forge-tokens vendored mirror + src/forge/forge.pin.json
+#   functions/**              check-forge-tokens SCAN root, gen-functions-forge-tokens (functions/_forge.js)
+#   public/**                 check-forge-tokens ASSET_SCAN root (committed .svg)
+#   scripts/*forge*.mjs       the gates themselves and scripts/forge-producer.mjs
+#   this workflow file
+# tests/forge-tokens-paths.test.mjs derives every input from the gates and fails if one stops matching.
+# push to main and workflow_dispatch are unchanged and always run the full gate.
 on:
   pull_request:
+    paths:
+      - 'src/**'
+      - 'functions/**'
+      - 'public/**'
+      - 'scripts/*forge*.mjs'
+      - '.github/workflows/forge-tokens.yml'
   push:
     branches: [main]
   workflow_dispatch:
@@ -230,8 +246,20 @@ jobs:
           FORGE_PRODUCER_DIR: ${{ github.workspace }}/.forge-producer
         run: |
           cp src/App.tsx /tmp/App.selftest.bak
-          # Substitute a token's exact value back in as a raw literal.
-          sed -i '0,/color: F.bone/s//color: "#f0f0eb"/' src/App.tsx
+          # Substitute a token's exact value back in as a raw literal. F.bone IS --g-color-neutral-dark-fg, so its
+          # value is READ from forge.css: this step hard-coded #f0f0eb, which stopped being any token's value the day
+          # token set B moved it to #ffffff, and the control then "failed" for the wrong reason (gy-0ho2lx).
+          bone="$(sed -n 's/.*--g-color-neutral-dark-fg:[[:space:]]*\(#[0-9a-fA-F]\{6\}\);.*/\1/p' src/forge/forge.css | head -1)"
+          if [ -z "$bone" ]; then
+            echo "::error::COULD-NOT-LOOK: --g-color-neutral-dark-fg not readable from src/forge/forge.css, so the negative control has nothing to seed."
+            exit 1
+          fi
+          sed -i "0,/color: F.bone/s//color: \"$bone\"/" src/App.tsx
+          if ! grep -q "color: \"$bone\"" src/App.tsx; then
+            cp /tmp/App.selftest.bak src/App.tsx
+            echo "::error::NEGATIVE CONTROL FAILED — the seed did not apply to src/App.tsx (no 'color: F.bone' left to replace), so the control proves nothing."
+            exit 1
+          fi
           if node scripts/check-forge-tokens.mjs > /tmp/selftest.log 2>&1; then
             cp /tmp/App.selftest.bak src/App.tsx
             echo "::error::NEGATIVE CONTROL FAILED — the token gate passed a file with a known duplicate literal. The gate is not working; do not trust its green."
