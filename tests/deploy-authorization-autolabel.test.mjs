@@ -109,3 +109,22 @@ test('the workflow can write labels and nothing else, runs self-hosted, never ch
   assert.doesNotMatch(y, /^\s*pull_request(_target)?:/m);
   assert.match(y, /ref: main/);
 });
+
+// gy-wjtz4b (ci-diet): the hourly cron was the only path for a draft marked ready. Now that path is an EVENT: gate-selftest.yml runs on
+// ready_for_review and its completion fires this workflow. Each link below is checked by name, so cutting any one goes red.
+test('a draft marked ready is labelled by an event, not by an hourly cron: the wiring holds', () => {
+  const read = (f) => readFileSync(new URL(`../.github/workflows/${f}`, import.meta.url), 'utf8').replace(/^\s*#.*$/gm, '');
+  const auto = read('deploy-authorization-autolabel.yml');
+  const gate = read('gate-selftest.yml');
+  const sources = /workflow_run:\s*\n\s*workflows:\s*\[([^\]]*)\]/.exec(auto)?.[1] ?? '';
+  assert.match(sources, /"Gate Self-Test \(negative controls\)"/, 'autolabel no longer listens to Gate Self-Test, so ready_for_review fires nothing');
+  assert.match(gate, /^name: Gate Self-Test \(negative controls\)$/m, 'the display name workflow_run matches on changed');
+  const types = /\n  pull_request:\s*\n(?:\s*#[^\n]*\n)*\s*types:\s*\[([^\]]*)\]/.exec(gate)?.[1] ?? '';
+  assert.match(types, /\bready_for_review\b/, 'gate-selftest does not run on ready_for_review, so a draft marked ready waits for the daily cron');
+  for (const t of ['opened', 'synchronize', 'reopened']) assert.match(types, new RegExp(`\\b${t}\\b`), `gate-selftest lost the default type ${t}`);
+  const crons = [...auto.matchAll(/- cron: "([^"]+)"/g)].map((m) => m[1]);
+  assert.equal(crons.length, 1, 'exactly one safety cron');
+  const [min, hour] = crons[0].split(/\s+/);
+  assert.match(min, /^\d+$/, 'cron minute is fixed');
+  assert.match(hour, /^\d+$/, `the safety cron runs at most daily, got "${crons[0]}" (hourly on the CI pool is what gy-wjtz4b removed)`);
+});

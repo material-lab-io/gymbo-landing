@@ -4,7 +4,9 @@ name: Deploy Authorisation Watch
 # to PM, not an implementer self-merging a production deployment.
 on:
   schedule:
-    - cron: "0 * * * *"
+    # gy-wjtz4b (ci-diet, pm 17 Nov): every 6 h, was hourly on the CI pool. Landing PR volume is low and pm patrols the
+    # deploy-authorization-pending queue hourly; the overdue threshold the script applies is still 60 min.
+    - cron: "0 */6 * * *"
   workflow_dispatch:
     inputs:
       threshold_minutes:
