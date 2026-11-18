@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.css
- * Pinned at commit: e578a3f27237a1e8e75fb328eb19de20cd0373e5
+ * Pinned at commit: 0e53b62034bdea8f2dcf5c21ec36ce9e326c187a
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -49,9 +49,6 @@
   --g-color-grey-icon-muted-light: #6a6a6a; /** icon/chevron role, tier B, UI floor 4.5:1 */
   --g-color-grey-separator-dark: #646464; /** solid hairline/separator role, tier B, UI floor 3:1 — replaces border-at-alpha (gy-k4eq9c.2.4) */
   --g-color-grey-separator-light: #8c8c8c; /** solid hairline/separator role, tier B, UI floor 3:1 — replaces border-at-alpha */
-  --g-color-grey-separator-on-muted-light: #7c7c7c; /** solid hairline on surface-muted, UI floor 3:1 (gy-k4eq9c.2); the global separator-light stays for background/card/card-floating */
-  --g-color-grey-separator-on-muted-dark: #757575; /** solid hairline on surface-muted, UI floor 3:1 (gy-k4eq9c.2); the global separator-dark stays for background/card/card-floating */
-  --g-color-grey-icon-muted-on-muted-dark: #939393; /** muted icon on surface-muted, UI floor 4.5:1 (gy-k4eq9c.2); light needs no new primitive (icon-muted-light #6A6A6A is already 4.56 on the fill) */
   --g-color-status-green-fill-dark: #4ade80;
   --g-color-status-green-fill-light: #22c55e;
   --g-color-status-green-text: #166534; /** status-green AS TEXT (AA on light) — tier B (gy-k4eq9c.2.4, was #15803D: 4.59 card, 4.23 muted) */
@@ -126,8 +123,6 @@
   --g-surface-muted: var(--g-color-neutral-light-3);
   --g-border: var(--g-color-grey-separator-light); /** tier B (gy-k4eq9c.2.4): SOLID separator/hairline, UI floor 3:1 — replaces border-at-alpha. Distinct from iOS's unchanged, stronger Color.gBorder. */
   --g-icon-muted: var(--g-color-grey-icon-muted-light); /** tier B (gy-k4eq9c.2.4): icon/chevron role, UI floor 4.5:1 */
-  --g-border-on-muted: var(--g-color-grey-separator-on-muted-light); /** use ONLY for a separator/hairline drawn on surface-muted (bg-secondary / bg-muted fills, sheets); on background/card/card-floating keep border (gy-k4eq9c.2) */
-  --g-icon-muted-on-muted: var(--g-color-grey-icon-muted-light); /** use ONLY for a muted icon drawn on surface-muted (bg-secondary / bg-muted fills, sheets); on background/card/card-floating keep icon-muted (gy-k4eq9c.2) */
   --g-text-primary: var(--g-color-neutral-light-fg);
   --g-text-muted: var(--g-color-grey-muted-fg-light);
   --g-text-label: var(--g-color-grey-label-light);

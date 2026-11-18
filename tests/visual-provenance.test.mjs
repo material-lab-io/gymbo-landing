@@ -4,7 +4,7 @@
 // hash-font-assets.test.mjs / internal-comments.test.mjs).
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { decideProvenance, fingerprintPayload } from '../scripts/visual-provenance-core.mjs';
+import { decideProvenance, fingerprintPayload, positionCue } from '../scripts/visual-provenance-core.mjs';
 
 const LIVE = fingerprintPayload('Request access', ['/img.png|hero']);
 const STALE = fingerprintPayload('Join the waitlist', ['/img.png|hero']);
@@ -113,4 +113,18 @@ test('fingerprintPayload is order-independent over the image list (so unrelated 
     fingerprintPayload('text', ['/a.png|x', '/b.png|y']),
     fingerprintPayload('text', ['/b.png|y', '/a.png|x']),
   );
+});
+
+// gy-okffji (tester 15 Nov, still 'none' on main job 133317176200): the diagnostic line must print the cue that is on the page.
+test('positionCue reads the gallery cue even when textContent glues it to its neighbours', () => {
+  assert.equal(positionCue('See it in action1 of 6Next'), '1 of 6', 'letters on both sides (the case \\b missed)');
+  assert.equal(positionCue('gallery 3\u00a0of\u00a06 screens'), '3 of 6', 'nbsp between the parts');
+  assert.equal(positionCue('12 of 14'), '12 of 14', 'two-digit numbers are not cut');
+  assert.equal(positionCue('Proof of work, 6 screens'), 'none', 'no cue: none, not a guess');
+});
+
+test('planted: the old \\b regex prints none on the glued text (why this test exists)', () => {
+  const old = (text) => (/\b\d+\s*of\s*\d+\b/.exec(text)?.[0] ?? 'none');
+  assert.equal(old('See it in action1 of 6Next'), 'none');
+  assert.notEqual(positionCue('See it in action1 of 6Next'), 'none');
 });

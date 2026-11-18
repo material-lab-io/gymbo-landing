@@ -23,6 +23,9 @@ name: Gate Self-Test (negative controls)
 # narrowed: re-adding one at any layer reproduces the same silent absence.
 on:
   pull_request:
+    # gy-wjtz4b (ci-diet): the default types plus ready_for_review, so a draft marked ready runs this workflow and its completion fires
+    # deploy-authorization-autolabel.yml (workflow_run) at once. That replaces the autolabel's HOURLY backstop cron for that case.
+    types: [opened, synchronize, reopened, ready_for_review]
   schedule:
     - cron: "0 6 * * 1" # weekly, Monday 06:00 UTC
   workflow_dispatch:

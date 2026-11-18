@@ -18,8 +18,18 @@ name: Web Audit
 #
 # Runners: [self-hosted, pool] per the standing Kaushik rule. Never *-latest.
 
+# gcf-cl9g4 (CI-diet path filters): not a required check, so a workflow-level filter is safe. paths-ignore (a deny-list)
+# fails open: a new directory still audits. These roots feed neither the build nor the audit specs
+# (tests/ci-plan.test.mjs proves the same list unread). push to main and dispatch run unfiltered.
 on:
   pull_request:
+    paths-ignore:
+      - "evidence/**"
+      - "review-artifacts/**"
+      - "docs/design/**"
+      - "TOPOLOGY.md"
+      - "schema.sql"
+      - "LICENSE"
   push:
     branches: [main]
   workflow_dispatch:

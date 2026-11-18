@@ -50,6 +50,14 @@ export function decideProvenance({ mode, existingRecord, liveFingerprint, viewpo
   return { action: 'pass' };
 }
 
+/** gy-okffji: the gallery's "N of M" position cue as the diagnostic line prints it, whitespace-normalised, or 'none'.
+ * NOT \b: textContent glues a cue to its neighbours ("...action1 of 6"), and there is no word boundary between a
+ * letter and a digit, so \b printed 'none' while the cue was on the page (job 133317176200, after the \s fix).
+ * Digit look-arounds instead: a number is never cut in half, whatever sits next to it. Diagnostic only, not hashed. */
+export function positionCue(text) {
+  return (/(?<!\d)\d+\s*of\s*\d+(?!\d)/.exec(text)?.[0] ?? 'none').replace(/\s+/g, ' ');
+}
+
 /**
  * gy-okffji: read a value until two CONSECUTIVE reads agree, then return it.
  * No fixed sleep decides "settled": a fast runner returns after two reads, a

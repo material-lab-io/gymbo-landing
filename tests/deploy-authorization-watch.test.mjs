@@ -247,7 +247,7 @@ test('CLI: a malformed override on dispatch is refused with a non-zero exit, not
 // --- the workflow wiring ---
 test('WORKFLOW: threshold_minutes is a dispatch input only, is handed to the script via env, and the runner is self-hosted', () => {
   const yml = readFileSync(new URL('../.github/workflows/deploy-authorization-watch.yml', import.meta.url), 'utf8');
-  assert.match(yml, /schedule:\s*\n\s*- cron: "0 \* \* \* \*"/);
+  assert.match(yml, /- cron: "0 \*\/6 \* \* \*"/, "every 6 h (gy-wjtz4b), not hourly on the CI pool");
   assert.match(yml, /workflow_dispatch:\s*\n\s*inputs:\s*\n\s*threshold_minutes:/);
   assert.match(yml, /DEPLOY_AUTH_THRESHOLD_MINUTES: \$\{\{ inputs\.threshold_minutes \}\}/);
   assert.match(yml, /runs-on: \[self-hosted, pool\]/);
