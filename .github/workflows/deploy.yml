@@ -85,6 +85,7 @@ jobs:
   # nothing heavy. push to main and workflow_dispatch always run the full gate and the deploy.
   plan:
     runs-on: [self-hosted, pool]
+    timeout-minutes: 3
     outputs:
       heavy: ${{ steps.p.outputs.heavy }}
     steps:
@@ -99,8 +100,8 @@ jobs:
             echo "non-PR event (${{ github.event_name }}): full gate."
             exit 0
           fi
-          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" > /tmp/changed.txt
-          node scripts/ci-plan.mjs < /tmp/changed.txt | tee -a "$GITHUB_OUTPUT"
+          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" > "$RUNNER_TEMP/changed.txt"
+          node scripts/ci-plan.mjs < "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
 
   deploy:
     needs: plan
