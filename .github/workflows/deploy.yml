@@ -78,7 +78,36 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # gcf-cl9g4 (CI-diet path filters). `deploy` is a REQUIRED check, so there is deliberately NO workflow-level `paths:`:
+  # a workflow that never starts leaves the required context pending and blocks the PR. Instead this seconds-long job
+  # classifies the change set and `deploy` is skipped at JOB level; a job skipped by `if` still reports, and branch
+  # protection reads it as success. A PR that touches only paths no gate reads (scripts/ci-plan.mjs NON_GATED) runs
+  # nothing heavy. push to main and workflow_dispatch always run the full gate and the deploy.
+  plan:
+    runs-on: [self-hosted, pool]
+    timeout-minutes: 3
+    outputs:
+      heavy: ${{ steps.p.outputs.heavy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: p
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "heavy=true" >> "$GITHUB_OUTPUT"
+            echo "non-PR event (${{ github.event_name }}): full gate."
+            exit 0
+          fi
+          git diff --name-only "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" > "$RUNNER_TEMP/changed.txt"
+          node scripts/ci-plan.mjs < "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
+
   deploy:
+    needs: plan
+    # `!cancelled()` plus `!= 'false'`: a failed or empty plan runs the full gate. A skip may only ever come from a
+    # plan that positively said heavy=false, never from the plan job failing (a skipped dependent would read green).
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.plan.outputs.heavy != 'false') }}
     runs-on: [self-hosted, pool]
     steps:
       # fetch-depth: 0 (gy-7anl3) — the screenshot gate needs to know which
