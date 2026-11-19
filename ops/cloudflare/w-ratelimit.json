@@ -1,0 +1,30 @@
+{
+  "_comment": "gy-ukcqm. Edge rate limit for anonymous POST /w/* (no-login shared-workout tick/finish). Source of truth for scripts/cf-w-ratelimit.mjs. A real client ticks <=~25 exercises plus a finish in a session and double-taps; limits sit well above that. Pushed to the zone's http_ratelimit phase entrypoint ruleset.",
+  "phase": "http_ratelimit",
+  "rules": [
+    {
+      "ref": "gy-ukcqm-w-post-per-ip-token",
+      "description": "gy-ukcqm: POST /w/<token> per IP per share token",
+      "expression": "(http.request.method eq \"POST\" and starts_with(http.request.uri.path, \"/w/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src", "http.request.uri.path"],
+        "period": 60,
+        "requests_per_period": 40,
+        "mitigation_timeout": 60
+      }
+    },
+    {
+      "ref": "gy-ukcqm-w-post-per-ip",
+      "description": "gy-ukcqm: POST /w/* per IP across all share tokens (token-guessing sweep)",
+      "expression": "(http.request.method eq \"POST\" and starts_with(http.request.uri.path, \"/w/\"))",
+      "action": "block",
+      "ratelimit": {
+        "characteristics": ["cf.colo.id", "ip.src"],
+        "period": 60,
+        "requests_per_period": 120,
+        "mitigation_timeout": 300
+      }
+    }
+  ]
+}
