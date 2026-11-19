@@ -7,12 +7,12 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 29 October 2026"
+        updated="Last updated 19 November 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
           <h2>Who we are</h2>
-          <p>Gymbo is a product of Material Lab. You can reach us about privacy at <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>. This policy covers the Gymbo iOS app and the getgymbo.com website.</p>
+          <p>Gymbo is a product of Material Lab. You can reach us about privacy at <a href="mailto:damini@materiallab.io">damini@materiallab.io</a>. This policy covers the Gymbo iOS app, the Gymbo web app (app.getgymbo.com), and the getgymbo.com website.</p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -37,12 +37,22 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>Payments</h2>
-          <p>Gymbo helps you <strong>record</strong> the payments your clients make to you (cash or UPI) and keeps the running balance for your bookkeeping. Gymbo does not process payments, move money, or store card or bank details. The payment happens directly between you and your client.</p>
+          <p>Gymbo helps you <strong>record</strong> the payments your clients make to you (cash or UPI) and keeps the running balance for your bookkeeping. Gymbo does not process payments, move money, or store card or bank details. The payment happens directly between you and your client. This is about the payments between you and your clients. Gymbo Pro, our own subscription, is paid separately: see "Payments for Gymbo Pro" below.</p>
+        </section>
+
+        <section className="flex flex-col gap-3">
+          <h2>Payments for Gymbo Pro</h2>
+          <ul>
+            <li><strong>What it does:</strong> takes your payment when you subscribe to Gymbo Pro on the web. Razorpay's checkout window opens over the page. You enter your card, UPI or bank details there. Gymbo does not see or store them.</li>
+            <li><strong>What we send:</strong> your Gymbo account ID and the plan you chose. Razorpay also gets your payment and contact details straight from you, and your device's IP address when the checkout window opens.</li>
+            <li><strong>What we keep:</strong> the plan, its status, the trial and renewal dates, and Razorpay's subscription ID, with your account. We delete them when your account is deleted.</li>
+            <li><strong>What Razorpay keeps:</strong> Razorpay keeps its own payment records under its own <a href="https://razorpay.com/privacy/" rel="noopener noreferrer">privacy policy</a> and the rules that apply to it. Cancelling or deleting your Gymbo account stops future charges. It does not erase those records.</li>
+          </ul>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), payment collection for Gymbo Pro on the web (Razorpay), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -72,6 +82,7 @@ export function Privacy() {
             <li><strong>Supabase</strong>: hosts our database, sign-in, and backend services. Your clients, schedule, payments, and attendance records are stored here, on infrastructure located outside India, in Singapore.</li>
             <li><strong>Resend</strong>: delivers the emails we send you (sign-in codes, PIN-reset codes, reminders and account notices).</li>
             <li><strong>Google</strong>: used only for Google Sign-In, if you choose it, to authenticate your account.</li>
+            <li><strong>Razorpay</strong>: takes the payment when you subscribe to Gymbo Pro on the web. See "Payments for Gymbo Pro" above.</li>
             <li><strong>PostHog</strong>: product analytics. The iOS app sends this to PostHog's European Union region, so that data is processed in the EU. A data-processing agreement with PostHog is in place.</li>
           </ul>
 
