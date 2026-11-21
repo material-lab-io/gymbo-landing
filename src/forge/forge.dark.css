@@ -1,6 +1,6 @@
 /* 🔴 GENERATED FILE — DO NOT EDIT BY HAND.
  * Source: material-lab-io/Gymbo-v1  design-tokens/dist/forge.dark.css
- * Pinned at commit: ee41dade58377ec52e1bfd2d35e6e54f3de6c6d4
+ * Pinned at commit: 223e6a89b412e17fd9de11b867bf5971743fcfc6
  *
  * Regenerate:  node scripts/sync-forge-tokens.mjs
  * Verify:      node scripts/sync-forge-tokens.mjs --check
@@ -44,4 +44,5 @@
   --g-cursor: #007aff;
   --g-text-link: #ffffff; /** secondary text-links = NEUTRAL foreground, not brand (RATIFIED FORGE §7). underline is the affordance. */
   --g-cta-shadow: 0 1px 2px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06); /** 🔴 RETIRED AS THE PRIMARY-CTA BOUNDARY (FORGE §7, amended 2026-09-06; gy-w2luq). The soft-neutral-shadow route CANNOT carry a 1.4.11 boundary: measured 1.36:1 at absolute-maximum stacking against a 3:1 requirement, and reaching 3:1 needs ~3x the token alpha, which renders as the hard grey edge §7 existed to avoid. What ships instead is a 1pt ink outline ring (Color.gForeground, light mode only) per Kaushik's 2026-09-06 GO. DO NOT re-propose either shadow route for that boundary. This token remains only for any non-boundary decorative use; it is NOT the CTA's accessibility boundary and must not be cited as one. */
+  --g-card-floating-shadow: none; /** role for the floating deck card shadow; dark = none on purpose (web_designer pick, gy-u9xjwi): the card keeps its ring only. */
 }
