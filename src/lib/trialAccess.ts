@@ -55,6 +55,10 @@ export const HERO_SMALL_PRINT = `Free to start. ${RUNS_IN_BROWSER_LINE} iPhone a
 export const FINAL_CTA_SUB = `Start free in your browser. ${NO_PAYMENT_LINE}`;
 export const PRICING_HEADING = "Start free. Upgrade when you are ready.";
 export const PRICING_FREE_LINE = "Sign up, view and export your clients' records.";
+/** gy-aqayff (Kaushik 22 Nov: every Gymbo price is GST-inclusive; compliance's words, gy-2ymb5y). The ONE helper: every landing price phrase ends with this, and
+ *  tests/gst-inclusive.test.mjs fails the build on a bare Gymbo price in any built non-blog page. */
+export const GST_SUFFIX = ", incl. GST";
+export const inclGst = (priceText: string): string => `${priceText}${GST_SUFFIX}`;
 export const PRICING_PRO_ANNUAL_LINE = `Or ₹${PRICE_ANNUAL_INR_DISPLAY} a year (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} a month, save ${ANNUAL_SAVINGS_PERCENT}%). Both prices include GST.`;
 export const PRICING_PAYMENT_LINE = "Pro is paid on the web with Razorpay.";
 export const START_FREE_LABEL = "Start free";

@@ -5,7 +5,7 @@
 // REMOVED — it is not stated on truecoach.co/pricing (only third-party reported).
 // Gymbo framing: "one flat price, no per-client tiers" (never "unlimited clients").
 import type { Post } from "../blog/posts";
-import { GYMBO_FREE_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, PRICE_ANNUAL_INR_DISPLAY } from "../../lib/trialAccess";
+import { GYMBO_FREE_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, PRICE_ANNUAL_INR_DISPLAY, GST_SUFFIX } from "../../lib/trialAccess";
 import { inrFromUsd, FX_FOOTNOTE } from "../../lib/fx";
 
 const truecoach: Post = {
@@ -22,7 +22,7 @@ const truecoach: Post = {
   faq: [
     {
       q: "Is there a TrueCoach alternative for Indian personal trainers?",
-      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, WhatsApp reminders, and built-in scheduling), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. TrueCoach is a strong remote-coaching tool but bills in USD and doesn't offer UPI, GST, or WhatsApp.`,
+      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, WhatsApp reminders, and built-in scheduling), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly)${GST_SUFFIX}, one flat plan with no per-client caps. TrueCoach is a strong remote-coaching tool but bills in USD and doesn't offer UPI, GST, or WhatsApp.`,
     },
     {
       q: "How much does TrueCoach cost in India?",
@@ -38,7 +38,7 @@ const truecoach: Post = {
     },
     {
       q: "Is Gymbo cheaper than TrueCoach?",
-      a: `For an Indian trainer, by a wide margin. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) with no per-client caps. TrueCoach's tiers put a 5–20 client trainer at roughly ₹${inrFromUsd(57.99)}/mo.`,
+      a: `For an Indian trainer, by a wide margin. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly)${GST_SUFFIX} with no per-client caps. TrueCoach's tiers put a 5–20 client trainer at roughly ₹${inrFromUsd(57.99)}/mo.`,
     },
   ],
   bodyMd: `If you train clients in India and get paid in rupees, here's an honest comparison so you can choose well.
@@ -49,8 +49,8 @@ const truecoach: Post = {
 |---|---|---|
 | Built for | Independent mobile trainers in India | Remote 1:1 coaches (mainly US/Western) |
 | The main job | Punch a class in a couple of taps; track payments & balances | Remote programming & client engagement |
-| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | Starter ~$26/mo (~₹${inrFromUsd(26.34)}), caps at **5 clients** |
-| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | Standard ~$58/mo (**~₹${inrFromUsd(57.99)}**), caps at **20 clients** |
+| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual)${GST_SUFFIX} | Starter ~$26/mo (~₹${inrFromUsd(26.34)}), caps at **5 clients** |
+| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps**${GST_SUFFIX} | Standard ~$58/mo (**~₹${inrFromUsd(57.99)}**), caps at **20 clients** |
 | Pricing model | One flat price, no per-client tiers | Tiered by active client count (5 / 20 / 50) |
 | Payment fees | UPI via Razorpay (standard rates) | Stripe-based |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing, no UPI |
@@ -103,7 +103,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 
 For a working roster of 5–20 clients, TrueCoach lands around **₹${inrFromUsd(57.99)}/mo** (Standard tier, annual billing). For an independent Indian trainer, that's not a small line item.
 
-Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
+Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**${GST_SUFFIX}, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
 
 const trainerize: Post = {
@@ -116,11 +116,11 @@ const trainerize: Post = {
   // The served <title>/<meta description> live in alternatives/trainerize/index.html.
   metaTitle: "Trainerize Alternative for Personal Trainers in India | Gymbo",
   metaDescription:
-    `Trainerize is built for $100 sessions. Gymbo is built for how India trains: UPI, GST, WhatsApp, and India pricing from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo. An honest comparison for independent personal trainers.`,
+    `Trainerize is built for $100 sessions. Gymbo is built for how India trains: UPI, GST, WhatsApp, and India pricing from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo${GST_SUFFIX}. An honest comparison for independent personal trainers.`,
   faq: [
     {
       q: "Is there a Trainerize alternative for Indian personal trainers?",
-      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, and WhatsApp reminders), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. Trainerize is a strong global platform but bills in USD and doesn't support UPI, GST, or WhatsApp.`,
+      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, and WhatsApp reminders), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly)${GST_SUFFIX}, one flat plan with no per-client caps. Trainerize is a strong global platform but bills in USD and doesn't support UPI, GST, or WhatsApp.`,
     },
     {
       q: "How much does Trainerize cost in India?",
@@ -136,7 +136,7 @@ const trainerize: Post = {
     },
     {
       q: "Is Gymbo cheaper than Trainerize?",
-      a: `For an Indian trainer, substantially. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) regardless of how many clients you have. Trainerize's per-client tiers and add-ons typically put a working trainer at ₹${inrFromUsd(23)}+/mo on annual billing.`,
+      a: `For an Indian trainer, substantially. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly)${GST_SUFFIX} regardless of how many clients you have. Trainerize's per-client tiers and add-ons typically put a working trainer at ₹${inrFromUsd(23)}+/mo on annual billing.`,
     },
   ],
   bodyMd: `Here's an honest look at both, so you can pick what's actually right for you.
@@ -147,8 +147,8 @@ const trainerize: Post = {
 |---|---|---|
 | Built for | Independent mobile trainers in India | Coaches → studios → gyms → enterprise (global) |
 | The main job | Punch a class in a couple of taps; track payments & balances | Online coaching, programming & client engagement |
-| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | $9/mo (~₹${inrFromUsd(9)}), caps at **2 clients** |
-| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹${inrFromUsd(23)}+)** on Pro, before add-ons |
+| Entry price | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual)${GST_SUFFIX} | $9/mo (~₹${inrFromUsd(9)}), caps at **2 clients** |
+| Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps**${GST_SUFFIX} | **$23+/mo (~₹${inrFromUsd(23)}+)** on Pro, before add-ons |
 | Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing |
 | GST-ready invoices | ✅ | ❌ |
@@ -191,7 +191,7 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 
 A real Trainerize seat for a 5–20 client trainer lands around **₹${inrFromUsd(23)}+/mo** on annual billing once you're past the 2-client cheap tier and add payments or nutrition. A real cost against the ₹20,000–50,000/month a mid-career independent trainer typically clears, for software.
 
-Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**, with no per-client caps. Your roster grows; your bill doesn't.`,
+Gymbo is **one flat plan, two ways to pay: ₹${PRICE_MONTHLY_INR}/mo, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on the annual plan (₹${PRICE_ANNUAL_INR_DISPLAY}/yr)**${GST_SUFFIX}, with no per-client caps. Your roster grows; your bill doesn't.`,
 };
 
 // Akton (branded "Fitrack") — gym-management software. Differentiate on FIT
@@ -218,7 +218,7 @@ const akton: Post = {
     },
     {
       q: "Is Gymbo cheaper than Akton?",
-      a: `Akton is priced as a full gym suite with unlimited members; check akton.in for its current price. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly) for a focused solo-trainer tool. The right choice is about fit, not the smaller number: a gym suite is wasted on a solo trainer, and a solo tool won't run a facility.`,
+      a: `Akton is priced as a full gym suite with unlimited members; check akton.in for its current price. Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo monthly)${GST_SUFFIX} for a focused solo-trainer tool. The right choice is about fit, not the smaller number: a gym suite is wasted on a solo trainer, and a solo tool won't run a facility.`,
     },
     {
       q: "Does Gymbo have the gym features Akton has?",
@@ -245,7 +245,7 @@ Both are made in India, for India. The real question isn't features or price. It
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
 | Setup | No setup, nothing to configure | Onboard a facility: branches, staff, members |
 | Platform | Web (iPhone app coming soon) | iPhone, Android, web |
-| Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | See akton.in (gym suite, unlimited members) |
+| Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual)${GST_SUFFIX} | See akton.in (gym suite, unlimited members) |
 | Free trial | ${GYMBO_FREE_ROW} | Not clearly stated |
 
 *Both are India-native: UPI, GST, and WhatsApp aren't the difference here. The difference is who the product is built for.*
@@ -301,7 +301,7 @@ Gymbo strips it down to the one-person business:
 
 Akton may well list a lower number. But it's pricing a gym's operating system, with unlimited members, for a facility. You'd be paying for a cockpit and using a corner of it.
 
-Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly) for a tool built to do one job (run your one-person training business) well. That's less than the cost of a single recovered no-show. The question isn't which number is smaller; it's which tool fits the business you actually run.`,
+Gymbo is one flat plan from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly)${GST_SUFFIX} for a tool built to do one job (run your one-person training business) well. That's less than the cost of a single recovered no-show. The question isn't which number is smaller; it's which tool fits the business you actually run.`,
 };
 
 export const ALTERNATIVES: Post[] = [truecoach, trainerize, akton];
