@@ -26,9 +26,15 @@ export const RETIRED = [
   ["private-alpha", /\bprivate alpha\b/iu],
 ];
 
+// The legal pages describe the IPHONE app's App Store billing truthfully (compliance wording on gy-1vd9qy.10.7, accepted by pm 22 Nov): "On iPhone, the
+// App Store takes the payment ... including any introductory offer Apple shows you". Only those two claim kinds are allowed, only on these two routes;
+// the 7-day trial, the trial-end wording, iPhone only and private alpha stay banned there too.
+export const LEGAL_ROUTES = ["/terms/", "/privacy/"];
+export const LEGAL_ALLOWED = ["introductory-offer", "app-store-billing"];
 export function scanText(value, route, surface) {
   const text = matchable(value).replace(/[*_`]/g, "");
-  return RETIRED.filter(([, re]) => re.test(text)).map(([id, re]) => ({ id, route, surface, snippet: (re.exec(text)?.[0] ?? "").slice(0, 160) }));
+  const allowed = LEGAL_ROUTES.includes(route) ? LEGAL_ALLOWED : [];
+  return RETIRED.filter(([id]) => !allowed.includes(id)).filter(([, re]) => re.test(text)).map(([id, re]) => ({ id, route, surface, snippet: (re.exec(text)?.[0] ?? "").slice(0, 160) }));
 }
 
 export function scanBuilt(root = "dist") {

@@ -64,3 +64,14 @@ test("a dash variant or an upper-case spelling of the 7-day trial is still caugh
 test("a competitor's own free trial is not Gymbo's claim: '14 days, no card' passes", () => {
   assert.deepEqual(scanText("| Free trial | Free plan, no trial needed | 14 days, no card |", "/", "x"), []);
 });
+
+test("the legal pages may describe iPhone App Store billing and an introductory offer, but never the web trial, trial-end wording, iPhone-only or private alpha", () => {
+  const apple = "On iPhone, the App Store takes the payment and handles billing under Apple's terms, including any introductory offer Apple shows you.";
+  assert.deepEqual(scanText(apple, "/terms/", "x"), []);
+  assert.deepEqual(scanText(apple, "/privacy/", "x"), []);
+  assert.ok(scanText(apple, "/", "x").length > 0, "the same sentence on the home page is still red");
+  for (const [id, planted] of Object.entries(PLANTED)) {
+    if (["introductory-offer", "app-store-billing"].includes(id)) continue;
+    assert.ok(scanText(planted, "/terms/", "x").some((f) => f.id === id), `${id} on /terms/`);
+  }
+});

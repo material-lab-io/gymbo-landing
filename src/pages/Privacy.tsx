@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 19 November 2026"
+        updated="Last updated 22 November 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -20,7 +20,7 @@ export function Privacy() {
           <ul>
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, notes and goals, the classes you punch, and the payments and balances you record. You enter this information, and you decide what to add.</li>
-            <li><strong>Request access.</strong> If you request access on getgymbo.com, the name and the phone number and/or email you submit.</li>
+            <li><strong>Waitlist and access requests.</strong> If you join the waitlist or request access on getgymbo.com, the name and the phone number and/or email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com: aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
             <li><strong>Product analytics in the app.</strong> We record how the app is used (screens opened, features used, and errors) with PostHog. So we can tell one trainer's sessions apart, this includes a stable user ID for your Gymbo account, plus <strong>your own</strong> name and phone number, and, when an action is about a client, figures such as the payment amount, the number of classes added, or the class balance left, but never anything that identifies that client. Your clients' names, phone numbers, contact details, notes, and internal IDs are never sent. You control this under Settings → Privacy; when it is off, we send no usage events and none of your name, phone number, or activity. The app does still briefly contact PostHog's servers at launch to fetch configuration, which shares your device's IP address but no personal or usage data.</li>
             <li><strong>Technical data.</strong> Standard logs (such as IP address and device or browser type) used to keep the service secure and working.</li>
@@ -32,7 +32,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we use it</h2>
-          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you requested access to our private alpha, we use your email to notify you when access opens and to share launch updates.</p>
+          <p>To provide and operate Gymbo, maintain your account, respond to support requests, improve the product, keep it secure, and tell you about the service. If you joined our waitlist or asked for access, we use your email to tell you about Gymbo and to share launch updates, and you can unsubscribe at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -45,7 +45,7 @@ export function Privacy() {
           <ul>
             <li><strong>What it does:</strong> takes your payment when you subscribe to Gymbo Pro on the web. Razorpay's checkout window opens over the page. You enter your card, UPI or bank details there. Gymbo does not see or store them.</li>
             <li><strong>What we send:</strong> your Gymbo account ID and the plan you chose. Razorpay also gets your payment and contact details straight from you, and your device's IP address when the checkout window opens.</li>
-            <li><strong>What we keep:</strong> the plan, its status, the trial and renewal dates, and Razorpay's subscription ID, with your account. We delete them when your account is deleted.</li>
+            <li><strong>What we keep:</strong> the plan, its status, the renewal dates (and, for App Store subscribers, the end date of any introductory offer), and Razorpay's subscription ID, with your account. We delete them when your account is deleted.</li>
             <li><strong>What Razorpay keeps:</strong> Razorpay keeps its own payment records under its own <a href="https://razorpay.com/privacy/" rel="noopener noreferrer">privacy policy</a> and the rules that apply to it. Cancelling or deleting your Gymbo account stops future charges. It does not erase those records.</li>
           </ul>
         </section>
@@ -102,12 +102,12 @@ export function Privacy() {
         <section className="flex flex-col gap-3">
           <h2>Keeping and deleting your data</h2>
           <p>We keep your data while your account is active. You can export your clients' attendance and payment records from the app at any time, and you can ask us to delete your account in the app.</p>
-          <p>If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.</p>
+          <p>If you join the waitlist or request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">
           <h2>Your choices</h2>
-          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you've requested access, you can unsubscribe from our emails or ask us to delete your details at any time.</p>
+          <p>You can access, correct, export, or delete your data, in the app or by emailing us. If you joined our waitlist or asked for access, you can unsubscribe from our emails or ask us to delete your details at any time.</p>
         </section>
 
         <section className="flex flex-col gap-3">

@@ -7,7 +7,6 @@ import {
   PRICE_MONTHLY_INR,
   PRICE_ANNUAL_INR_DISPLAY,
   PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR,
-  STATUS_LANGUAGE,
   PRICING_PAYMENT_LINE,
 } from '../src/lib/trialAccess';
 
@@ -91,18 +90,21 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(description.toLowerCase()).not.toContain('trial');
   });
 
-  // Terms.tsx is legal copy (pm ruling gm-pzp): this goes red until compliance edits the text. It asserts the prices, and that the
-  // retired trial / App Store billing wording is GONE (gy-1vd9qy.10.4, no trial on the web).
-  test('Terms.tsx states the prices and no longer promises a trial or App Store billing (literal legal text, not interpolated)', () => {
-    expect(termsSource).toContain(`₹${PRICE_MONTHLY_INR}/month`);
+  // Terms.tsx and Privacy.tsx are legal copy (pm ruling gm-pzp): literal text, asserted not interpolated. Wording from compliance (gy-1vd9qy.10.7).
+  test('Terms.tsx states the prices, Razorpay on the web and no web trial (literal legal text, not interpolated)', () => {
+    expect(termsSource).toContain(`₹${PRICE_MONTHLY_INR} per month`);
     expect(termsSource).toContain(`₹${PRICE_ANNUAL_INR_DISPLAY} per year`);
-    expect(termsSource).toContain(`₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective`);
-    expect(termsSource).not.toMatch(/free for 7 days|introductory[- ]offer|App Store/i);
+    expect(termsSource).toContain(`₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} per month effective`);
+    expect(termsSource).toContain('On the web you pay through Razorpay.');
+    expect(termsSource).toContain('There is no free trial on the web');
+    expect(termsSource).not.toMatch(/free for 7 days/i);
   });
 
-  test('Privacy.tsx states the current status language matching the constant (literal legal text, not interpolated)', () => {
-    expect(privacySource).toContain(STATUS_LANGUAGE.toLowerCase());
+  test('Privacy.tsx no longer says private alpha and names the web app (literal legal text, not interpolated)', () => {
+    expect(privacySource.toLowerCase()).not.toContain('private alpha');
+    expect(privacySource).toContain('app.getgymbo.com');
   });
+
 
   test('App.tsx states the payment line once, from PRICING_PAYMENT_LINE (Pro is paid on the web)', () => {
     expect(appSource.split('{PRICING_PAYMENT_LINE}').length - 1).toBe(1);
@@ -173,9 +175,9 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     // Same proof, for the literal-text legal-copy assertion CHANGE 1 added:
     // mutates an in-memory copy of the real Terms.tsx source and asserts the
     // real check phrase against it, which must NOT match.
-    const driftedSource = termsSource.replace(`₹${PRICE_MONTHLY_INR}/month`, '₹999999/month');
-    expect(driftedSource).not.toContain(`₹${PRICE_MONTHLY_INR}/month`);
-    expect(() => expect(driftedSource).toContain(`₹${PRICE_MONTHLY_INR}/month`)).toThrow();
+    const driftedSource = termsSource.replace(`₹${PRICE_MONTHLY_INR} per month`, "₹999999 per month");
+    expect(driftedSource).not.toContain(`₹${PRICE_MONTHLY_INR} per month`);
+    expect(() => expect(driftedSource).toContain(`₹${PRICE_MONTHLY_INR} per month`)).toThrow();
   });
 });
 
