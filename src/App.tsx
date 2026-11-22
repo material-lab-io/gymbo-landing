@@ -654,11 +654,11 @@ export default function App() {
                 because the zone's email obfuscation otherwise serves "[email protected]"
                 to anything that reads the page without JavaScript (the audit did). */}
             <p id="support" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>
-              Support: <a href="mailto:damini@materiallab.io" className="underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
+              Support: <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+              <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
+              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
               <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
             </div>
           </div>
