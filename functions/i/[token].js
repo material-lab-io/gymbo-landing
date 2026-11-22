@@ -35,8 +35,8 @@ th.r,td.r{text-align:right;white-space:nowrap;padding-left:12px}
 td{padding:10px 0;border-top:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
 td .q{display:block;color:var(--muted);font-size:12px}
 .amt{font-variant-numeric:tabular-nums}
-.tot{margin:0 0 18px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;font-size:13px}
-.tot dt{color:var(--muted)}.tot dd{margin:0;text-align:right}
+.tot{margin:0 0 18px;display:grid;grid-template-columns:1fr auto;gap:4px 0;font-size:13px}
+.tot dt{color:var(--muted)}.tot dd{margin:0;text-align:right;padding-left:12px}
 .tot .grand{font-weight:700;font-size:15px;color:var(--fg);border-top:1px solid var(--line);padding-top:8px}
 .due{background:var(--card);border-radius:20px;padding:16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .due b{font-size:20px}
