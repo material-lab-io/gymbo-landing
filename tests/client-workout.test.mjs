@@ -178,6 +178,19 @@ test("AC3: changing the stored author changes the credit — nothing is hard-cod
   assert.doesNotMatch(html, /Goulart/);
 });
 
+test("gy-1vd9qy.11.2: the footer is 'Made with Gymbo, start free', one tagged link, and the tag carries nothing about the workout or the person", async () => {
+  const { html } = await get([row(BLOCK, { media: MEDIA_OK })]);
+  const foot = html.match(/<p class="foot">([\s\S]*?)<\/p>/);
+  assert.ok(foot, "no footer");
+  const links = [...foot[1].matchAll(/<a href="([^"]*)">([^<]*)<\/a>/g)];
+  assert.equal(links.length, 1, "exactly one link in the footer");
+  assert.equal(links[0][2], "Gymbo, start free");
+  assert.equal(links[0][1].replace(/&amp;/g, "&"), "https://getgymbo.com/?utm_source=client-workout&utm_medium=product&utm_campaign=w-footer");
+  assert.ok(!html.includes("Powered by Gymbo"), "the untagged footer is gone");
+  // the link is the same for every share: the token, the workout and the trainer never ride along
+  assert.ok(!links[0][1].includes(TOKEN), "the share token must not be in the sign-up link");
+});
+
 test("🔴 the page collects NOTHING about the person", async () => {
   const { html } = await get([row(BLOCK, { media: MEDIA_OK })]);
   // A founder-confirmed constraint: the token identifies the workout, not the

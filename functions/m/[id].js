@@ -58,7 +58,7 @@ video,img.asset{width:100%;border-radius:12px;display:block;background:var(--g-c
 .state h2{font-size:16px;margin:0 0 8px}
 .state .why{color:var(--muted);font-size:12px}
 .foot{margin-top:32px;font-size:12px;color:var(--muted)}
-.foot a{color:var(--muted)}
+.foot a{color:var(--muted);display:inline-block;padding:14px 0}
 `;
 
 const page = (title, body, status = 200) =>
@@ -68,7 +68,7 @@ const page = (title, body, status = 200) =>
 <title>${esc(title)} - Gymbo</title>
 <meta name="robots" content="noindex">
 <style>${CSS}</style></head><body><div class="wrap">${body}
-<p class="foot">Shared from <a href="https://getgymbo.com/?utm_source=media-page&amp;utm_medium=product&amp;utm_campaign=m-footer">Gymbo</a>. If you appear in
+<p class="foot">Made with <a href="https://getgymbo.com/?utm_source=media-page&amp;utm_medium=product&amp;utm_campaign=m-footer">Gymbo, start free</a>. If you appear in
 this footage or hold rights in it, you can
 <a href="/m/takedown">request its removal</a>.</p>
 </div></body></html>`,

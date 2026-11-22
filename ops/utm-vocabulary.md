@@ -20,6 +20,7 @@ Format: all values lowercase, a-z 0-9 and hyphen only (chatgpt.com is the one ex
 | utm_source | utm_medium | utm_campaign | Surface |
 |---|---|---|---|
 | media-page | product | m-footer | /m/ footer backlink (landing) |
+| client-workout | product | w-footer | /w/ footer backlink "Made with Gymbo, start free" (landing, gy-1vd9qy.11.2; marketer sign-off owed) |
 | pdf | product | receipt-footer | receipt PDF footer link (product, post-launch ask) |
 | email | email | the SEND SLUG, lowercase with hyphens | any getgymbo.com link in a gm-d5d send |
 | linkedin, x, youtube | social | bio | only when a Gymbo profile exists; none does today |

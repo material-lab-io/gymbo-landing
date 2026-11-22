@@ -68,6 +68,7 @@ button.tick[data-done="1"]{color:var(--done);border-color:var(--done);font-weigh
   color:var(--done);font-weight:700}
 .state{background:var(--card);border-radius:20px;padding:24px;text-align:center}
 .foot{margin-top:28px;font-size:11px;color:var(--muted);text-align:center}
+.foot a{color:var(--muted);text-decoration:underline;display:inline-block;padding:14px 0}
 /* The DPDP notice. Deliberately NOT 11px muted like .foot: this is a required
    disclosure that must be read before the first tap, and styling it like
    small print is how a notice becomes decoration. Card background, normal
@@ -197,7 +198,7 @@ ${wo.notes ? `<p class="sub">${esc(wo.notes)}</p>` : ""}
 ${notice}
 ${parts.join("")}
 ${finish}
-<p class="foot">Powered by Gymbo</p>`, 200, ogTags(wo.name));
+<p class="foot">Made with <a href="https://getgymbo.com/?utm_source=client-workout&amp;utm_medium=product&amp;utm_campaign=w-footer">Gymbo, start free</a></p>`, 200, ogTags(wo.name));
 }
 
 export async function onRequestPost(context) {

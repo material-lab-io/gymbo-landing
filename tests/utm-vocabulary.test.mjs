@@ -178,7 +178,7 @@ async function checkMediaFooter(src, vocab) {
     assert.ok(foot, `no footer on ${id}`);
     const home = [...foot[1].matchAll(/<a href="(https:\/\/getgymbo\.com\/[^"]*)">([^<]*)<\/a>/g)];
     assert.equal(home.length, 1, "exactly one getgymbo.com backlink in the footer");
-    assert.equal(home[0][2], "Gymbo", "visible text unchanged");
+    assert.equal(home[0][2], "Gymbo, start free", "gy-1vd9qy.11.2: the footer link reads Made with Gymbo, start free");
     const href = decodeAttr(home[0][1]);
     assert.equal(href, "https://getgymbo.com/?utm_source=media-page&utm_medium=product&utm_campaign=m-footer");
     assert.ok(inTable(vocab, triple(href), { liveOnly: false }), `${href} is outside the vocabulary`);
