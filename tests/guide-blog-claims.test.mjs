@@ -187,9 +187,10 @@ const ROWS = [
 "It also gives you WhatsApp reminder templates to send between sessions, so clients don't quietly drift away.",
 "It also gives you pre-written WhatsApp messages for low packages, renewals and overdue payments, so clients don't quietly drift away."
 ]
-];
+,
+[37,"let the client card calculate the balance, and use colour-coded balances to see who owes you.","let the client card calculate the balance, and see in red who owes you classes, with a warning when a balance runs low."]];
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
-const SOURCES = ["src/content/guide/pillars.ts", "src/content/blog/posts.ts"];
+const SOURCES = ["src/content/guide/pillars.ts", "src/content/blog/posts.ts", "public/llms.txt"];
 const shells = () => {
   const out = [];
   for (const d of ["guide", "blog"]) {
@@ -199,7 +200,7 @@ const shells = () => {
   }
   return out;
 };
-const GREPS = ["running on iPhone", "Profile > Business", "GSTIN", "GST-ready", "always right", "best marketing", "Clients refer trainers", "most personal trainers", "multiple hours a week", "a session's coming", "fits well (UPI, GST, WhatsApp"];  // the last one is row 19 in its source form (the price is a template there, so the literal-price row only reaches the shell)
+const GREPS = ["running on iPhone", "Profile > Business", "GSTIN", "GST-ready", "always right", "best marketing", "Clients refer trainers", "most personal trainers", "multiple hours a week", "a session's coming", "fits well (UPI, GST, WhatsApp", "colour-coded"];  // the last one is row 19 in its source form (the price is a template there, so the literal-price row only reaches the shell)
 
 // files: path -> text. Returns the problems; empty = clean.
 export function check(files) {
@@ -216,9 +217,9 @@ const load = () => Object.fromEntries([...SOURCES, ...shells()].map((f) => [f, r
 
 test("the corpus is non-empty: both sources and at least the shells that carry rows were read", () => {
   const f = load();
-  for (const s of SOURCES) assert.ok(f[s].length > 5000, `${s} read empty`);
+  for (const s of SOURCES) assert.ok(f[s].length > 1000, `${s} read empty`);
   assert.ok(Object.keys(f).length >= 6, "no shells read");
-  assert.equal(ROWS.length, 36);
+  assert.equal(ROWS.length, 37);
 });
 
 test("every old claim is gone and every new string is present verbatim", () => {
