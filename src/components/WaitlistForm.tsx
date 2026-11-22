@@ -457,7 +457,7 @@ export function WaitlistForm() {
         <span role="alert" className="text-[13px] leading-5" style={{ color: "var(--g-color-status-destructive-dark)", fontFamily: "var(--font-sans)", textWrap: "balance" }}>
           That didn't send. What you typed is still here. Try again, or{" "}
           <a
-            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo private alpha access request")}&body=${encodeURIComponent(`Name: ${name}\nWhatsApp number: ${phone}\nEmail: ${email}`)}`}
+            href={`mailto:hello@getgymbo.com?subject=${encodeURIComponent("Gymbo waitlist request")}&body=${encodeURIComponent(`Name: ${name}\nWhatsApp number: ${phone}\nEmail: ${email}`)}`}
             className="underline"
             style={{ color: F.white }}
           >

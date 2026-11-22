@@ -16,8 +16,11 @@ export async function openWaitlistForm(page: Page): Promise<Locator> {
   if (!(await item.evaluate((el) => (el as HTMLDetailsElement).open))) await item.locator('summary').click();
   const trigger = item.locator(REVEAL);
   await expect(trigger).toBeVisible();
-  await trigger.click();
   const form = page.locator(PANEL).first().locator('form');
-  await expect(form).toBeVisible();
+  // The tap can land before React has hydrated the button (a loaded runner): retry the tap until the panel is up instead of failing on the first miss.
+  await expect(async () => {
+    if (!(await form.isVisible())) await trigger.click();
+    await expect(form).toBeVisible({ timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
   return form;
 }

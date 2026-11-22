@@ -10,7 +10,7 @@ Gymbo is a business app for independent personal trainers in India. Start free, 
 | Pro, monthly | ₹399 / month | billed monthly | ₹399 |
 | Pro, annual | ₹2,999 / year | billed yearly | ₹250 |
 
-- **Free: ₹0.** Sign up and set up your clients.
+- **Free: ₹0.** Sign up, view and export your clients' records.
 - **Pro, monthly: ₹399/month.**
 - **Pro, annual: ₹2,999 per year** (₹250/month effective). Save 37%.
 
