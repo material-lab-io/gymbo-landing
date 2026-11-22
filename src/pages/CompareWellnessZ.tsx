@@ -381,11 +381,11 @@ export function CompareWellnessZ() {
               <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
             </span>
             <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-              <a href={HOME} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Home</a>
-              <a href={`${HOME}#pricing`} className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Pricing</a>
-              <a href="/privacy/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
-              <a href="/terms/" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
-              <a href="/m/takedown" className="text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Request video removal</a>
+              <a href={HOME} className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Home</a>
+              <a href={`${HOME}#pricing`} className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Pricing</a>
+              <a href="/privacy/" className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Privacy</a>
+              <a href="/terms/" className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Terms</a>
+              <a href="/m/takedown" className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Request video removal</a>
               <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>Contact</a>
             </nav>
           </div>

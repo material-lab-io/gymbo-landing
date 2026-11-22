@@ -35,7 +35,8 @@ const TOUCH_AA_MIN = 24;
 // gy-1vd9qy.10.4 AC5: the footer's mail / LinkedIn / WhatsApp links are the only way off the page for a visitor with a question, and were 17-18 px tall at 390.
 // Measured by a function shared with its planted control, so the control proves THIS measurement can go red.
 const FOOTER_HIT_MIN = 44;
-const FOOTER_CONTACT = 'footer a[href^="mailto:"], footer a[href*="linkedin.com"], footer a[href*="wa.me"]';
+// Every link in the footer's navigation row too: designer's FAIL on #354 was a nav row where only Contact had the hit area and the rest were 17 px.
+const FOOTER_CONTACT = 'footer a[href^="mailto:"], footer a[href*="linkedin.com"], footer a[href*="wa.me"], footer nav a';
 async function undersizedFooterLinks(page: Page) {
   return page.evaluate(
     ({ sel, min }) => {
@@ -111,13 +112,15 @@ test.describe('Audit :: positive control', () => {
       `<html lang="en"><body><footer>
          <a href="mailto:a@b.c" style="display:inline-block;height:17px;font-size:12px">a@b.c</a>
          <a href="https://www.linkedin.com/company/x" style="display:inline-flex;min-height:44px;min-width:44px">LinkedIn</a>
+         <nav><a href="/terms/" style="display:inline-block;height:17px;font-size:13px">Terms</a></nav>
        </footer></body></html>`,
       { waitUntil: 'domcontentloaded' }
     );
     const r = await undersizedFooterLinks(page);
-    expect(r.seen, 'the control saw no footer links: the selector is broken').toBe(2);
-    expect(r.small, 'the 17 px mail link must be flagged and the 44 px link must not').toHaveLength(1);
-    expect(r.small[0]).toContain('a@b.c');
+    expect(r.seen, 'the control saw no footer links: the selector is broken').toBe(3);
+    expect(r.small, 'the 17 px mail link and the 17 px nav link must be flagged and the 44 px link must not').toHaveLength(2);
+    expect(r.small.join('|')).toContain('a@b.c');
+    expect(r.small.join('|')).toContain('Terms');
   });
 });
 

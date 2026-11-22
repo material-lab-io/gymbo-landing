@@ -19,11 +19,11 @@ function FooterNav() {
             <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
           </span>
           <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-            <a href={HOME} className="text-[13px]" style={link}>Home</a>
-            <a href={`${HOME}#pricing`} className="text-[13px]" style={link}>Pricing</a>
-            <a href="/privacy/" className="text-[13px]" style={link}>Privacy</a>
-            <a href="/terms/" className="text-[13px]" style={link}>Terms</a>
-            <a href="/m/takedown" className="text-[13px]" style={link}>Request video removal</a>
+            <a href={HOME} className="inline-flex items-center min-h-11 text-[13px]" style={link}>Home</a>
+            <a href={`${HOME}#pricing`} className="inline-flex items-center min-h-11 text-[13px]" style={link}>Pricing</a>
+            <a href="/privacy/" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Privacy</a>
+            <a href="/terms/" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Terms</a>
+            <a href="/m/takedown" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Request video removal</a>
             <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Contact</a>
           </nav>
         </div>
