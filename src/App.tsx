@@ -690,6 +690,12 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "Your logo on client statements", icon: Smartphone },
 ];
 
+/* The track scrolls by -50%, so each HALF must be at least as wide as the widest screen or an empty band shows at the end of the loop
+   (gy-1vd9qy.10.2: 6 chips left ~325px empty at 1440, 4 chips ~670px). Two identical halves of MARQUEE_HALF_COPIES copies each: the half is
+   ~770px at 4 chips, so 3 copies (~2.3k px) fill up to 2300px wide. tests/marquee-fill.spec.ts measures it. */
+const MARQUEE_HALF_COPIES = 3;
+const MARQUEE_TRACK = Array.from({ length: MARQUEE_HALF_COPIES * 2 }, () => MARQUEE_CHIPS).flat();
+
 function BrandMarquee() {
   const prefersReduced = useReducedMotion();
   return (
@@ -712,7 +718,7 @@ function BrandMarquee() {
             className="marquee-mask relative overflow-hidden"
           >
             <div className="marquee-track flex gap-2 w-max">
-              {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
+              {MARQUEE_TRACK.map((c, i) => (
                 <MarqueeChip key={`${c.name}-${i}`} t={c} />
               ))}
             </div>
