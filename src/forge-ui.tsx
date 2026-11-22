@@ -325,7 +325,7 @@ export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compa
  * so on localhost it is legitimately absent and this must be a no-op, never a
  * crash inside a click handler.
  */
-export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click" | "start_free_click" | "login_click", location: CtaLocation) {
+export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click" | "login_click", location: CtaLocation) {
   if (typeof window !== "undefined" && (window as any).umami) {
     (window as any).umami.track(event, { location });
   }
@@ -408,17 +408,31 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
 }
 
 /**
+ * gy-1vd9qy.10.4 / .11.1: every Start free click fires Umami "signup_cta_click" with { position }. waitlist_cta_click is untouched.
+ * pricing-free / pricing-pro are the two pricing cards, final is the closing block; gallery is the mid-page CTA under the screens.
+ */
+export type SignupPosition = "nav" | "hero" | "gallery" | "pricing-free" | "pricing-pro" | "final" | "compare" | "compare-final" | "article";
+export function trackSignupCta(position: SignupPosition) {
+  if (typeof window !== "undefined" && (window as any).umami) {
+    (window as any).umami.track("signup_cta_click", { position });
+  }
+}
+/** The attributes every Start free link carries: the sign-up URL, the click event and the data attribute a test reads the position from. */
+export function signupCtaProps(position: SignupPosition) {
+  // data-cta-location keeps the older placement vocabulary (pricing / cta-section) that tests/cta-hierarchy.spec.ts groups by.
+  const location = position === "pricing-free" || position === "pricing-pro" ? "pricing" : position === "final" || position === "compare-final" ? "cta-section" : position;
+  return { href: APP_SIGNUP_URL, onClick: () => trackSignupCta(position), "data-cta": "start-free", "data-cta-position": position, "data-cta-location": location } as const;
+}
+
+/**
  * gy-1vd9qy.10.4 (option A): the primary CTA is a plain link into the app's sign-up, the nav carries a quiet Log in text link.
  * Real <a href>s: they work without JS, and the visitor lands on app.getgymbo.com with ?src=landing (first-touch, E3.1).
  */
-export function StartFreeCTA({ dark, size = "md", location, className = "", variant = "primary", children = START_FREE_LABEL }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; variant?: "primary" | "secondary"; children?: React.ReactNode }) {
+export function StartFreeCTA({ dark, size = "md", position, className = "", variant = "primary", children = START_FREE_LABEL }: { dark?: boolean; size?: "md" | "lg"; position: SignupPosition; className?: string; variant?: "primary" | "secondary"; children?: React.ReactNode }) {
   const v = ctaVisual(variant, { dark, size });
   return (
     <a
-      href={APP_SIGNUP_URL}
-      onClick={() => trackCta("start_free_click", location)}
-      data-cta="start-free"
-      data-cta-location={location}
+      {...signupCtaProps(position)}
       className={`${v.className} ${className}`}
       style={v.style}
     >

@@ -16,7 +16,7 @@ import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMock
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, trackCta, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton, StartFreeCTA, LogInLink } from "./forge-ui";
+import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, signupCtaProps, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton, StartFreeCTA, LogInLink } from "./forge-ui";
 import { FIGURE_SURFACE } from "./figure-surface";
 import {
   STATUS_LANGUAGE,
@@ -29,7 +29,6 @@ import {
   PRICING_PRO_ANNUAL_LINE,
   PRICING_PAYMENT_LINE,
   START_FREE_LABEL,
-  APP_SIGNUP_URL,
 } from "./lib/trialAccess";
 
 /* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
@@ -316,7 +315,7 @@ export default function App() {
             app.getgymbo.com, so there is no reveal panel in the nav any more. */}
         <div className="flex items-center gap-1.5">
           <LogInLink location="nav" />
-          <StartFreeCTA location="nav" />
+          <StartFreeCTA position="nav" />
         </div>
       </nav>
 
@@ -360,7 +359,7 @@ export default function App() {
               {/* gy-1vd9qy.10.4 option A: Start free is the one filled amber CTA; the founder's WhatsApp is the outline one. */}
               <div className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
-                  <StartFreeCTA size="lg" location="hero" />
+                  <StartFreeCTA size="lg" position="hero" />
                   <WhatsAppCTA size="lg" location="hero" variant="secondary" glyph={false}>Talk to the founder</WhatsAppCTA>
                 </div>
                 <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
@@ -496,7 +495,7 @@ export default function App() {
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <div className="flex flex-col items-center">
-                <StartFreeCTA dark size="lg" location="gallery" />
+                <StartFreeCTA dark size="lg" position="gallery" />
               </div>
             </Reveal>
           </div>
@@ -544,10 +543,7 @@ export default function App() {
                       <p className="text-[12px] mb-5" style={{ color: hi ? "rgba(26,26,26,0.6)" : F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
                       {/* gy-1vd9qy.10.4: both cards say Start free and go to the app's sign-up (mt-auto pins the button to the card bottom). */}
                       <a
-                        href={APP_SIGNUP_URL}
-                        onClick={() => trackCta("start_free_click", "pricing")}
-                        data-cta="start-free"
-                        data-cta-location="pricing"
+                        {...signupCtaProps(plan.highlight ? "pricing-pro" : "pricing-free")}
                         className={`mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`}
                         style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}
                       >
@@ -618,7 +614,7 @@ export default function App() {
             </Reveal>
 
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
-              <StartFreeCTA dark size="lg" location="cta-section" className="w-full sm:w-auto" />
+              <StartFreeCTA dark size="lg" position="final" className="w-full sm:w-auto" />
               <WhatsAppButton location="cta-section">Talk to the founder</WhatsAppButton>
             </Reveal>
 

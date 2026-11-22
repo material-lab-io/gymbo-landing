@@ -105,7 +105,7 @@ export function CompareWellnessZ() {
 
         <div className="flex items-center gap-1.5">
           <LogInLink location="nav" />
-          <StartFreeCTA location="nav" />
+          <StartFreeCTA position="nav" />
         </div>
       </nav>
 
@@ -143,7 +143,7 @@ export function CompareWellnessZ() {
 
             <Reveal className="mt-8">
               <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
-                <StartFreeCTA size="lg" location="compare" />
+                <StartFreeCTA size="lg" position="compare" />
                 <WhatsAppCTA size="lg" location="compare" variant="secondary" glyph={false}>Talk to the founder</WhatsAppCTA>
               </div>
             </Reveal>
@@ -363,7 +363,7 @@ export function CompareWellnessZ() {
               </p>
             </Reveal>
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
-              <StartFreeCTA dark size="lg" location="compare" className="w-full sm:w-auto" />
+              <StartFreeCTA dark size="lg" position="compare-final" className="w-full sm:w-auto" />
               <WhatsAppButton location="compare">Talk to the founder</WhatsAppButton>
             </Reveal>
             <Reveal className="mt-10">

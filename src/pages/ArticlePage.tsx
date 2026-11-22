@@ -1,9 +1,8 @@
 import { marked, Renderer } from "marked";
 import { Plus } from "lucide-react";
 import { PageShell } from "../components/PageShell";
-import { F, SERIF, SANS, SHADOW } from "../forge-ui";
+import { F, SERIF, SANS, SHADOW, signupCtaProps } from "../forge-ui";
 import type { Post } from "../content/blog/posts";
-import { APP_SIGNUP_URL } from "../lib/trialAccess";
 
 marked.setOptions({ gfm: true });
 
@@ -73,7 +72,7 @@ export function ArticlePage({
 
         {/* gy-1vd9qy.10.4: the article CTA goes straight to the app sign-up (was the request-access waitlist). */}
         <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-3.5">
-          <a href={APP_SIGNUP_URL} className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
+          <a {...signupCtaProps("article")} className="inline-flex items-center justify-center gap-2 h-14 px-7 rounded-full font-bold text-[15px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97]" style={{ background: F.amber, color: F.onCta, boxShadow: SHADOW.cta, fontFamily: SANS }}>
             Start free →
           </a>
           <span className="text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>Free to start. Runs in your browser.</span>

@@ -71,7 +71,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex items-center gap-1.5">
           <LogInLink location="nav" />
-          <StartFreeCTA location="nav" />
+          <StartFreeCTA position="nav" />
         </div>
       </nav>
 
