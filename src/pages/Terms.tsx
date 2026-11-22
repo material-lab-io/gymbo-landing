@@ -36,7 +36,7 @@ export function Terms() {
         <section className="flex flex-col gap-3">
           <h2>Plans and payment</h2>
           <p>Gymbo is free to start. On the Free plan you can view and export your data. Gymbo Pro lets you add and edit your clients and use the rest of the app. There is no free trial on the web: you choose Pro when you want it, and you pay then.</p>
-          <p>Gymbo Pro costs ₹399 per month or ₹2,999 per year (₹250 per month effective). On the web you pay through Razorpay. On iPhone, the App Store takes the payment and handles billing under Apple's terms, including any introductory offer Apple shows you when you subscribe. Subscriptions are billed in advance and renew until you cancel. On the web, cancel anytime in Settings. On iPhone, cancel in your Apple ID subscriptions. Access continues until the end of the period you have paid for. Prices may change, with notice.</p>
+          <p>Gymbo Pro costs ₹399 per month or ₹2,999 per year (₹250 per month effective), both including GST. On the web you pay through Razorpay. On iPhone, the App Store takes the payment and handles billing under Apple's terms, including any introductory offer Apple shows you when you subscribe. Subscriptions are billed in advance and renew until you cancel. On the web, cancel anytime in Settings. On iPhone, cancel in your Apple ID subscriptions. Access continues until the end of the period you have paid for. Prices may change, with notice.</p>
           <p>Gymbo records the payments you log between you and your clients. It does not process those payments or handle your money.</p>
         </section>
 
