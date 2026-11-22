@@ -49,14 +49,6 @@ async function showSticky(page: Page) {
   return bar;
 }
 
-async function openNav(page: Page, url: string) {
-  await page.goto(url);
-  await page.waitForLoadState('networkidle');
-  const nav = page.locator('nav').filter({ has: page.locator(CTA('nav')) }).first();
-  await nav.locator(CTA('nav')).click();
-  await expect(nav.locator(PANEL)).toBeVisible();
-  return nav;
-}
 
 // RETIRED (gy-e9h9y N2, designer ruling + pm scope OK, 29 Oct): the two tests that lived here, B1 (an open
 // sticky panel holds exactly one "Request access", and it submits) and B2a + B2c (the sticky panel closes from its
@@ -65,48 +57,7 @@ async function openNav(page: Page, url: string) {
 // bar's contract is asserted in tests/cta-hierarchy.spec.ts and in the B5 / B7 tests below. If a capture ever
 // returns to the bar, restore these from git history (the commit that retired them is named in the bead).
 
-for (const url of ['/', '/compare/gymbo-vs-wellnessz/']) {
-  test(`B2a + B2c: the nav panel on ${url} closes from its control and from Escape, focus returns to the nav button`, async ({ page }) => {
-    let nav = await openNav(page, url);
-    const close = nav.locator(CLOSE);
-    await expect(close).toHaveAccessibleName('Close');
-    const box = (await close.boundingBox())!;
-    expect(box.width).toBeGreaterThanOrEqual(MIN_TARGET);
-    expect(box.height).toBeGreaterThanOrEqual(MIN_TARGET);
-    await close.click();
-    await expect(nav.locator(PANEL)).toHaveCount(0);
 
-    nav = await openNav(page, url);
-    await page.keyboard.press('Escape');
-    await expect(nav.locator(PANEL)).toHaveCount(0);
-    await expect
-      .poll(() => page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        if (!el) return 'none';
-        const cs = getComputedStyle(el);
-        const drawn = cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2;
-        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${drawn}`;
-      }))
-      .toBe('nav|true|ring=true');
-  });
-}
-
-test('B2a: the INLINE panels (hero, gallery, pricing) have no close control -- they scroll away with the page', async ({ page }) => {
-  const checked: string[] = [];
-  for (const loc of ['hero', 'gallery', 'pricing']) {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    const cta = page.locator(CTA(loc)).first();
-    await cta.scrollIntoViewIfNeeded();
-    await cta.click();
-    // One reveal per fresh page load, so the only open panel is this one.
-    const panel = page.locator(PANEL).first();
-    await expect(panel, `${loc}: positive control -- the panel must actually be open`).toBeVisible();
-    await expect(page.locator(CLOSE), `${loc}: an inline panel must not carry a close control`).toHaveCount(0);
-    checked.push(loc);
-  }
-  expect(checked).toEqual(['hero', 'gallery', 'pricing']);
-});
 
 /**
  * gy-w77x3 B5 (designer FAIL at 971ade6a1) -- ONE capture overlay at a time.
@@ -131,42 +82,6 @@ const visibleCaptures = (page: Page) =>
     return { forms: panels.length, submits: submits.length, stickyBarInDom: !!document.querySelector('[data-fixed-chrome="sticky-cta"]') };
   });
 
-test.describe('B5: one capture overlay at a time (phone)', () => {
-  test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar only exists below md');
-
-  test('bar showing, then the nav CTA: exactly one form (the nav one), sticky bar gone, Escape returns focus to the nav CTA', async ({ page }) => {
-    await showSticky(page);
-    await page.locator(`nav ${CTA('nav')}`).first().click();
-    await page.waitForTimeout(300);
-    expect(await visibleCaptures(page)).toEqual({ forms: 1, submits: 1, stickyBarInDom: false });
-    await expect(page.locator(`nav ${PANEL}`), 'the one open form must be the NAV panel').toBeVisible();
-    const focusedInNav = await page.evaluate(() => !!document.activeElement?.closest('nav [role="group"]') && document.activeElement?.tagName === 'INPUT');
-    expect(focusedInNav, 'focus moves to the nav panel first field').toBe(true);
-
-    await page.keyboard.press('Escape');
-    await expect(page.locator(PANEL)).toHaveCount(0);
-    await expect
-      .poll(() => page.evaluate(() => {
-        const el = document.activeElement as HTMLElement | null;
-        if (!el) return 'none';
-        const cs = getComputedStyle(el);
-        return `${el.getAttribute('data-cta-location')}|${el.matches(':focus-visible')}|ring=${cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2}`;
-      }))
-      .toBe('nav|true|ring=true');
-    expect((await visibleCaptures(page)).stickyBarInDom, 'the sticky bar returns once the nav panel closes').toBe(true);
-  });
-
-  test('nav open, then scroll: the sticky bar is not rendered, so its pill cannot open a second form', async ({ page }) => {
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.locator(CTA('nav')).click();
-    await expect(page.locator(PANEL)).toBeVisible();
-    await page.mouse.wheel(0, 1600);
-    await page.waitForTimeout(600);
-    expect(await visibleCaptures(page)).toEqual({ forms: 1, submits: 1, stickyBarInDom: false });
-    await expect(page.locator(CTA('footer')), 'no sticky pill to tap while the nav panel is open').toHaveCount(0);
-  });
-});
 
 /**
  * gy-w77x3 B6 -- the pricing buttons draw a keyboard focus ring. At 971ade6a1
@@ -175,10 +90,10 @@ test.describe('B5: one capture overlay at a time (phone)', () => {
  * matched to the ground it sits on: bone on the dark Monthly card, charcoal on
  * the amber Annual card. So the COLOUR is asserted too, not just its presence.
  */
-test('B6: both pricing buttons draw a focus ring in the colour of their ground', async ({ page }) => {
+test('B6: both pricing Start free buttons draw a focus ring in the colour of their ground', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  const buttons = page.locator(CTA('pricing'));
+  const buttons = page.locator('a[data-cta="start-free"][data-cta-location="pricing"]');
   await expect(buttons, 'positive control: two pricing buttons').toHaveCount(2);
   const seen: string[] = [];
   for (let i = 0; i < 2; i++) {
@@ -195,8 +110,8 @@ test('B6: both pricing buttons draw a focus ring in the colour of their ground',
     );
   }
   expect(seen.map((s) => s.split('|').slice(0, 4).join('|'))).toEqual([
-    'true|solid|true|rgb(255, 255, 255)', // Monthly: bone ring (--g-color-neutral-dark-fg, #fff in token set B; was #f0f0eb), dark card ground
-    'true|solid|true|rgb(0, 0, 0)', // Annual: charcoal ring (--g-color-neutral-dark-0, #000 in set B; was #0a0a0a), amber card ground
+    'true|solid|true|rgb(255, 255, 255)', // Free: bone ring (--g-color-neutral-dark-fg, #fff in token set B; was #f0f0eb), dark card ground
+    'true|solid|true|rgb(0, 0, 0)', // Pro: charcoal ring (--g-color-neutral-dark-0, #000 in set B; was #0a0a0a), amber card ground
   ]);
 });
 
@@ -212,7 +127,7 @@ test('B6: both pricing buttons draw a focus ring in the colour of their ground',
 test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
   test.skip(({ viewport }) => (viewport?.width ?? 0) >= 768, 'the sticky bar only exists below md');
 
-  test('Tab from pricing through the footer form: no focused control is obscured by the bar', async ({ page }) => {
+  test('Tab from pricing through the footer links: no focused control is obscured by the bar', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     // Enter pricing the way a keyboard user does: the section scrolled to the
@@ -232,7 +147,7 @@ test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
 
     const obscured: string[] = [];
     const visited: string[] = [];
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 70; i++) {
       await page.waitForTimeout(150);
       const r = await page.evaluate(() => {
         const el = document.activeElement as HTMLElement;
@@ -242,23 +157,23 @@ test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
         const ring = cs.outlineStyle === 'none' ? 0 : parseFloat(cs.outlineWidth) + parseFloat(cs.outlineOffset || '0');
         const barBox = bar?.getBoundingClientRect();
         const barOnScreen = !!barBox && barBox.top < window.innerHeight && getComputedStyle(bar!).display !== 'none';
-        const label = el.getAttribute('data-cta-location') ?? el.getAttribute('name') ?? (el as HTMLButtonElement).type ?? el.tagName;
+        const label = el.getAttribute('data-cta-location') ?? el.getAttribute('name') ?? el.tagName;
         return {
-          label: `${label}${el.closest('#cta') ? '@footer' : ''}`,
+          label: `${label}${el.closest('footer') ? '@footer' : ''}`,
           bottom: Math.round(box.bottom + ring),
           barTop: barOnScreen ? Math.round(barBox!.top) : null,
-          inFooterForm: !!el.closest('#cta form'),
-          isSubmit: (el as HTMLButtonElement).type === 'submit',
+          inFooterForm: !!el.closest('footer'),
+          isSubmit: false,
           inBar: !!el.closest('[data-fixed-chrome="sticky-cta"]'),
         };
       });
       visited.push(r.label);
       if (r.barTop !== null && !r.inBar && r.bottom > r.barTop) obscured.push(`${r.label}: bottom ${r.bottom} > bar top ${r.barTop}`);
-      if (r.inFooterForm && r.isSubmit) break;
+      if (r.inFooterForm && visited.filter((v) => v.endsWith('@footer')).length >= 4) break;
       await page.keyboard.press('Tab');
     }
     expect(visited.filter((v) => v === 'pricing').length, `positive control: both pricing buttons visited (${visited.join(', ')})`).toBe(2);
-    expect(visited.some((v) => v.endsWith('@footer')), `positive control: the walk reached the footer form (${visited.join(', ')})`).toBe(true);
+    expect(visited.some((v) => v.endsWith('@footer')), `positive control: the walk reached the footer links (${visited.join(', ')})`).toBe(true);
     expect(obscured, 'a focused control hidden behind the sticky bar fails WCAG 2.4.11').toEqual([]);
   });
 });
@@ -269,7 +184,7 @@ test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
  * on getgymbo.com. The close control is #162's own. Every keyboard-reachable
  * icon control must draw a computed outline, not just match the pseudo-class.
  */
-test('icon controls (close, gallery arrows, logo) draw a focus ring', async ({ page }) => {
+test('icon controls (gallery arrows, logo) draw a focus ring', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   const ring = (sel: string) =>
@@ -283,14 +198,8 @@ test('icon controls (close, gallery arrows, logo) draw a focus ring', async ({ p
     await page.locator(sel).first().focus();
     seen[sel] = await ring(sel);
   }
-  await page.locator(CTA('nav')).click();
-  await expect(page.locator(CLOSE)).toHaveCount(1);
-  await page.keyboard.press('Shift');
-  await page.locator(CLOSE).focus();
-  seen[CLOSE] = await ring(CLOSE);
   expect(seen).toEqual({
     '[aria-label="Gymbo, back to top"]': 'true|true',
     '[aria-label="Show next Gymbo screen"]': 'true|true',
-    [CLOSE]: 'true|true',
   });
 });

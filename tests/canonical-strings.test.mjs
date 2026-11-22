@@ -99,8 +99,8 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "01d08aa266a5dad539833f8ffaf498f2d77ce12593cd6f57668fc30c31d355ba");
-  assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 10);
+  assert.equal(c.sha, "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54");
+  assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 7);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });
 
@@ -144,7 +144,7 @@ test("REAL FILES: the vendored facts equal the site's REAL constants, and every 
   assert.deepEqual(checkFacts(c.doc, fm, ts), []);
   assert.deepEqual(c.doc.facts && Object.keys(c.doc.facts).filter((k) => !k.startsWith("_")).sort(), Object.keys(fm.map).sort());
   const got = readConstants(ts, Object.values(fm.map));
-  assert.deepEqual(got, { TRIAL_DAYS: 7, PRICE_MONTHLY_INR: 399, PRICE_ANNUAL_INR: 2999, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR: 250, ANNUAL_SAVINGS_PERCENT: 37 });
+  assert.deepEqual(got, { PRICE_FREE_INR: 0, PRICE_MONTHLY_INR: 399, PRICE_ANNUAL_INR: 2999, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR: 250, ANNUAL_SAVINGS_PERCENT: 37 });
   // THE DISCRIMINATING CONTROL: the real gate against the real file with ONE real constant nudged.
   for (const [name, v] of Object.entries(got)) {
     const mutated = ts.replace(new RegExp(`(export const ${name}\\s*=\\s*)${v}`), `$1${v + 1}`);
@@ -372,7 +372,7 @@ test("M5 (gy-53qq5.1) two seams: a percent declaration never exempts a rupee amo
   const leak = { ...reg, thirdPartyAmounts: { entries: [...reg.thirdPartyAmounts.entries, { file: "newpage/index.html", amount: F.monthlyINR, unit: "percent", reason: "test: a PERCENT declaration at the same digits" }] } };
   assert.deepEqual(checkBuiltPricePin(F, leak, dist).filter((x) => x.file === "newpage/index.html").map((x) => x.kind), ["price-unregistered"], "a percent entry does not exempt the rupee amount with the same digits");
   const idx = join(dist, "index.html"), price = (n) => `<p>${rupees(n)}</p>`;
-  const body = `${price(F.monthlyINR)}${price(F.annualINR)}${price(F.annualMonthlyEquivalentINR)}`;
+  const body = `${price(F.freeINR)}${price(F.monthlyINR)}${price(F.annualINR)}${price(F.annualMonthlyEquivalentINR)}`;
   writeFileSync(idx, `<html><head><meta name="description" content="Save ${P}%"></head><body>${body}</body></html>`);
   assert.deepEqual(checkBuiltPricePin(F, reg, dist).filter((x) => x.file === "index.html").map((x) => `${x.kind} ${x.id}`), ["price-stale annualSavingsPercent"], "index is pinned to the percent, and a claim only in a meta is not on the page");
   writeFileSync(idx, `<html><head><meta name="description" content="Save ${P}%"></head><body>${body}<p>Save ${P}%</p></body></html>`);
@@ -382,7 +382,7 @@ test("M5 (gy-53qq5.1) two seams: a percent declaration never exempts a rupee amo
 test("M6 (gy-53qq5.1) A RETIRED PRICE ON AN UNLISTED PAGE: after a bump, a former Gymbo price on any page that is not pinned FAILS (was GREEN); a declared third-party figure and a listed page are not double-flagged", () => {
   const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL), F = canon.doc.facts, OLD = F.monthlyINR, NEW = OLD + 50;
   const F2 = { ...F, monthlyINR: NEW };
-  const ledger = (retired) => ({ ruled: { monthlyINR: NEW, annualINR: F.annualINR, annualMonthlyEquivalentINR: F.annualMonthlyEquivalentINR }, retired });
+  const ledger = (retired) => ({ ruled: { freeINR: F.freeINR, monthlyINR: NEW, annualINR: F.annualINR, annualMonthlyEquivalentINR: F.annualMonthlyEquivalentINR }, retired });
   const withLedger = (r) => ({ ...reg, priceLedger: ledger(r) });
   const forms = { "plain": `<p>Only ${rupees(OLD)}/month</p>`, "Rs.": `<p>Rs.${OLD}/mo</p>`, "react split": `<p>\u20b9<!-- -->${OLD}</p>`, "rupees after": `<p>${OLD} rupees</p>`, "meta attr": `<meta name="d" content="${rupees(OLD)}">` };
   for (const [name, html] of Object.entries(forms)) {
@@ -413,7 +413,7 @@ test("M6 LEDGER: content's facts must equal the ledger the registry was reconcil
   assert.deepEqual(bumped.map((x) => `${x.kind} ${x.id}`).sort(), ["price-ledger-behind annualINR", "price-ledger-behind monthlyINR"], "every drifted price is named");
   assert.match(bumped[0].detail, /retired/i, "the finding says what to do");
   assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: undefined }).map((x) => x.kind), ["price-ledger-missing"], "no ledger fails closed");
-  assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: { ruled: { monthlyINR: F.monthlyINR }, retired: [] } }).map((x) => `${x.kind} ${x.id}`).sort(), ["price-ledger-behind annualINR", "price-ledger-behind annualMonthlyEquivalentINR"], "a ruled key the ledger does not record is behind, not skipped");
+  assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: { ruled: { monthlyINR: F.monthlyINR }, retired: [] } }).map((x) => `${x.kind} ${x.id}`).sort(), ["price-ledger-behind annualINR", "price-ledger-behind annualMonthlyEquivalentINR", "price-ledger-behind freeINR"], "a ruled key the ledger does not record is behind, not skipped");
   const live = checkPriceLedger(F, { ...reg, priceLedger: { ...reg.priceLedger, retired: [{ amount: F.monthlyINR, was: "monthlyINR" }] } });
   assert.deepEqual(live.map((x) => x.kind), ["price-ledger-retired-is-current"], "retiring a live price would hide it: refused");
   assert.deepEqual(checkPriceLedger(F, { ...reg, priceLedger: { ...reg.priceLedger, retired: [{ was: "monthlyINR" }] } }).map((x) => x.kind), ["price-ledger-bad-entry"], "a retired entry without an integer amount is refused");
@@ -476,9 +476,9 @@ test("M4 builtName: a build hash is stripped only from an assets/ file whose 8-c
   for (const [from, to] of Object.entries(cases)) assert.equal(builtName(from), to, from);
 });
 
-test("M4 REAL REGISTRY: the two bundles that state Gymbo's price on the real build are pinned", () => {
+test("M4 REAL REGISTRY: the bundle that states Gymbo's price on the real build is pinned (gy-1vd9qy.10.4: the constants chunk no longer spells a rupee string, only terms-*.js does)", () => {
   const reg = loadPriceSurfaces(REAL);
-  assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js", "assets/trialAccess.js"], "terms-*.js and trialAccess-*.js state the price (measured on dist 09-26) and are pinned");
+  assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js"], "terms-*.js states the price (measured on the 22 Nov option A build) and is pinned; the constants chunk holds bare numbers, tied to content's facts by facts-map.json");
 });
 
 test("R1 (gy-53qq5.1) HIDDEN TEXT IS NOT PRESENCE: a pinned price kept only in a hidden element FAILS; a hidden STALE price is still classified; look-alikes that are visible pass", () => {

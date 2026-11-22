@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openWaitlistForm } from './helpers/waitlist';
 
 /**
  * Mid-funnel instrumentation (marketer brief 2026-10-14 on gy-e60uc):
@@ -15,12 +16,13 @@ async function stubUmami(page: Page) {
   });
 }
 const tracked = (page: Page) => page.evaluate(() => (window as any).__tracked as { name: string; data?: unknown }[]);
-const footer = (page: Page) => page.locator('#cta form');
+const footer = (page: Page) => page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
 
 test('waitlist_form_start fires once on first field focus, not on page load or on later focus', async ({ page }) => {
   await stubUmami(page);
   await page.goto('/');
   expect(await tracked(page), 'a page load alone must not count as a form start').toEqual([]);
+  await openWaitlistForm(page);
   await footer(page).locator('input[name="name"]').focus();
   await footer(page).locator('input[name="phone"]').focus();
   await footer(page).locator('input[name="email"]').focus();
@@ -32,6 +34,7 @@ test('waitlist_form_start fires once on first field focus, not on page load or o
 test('an empty submit emits waitlist_submit_error missing_contact and nothing personal', async ({ page }) => {
   await stubUmami(page);
   await page.goto('/');
+  await openWaitlistForm(page);
   await footer(page).getByRole('button', { name: 'Request access' }).click();
   const errs = (await tracked(page)).filter((e) => e.name === 'waitlist_submit_error');
   expect(errs).toEqual([{ name: 'waitlist_submit_error', data: { reason: 'missing_contact' } }]);
@@ -40,6 +43,7 @@ test('an empty submit emits waitlist_submit_error missing_contact and nothing pe
 test('a malformed email emits invalid_email and the payload carries no typed value', async ({ page }) => {
   await stubUmami(page);
   await page.goto('/');
+  await openWaitlistForm(page);
   await footer(page).locator('input[name="name"]').fill('Zed Secretname');
   await footer(page).locator('input[name="email"]').fill('zed-not-an-email');
   await footer(page).getByRole('button', { name: 'Request access' }).click();
@@ -53,6 +57,7 @@ test('a malformed email emits invalid_email and the payload carries no typed val
 test('a 500 emits reason server; an aborted request emits reason network', async ({ page }) => {
   await stubUmami(page);
   await page.goto('/');
+  await openWaitlistForm(page);
   const f = footer(page);
   await f.locator('input[name="phone"]').fill('9876543210');
 
@@ -75,10 +80,11 @@ test('a successful submit emits waitlist_signup and NO submit_error', async ({ p
   await stubUmami(page);
   await page.route('**/api/waitlist', (r) => r.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');
+  await openWaitlistForm(page);
   await footer(page).locator('input[name="phone"]').fill('9876543210');
   await footer(page).getByRole('button', { name: 'Request access' }).click();
   // the form is REPLACED by the role=status line on success, so the form locator no longer matches
-  await expect(page.locator('#cta').getByRole('status')).toBeVisible();
+  await expect(page.locator('[role="group"][aria-label="Request access"]').first().getByRole('status')).toBeVisible();
   const names = (await tracked(page)).map((e) => e.name);
   expect(names).toContain('waitlist_signup');
   expect(names).not.toContain('waitlist_submit_error');

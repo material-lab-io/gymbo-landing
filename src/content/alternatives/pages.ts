@@ -5,7 +5,7 @@
 // REMOVED — it is not stated on truecoach.co/pricing (only third-party reported).
 // Gymbo framing: "one flat price, no per-client tiers" (never "unlimited clients").
 import type { Post } from "../blog/posts";
-import { GYMBO_TRIAL_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, PRICE_ANNUAL_INR_DISPLAY } from "../../lib/trialAccess";
+import { GYMBO_FREE_ROW, PRICE_MONTHLY_INR, PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR, PRICE_ANNUAL_INR_DISPLAY } from "../../lib/trialAccess";
 import { inrFromUsd, FX_FOOTNOTE } from "../../lib/fx";
 
 const truecoach: Post = {
@@ -61,7 +61,7 @@ const truecoach: Post = {
 | Class punches | A couple of taps, balance updates itself | Programming-led; logs workouts, not payments |
 | Progress tracking | Vitals + photos (shipping this quarter) | ✅ Strong: metrics, photos, compliance |
 | Exercise video library | Growing | ✅ 3,000+ videos |
-| Free trial | ${GYMBO_TRIAL_ROW} | 14 days, no card |
+| Free trial | ${GYMBO_FREE_ROW} | 14 days, no card |
 
 *TrueCoach figures: annual-billed rates verified against truecoach.co/pricing on 23 June 2026 (${FX_FOOTNOTE}). Re-check truecoach.co/pricing for current pricing.*
 
@@ -158,7 +158,7 @@ const trainerize: Post = {
 | AI | Ask Gymbo + workout builder | Mature AI Workout Builder |
 | Exercise/content library | Growing | Large, established |
 | Branded client app | Not yet | ✅ (paid add-on) |
-| Free trial | ${GYMBO_TRIAL_ROW} | 30 days, no card |
+| Free trial | ${GYMBO_FREE_ROW} | 30 days, no card |
 
 *Trainerize figures read from trainerize.com/pricing on 28 October 2026 (per-month rates on annual billing; monthly billing is about 10% higher; ${FX_FOOTNOTE}). Re-check trainerize.com/pricing for current numbers.*
 
@@ -244,9 +244,9 @@ Both are made in India, for India. The real question isn't features or price. It
 | Client scale | A roster you know by name | Hundreds of gym members |
 | India-native (UPI / GST / WhatsApp) | ✅ | ✅ |
 | Setup | No setup, nothing to configure | Onboard a facility: branches, staff, members |
-| Platform | iPhone only | iPhone, Android, web |
+| Platform | Web (iPhone app coming soon) | iPhone, Android, web |
 | Price | ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo annual) | See akton.in (gym suite, unlimited members) |
-| Free trial | ${GYMBO_TRIAL_ROW} | Not clearly stated |
+| Free trial | ${GYMBO_FREE_ROW} | Not clearly stated |
 
 *Both are India-native: UPI, GST, and WhatsApp aren't the difference here. The difference is who the product is built for.*
 
@@ -295,7 +295,7 @@ Gymbo strips it down to the one-person business:
 **Choose Gymbo if:**
 - You're an independent trainer and the business is *you*.
 - You work out of homes, parks, or a shared gym, with no facility to manage.
-- You want class punches in a couple of taps, clean payment tracking, and a tool you can run from your iPhone in seconds.
+- You want class punches in a couple of taps, clean payment tracking, and a tool you can run from your phone in seconds.
 
 ## on price, honestly
 

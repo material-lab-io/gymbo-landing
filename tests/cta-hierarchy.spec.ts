@@ -34,6 +34,7 @@ async function filledAmberInViewport(page: Page, { includePricing = false } = {}
     const out: string[] = [];
     for (const el of document.querySelectorAll('[data-cta]')) {
       if (!includePricing && el.getAttribute('data-cta-location') === 'pricing') continue;
+      if (el.closest('nav')) continue; // option A: the nav Start free pill is deliberate chrome, not counted against the per-screen rule
       const r = el.getBoundingClientRect();
       const inView = r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
       if (!inView) continue;
@@ -52,39 +53,24 @@ async function settle(page: Page) {
   await page.waitForTimeout(500); // the bar's 300ms slide
 }
 
-for (const loc of ['nav', 'gallery'] as const) {
-  test(`${loc} "Request access" is the secondary (outline) visual, not a filled amber (gy-e9h9y ${loc === 'nav' ? 'N1' : 'N3'})`, async ({ page }) => {
-    await page.goto('/');
-    const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
-    await cta.scrollIntoViewIfNeeded();
-    const s = await cta.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return {
-        bg: cs.backgroundColor,
-        border: cs.borderTopWidth,
-        weight: cs.fontWeight,
-        height: el.getBoundingClientRect().height,
-        arrow: !!el.querySelector('svg'),
-      };
-    });
-    expect(s.bg, `${loc}: transparent background`).toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
-    expect(s.border, `${loc}: 1px border`).toBe('1px');
-    expect(s.weight, `${loc}: weight 500, no arrow`).toBe('500');
-    expect(s.arrow, `${loc}: the arrow stays on the primary only`).toBe(false);
-    if (loc === 'nav') expect(s.height, 'nav: same 44px target as before').toBeGreaterThanOrEqual(43.5);
-  });
-}
-
-test('the nav "Request access" still reveals the capture and tracks waitlist_cta_click{nav} (N1 changed the look, not the behaviour)', async ({ page }) => {
-  await page.addInitScript(() => {
-    (window as any).__tracked = [];
-    (window as any).umami = { track: (name: string, data: unknown) => (window as any).__tracked.push({ name, data }) };
-  });
+// gy-1vd9qy.10.4 (option A, designer-picked): the nav is a quiet Log in text link next to the amber Start free pill. The old "one filled amber CTA per
+// viewport" rule (gy-e9h9y N1/N3) is now "one filled amber CTA per screen, NOT counting the nav Start free pill", because option A draws the nav pill
+// and the hero Start free on the same first screen on purpose. The nav and gallery "Request access" outline tests and the nav reveal test went
+// with those buttons (the waitlist's only entry is now the iPhone FAQ link, covered by tests/waitlist-faq.spec.ts).
+test('nav: Log in is a plain text link (no fill, no border) and Start free is the amber pill, both 44px targets (option A)', async ({ page }) => {
   await page.goto('/');
-  await page.locator('[data-cta="waitlist"][data-cta-location="nav"]').click();
-  await expect(page.locator('[role="group"][aria-label="Request access"]').first()).toBeVisible();
-  const tracked = (await page.evaluate(() => (window as any).__tracked)).filter((e: { name: string }) => e.name === 'waitlist_cta_click');
-  expect(tracked).toContainEqual({ name: 'waitlist_cta_click', data: { location: 'nav' } });
+  const nav = page.getByRole('navigation', { name: 'Main navigation' });
+  const login = nav.locator('a[data-cta="log-in"]');
+  const start = nav.locator('a[data-cta="start-free"]');
+  await expect(login).toHaveCount(1);
+  await expect(start).toHaveCount(1);
+  const l = await login.evaluate((el) => { const cs = getComputedStyle(el); return { bg: cs.backgroundColor, border: cs.borderTopWidth, h: el.getBoundingClientRect().height }; });
+  expect(l.bg, 'Log in has no fill').toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+  expect(l.border, 'Log in has no border').toBe('0px');
+  expect(l.h, 'Log in keeps a 44px target').toBeGreaterThanOrEqual(43.5);
+  const st = await start.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, h: el.getBoundingClientRect().height }));
+  expect(st.bg, 'Start free is filled').not.toMatch(/rgba\(0, 0, 0, 0\)|transparent/);
+  expect(st.h).toBeGreaterThanOrEqual(43.5);
 });
 
 test.describe('phone sticky bar is the WhatsApp primary (N2)', () => {
@@ -157,22 +143,21 @@ for (const where of ['top', 'middle', 'pricing', 'closing section'] as const) {
     const filled = await filledAmberInViewport(page, { includePricing: where === 'pricing' });
     expect(filled.length, `filled amber CTAs sharing this screen: ${JSON.stringify(filled)}`).toBeLessThanOrEqual(1);
     if (where === 'top') {
-      // Positive control: the count is not vacuous. The hero WhatsApp primary is the one filled CTA on the first screen
+      // Positive control: the count is not vacuous. The hero Start free is the one filled CTA on the first screen
       // at every width, so zero would mean the probe broke, not that the rule held.
-      expect(filled, 'the hero WhatsApp primary is the one filled CTA at the top').toEqual(['whatsapp:hero']);
+      expect(filled, 'the hero Start free is the one filled CTA at the top (the nav pill is not counted)').toEqual(['start-free:hero']);
     }
   });
 }
 
-test('planted control: the old arrangement (nav + sticky bar + gallery all filled) would be caught by the same probe', async ({ page }) => {
+test('planted control: a second filled CTA on the first screen (the hero outline WhatsApp filled amber) would be caught by the same probe', async ({ page }) => {
   await page.goto('/');
   await settle(page);
-  // Re-create the pre-N1/N2/N3 state in the DOM: fill the nav CTA amber, as it was.
   await page.evaluate(() => {
-    const nav = document.querySelector('[data-cta="waitlist"][data-cta-location="nav"]') as HTMLElement;
-    nav.style.background = '#f59e0b';
+    const wa = document.querySelector('[data-cta="whatsapp"][data-cta-location="hero"]') as HTMLElement;
+    wa.style.background = '#f59e0b';
   });
   const filled = await filledAmberInViewport(page);
-  expect(filled, 'a filled nav next to the hero WhatsApp primary must read as TWO').toEqual(expect.arrayContaining(['waitlist:nav', 'whatsapp:hero']));
+  expect(filled, 'a filled WhatsApp next to the hero Start free must read as TWO').toEqual(expect.arrayContaining(['start-free:hero', 'whatsapp:hero']));
   expect(filled.length).toBeGreaterThan(1);
 });

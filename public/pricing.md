@@ -1,29 +1,18 @@
 # Gymbo pricing
 
-Gymbo is a business app for independent personal trainers in India. One simple subscription, **unlimited clients** on every plan, and a **7-day free trial for eligible subscribers**.
+Gymbo is a business app for independent personal trainers in India. Start free, and upgrade to Pro when you are ready. Pro is paid on the web with Razorpay.
 
 ## Plans
 
 | Plan | Price | Billing | Effective per month |
 |---|---|---|---|
-| Monthly | ₹399 / month | billed monthly | ₹399 |
-| Annual | ₹2,999 / year | billed yearly | ₹250 |
+| Free | ₹0 | none | ₹0 |
+| Pro, monthly | ₹399 / month | billed monthly | ₹399 |
+| Pro, annual | ₹2,999 / year | billed yearly | ₹250 |
 
-- **Monthly: ₹399/month**, billed monthly. Cancel anytime in your iPhone Settings.
-- **Annual: ₹2,999 per year** (₹250/month effective). Save 37%: lowest price, locked in. Most popular.
-
-## What's included on every plan
-
-- **Unlimited clients**: flat price, no per-client tiers or limits.
-- Class punches in a couple of taps, with automatic balance math.
-- Payment tracking (cash or UPI) with running balances and reminders.
-- Scheduling and your full client roster in one place.
-- A workout builder with templates (build and assign workouts), plus Ask Gymbo.
-- A shareable QR profile card and branded PDF statements.
-
-## Free trial
-
-Eligible subscribers can try Gymbo free for 7 days. Apple determines introductory-offer eligibility; one introductory offer is available per subscription group. After that, choose either plan above.
+- **Free: ₹0.** Sign up, view and export your clients' records.
+- **Pro, monthly: ₹399/month.**
+- **Pro, annual: ₹2,999 per year** (₹250/month effective). Save 37%.
 
 ## Links
 
@@ -31,4 +20,4 @@ Eligible subscribers can try Gymbo free for 7 days. Apple determines introductor
 - Gymbo vs WellnessZ: https://getgymbo.com/compare/gymbo-vs-wellnessz/
 - This page: https://getgymbo.com/pricing.md
 
-_Last updated 2026-07-24. Prices in Indian rupees (INR)._
+_Last updated 2026-11-22. Prices in Indian rupees (INR)._

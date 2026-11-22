@@ -144,7 +144,8 @@ export function findBuiltPrices(root = "dist") {
 // not only a meta/alt/script; a third-party declaration at a ruled price on a listed page fails) and M5
 // (a savings percent is read in every phrasing, not only 'Save N%'). M4 closed the file-type gap (.js/.mjs/.css/.svg/.webmanifest are read; hashed chunks are pinned by their
 // hash-free name). Still NOT covered: an OLD Gymbo price on an unlisted page (M6), images, Devanagari digits.
-const PRICE_KEYS = ["monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
+// gy-1vd9qy.10.4: freeINR (canonical v6) joins the ruled amounts: the Free plan's Rs 0 is a price a page states, so it is pinned and drilled like the others.
+const PRICE_KEYS = ["freeINR", "monthlyINR", "annualINR", "annualMonthlyEquivalentINR"];
 export const rupees = (n) => `\u20b9${Number(n).toLocaleString("en-IN")}`;
 // gy-53qq5 (tester M1/M2): the pin reads what a person READS, not the raw bytes. React's SSR puts a
 // comment node between the rupee sign and the digits and the hand-typed meta says 'Rs.399', so the
@@ -417,7 +418,7 @@ export function checkThirdPartyProvenance(reg, today = new Date().toISOString().
 // (file, key) AND for EVERY occurrence, in whatever spelling, of a current Gymbo amount in a listed
 // file (gy-53qq5 AC4 + tester's M1/M2: a pin that has never been seen to catch each form is not evidence).
 export function priceDrill(facts, reg, root = "dist", bump = 37) {
-  const drifted = { ...facts, monthlyINR: facts.monthlyINR + bump, annualINR: facts.annualINR + bump, annualMonthlyEquivalentINR: facts.annualMonthlyEquivalentINR + bump, annualSavingsPercent: facts.annualSavingsPercent + 1 };
+  const drifted = { ...facts, freeINR: facts.freeINR + bump, monthlyINR: facts.monthlyINR + bump, annualINR: facts.annualINR + bump, annualMonthlyEquivalentINR: facts.annualMonthlyEquivalentINR + bump, annualSavingsPercent: facts.annualSavingsPercent + 1 };
   const red = checkBuiltPricePin(drifted, reg, root);
   const got = new Set(red.filter((f) => f.kind === "price-stale").map((f) => `${f.file}|${f.id}`));
   const missed = [];

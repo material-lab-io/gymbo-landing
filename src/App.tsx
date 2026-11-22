@@ -13,29 +13,22 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
-import { WaitlistForm } from "./components/WaitlistForm";
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, ForgeStyle, Eyebrow, WaitlistCTA, ctaVisual, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton } from "./forge-ui";
+import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, signupCtaProps, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton, StartFreeCTA, LogInLink } from "./forge-ui";
 import { FIGURE_SURFACE } from "./figure-surface";
 import {
-  TRIAL_DAYS,
-  TRIAL_PRIMARY,
-  TRIAL_ELIGIBILITY_DETAIL,
-  BILLING_CHANNEL,
-  PLATFORM,
-  PLATFORM_ONLY_CLAUSE,
   STATUS_LANGUAGE,
   PRICE_MONTHLY_INR,
   PRICE_ANNUAL_INR_DISPLAY,
-  PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR,
-  ANNUAL_SAVINGS_PERCENT,
-  TRIAL_LINE,
-  ACCESS_ROUTE_STEPS,
-  PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT,
-  CANCEL_ROUTE,
-  PRICING_LEGIBILITY_LINE,
+  HERO_SMALL_PRINT,
+  FINAL_CTA_SUB,
+  PRICING_HEADING,
+  PRICING_FREE_LINE,
+  PRICING_PRO_ANNUAL_LINE,
+  PRICING_PAYMENT_LINE,
+  START_FREE_LABEL,
 } from "./lib/trialAccess";
 
 /* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
@@ -168,20 +161,19 @@ const SCREENS: { slug: string; caption: string; alt: string }[] = [
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Monthly", tagline: "Flexible", price: String(PRICE_MONTHLY_INR), period: "/month", note: `Billed monthly via ${BILLING_CHANNEL}. Cancel anytime ${CANCEL_ROUTE}.`, features: ["Unlimited clients", "The Gymbo ledger", "Workout builder", "Ask Gymbo AI", "Branded statements"], highlight: false },
-  { name: "Annual", tagline: `Save ${ANNUAL_SAVINGS_PERCENT}%`, price: String(PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR), period: "/month", note: `Billed yearly at ₹${PRICE_ANNUAL_INR_DISPLAY} via ${BILLING_CHANNEL}. Save ${ANNUAL_SAVINGS_PERCENT}%.`, features: ["Everything in Monthly", `${ANNUAL_SAVINGS_PERCENT}% savings`, `₹${PRICE_ANNUAL_INR_DISPLAY} billed annually`], highlight: true },
+  { name: "Free", tagline: "Free", price: "0", period: "", note: PRICING_FREE_LINE, highlight: false },
+  { name: "Pro", tagline: "Pro", price: String(PRICE_MONTHLY_INR), period: "/month", note: PRICING_PRO_ANNUAL_LINE, highlight: true },
 ];
 
 /* ── FAQ ── */
 export const FAQ = [
-  { q: "Is it free?", a: `${TRIAL_PRIMARY} Then Gymbo Pro is ₹${PRICE_MONTHLY_INR}/month, or ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan, billed through ${BILLING_CHANNEL}. ${TRIAL_ELIGIBILITY_DETAIL}` },
-  { q: "What happens when my trial ends, and can I cancel or export my clients' records?", a: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT },
+  { q: "Is it free?", a: `You can start free. Pro is ₹${PRICE_MONTHLY_INR} a month or ₹${PRICE_ANNUAL_INR_DISPLAY} a year, paid on the web.` },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
-  { q: "Does it work offline?", a: "Yes. Punch classes and record payments without signal; they sync when you're back online." },
+  { q: "Can I punch a class or record a payment with no signal?", a: "Yes, if the page is already open. Gymbo saves it on your phone and sends it when you are back online." },
   { q: "Can I export my clients' records?", a: "Yes. You can export your clients' attendance and payment records from the app whenever you like." },
-  { q: "Which phones does it support?", a: `${PLATFORM}, for now. That's where we're focused.` },
+  { q: "Is there an iPhone app?", a: "Coming soon. Leave your email and we will tell you when it is in the App Store. Until then Gymbo runs in your browser.", waitlist: true },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
-  { q: "Can I import my existing clients?", a: "If your clients are saved in your phone's contacts, yes. Gymbo adds each client's name and phone number." },
+  { q: "Can I import my existing clients?", a: "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand." },
 ];
 
 /* ============================================================================
@@ -319,18 +311,11 @@ export default function App() {
           ))}
         </div>
 
-        {/* gy-w77x3 D3 — the nav CTA reveals in place like every other waitlist
-            control. The nav is `sticky top-0`, so the panel opens DOWNWARD into
-            the page and is on-screen by construction; no `above` needed here,
-            and designer said so explicitly rather than leaving it to be
-            rediscovered. It still inherits K1/K2 — a focused field under a
-            raised keyboard is the same hazard wherever the cluster lives. */}
-        <div className="flex items-center gap-2.5">
-          <InlineWaitlist overlay="nav" dismissible reducedMotion={prefersReduced} reclaimGutter={false} panelClassName="absolute right-4 top-full z-50">
-            <WaitlistPlainButton location="nav" className="inline-flex items-center h-11 px-5 rounded-full text-[13px] transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={ctaVisual("secondary").style}>
-              Request access
-            </WaitlistPlainButton>
-          </InlineWaitlist>
+        {/* gy-1vd9qy.10.4 option A: Log in is a quiet text link next to the amber Start free pill. Both are real links into
+            app.getgymbo.com, so there is no reveal panel in the nav any more. */}
+        <div className="flex items-center gap-1.5">
+          <LogInLink location="nav" />
+          <StartFreeCTA position="nav" />
         </div>
       </nav>
 
@@ -369,24 +354,18 @@ export default function App() {
                 for independent personal trainers.
               </h1>
               <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
-                <b style={{ color: F.ink, fontWeight: 400 }}>Track payments and balances, stay organized, look professional, train smarter</b>. Built for independent trainers like you in India.
+                <b style={{ color: F.ink, fontWeight: 400 }}>Track payments and balances, see who owes you, and keep clients and classes in one place</b>. Built for independent trainers in India.
               </p>
-              {/* gy-becxi — THE FOUNDER-REPORTED JOURNEY IS THIS EXACT CLUSTER.
-                  Damini arrives from Instagram, taps the waitlist CTA here, and
-                  before this was thrown to the page footer. The capture now opens
-                  underneath these two buttons without moving the viewport. */}
-              <InlineWaitlist className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`} reducedMotion={prefersReduced}>
+              {/* gy-1vd9qy.10.4 option A: Start free is the one filled amber CTA; the founder's WhatsApp is the outline one. */}
+              <div className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
-                  <WhatsAppCTA size="lg" location="hero">Talk to the founder</WhatsAppCTA>
-                  <WaitlistCTA size="lg" location="hero" />
+                  <StartFreeCTA size="lg" position="hero" />
+                  <WhatsAppCTA size="lg" location="hero" variant="secondary" glyph={false}>Talk to the founder</WhatsAppCTA>
                 </div>
                 <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                  For independent trainers in India. {PLATFORM_ONLY_CLAUSE}. Your clients download nothing.
+                  {HERO_SMALL_PRINT}
                 </p>
-                <p className="mt-2 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                  {TRIAL_LINE}
-                </p>
-              </InlineWaitlist>
+              </div>
               {/* Mobile/tablet keeps the approved three-phone composition below
                   the copy, scaled as one coherent image so its screens and device
                   silhouettes remain legible without clipping. */}
@@ -396,26 +375,6 @@ export default function App() {
             </div>
           </div>
         </header>
-
-        {/* ───────── what happens next (gm-7pd piece 3) ───────── */}
-        <section aria-label="What happens next" style={{ background: F.beige }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pb-16 md:pb-24">
-            <Reveal>
-              <ol className="flex flex-col gap-3 max-w-[480px]">
-                {ACCESS_ROUTE_STEPS.map((step, i) => (
-                  <li key={step} className="flex items-start gap-3">
-                    <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5 text-[12px] font-bold" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText, fontFamily: SANS }}>
-                      {i + 1}
-                    </span>
-                    <span className="text-[14px] md:text-[15px]" style={{ color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
-                      {step}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            </Reveal>
-          </div>
-        </section>
 
         {/* ───────── why — 4 pillars ───────── */}
         <section id="why" aria-label="Why trainers use Gymbo">
@@ -535,9 +494,9 @@ export default function App() {
             <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
-              <InlineWaitlist className="flex flex-col items-center" reducedMotion={prefersReduced}>
-                <WaitlistCTA dark size="lg" location="gallery" />
-              </InlineWaitlist>
+              <div className="flex flex-col items-center">
+                <StartFreeCTA dark size="lg" position="gallery" variant="secondary" />
+              </div>
             </Reveal>
           </div>
         </section>
@@ -562,10 +521,9 @@ export default function App() {
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
             <Reveal className="text-center">
               <Eyebrow dark>Pricing</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "20ch" }}>
-                Straightforward pricing.
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
+                {PRICING_HEADING}
               </h2>
-              <p className="mt-3 text-[14px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_LEGIBILITY_LINE}</p>
             </Reveal>
 
             <div className="mt-12 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
@@ -580,41 +538,24 @@ export default function App() {
                       <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
                       <div className="flex items-baseline gap-1.5 mb-1">
                         <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
-                        <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span>
+                        {plan.period ? <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span> : null}
                       </div>
                       <p className="text-[12px] mb-5" style={{ color: hi ? "rgba(26,26,26,0.6)" : F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
-                      <div className="h-px mb-5" style={{ background: hi ? "rgba(26,26,26,0.12)" : "rgba(240,240,235,0.08)" }} />
-                      <ul className="flex flex-col gap-3 mb-7">
-                        {plan.features.map((f) => (
-                          <li key={f} className="flex items-center gap-2.5">
-                            <span className="grid place-items-center shrink-0 w-[20px] h-[20px] rounded-md" style={{ background: hi ? "rgba(26,26,26,0.12)" : "rgba(251,191,36,0.14)", color: hi ? F.onCta : F.marigold }}>
-                              <Check size={12} strokeWidth={2.5} />
-                            </span>
-                            <span className="text-[14px]" style={{ color: hi ? F.onCta : F.bone, fontFamily: SANS }}>{f}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      {/* 🔴 ONE CLUSTER PER CARD, NOT ONE FOR THE GRID. A single
-                          cluster around both plans would open the capture at the
-                          bottom of the grid -- far from the button just tapped, on
-                          the other card on desktop -- which is the disorientation
-                          this bead removes, reintroduced at a smaller scale.
-                          mt-auto moves to the wrapper: it is what pins the CTA to
-                          the bottom of the flex column, and leaving it on the
-                          button would let the cluster div collapse the alignment. */}
-                      <InlineWaitlist className="mt-auto" reducedMotion={prefersReduced}>
-                        <WaitlistPlainButton location="pricing" className={`w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`} style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}>
-                          Request access
-                        </WaitlistPlainButton>
-                      </InlineWaitlist>
+                      {/* gy-1vd9qy.10.4: both cards say Start free and go to the app's sign-up (mt-auto pins the button to the card bottom). */}
+                      <a
+                        {...signupCtaProps(plan.highlight ? "pricing-pro" : "pricing-free")}
+                        className={`mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`}
+                        style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}
+                      >
+                        {START_FREE_LABEL}
+                      </a>
                     </div>
                   </Reveal>
                 );
               })}
             </div>
             <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>One plan, two ways to pay · {TRIAL_DAYS}-day free trial for eligible subscribers · billed via {BILLING_CHANNEL}.</p>
-              <p className="text-[13px] mt-2 mx-auto max-w-[56ch]" style={{ color: F.boneLabel, fontFamily: SANS }}>{TRIAL_ELIGIBILITY_DETAIL}</p>
+              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_PAYMENT_LINE}</p>
             </Reveal>
           </div>
         </section>
@@ -638,7 +579,15 @@ export default function App() {
                         <Plus size={15} strokeWidth={2.4} />
                       </span>
                     </summary>
-                    <p className="pb-5 pr-10 text-[14px] md:text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{item.a}</p>
+                    <p className="pb-3 pr-10 text-[14px] md:text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{item.a}</p>
+                    {"waitlist" in item && item.waitlist ? (
+                      // Secondary path (gy-1vd9qy.10.4): the iPhone-app email list stays reachable from this answer.
+                      <InlineWaitlist className="pb-5" reducedMotion={prefersReduced}>
+                        <WaitlistPlainButton location="cta-section" className="inline-flex items-center min-h-11 text-[14px] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ color: F.amberText, fontFamily: SANS, fontWeight: 600 }}>
+                          Tell me when the iPhone app is out
+                        </WaitlistPlainButton>
+                      </InlineWaitlist>
+                    ) : <div className="pb-2" />}
                   </details>
                 </Reveal>
               ))}
@@ -652,7 +601,7 @@ export default function App() {
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" data-testid="footer-cta-section" aria-label="Request access" style={{ background: F.charcoal }}>
+        <section id="cta" data-testid="footer-cta-section" aria-label="Start free" style={{ background: F.charcoal }}>
           <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
             <Reveal>
               <Eyebrow dark>{STATUS_LANGUAGE}</Eyebrow>
@@ -660,12 +609,12 @@ export default function App() {
                 Payments, schedules, and clients in one app.
               </h2>
               <p className="mt-4 text-[15px] gy-text-balance" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                Leave a WhatsApp number or email and we'll get back to you.
+                {FINAL_CTA_SUB}
               </p>
             </Reveal>
 
             <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
-              <WaitlistForm />
+              <StartFreeCTA dark size="lg" position="final" className="w-full sm:w-auto" />
               <WhatsAppButton location="cta-section">Talk to the founder</WhatsAppButton>
             </Reveal>
 
@@ -690,7 +639,7 @@ export default function App() {
                 <ul aria-labelledby={`footer-${g.label.toLowerCase()}`} className="list-none p-0 m-0">
                   {g.links.map((l) => (
                     <li key={l.label}>
-                      <a href={l.href} className="block py-1 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
+                      <a href={l.href} className="flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
                     </li>
                   ))}
                 </ul>

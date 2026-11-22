@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { installScrollRecorder, markScrollRecorder, readScrollLog } from './helpers/scroll-recorder';
+import { openWaitlistForm } from './helpers/waitlist';
 
 /**
  * gy-becxi — the inline waitlist capture, verified as BEHAVIOUR.
@@ -19,188 +19,9 @@ import { installScrollRecorder, markScrollRecorder, readScrollLog } from './help
  * staying put is the only assertion that can tell the two apart.
  */
 
-const WAITLIST_CTA = (loc: string) => `[data-cta="waitlist"][data-cta-location="${loc}"]`;
 
-for (const [page_, loc, label] of [
-  ['/', 'hero', 'the App hero — the founder-reported journey'],
-  ['/compare/gymbo-vs-wellnessz/', 'compare', 'the compare page hero'],
-  // gy-becxi follow-up 2026-09-12: the GALLERY cluster is WRAPPED in App.tsx
-  // (<InlineWaitlist> around <PrimaryCTA location="gallery">) but was NOT pinned
-  // here. Code coverage without test coverage is how a cluster silently reverts
-  // to scrolling — the exact defect this bead removes — so the wrapped set and
-  // the tested set must be the same set.
-  ['/', 'gallery', 'the gallery cluster'],
-] as const) {
-  test(`${label}: tapping the waitlist CTA reveals the capture WITHOUT scrolling`, async ({ page }) => {
-    await page.goto(page_);
-    const cta = page.locator(WAITLIST_CTA(loc));
-    await expect(cta).toHaveCount(1);
 
-    // The cluster must be the one wired for reveal. Asserted from the SERVED
-    // markup rather than inferred from behaviour, so a cluster that silently
-    // fell back to scrolling names itself here instead of failing obscurely
-    // three assertions later.
-    await expect(cta).toHaveAttribute('data-cta-behaviour', 'reveal');
 
-    await cta.scrollIntoViewIfNeeded();
-
-    // 🔴 SETTLE BEFORE MEASURING, AND SETTLE ON THE CTA ITSELF. Two pre-existing
-    // page behaviours land inside a naive measurement window and are NOT this
-    // bead: lazy images above the CTA reflow and scroll anchoring compensates
-    // (a first draft of this test read 398px of movement the click did not
-    // cause), and on /compare the cluster sits in <Reveal>, whose
-    // .reveal-on-scroll entry animation is a 0.6s translateY(20px) -> none — it
-    // was still running and reported 19.8px, which is that animation to within
-    // rounding and not a jump.
-    // Both are removed by waiting for the CTA's own box AND scrollY to stop
-    // moving. The alternative — widening the tolerance until the noise fits —
-    // would have widened it past a 20px real jump too, and a control that
-    // cannot fail is not a control.
-    await page.waitForLoadState('networkidle');
-    await expect.poll(async () => {
-      const a = (await cta.boundingBox())!.y;
-      const sa = await page.evaluate(() => window.scrollY);
-      await page.waitForTimeout(200);
-      const b = (await cta.boundingBox())!.y;
-      const sb = await page.evaluate(() => window.scrollY);
-      return Math.abs(a - b) < 0.5 && sa === sb;
-    }, { timeout: 10_000 }).toBe(true);
-
-    // 🔴 THE BEAD, MEASURED AS THE VISITOR EXPERIENCES IT. The property Damini
-    // reported is not "scrollY is constant" — it is "the thing I was looking at
-    // did not move". Anchoring the assertion to the CTA's own position in the
-    // VIEWPORT states exactly that, and is immune to a scroll-anchoring
-    // adjustment that moves scrollY and the content together (which is not a
-    // jump, and which a raw scrollY assertion cannot tell apart from one).
-    const beforeY = (await cta.boundingBox())!.y;
-    const beforeScroll = await page.evaluate(() => window.scrollY);
-
-    // 🔴 gy-14rfs: the first CTA assertion below FLAKES IN CI ONLY (first
-    // attempt moved 99-458px in 24 of 36 deploy runs on 2026-09-18; the traced
-    // retry always passed). Record who moved the page from here on, so the
-    // failing attempt names its cause in its own message. Observation only —
-    // the 2px limits are unchanged.
-    await installScrollRecorder(page);
-    await markScrollRecorder(cta, 'before click');
-
-    await cta.click();
-
-    // Two settling beats: long enough that a smooth-scroll would have started
-    // and a focus()-induced jump would have landed.
-    await page.waitForTimeout(400);
-    await markScrollRecorder(cta, 'after click + 400ms');
-    const afterY = (await cta.boundingBox())!.y;
-    const afterScroll = await page.evaluate(() => window.scrollY);
-    const moveLog = await readScrollLog(page);
-    // gy-becxi C2 (web_designer 17 Oct): the page may move, but ONLY the minimum that brings the
-    // whole panel into view (scrollIntoView block: nearest). So: if it moved, the panel's bottom edge
-    // must sit flush with the viewport bottom (within the scroll-margin), and the move must be smaller
-    // than the panel (never the old jump to the footer). If it did not move, the panel already fit.
-    const panelBox = await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox();
-    const vh = await page.evaluate(() => window.innerHeight);
-    const moved = Math.abs(afterScroll - beforeScroll);
-    expect(panelBox!.y + panelBox!.height, `the whole capture must end up in view${moveLog}`).toBeLessThanOrEqual(vh + 2);
-    expect(moved, `a reveal may only nudge the page, never jump to the footer${moveLog}`).toBeLessThan(vh);
-    if (moved > 2) {
-      expect(vh - (panelBox!.y + panelBox!.height), `a nudge must stop as soon as the panel fits${moveLog}`).toBeLessThanOrEqual(240); // phones stop above the fixed sticky bar (scroll-margin), desktop is flush
-    }
-
-    // The capture is revealed, and it is revealed INSIDE this cluster — not the
-    // footer form becoming visible because the page moved.
-    const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
-    await expect(panel).toBeVisible();
-
-    // designer item 2: focus the first field, because revealing a form the
-    // visitor must then tap into spends the click we set out to save.
-    const focused = await page.evaluate(() => {
-      const el = document.activeElement as HTMLInputElement | null;
-      return el ? { tag: el.tagName, name: el.getAttribute('name') } : null;
-    });
-    expect(focused, 'reveal must leave focus in the capture, not on the button').toMatchObject({ tag: 'INPUT' });
-
-    // AC2, stated as a measurement rather than a claim: ONE tap from the CTA to
-    // a focused, typable field. The old path was tap -> scroll -> tap a field.
-    await page.keyboard.type('gy-becxi control');
-    const typed = await page.evaluate(() => (document.activeElement as HTMLInputElement)?.value);
-    expect(typed, 'the focused field must accept typing with no further tap').toBe('gy-becxi control');
-  });
-}
-
-/**
- * designer item 3 — the footer form STAYS. This add a capture point; it does not
- * relocate one. People who arrive by scrolling must still find a form there, and
- * #cta is the target of every existing deep link and of the prod smoke suite.
- */
-test('the footer capture still exists and is untouched by the reveal (item 3)', async ({ page }) => {
-  await page.goto('/');
-  const footer = page.locator('#cta');
-  await footer.scrollIntoViewIfNeeded();
-  await expect(footer).toBeVisible();
-  await expect(footer.locator('input[type="email"]')).toBeVisible();
-});
-
-/**
- * 🔴 N1 — THE RE-POINTED NEGATIVE CONTROL (gy-w77x3 D6, designer 2026-09-16).
- *
- * WHAT THIS TEST USED TO ASSERT, AND WHY ITS SPECIMEN IS GONE. Until D3 this
- * slot held "an unwrapped waitlist CTA still scrolls, so the change is
- * additive", and it pointed at the mobile sticky bar — the one waitlist CTA
- * gy-becxi deliberately left alone, because an inline panel beneath a fixed
- * viewport-bottom bar renders off-screen. D1 solved that (the panel opens
- * UPWARD) and D3 wrapped the nav and pricing buttons, so every
- * data-cta="waitlist" control on / is now inside a cluster BY CONSTRUCTION.
- * There is no unwrapped specimen left to point at. A re-pointed control with no
- * history reads to the next person as if it had always meant this, so: it did
- * not, and the change is deliberate.
- *
- * THE FALLBACK ITSELF IS NOW UNTESTED, AND THAT IS A DECISION RATHER THAN AN
- * OVERSIGHT. useWaitlistCtaAction still returns scrollToId("cta") when the
- * context is null, and that branch is what keeps this change additive. Proving
- * it needs a component render outside a provider — a React harness this repo
- * does not have (the .mjs tests cover Pages Functions; Playwright asserts the
- * served page). designer ruled 2026-09-16 that a second harness for one branch
- * nobody can reach through the UI is cost without coverage, and that the branch
- * is now guarded by ARCHITECTURE: a null context is only reachable from a call
- * site that does not exist. If a React harness ever lands for other reasons,
- * assert the fallback then — that is a condition, not a promise.
- *
- * WHAT IS GUARDED INSTEAD IS THE PROPERTY THAT HAS ACTUALLY RECURRED TWICE. Not
- * "the fallback broke" — it never has — but "a waitlist control exists that
- * nobody routed through the shared symbol". gy-becxi shipped and MISSED THREE
- * CONTROLS; this bead exists because someone counted them afterwards. That
- * failure has a live specimen you can seed today, which the old control no
- * longer does.
- *
- * N1 is the DOM half: every element carrying data-cta="waitlist" on the served
- * page reports behaviour "reveal". After D3 that is ALL of them, so this is a
- * complete assertion rather than a sample, and it goes red the moment somebody
- * adds an unwrapped one. Its structural blind spot — a hand-rolled button that
- * carries no data-cta at all — is exactly how the three missed controls
- * survived, and is covered by N2 below, not here.
- */
-test('N1: every waitlist CTA on the served page reveals in place (no unwrapped survivor)', async ({ page }) => {
-  await page.goto('/');
-  const ctas = await page.evaluate(() =>
-    [...document.querySelectorAll('[data-cta="waitlist"]')].map((el) => ({
-      location: el.getAttribute('data-cta-location'),
-      behaviour: el.getAttribute('data-cta-behaviour'),
-      html: el.outerHTML.slice(0, 120),
-    })),
-  );
-
-  // POSITIVE CONTROL. An empty query passes .every() vacuously, and a selector
-  // typo or a page that failed to hydrate would produce exactly that. The five
-  // are hero, gallery, nav and two pricing cards — one cluster per card, per
-  // designer. (The sixth, the phone sticky bar, became the WhatsApp primary in
-  // gy-e9h9y N2 and is no longer a waitlist CTA, so the floor is five.)
-  expect(ctas.length, 'positive control: the page must actually carry waitlist CTAs').toBeGreaterThanOrEqual(5);
-
-  const notRevealing = ctas.filter((c) => c.behaviour !== 'reveal');
-  expect(
-    notRevealing,
-    'every waitlist CTA must reveal its capture in place. A "scroll" here means a control was added or unwrapped without a cluster — the exact defect gy-becxi shipped with, three times over.',
-  ).toEqual([]);
-});
 
 /**
  * 🔴 N2 — THE SOURCE-LEVEL HALF, BECAUSE N1 IS STRUCTURALLY BLIND TO THE
@@ -319,50 +140,6 @@ test('N2: no hand-rolled scroll-to-capture outside the shared hook (source-level
   }
 });
 
-/**
- * item 4 — ONE submitted form, not two. Both captures must post through the same
- * component to the same endpoint. Two forms that can diverge is how one of them
- * silently stops working; gy-if6mq's confirmation mail and team alert hang off
- * this single endpoint (AC6), so a second submit path would send a lead into a
- * hole with no mail and no alert.
- */
-test('the revealed capture posts to the same endpoint as the footer one (item 4, AC6)', async ({ page }) => {
-  await page.goto('/');
-  const posts: string[] = [];
-  await page.route('**/api/waitlist', async (route) => {
-    posts.push(route.request().url());
-    await route.fulfill({ status: 200, body: '{}' });
-  });
-
-  // gy-14rfs: this test also flakes in CI only (10 first-attempt failures in
-  // 36 deploy runs, all "posts.length 0, expected 1" after 5s). The log below
-  // says whether the tap reached a hydrated button and where the page went.
-  const heroCta = page.locator(WAITLIST_CTA('hero'));
-  await installScrollRecorder(page);
-  await markScrollRecorder(heroCta, 'before click');
-  await heroCta.click();
-  // 🔴 ADDRESSED BY ROLE, NOT BY "the group that contains an email input". On
-  // success WaitlistForm REPLACES the fields with the confirmation line, so a
-  // locator filtered on the email input stops matching the moment the thing it
-  // is there to check happens — it would report "not found" for a submit that
-  // worked perfectly.
-  const panel = page.locator('[role="group"][aria-label="Request access"]').first();
-  await panel.locator('input[type="email"]').fill('gy-becxi-control@example.invalid');
-  await panel.locator('button[type="submit"]').click();
-
-  // The message is only known after the wait, so it is attached on failure;
-  // the assertion itself is unchanged.
-  try {
-    await expect.poll(() => posts.length).toBe(1);
-  } catch (e) {
-    await markScrollRecorder(heroCta, 'poll timed out');
-    const where = await page.evaluate(() => `url=${location.href} activeInPanels=${[...document.querySelectorAll('[role="group"][aria-label="Request access"]')].map((g) => g.contains(document.activeElement)).join(',')}`);
-    (e as Error).message += `\n${where}${await readScrollLog(page)}`;
-    throw e;
-  }
-  expect(new URL(posts[0]).pathname).toBe('/api/waitlist');
-  await expect(panel.getByText(/request received/i)).toBeVisible();
-});
 
 /**
  * gy-e60uc.3 — the success line BRANCHES on what the visitor typed, and each branch says what really
@@ -388,8 +165,7 @@ for (const [label, fill, expected] of [
       posts.push(route.request().url());
       await route.fulfill({ status: 200, body: '{}' });
     });
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
     if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
     await form.locator('button[type="submit"]').click();
@@ -422,8 +198,7 @@ for (const [label, fill] of [
       posts.push(route.request().url());
       await route.fulfill({ status: 200, body: '{}' });
     });
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     await form.locator('input[type="email"]').fill(fill.email);
     await form.locator('button[type="submit"]').click();
     await expect(form.getByRole('alert')).toHaveText(EMAIL_ERR);
@@ -461,8 +236,7 @@ for (const [label, fill, expectPost, successText] of [
       bodies.push(route.request().postDataJSON());
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
     });
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
     if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
     await form.locator('button[type="submit"]').click();
@@ -476,8 +250,7 @@ test('a lone too-short phone is refused inline, nothing posted (gy-sl9amm)', asy
   await page.goto('/');
   const posts: string[] = [];
   await page.route('**/api/waitlist', async (route) => { posts.push(route.request().url()); await route.fulfill({ status: 200, body: '{}' }); });
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('input[type="tel"]').fill('123');
   await form.locator('button[type="submit"]').click();
   await expect(form.getByRole('alert')).toHaveText("That number looks too short. Check it, or add an email instead.");
@@ -495,8 +268,7 @@ for (const [label, phone, expected] of [
   test(`a server refusal of the email shows the same inline text (${label}) (gy-e60uc.2)`, async ({ page }) => {
     await page.goto('/');
     await page.route('**/api/waitlist', (route) => route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'valid email required' }) }));
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     // "a@b.co" passes the form's own check, so this reaches the (stubbed) server.
     await form.locator('input[type="email"]').fill('a@b.co');
     if (phone) await form.locator('input[type="tel"]').fill(phone);
@@ -512,8 +284,7 @@ for (const [label, phone, expected] of [
 test('a generic server failure keeps the existing error state and its mailto fallback (gy-e60uc.2)', async ({ page }) => {
   await page.goto('/');
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 502, contentType: 'application/json', body: JSON.stringify({ error: 'failed to join' }) }));
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('input[type="email"]').fill('a@b.co');
   await form.locator('button[type="submit"]').click();
   await expect(form.getByText(/that didn't send\. what you typed is still here/i)).toBeVisible();
@@ -546,8 +317,7 @@ for (const [label, project, viewport] of [
       await page.goto('/');
       // Lazy images above the footer reflow the page after load; measure only once they have.
       await page.waitForLoadState('networkidle');
-      const form = page.locator('form:has(input[name="phone"])').last();
-      await form.scrollIntoViewIfNeeded();
+      const form = await openWaitlistForm(page);
       // POSITION THE FORM DETERMINISTICALLY: put the submit button's bottom edge just above the fold (on a phone,
       // just above where the sticky bar starts). That is the reported situation, and it is where a 20px error
       // beneath the button lands UNDER the bar / below the fold unless something scrolls it into view. Without
@@ -616,16 +386,7 @@ async function expectRefusalSeen(page: import('@playwright/test').Page, form: im
 }
 
 for (const [label, prepare] of [
-  ['the hero panel', async (page: import('@playwright/test').Page) => {
-    await page.locator(WAITLIST_CTA('hero')).click();
-    return page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
-  }],
-  ['the pricing panel', async (page: import('@playwright/test').Page) => {
-    const cta = page.locator(WAITLIST_CTA('pricing')).first();
-    await cta.scrollIntoViewIfNeeded();
-    await cta.click();
-    return page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
-  }],
+  ['the iPhone FAQ panel', async (page: import('@playwright/test').Page) => openWaitlistForm(page)],
 ] as const) {
   test(`a refused submit is seen in ${label} at 375x740 (gy-e60uc.7)`, async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'mobile', 'the sticky bar only exists on a phone');
@@ -653,8 +414,7 @@ for (const [label, fill, expectedField] of [
   test(`focus lands on the first field the error is about after ${label} (gy-e60uc.7)`, async ({ page }) => {
     await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
     await page.goto('/');
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     if ('email' in fill) await form.locator('input[type="email"]').fill(fill.email);
     if ('phone' in fill) await form.locator('input[type="tel"]').fill(fill.phone);
     await form.locator('button[type="submit"]').click();
@@ -681,8 +441,7 @@ test('a malformed email WITH a phone submits phone-only: no error, no focus trap
   const bodies: any[] = [];
   await page.route('**/api/waitlist', async (route) => { bodies.push(route.request().postDataJSON()); await route.fulfill({ status: 200, body: '{}' }); });
   await page.goto('/');
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('input[type="email"]').fill('a@b');
   await form.locator('input[type="tel"]').fill('9876543210');
   await form.locator('button[type="submit"]').click();
@@ -696,8 +455,7 @@ test('PLANTED CONTROL: the same malformed email with NO phone is still refused, 
   const posts: string[] = [];
   await page.route('**/api/waitlist', async (route) => { posts.push(route.request().url()); await route.fulfill({ status: 200, body: '{}' }); });
   await page.goto('/');
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('input[type="email"]').fill('a@b');
   await form.locator('button[type="submit"]').click();
   await expect(form.getByRole('alert')).toBeVisible();
@@ -710,8 +468,7 @@ test('PLANTED CONTROL: the same malformed email with NO phone is still refused, 
 test('after an empty submit the visitor can type straight into the focused field (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('button[type="submit"]').click();
   await expect(form.getByRole('alert')).toBeVisible();
   await page.keyboard.type('9876543210');
@@ -752,8 +509,7 @@ for (const [what, trigger, target] of [
     await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const form = page.locator('form:has(input[name="phone"])').last();
-    await form.scrollIntoViewIfNeeded();
+    const form = await openWaitlistForm(page);
     if (trigger === 'bad-email') await form.locator('input[type="email"]').fill('a@b');
     if (trigger !== 'idle') await form.locator('button[type="submit"]').click();
     const el = target === 'hint' ? form.getByText('Add a WhatsApp number or an email: either one is enough.') : form.getByRole('alert');
@@ -768,34 +524,11 @@ for (const [what, trigger, target] of [
   });
 }
 
-/**
- * gy-e60uc.8 (designer): the footer-CTA subline on BOTH pages uses the one shared .gy-text-balance class, and at 375px
- * its last line is not a stranded word: the last rendered line is at least 40% as wide as the widest. Measured from Range
- * client rects (the wrap the visitor sees), not from the CSS that was written. Runs on the phone, where the wrap bites.
- */
-for (const [pagePath, label] of [['/', 'home'], ['/compare/gymbo-vs-wellnessz/', 'the compare page']] as const) {
-  test(`the footer-CTA subline on ${label} is balanced at 375px (gy-e60uc.8)`, async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== 'mobile', 'the wrap is a narrow-phone matter');
-    await page.setViewportSize({ width: 375, height: 740 });
-    await page.goto(pagePath);
-    await page.waitForLoadState('networkidle');
-    const p = page.locator('p', { hasText: "Leave a WhatsApp number or email and we'll get back to you." }).last();
-    await p.scrollIntoViewIfNeeded();
-    await expect(p).toHaveClass(/gy-text-balance/);
-    expect(await p.evaluate((el) => getComputedStyle(el).textWrapMode + '|' + getComputedStyle(el).textWrapStyle)).toMatch(/balance/);
-    const widths = await lineWidths(p);
-    expect(widths.length, 'the subline rendered no lines').toBeGreaterThan(1);
-    const widest = Math.max(...widths);
-    const last = widths[widths.length - 1];
-    expect(last / widest, `the subline wraps into lines of ${JSON.stringify(widths)}px: the last is only ${Math.round((last / widest) * 100)}% of the widest`).toBeGreaterThanOrEqual(0.4);
-  });
-}
 
 test('the error is named as the description of the field it is about (gy-e60uc.7)', async ({ page }) => {
   await page.route('**/api/waitlist', (route) => route.fulfill({ status: 200, body: '{}' }));
   await page.goto('/');
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   const email = form.locator('input[type="email"]');
   const before = await email.getAttribute('aria-describedby');
   await email.fill('a@b');
@@ -825,8 +558,7 @@ test('LIVENESS: a well-formed email passes the shape check and posts (gy-e60uc.2
     posts.push(route.request().url());
     await route.fulfill({ status: 200, body: '{}' });
   });
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = await openWaitlistForm(page);
   await form.locator('input[type="email"]').fill('first.last+tag@sub.example.co.in');
   await form.locator('button[type="submit"]').click();
   await expect.poll(() => posts.length).toBe(1);
@@ -835,6 +567,7 @@ test('LIVENESS: a well-formed email passes the shape check and posts (gy-e60uc.2
 
 test('the phone field says WhatsApp, and keeps "phone" in its accessible name (gy-e60uc.3)', async ({ page }) => {
   await page.goto('/');
+  await openWaitlistForm(page);
   const phone = page.locator('input[name="phone"]').last();
   // Placeholder and aria-label are byte-identical: the only visible label is the placeholder, so the
   // accessible name contains the visible text by construction (WCAG 2.5.3).
@@ -846,400 +579,18 @@ test('the phone field says WhatsApp, and keeps "phone" in its accessible name (g
   const hint = page.getByText('Add a WhatsApp number or an email: either one is enough.').last();
   await expect(hint).toBeVisible();
   // Empty submit -> the ratified error, announced as an alert.
-  const form = page.locator('form:has(input[name="phone"])').last();
-  await form.scrollIntoViewIfNeeded();
+  const form = page.locator('[role="group"][aria-label="Request access"]').first().locator('form');
   await form.locator('button[type="submit"]').click();
   await expect(form.getByRole('alert')).toHaveText('Nothing to reach you on yet. Add a WhatsApp number or an email.');
 });
 
-/**
- * 🔴 THE preventScroll CONTROL, AND WHY IT NEEDS ITS OWN SETUP.
- *
- * Removing `preventScroll` from the reveal's focus() call is the subtlest way to
- * break this bead: the capture still opens, the field is still focused, and the
- * page silently jumps again — the original defect, wearing the fix's clothes.
- * Mutation-testing the change showed the general tests above catch that removal
- * in only ONE of four browser/page combinations, because a field that happens to
- * be inside the viewport is not scrolled to even by default focus. The guard is
- * only exercised when the revealed field falls BELOW the fold.
- *
- * So this test creates that condition deliberately, and it is also the realistic
- * one: a visitor on a phone with the CTA partway down the screen, where the
- * panel necessarily opens past the bottom edge. Verified to fail when
- * preventScroll is removed, on both projects.
- */
-test('the capture opens below the fold without the page chasing it (preventScroll control)', async ({ page }) => {
-  await page.goto('/');
-  const cta = page.locator(WAITLIST_CTA('hero'));
-  const viewport0 = page.viewportSize()!;
-  await page.waitForLoadState('networkidle');
-
-  // Put the CTA hard against the BOTTOM edge, so the panel that opens under it
-  // is entirely below the fold and default focus behaviour would HAVE to scroll
-  // to reach the field.
-  //
-  // 🔴 TWO OBVIOUS WAYS TO DO THIS DO NOT WORK, and both produced a control that
-  // could not fail:
-  //   scrollIntoView({ block: 'end' }) — a no-op here. The hero CTA is near the
-  //     TOP of the document, so there is nothing to scroll; scrollY stayed 0,
-  //     the revealed field landed in view at y=606 of an 812px viewport, and
-  //     plain focus() had nothing to scroll to.
-  //   scrollBy(bottom - innerHeight) — negative at scrollY 0, so also a no-op.
-  // The CTA cannot be moved DOWN to the fold; the fold has to be brought UP to
-  // it. Shrinking the viewport to just below the CTA does that deterministically
-  // on any page, at any scroll position.
-  const ctaBottom = (await cta.boundingBox())!.y + (await cta.boundingBox())!.height;
-  await page.setViewportSize({ width: viewport0.width, height: Math.round(ctaBottom) + 12 });
-  await page.waitForTimeout(200);
-  await expect.poll(async () => {
-    const a = (await cta.boundingBox())!.y;
-    await page.waitForTimeout(200);
-    return Math.abs(a - (await cta.boundingBox())!.y) < 0.5;
-  }, { timeout: 10_000 }).toBe(true);
-
-  const viewport = page.viewportSize()!;
-  const boxBefore = (await cta.boundingBox())!;
-  // The setup is asserted, not assumed — see above for what happens when it
-  // silently does not hold.
-  expect(boxBefore.y, 'setup: the CTA must sit against the bottom edge so the panel opens off-screen')
-    .toBeGreaterThan(viewport.height - 80);
-  const scrollBefore = await page.evaluate(() => window.scrollY);
-
-  // 🔴 gy-14rfs: this assertion FLAKES IN CI ONLY (first attempt scrolled 487px,
-  // retry passed; 0 of 205 local runs reproduce it). A flaky test uploads no
-  // report and the trace is recorded on the RETRY, so the failing attempt left
-  // no evidence. Record who moved the page, so the next flake names its cause
-  // in its own failure message instead of being retried away.
-  await installScrollRecorder(page);
-  await markScrollRecorder(cta, 'before tap');
-
-  // 🔴 A TAP AT THE CTA'S OWN COORDINATES, NOT locator.click(). Playwright's
-  // click scrolls its target into view FIRST, and it honours scroll-padding.
-  // gy-w77x3 B7 added a 92px scroll-padding-bottom below md (so a focused
-  // control clears the sticky bar), and this setup deliberately parks the CTA
-  // 12px from the bottom edge, inside that band. Measured: locator.click()
-  // then scrolled 278px BEFORE the reveal ran (focus still on <body>), 20/20
-  // red. That scroll is the harness, not the page. A visitor's tap does not
-  // scroll first, and mouse.click at the box centre does not either.
-  await page.mouse.click(boxBefore.x + boxBefore.width / 2, boxBefore.y + boxBefore.height / 2);
-  await page.waitForTimeout(400);
-
-  const boxAfter = (await cta.boundingBox())!;
-  const scrollAfter = await page.evaluate(() => window.scrollY);
-  const scrollLog = await readScrollLog(page);
-  const wide = true; // gy-becxi: phones nudge too (web_tester 17 Oct)
-  // gy-becxi C2: on desktop the reveal nudges the page just far enough to show the whole form; the
-  // control still catches the focus()-induced jump (preventScroll missing), which is the footer.
-  expect(Math.abs(scrollAfter - scrollBefore),
-    `focusing a below-the-fold field must not scroll the page${scrollLog}`,
-  ).toBeLessThanOrEqual(wide
-    // A nudge is bounded by the panel's own height (plus the CTA row and margins); the focus() jump this control exists to catch is the footer.
-    ? ((await page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') }).boundingBox())?.height ?? 0) + 320
-    : 2);
-  if (!wide) expect(Math.abs(boxAfter.y - boxBefore.y), 'the CTA must stay exactly where the visitor tapped it').toBeLessThanOrEqual(2);
-});
-
-/**
- * 🔴 THE INLINE CAPTURE MUST NOT BE NARROWER THAN THE ONE IT MIRRORS.
- *
- * Both captures are the SAME WaitlistForm (item 4), so a width difference is
- * pure containing-block accident — and it is not cosmetic. A first pass wrapped
- * the form in a plain p-5 panel, which cost 40px and, on a 375px phone, clipped
- * the email placeholder: 276px of text into 255px of field. The half that gets
- * cut is the part that says email is OPTIONAL, on the capture a visitor arriving
- * from Instagram actually reaches — so a lead who has already typed a phone
- * number is left reading a field that looks required.
- *
- * I had assumed that clipping was pre-existing. MEASURING BOTH FORMS showed the
- * footer field had 19px of headroom and did not clip, and that the inline panel
- * had introduced it. This test is the assumption turned into a measurement.
- */
-test('the inline capture is no narrower than the footer capture (measured, both viewports)', async ({ page }) => {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-
-  const innerWidth = (sel: string) =>
-    page.locator(sel).evaluate((el: HTMLInputElement) => {
-      const cs = getComputedStyle(el);
-      return el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    });
-
-  await page.locator('#cta').scrollIntoViewIfNeeded();
-  const footer = await innerWidth('#cta input[type="email"]');
-
-  await page.locator(WAITLIST_CTA('hero')).click();
-  await page.waitForTimeout(400);
-  const inline = await innerWidth('[role="group"][aria-label="Request access"] input[type="email"]');
-
-  expect(inline, 'the revealed capture must give the fields at least as much room as the footer one')
-    .toBeGreaterThanOrEqual(footer);
-
-  // And the placeholder that carries the "optional" hint must actually fit.
-  const fits = await page
-    .locator('[role="group"][aria-label="Request access"] input[type="email"]')
-    .evaluate((el: HTMLInputElement) => {
-      const cs = getComputedStyle(el);
-      const ctx = document.createElement('canvas').getContext('2d')!;
-      ctx.font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
-      const avail = el.getBoundingClientRect().width - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      return ctx.measureText(el.placeholder).width <= avail;
-    });
-  expect(fits, 'the email placeholder must not clip — the clipped half is the word "optional"').toBe(true);
-});
-
-/**
- * 🔴 THE PANEL MUST FIT ON THE SCREEN — THE DIRECTION EVERY OTHER WIDTH
- * ASSERTION IN THIS FILE IS BLIND TO (gy-w77x3 D7, 2026-09-17).
- *
- * The measured-width test above asks whether the field is WIDE ENOUGH, because
- * a too-narrow capture clipped the word "optional" out of the email hint once
- * before. That is one side of a two-sided property, and the D7 captures found
- * the other side: the nav panel rendered from -20px to 395px on a 375px phone —
- * forty pixels wider than the screen, fields cut off at BOTH edges — and every
- * test in this file passed, because a panel that is too wide is comfortably
- * wide enough.
- *
- * The cause is worth stating because it will recur: the panel reclaims the page
- * gutter with `-mx-5` and `w-[calc(100%+40px)]`, and for an ABSOLUTELY
- * POSITIONED panel that percentage resolves against the nearest positioned
- * ancestor — the sticky <nav> — not against the box its padding came from.
- * Same class as everything else on this bead: a value computed against a
- * different frame than the one it is read in.
- *
- * So this measures every cluster's revealed panel against the viewport itself.
- * Verified red before it was trusted: with the pre-fix nav geometry restored it
- * reports nav at -20..395 and fails.
- */
-test('every revealed capture fits inside the viewport (the too-wide direction)', async ({ page }) => {
-  await page.goto('/');
-  await page.waitForLoadState('networkidle');
-  const vw = page.viewportSize()!.width;
-
-  const offenders: string[] = [];
-  const measured: string[] = [];
-  for (const loc of ['hero', 'gallery', 'nav', 'pricing'] as const) {
-    const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
-    // Visibility is the question being asked (not count(): `md:hidden` is display:none and the element
-    // stays IN THE DOM). gy-e9h9y N2 removed the one control that was allowed to be absent (the phone-only
-    // sticky bar, no longer a waitlist CTA), so every listed cluster must be visible at every width: a
-    // control that vanished is the silent revert this file exists to catch.
-    expect(await cta.isVisible(), `${loc} has no VISIBLE CTA on this viewport (${vw}px)`).toBe(true);
-    measured.push(loc);
-    await cta.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await cta.click();
-    await page.waitForTimeout(400);
-    const box = await page
-      .locator('[role="group"][aria-label="Request access"]')
-      .first()
-      .evaluate((el) => {
-        const r = el.getBoundingClientRect();
-        return { left: Math.round(r.left), right: Math.round(r.right) };
-      });
-    // A half-pixel of subpixel rounding is not an overflow; 2px of slack keeps
-    // this a report of real overhang rather than of layout arithmetic.
-    if (box.left < -2 || box.right > vw + 2) offenders.push(`${loc}: ${box.left}..${box.right} (viewport 0..${vw})`);
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-  }
-
-  // Positive control: naming which clusters were actually measured turns a
-  // vacuous pass (every locator missing, nothing measured, green) into a
-  // failure.
-  //
-  // 🔴 BUT IT IS NOT THE ASSERTION THAT FIRES FIRST, AND I ONLY KNOW THAT
-  // BECAUSE I PRODUCED THE STATE INSTEAD OF REASONING ABOUT IT (designer's R-C
-  // step 3, 2026-09-18). Mutating forge-ui so no control renders data-cta
-  // "waitlist" at all, the failure comes from the PER-CLUSTER VISIBILITY guard
-  // above — "hero has no VISIBLE CTA on this viewport" — which is strictly
-  // better, because it names the cluster. This count never got the chance.
-  //
-  // It is kept, not deleted, because it covers a DIFFERENT broken state the
-  // visibility guard permits by design: every cluster legitimately skipped (all
-  // hidden at desktop width) would walk the loop to the end with nothing
-  // measured and pass. Recorded so the next reader does not credit this line
-  // with catching the empty-page case — that one belongs to the guard above.
-  expect(measured.length, 'positive control: at least four clusters must have been measured').toBeGreaterThanOrEqual(4);
-
-  expect(
-    offenders,
-    'a capture that hangs off the screen edge has its fields cut, and no width assertion that only checks for "wide enough" can see it',
-  ).toEqual([]);
-});
-
-/**
- * 🔴 THE WRAPPED SET IS PINNED AS A SET, NOT AS A LIST OF CASES — gy-becxi
- * follow-up, 2026-09-12.
- *
- * The per-cluster tests above prove that each cluster they NAME reveals. They
- * say nothing about a cluster nobody remembered to name: forgetting to wrap one
- * degrades it silently to the pre-gy-becxi scroll behaviour, which is the defect
- * this bead exists to remove.
- *
- * waitlistReveal.ts used to claim that "tests/inline-waitlist.test.mjs pins the
- * wrapped set by reading the sources". THAT FILE NEVER EXISTED — the claim was
- * written alongside the intent and the control was never built, so the silence
- * it described as bounded was in fact unbounded. This is that control, and it
- * reads the SERVED MARKUP rather than the sources: a source grep would pass on a
- * wrapper that renders but fails to provide the context, which is the failure
- * most worth catching.
- *
- * It asserts an EXACT map, and BOTH failure directions are demonstrated, not
- * assumed:
- *   · a cluster that LOSES its wrapper -> gallery flips "reveal" to "scroll" and
- *     this fails. That is the silent revert, and it is the one worth catching.
- *   · a NEW CTA at a valid location, unwrapped -> an extra key appears
- *     ("cta-section": "scroll") and this fails.
- *
- * 🔴 WHAT THIS TEST DOES *NOT* CONTROL, stated so nobody credits it with more
- * than it does: a CTA at an UNKNOWN location cannot reach this assertion at all,
- * because CtaLocation (forge-ui.tsx) is a CLOSED UNION and tsc rejects it first.
- * My first attempt at the second direction used location="selftestprobe" and the
- * test PASSED — not because the test is weak, but because the probe was a type
- * error, the build never emitted it, and I was measuring a stale dist. The type
- * system owns that direction; this test owns the two above. A control's claimed
- * scope has to match its demonstrated scope, which is the whole reason the
- * comment this replaces was wrong.
- */
-test('the reveal/scroll behaviour of EVERY waitlist CTA on / is pinned as a set', async ({ page }) => {
-  await page.goto('/');
-  const EXPECTED: Record<string, 'reveal' | 'scroll'> = {
-    hero: 'reveal',
-    gallery: 'reveal',
-    // (footer: removed by gy-e9h9y N2 — the phone sticky bar is now the WhatsApp
-    // primary, a real <a>, not a waitlist CTA. Its WhatsApp event keeps
-    // data-cta-location="footer"; see tests/cta-hierarchy.spec.ts.)
-    // gy-w77x3 D3 — the two hand-styled "Request access" buttons (formerly "Get Gymbo"). These read
-    // 'scroll' until 2026-09-16 with a comment saying the ruling waited on AC1
-    // (which control Damini actually tapped). D5 retired that dependency: if
-    // every waitlist control reveals AND shares one label, whichever one she
-    // tapped is fixed. So this is now a RULING, not a recorded non-decision.
-    nav: 'reveal',
-    pricing: 'reveal',
-  };
-  const found = await page.evaluate(() =>
-    Object.fromEntries(
-      [...document.querySelectorAll('[data-cta="waitlist"]')].map((el) => [
-        el.getAttribute('data-cta-location'),
-        el.getAttribute('data-cta-behaviour'),
-      ]),
-    ),
-  );
-  expect(
-    found,
-    'every waitlist CTA on / must have a DECLARED behaviour. A new location here means someone added a CTA without deciding whether it reveals; an absent one means a cluster lost its wrapper and silently reverted to scrolling.',
-  ).toEqual(EXPECTED);
-});
-
-/**
- * gy-w77x3 AC4 — no waitlist-opening "Request access" button on / may be untracked.
- *
- * The set test above cannot see this: it keys on location, so ONE tracked
- * pricing button hides any number of untracked siblings. This counts every
- * visible-label match instead, and requires the untracked count to be zero
- * with at least one match found (so an empty page cannot pass it).
- *
- * gy-7vbmn renamed the nav and pricing buttons from "Get Gymbo" to "Request
- * access", which is ALSO the label of the form's own submit button. The submit
- * button is deliberately not a waitlist CTA (it submits; it opens nothing), so
- * the label alone no longer identifies the set. The PROPERTY is: a "Request
- * access" button OUTSIDE a <form> opens or scrolls to the waitlist, and must be
- * tracked. The exclusion gets its own positive control, so a page where the
- * form vanished cannot pass by excluding nothing.
- */
-test('every "Request access" button outside a form on / is a tracked waitlist CTA', async ({ page }) => {
-  await page.goto('/');
-  const { openers, submits, untracked } = await page.evaluate(() => {
-    const labelled = [...document.querySelectorAll('button')].filter((b) => b.textContent?.trim() === 'Request access');
-    const openers = labelled.filter((b) => !b.closest('form'));
-    return {
-      openers: openers.length,
-      submits: labelled.filter((b) => b.closest('form')).length,
-      untracked: openers
-        .filter((b) => b.getAttribute('data-cta') !== 'waitlist' || !b.getAttribute('data-cta-location'))
-        .map((b) => b.outerHTML.slice(0, 120)),
-    };
-  });
-  expect(openers, 'positive control: the page must actually contain Request access buttons outside a form').toBeGreaterThan(1);
-  expect(submits, 'positive control for the exclusion: the form submit button must exist, or excluding it proves nothing').toBeGreaterThan(0);
-  expect(untracked, 'a Request access button fires no waitlist_cta_click, so the funnel numbers silently exclude it').toEqual([]);
-});
-
-// The attributes above are a label; this proves the click EMITS. umami is absent
-// off production hostnames (#110), so it is stubbed to record calls.
-test('clicking nav and pricing "Request access" emits waitlist_cta_click with its location', async ({ page }) => {
-  await page.addInitScript(() => {
-    (window as any).__tracked = [];
-    (window as any).umami = { track: (name: string, data: unknown) => (window as any).__tracked.push({ name, data }) };
-  });
-  await page.goto('/');
-  await page.locator('[data-cta="waitlist"][data-cta-location="nav"]').click();
-  // Since gy-w77x3 the nav REVEALS an overlay panel, which on a phone covers
-  // the page below it -- including this pricing button. Close it the way a
-  // visitor would (B2) before tapping on; the tracking under test is unchanged.
-  await page.keyboard.press('Escape');
-  await page.locator('[data-cta="waitlist"][data-cta-location="pricing"]').first().click();
-  // waitlist_form_start (gy-becxi) is its own event, covered in funnel-events.spec.ts; it fires when the revealed panel takes focus.
-  const tracked = (await page.evaluate(() => (window as any).__tracked)).filter((e: { name: string }) => e.name === 'waitlist_cta_click');
-  expect(tracked).toEqual([
-    { name: 'waitlist_cta_click', data: { location: 'nav' } },
-    { name: 'waitlist_cta_click', data: { location: 'pricing' } },
-  ]);
-});
 
 
-/**
- * gy-becxi C1 (web_designer 17 Oct): the compare page's NAV reveal opened full-bleed and overflowed a 390px
- * viewport (horizontal scroll, close X cut off) because it kept the in-column gutter reclaim that is wrong
- * for an absolutely positioned panel. Same rule as the home nav.
- */
-test('compare page nav reveal stays inside a 390px viewport', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/compare/gymbo-vs-wellnessz/');
-  await page.locator(WAITLIST_CTA('nav')).click();
-  const panel = page.locator('[role="group"][aria-label="Request access"]').first();
-  await expect(panel).toBeVisible();
-  const box = (await panel.boundingBox())!;
-  expect(box.x, 'panel left edge inside the viewport').toBeGreaterThanOrEqual(0);
-  expect(box.x + box.width, 'panel right edge keeps the 16px margin the home nav panel has').toBeLessThanOrEqual(390 - 16 + 1);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect(overflow, 'no horizontal scroll').toBeLessThanOrEqual(0);
-  const close = (await page.locator('[data-waitlist-close]').boundingBox())!;
-  expect(close.x + close.width, 'close X fully visible').toBeLessThanOrEqual(390);
-});
-
-/** gy-becxi C2: a desktop hero reveal must put the whole form in view, not just its top edge. */
-test('1440x900 hero reveal puts the whole capture in view', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/');
-  await page.locator(WAITLIST_CTA('hero')).click();
-  await page.waitForTimeout(400);
-  const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
-  await expect(panel).toBeVisible();
-  const box = (await panel.boundingBox())!;
-  expect(box.y, 'panel top in view').toBeGreaterThanOrEqual(0);
-  expect(box.y + box.height, 'panel bottom (submit button) in view').toBeLessThanOrEqual(900);
-});
 
 
-/**
- * gy-becxi (web_tester CONCERNS 17 Oct): the reveal left the form 0 / 63 / 134px visible at the three phone sizes
- * that decide the founder's journey. The name field and the submit must both be in view, and clear of the
- * fixed sticky bar, at each.
- */
-for (const [w, h] of [[360, 654], [390, 718], [412, 789]] as const) {
-  test(`phone ${w}x${h}: hero reveal brings the name field and submit into view`, async ({ page }) => {
-    await page.setViewportSize({ width: w, height: h });
-    await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    await page.locator(WAITLIST_CTA('hero')).click();
-    await page.waitForTimeout(500);
-    const panel = page.locator('[role="group"][aria-label="Request access"]').filter({ has: page.locator('input[type="email"]') });
-    const name = (await panel.locator('input[name="name"]').boundingBox())!;
-    const submit = (await panel.locator('button[type="submit"]').boundingBox())!;
-    expect(name.y, 'name field top in view').toBeGreaterThanOrEqual(0);
-    expect(submit.y + submit.height, 'submit button bottom in view').toBeLessThanOrEqual(h);
-    const bar = await page.locator('[data-fixed-chrome="sticky-cta"]').boundingBox();
-    if (bar) expect(submit.y + submit.height, 'submit is not covered by the sticky bar').toBeLessThanOrEqual(bar.y + 1);
-  });
-}
+
+
+
+
+
+

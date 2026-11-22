@@ -2,13 +2,6 @@
   "source": "Rulings landing could cite from durable beads that are NOT yet in content's canonical strings file (which supplies the rest via src/canonical/). Add an entry only with a ref that survives a session restart; move it to content's file when content adds it.",
   "ruled": [
     {
-      "id": "home-hero-note",
-      "route": "/",
-      "surface": "visible block",
-      "equals": "Gymbo is in private alpha. Eligible subscribers can try Gymbo free for 7 days. Billed via the App Store.",
-      "ref": "pm B' ruling gy-xmzqr.7 2026-09-24T13:38Z: hero note built from the canonical string"
-    },
-    {
       "id": "wellnessz-session-first",
       "route": "/compare/gymbo-vs-wellnessz/",
       "contains": "Gymbo is session-first (class punches in a couple of taps, automatic balance math, payment tracking) for independent personal trainers.",
@@ -30,14 +23,14 @@
       "id": "privacy-request-access-retention",
       "route": "/privacy/",
       "surface": "visible block",
-      "equals": "If you request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.",
-      "ref": "compliance gy-ybxce 2026-10-28 cond-2 ruling OPTION A (replacement paragraph 1; supersedes 14:20 text)"
+      "equals": "If you join the waitlist or request access, we keep the details you submit in our database for up to 180 days after your request or our last contact with you, whichever is later, and then delete them from it. When you submit, we also email your name and contact details to two members of our team and send you a confirmation email; those emails are not part of the 180 days and are kept until we delete them. You can ask us to delete your details at any time.",
+      "ref": "compliance gy-ybxce 2026-10-28 cond-2 ruling OPTION A (replacement paragraph 1; supersedes 14:20 text); wording updated by compliance gy-1vd9qy.10.7 (accepted by pm 22 Nov): waitlist or access request"
     },
     {
       "id": "privacy-request-access-delete-on-request",
       "route": "/privacy/",
-      "contains": "If you've requested access, you can unsubscribe from our emails or ask us to delete your details at any time.",
-      "ref": "compliance gy-ybxce 2026-10-28 (sentence 2 of Your choices; unchanged by Option A)"
+      "contains": "If you joined our waitlist or asked for access, you can unsubscribe from our emails or ask us to delete your details at any time.",
+      "ref": "compliance gy-ybxce 2026-10-28 (sentence 2 of Your choices; unchanged by Option A); wording updated by compliance gy-1vd9qy.10.7 (accepted by pm 22 Nov)"
     }
   ]
 }
