@@ -581,7 +581,7 @@ export default function App() {
                     </summary>
                     <p className="pb-3 pr-10 text-[14px] md:text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{item.a}</p>
                     {"waitlist" in item && item.waitlist ? (
-                      // Secondary path (gy-1vd9qy.10.4): the iPhone-app email list stays reachable, one tap from this answer.
+                      // Secondary path (gy-1vd9qy.10.4): the iPhone-app email list stays reachable from this answer.
                       <InlineWaitlist className="pb-5" reducedMotion={prefersReduced}>
                         <WaitlistPlainButton location="cta-section" className="inline-flex items-center min-h-11 text-[14px] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ color: F.amberText, fontFamily: SANS, fontWeight: 600 }}>
                           Tell me when the iPhone app is out
