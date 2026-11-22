@@ -19,19 +19,19 @@ function FooterNav() {
             <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
           </span>
           <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-7 gap-y-2">
-            <a href={HOME} className="text-[13px]" style={link}>Home</a>
-            <a href={`${HOME}#pricing`} className="text-[13px]" style={link}>Pricing</a>
-            <a href="/privacy/" className="text-[13px]" style={link}>Privacy</a>
-            <a href="/terms/" className="text-[13px]" style={link}>Terms</a>
-            <a href="/m/takedown" className="text-[13px]" style={link}>Request video removal</a>
-            <a href="mailto:damini@materiallab.io" className="text-[13px]" style={link}>Contact</a>
+            <a href={HOME} className="inline-flex items-center min-h-11 text-[13px]" style={link}>Home</a>
+            <a href={`${HOME}#pricing`} className="inline-flex items-center min-h-11 text-[13px]" style={link}>Pricing</a>
+            <a href="/privacy/" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Privacy</a>
+            <a href="/terms/" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Terms</a>
+            <a href="/m/takedown" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Request video removal</a>
+            <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 text-[13px]" style={link}>Contact</a>
           </nav>
         </div>
         <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-5 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
-          <a href="mailto:damini@materiallab.io" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
+          <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>damini@materiallab.io</a>
           <div className="flex items-center gap-4">
-            <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-            <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+            <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
+            <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
             <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
           </div>
         </div>

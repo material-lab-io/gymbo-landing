@@ -169,7 +169,6 @@ const PRICING = [
 export const FAQ = [
   { q: "Is it free?", a: `You can start free. Pro is ₹${PRICE_MONTHLY_INR} a month or ₹${PRICE_ANNUAL_INR_DISPLAY} a year, paid on the web.` },
   { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
-  { q: "Can I punch a class or record a payment with no signal?", a: "Yes, if the page is already open. Gymbo saves it on your phone and sends it when you are back online." },
   { q: "Can I export my clients' records?", a: "Yes. You can export your clients' attendance and payment records from the app whenever you like." },
   { q: "Is there an iPhone app?", a: "Coming soon. Leave your email and we will tell you when it is in the App Store. Until then Gymbo runs in your browser.", waitlist: true },
   { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
@@ -654,11 +653,11 @@ export default function App() {
                 because the zone's email obfuscation otherwise serves "[email protected]"
                 to anything that reads the page without JavaScript (the audit did). */}
             <p id="support" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>
-              Support: <a href="mailto:damini@materiallab.io" className="underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
+              Support: <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
-              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
+              <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
+              <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
               <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
             </div>
           </div>

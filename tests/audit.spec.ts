@@ -32,6 +32,30 @@ const SEVERE = new Set(['critical', 'serious']);
 // port rather than a re-specification. Touch: WCAG 2.2 AA is 24x24 (AAA 44x44).
 const TOUCH_AA_MIN = 24;
 
+// gy-1vd9qy.10.4 AC5: the footer's mail / LinkedIn / WhatsApp links are the only way off the page for a visitor with a question, and were 17-18 px tall at 390.
+// Measured by a function shared with its planted control, so the control proves THIS measurement can go red.
+const FOOTER_HIT_MIN = 44;
+// Every link in the footer's navigation row too: designer's FAIL on #354 was a nav row where only Contact had the hit area and the rest were 17 px.
+const FOOTER_CONTACT = 'footer a[href^="mailto:"], footer a[href*="linkedin.com"], footer a[href*="wa.me"], footer nav a';
+async function undersizedFooterLinks(page: Page) {
+  return page.evaluate(
+    ({ sel, min }) => {
+      const els = Array.from(document.querySelectorAll(sel));
+      const small = els
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+        .filter(({ el, r }) => {
+          if (r.width === 0 || r.height === 0) return false;
+          // A short word in the nav row (Home, Pricing, Terms) is a text link: its height must reach 44, its width follows the word. The contact links (mail, LinkedIn, WhatsApp) must reach 44 both ways.
+          const textNav = !!el.closest('nav') && !el.matches('a[href^="mailto:"], a[href*="linkedin.com"], a[href*="wa.me"]');
+          return r.height < min - 0.5 || (!textNav && r.width < min - 0.5);
+        })
+        .map(({ el, r }) => `<a> ${Math.round(r.width)}x${Math.round(r.height)} "${(el.textContent || '').trim().slice(0, 30)}"`);
+      return { seen: els.length, small };
+    },
+    { sel: FOOTER_CONTACT, min: FOOTER_HIT_MIN }
+  );
+}
+
 const INTERACTIVE =
   'a, button, input, select, textarea, [role="button"], [role="link"], [tabindex="0"]';
 
@@ -87,6 +111,21 @@ test.describe('Audit :: positive control', () => {
     for (const rule of ['button-name', 'image-alt', 'html-has-lang']) {
       expect(ids, `positive control did not fire ${rule} — the scanner is broken, so every clean route in this run is meaningless`).toContain(rule);
     }
+  });
+  test('planted control: the footer hit-area check goes red on a 17 px link and green on a 44 px one', async ({ page }) => {
+    await page.setContent(
+      `<html lang="en"><body><footer>
+         <a href="mailto:a@b.c" style="display:inline-block;height:17px;font-size:12px">a@b.c</a>
+         <a href="https://www.linkedin.com/company/x" style="display:inline-flex;min-height:44px;min-width:44px">LinkedIn</a>
+         <nav><a href="/terms/" style="display:inline-block;height:17px;font-size:13px">Terms</a></nav>
+       </footer></body></html>`,
+      { waitUntil: 'domcontentloaded' }
+    );
+    const r = await undersizedFooterLinks(page);
+    expect(r.seen, 'the control saw no footer links: the selector is broken').toBe(3);
+    expect(r.small, 'the 17 px mail link and the 17 px nav link must be flagged and the 44 px link must not').toHaveLength(2);
+    expect(r.small.join('|')).toContain('a@b.c');
+    expect(r.small.join('|')).toContain('Terms');
   });
 });
 
@@ -171,6 +210,13 @@ for (const route of ROUTES) {
         `${violations.length} target(s) under ${TOUCH_AA_MIN}px on ${url}, after applying the WCAG 2.2 inline and spacing exceptions:\n    ` +
           violations.map((v) => `<${v.tag}> ${v.w}x${v.h} "${v.text}"`).join('\n    ')
       ).toHaveLength(0);
+    });
+
+    test('footer mail, LinkedIn and WhatsApp links have a >= 44x44 hit area', async ({ page }) => {
+      await page.goto(url, { waitUntil: 'networkidle' });
+      const r = await undersizedFooterLinks(page);
+      if (r.seen === 0) { test.skip(true, `no footer contact links on ${url}: nothing to measure (not a pass)`); return; }
+      expect(r.small, `${r.small.length} footer link(s) under ${FOOTER_HIT_MIN}px on ${url}:\n    ${r.small.join('\n    ')}`).toHaveLength(0);
     });
 
     // ── DIMENSION 3: SCROLL INTEGRITY ──────────────────────────────────────
