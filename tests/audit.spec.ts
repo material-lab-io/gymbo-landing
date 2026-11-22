@@ -43,7 +43,12 @@ async function undersizedFooterLinks(page: Page) {
       const els = Array.from(document.querySelectorAll(sel));
       const small = els
         .map((el) => ({ el, r: el.getBoundingClientRect() }))
-        .filter(({ r }) => r.width > 0 && r.height > 0 && (r.width < min - 0.5 || r.height < min - 0.5))
+        .filter(({ el, r }) => {
+          if (r.width === 0 || r.height === 0) return false;
+          // A short word in the nav row (Home, Pricing, Terms) is a text link: its height must reach 44, its width follows the word. The contact links (mail, LinkedIn, WhatsApp) must reach 44 both ways.
+          const textNav = !!el.closest('nav') && !el.matches('a[href^="mailto:"], a[href*="linkedin.com"], a[href*="wa.me"]');
+          return r.height < min - 0.5 || (!textNav && r.width < min - 0.5);
+        })
         .map(({ el, r }) => `<a> ${Math.round(r.width)}x${Math.round(r.height)} "${(el.textContent || '').trim().slice(0, 30)}"`);
       return { seen: els.length, small };
     },
