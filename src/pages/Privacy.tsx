@@ -19,6 +19,7 @@ export function Privacy() {
           <h2>What we collect</h2>
           <ul>
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
+            <li><strong>How you found us.</strong> If you arrive from a link or campaign, we record which one (a short source or campaign code, or a referral code) when you create your account. We use it to count where sign-ups come from and to credit referrals. It holds no free text, no URL and no contact details. We keep it until you delete your account.</li>
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, notes and goals, the classes you punch, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist and access requests.</strong> If you join the waitlist or request access on getgymbo.com, the name and the phone number and/or email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com: aggregate page views and events, with no personal profiles and no cross-site tracking.</li>

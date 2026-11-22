@@ -102,6 +102,9 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   test('Privacy.tsx no longer says private alpha and names the web app (literal legal text, not interpolated)', () => {
     expect(privacySource.toLowerCase()).not.toContain('private alpha');
+    // compliance P6 (gy-1vd9qy.10.5, accepted by pm 22 Nov): the notice for the attribution row, live before the web sign-up writes one (DPDP s5)
+    expect(privacySource).toContain('<strong>How you found us.</strong> If you arrive from a link or campaign, we record which one (a short source or campaign code, or a referral code) when you create your account.');
+    expect(privacySource).toContain('It holds no free text, no URL and no contact details. We keep it until you delete your account.');
     expect(privacySource).toContain('app.getgymbo.com');
   });
 
