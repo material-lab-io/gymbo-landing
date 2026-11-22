@@ -49,10 +49,10 @@ export const ACCESS_SUCCESS_MESSAGE_EMAIL = "Request received. Check your inbox 
 export const ACCESS_SUCCESS_MESSAGE_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
 
 // Landing copy v1 (marketer gy-1vd9qy.10.2, claim-truth read owed there): each claim is ONE constant, so dropping one is a one-line change.
-export const NO_CARD_LINE = "No card needed.";
-export const RUNS_IN_BROWSER_LINE = "Runs in your browser on any phone or laptop.";
+export const NO_PAYMENT_LINE = "No payment needed to start.";
+export const RUNS_IN_BROWSER_LINE = "Runs in your browser on your phone or laptop.";
 export const HERO_SMALL_PRINT = `Free to start. ${RUNS_IN_BROWSER_LINE} iPhone app coming soon.`;
-export const FINAL_CTA_SUB = `Start free in your browser. ${NO_CARD_LINE}`;
+export const FINAL_CTA_SUB = `Start free in your browser. ${NO_PAYMENT_LINE}`;
 export const PRICING_HEADING = "Start free. Upgrade when you are ready.";
 export const PRICING_FREE_LINE = "Sign up and set up your clients.";
 export const PRICING_PRO_ANNUAL_LINE = `Or ₹${PRICE_ANNUAL_INR_DISPLAY} a year (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} a month, save ${ANNUAL_SAVINGS_PERCENT}%).`;

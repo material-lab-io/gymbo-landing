@@ -127,7 +127,7 @@ const roundupBestApps: Post = {
   faq: [
     {
       q: "What is the best app for an independent personal trainer in India?",
-      a: `It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from an iPhone, an India-native, session-first tool like Gymbo fits well (UPI, GST, WhatsApp, ₹${PRICE_MONTHLY_INR}/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.`,
+      a: `It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from a phone or laptop, an India-native, session-first tool like Gymbo fits well (UPI, GST, WhatsApp, ₹${PRICE_MONTHLY_INR}/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.`,
     },
     {
       q: "Is Akton good for solo personal trainers?",
@@ -143,7 +143,7 @@ const roundupBestApps: Post = {
     },
     {
       q: "Do these apps work on Android?",
-      a: "Most do: Akton, WellnessZ, Trainerize, and TrueCoach all offer Android and iOS apps. Gymbo is currently iPhone-only.",
+      a: "Most do: Akton, WellnessZ, Trainerize, and TrueCoach all offer Android and iOS apps. Gymbo runs in your browser, and an iPhone app is coming soon.",
     },
   ],
   bodyMd: `## a note on honesty (read this first)
@@ -180,13 +180,13 @@ The honest truth is that these tools are built for **different people**. The rig
 
 ### Gymbo: for the independent trainer in India
 
-**Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from an iPhone.
+**Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from a phone or laptop.
 
 **What it does (honestly):** Punch a class in a couple of taps and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
 **Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
 
-**Be aware:** It's **iPhone-only** (no Android yet). It doesn't generate workouts with AI; it gives you a builder. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
+**Be aware:** It runs in your browser (an iPhone app is coming soon). It doesn't generate workouts with AI; it gives you a builder. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
 
 ### Akton: for gyms and multi-branch studios
 
@@ -230,7 +230,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 ## how to choose
 
-- **You're a solo trainer in India, paid in rupees, tracking your own clients** → an India-native, session-first tool like **Gymbo** fits best (if you're on iPhone).
+- **You're a solo trainer in India, paid in rupees, tracking your own clients** → an India-native, session-first tool like **Gymbo** fits best (it runs in your browser on your phone or laptop).
 - **You run a gym or multi-branch studio** with members, staff, and leads → **Akton** is built for that; Gymbo isn't.
 - **Your core offer is diet and nutrition planning** → **WellnessZ** is built nutrition-first.
 - **You coach online at scale and charge in dollars** → **Trainerize**.

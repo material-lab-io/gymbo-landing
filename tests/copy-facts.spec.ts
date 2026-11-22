@@ -206,9 +206,9 @@ const IMPORT_SURFACES: Record<string, string> = {
   'compare/gymbo-vs-wellnessz/index.html': compareHtml,
 };
 const HOME_IMPORT_ANSWER =
-  "If your clients are saved in your phone's contacts, yes. Gymbo adds each client's name and phone number.";
+  "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand.";
 const COMPARE_IMPORT_ANSWER =
-  "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. If your clients are saved in your phone's contacts, it can add them with their name and phone number.";
+  "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. On Android Chrome you can add clients from your contacts. On iPhone, add them by hand.";
 
 function offendingImportPhrases(surfaces: Record<string, string>): string[] {
   const hits: string[] = [];
@@ -225,7 +225,7 @@ test.describe('gm-t0e.7: no bulk-import overclaim on the home or /compare/gymbo-
     expect(offendingImportPhrases(IMPORT_SURFACES)).toEqual([]);
   });
 
-  test('home FAQ answer is the phone-contacts answer, byte-identical in App.tsx and JSON-LD', () => {
+  test('home FAQ answer is the contacts answer (Android Chrome only, marketer claim-truth 22 Nov), byte-identical in App.tsx and JSON-LD', () => {
     expect(FAQ.find((f) => f.q === 'Can I import my existing clients?')!.a).toBe(HOME_IMPORT_ANSWER);
     const faqPage = extractJsonLdBlocks(indexHtml).find((b) => b['@type'] === 'FAQPage') as any;
     const ld = (faqPage.mainEntity as any[]).find((q) => q.name === 'Can I import my existing clients?');

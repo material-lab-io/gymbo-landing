@@ -22,8 +22,14 @@ export const RETIRED = [
   ["app-store-billing", /\bbill(?:ed|ing)\b[^.!?]{0,40}\b(?:via|through|by)\b[^.!?]{0,12}\b(?:the )?app store\b/iu],
   ["apple-payment-method", /\bapple payment method\b/iu],
   ["iphone-settings-cancel", /\bcancel\b[^.!?]{0,30}\biphone settings\b/iu],
-  ["iphone-only", /\biphone only\b/iu],
+  ["iphone-only", /\biphone[\s\p{Pd}\u2212]+only\b/iu],
   ["private-alpha", /\bprivate alpha\b/iu],
+  // marketer claim-truth verdicts on gy-1vd9qy.10.2 (22 Nov): the web app does not load offline (only a two-write outbox), the contact picker is Android Chrome
+  // only, "any" browser is untested, and the free plan needs no payment rather than "no card".
+  ["works-offline", /\bworks? offline\b|\bwork offline\b/iu],
+  ["no-card-needed", /\bno card needed\b/iu],
+  ["any-phone-or-laptop", /\bany phone or laptop\b/iu],
+  ["import-from-phone-contacts", /\bsaved in your phone'?s contacts\b/iu],
 ];
 
 // The legal pages describe the IPHONE app's App Store billing truthfully (compliance wording on gy-1vd9qy.10.7, accepted by pm 22 Nov): "On iPhone, the
@@ -58,6 +64,10 @@ export const PLANTED = {
   "iphone-settings-cancel": "Cancel anytime in your iPhone Settings.",
   "iphone-only": "Built for trainers. iPhone only.",
   "private-alpha": "Gymbo is in private alpha.",
+  "works-offline": "Does it work offline? Yes.",
+  "no-card-needed": "Start free in your browser. No card needed.",
+  "any-phone-or-laptop": "Runs in your browser on any phone or laptop.",
+  "import-from-phone-contacts": "If your clients are saved in your phone's contacts, yes.",
 };
 export function selfTest() {
   const clean = scanText("Start free. Pro is Rs 399 a month, paid on the web with Razorpay. iPhone app coming soon.", "/", "control");

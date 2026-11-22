@@ -295,7 +295,7 @@ Gymbo strips it down to the one-person business:
 **Choose Gymbo if:**
 - You're an independent trainer and the business is *you*.
 - You work out of homes, parks, or a shared gym, with no facility to manage.
-- You want class punches in a couple of taps, clean payment tracking, and a tool you can run from your iPhone in seconds.
+- You want class punches in a couple of taps, clean payment tracking, and a tool you can run from your phone in seconds.
 
 ## on price, honestly
 

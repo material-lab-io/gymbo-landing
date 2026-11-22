@@ -11,7 +11,7 @@ Gymbo is built for the independent personal trainer, not a gym chain or dietitia
 - Scheduling and your full client roster in one place
 - Workout builder with a template library (build and assign workouts)
 - A shareable QR profile card and branded PDF statements
-- Sign in with your phone, Apple, or Google; works offline and syncs when back online
+- Sign in with your phone, Apple, or Google; punch a class or record a payment with no signal (if the page is already open) and it is sent when you are back online
 
 ## Pricing
 
