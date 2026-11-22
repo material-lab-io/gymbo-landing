@@ -74,7 +74,7 @@ The free stack (WhatsApp, a paper diary, and UPI) runs all five informally, and 
 
 You can run all six steps on WhatsApp, a diary, and UPI, and for your first several clients, you should. It's free and you already know it.
 
-Once you can no longer answer, without checking, who trained, who paid and who owes, the manual version starts costing you time and the occasional missed payment. At that point a single app that keeps the client list, schedule, session counts, and payment balances in one place, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built specifically for the independent trainer in India: you punch a class in a couple of taps, balances update themselves, and payments and statements live alongside each client (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It's the admin/tracking/payment layer, so your time goes to training, not bookkeeping.
+Once you can no longer answer, without checking, who trained, who paid and who owes, the manual version starts costing you time and the occasional missed payment. At that point a single app that keeps the client list, schedule, session counts, and payment balances in one place, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built specifically for the independent trainer in India: you punch a class in a couple of taps, balances update themselves, and payments and statements live alongside each client. It's the admin/tracking/payment layer, so your time goes to training, not bookkeeping.
 
 If you run a *gym* rather than train clients yourself, you need facility software instead (members, staff, branches), which is a different tool. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -118,7 +118,7 @@ Paid ads come last on purpose. Add them once delivery and follow-up are repeatab
 
 ## how to build a referral engine, step by step
 
-1. **Deliver a visibly professional experience**: classes punched, balances clear, statements clean. Clients refer trainers who look organized.
+1. **Deliver a visibly professional experience**: classes punched, balances clear, statements clean. Clients tend to recommend trainers who look organized.
 2. **Ask at the right moment**: right after a client hits a milestone ("you've done 20 sessions, look at this progress"), not at random.
 3. **Make referring easy**: "know anyone who'd want this? Send them my number" beats a vague "spread the word."
 4. **Reward both sides**: a free session for the referrer, a discounted first session for the newcomer.
@@ -130,7 +130,7 @@ When someone in your city decides to get a trainer, they search: Instagram, Goog
 
 ## where Gymbo fits
 
-Getting clients starts with keeping the ones you have visibly happy, and that's as much an admin problem as a coaching one. [Gymbo](/) keeps every client's sessions and balance straight (punch a class in a couple of taps, and balances update themselves), records UPI payments, and produces clean statements, so the experience feels professional and clients have more reason to recommend you. It also gives you WhatsApp reminder templates to send between sessions, so clients don't quietly drift away. It doesn't run your ads; it makes the clients you already have worth referring.`,
+Getting clients starts with keeping the ones you have visibly happy, and that's as much an admin problem as a coaching one. [Gymbo](/) keeps every client's sessions and balance straight (punch a class in a couple of taps, and balances update themselves), records UPI payments, and produces clean statements, so the experience feels professional and clients have more reason to recommend you. It also gives you pre-written WhatsApp messages for low packages, renewals and overdue payments, so clients don't quietly drift away. It doesn't run your ads; it makes the clients you already have worth referring.`,
 };
 
 const schedule: Post = {
@@ -148,7 +148,7 @@ const schedule: Post = {
     { q: "How do I reduce no-shows as a trainer?", a: "Set a cancellation policy up front, use fixed recurring slots so sessions become a habit, and send a reminder before every session." },
     { q: "Should I charge for no-shows?", a: "Many trainers deduct a session for a no-show or late cancellation, stated as policy from day one. It protects your income and sets expectations without conflict." },
     { q: "What's the best scheduling tool for an independent trainer in India?", a: "A diary is enough until reconciling sessions, payments and renewals starts taking repeated manual work or leaves you unsure who is due. Then use a system that tracks sessions against package balances and keeps reminders ready to send, so nothing slips." },
-    { q: "How far ahead should I schedule?", a: "Recurring weekly slots plus a rolling view of the next week or two is enough for most independent trainers, predictable, not over-planned." },
+    { q: "How far ahead should I schedule?", a: "Recurring weekly slots plus a rolling view of the next week or two is enough for many independent trainers, predictable, not over-planned." },
   ],
   bodyMd: `${BYLINE}
 
@@ -183,7 +183,7 @@ A reminder the evening before a session is a low-effort way to head off forgotte
 
 ## where Gymbo fits
 
-[Gymbo](/) keeps your schedule tied to reality. Punch each class against the client's package balance in a couple of taps, so you can see who's due and who's running low, and the app flags overlapping bookings before you confirm one. When a package is nearly used up or a session's coming, Gymbo has pre-written reminder templates: review the message, then send it in WhatsApp, in your own voice. It turns managing a diary into managing a business.`,
+[Gymbo](/) keeps your schedule tied to reality. Punch each class against the client's package balance in a couple of taps, so you can see who's due and who's running low, and the app flags overlapping bookings before you confirm one. When a package is nearly used up or a renewal is due, Gymbo has pre-written message templates: review the message, then send it in WhatsApp, in your own voice. It turns managing a diary into managing a business.`,
 };
 
 const getOrganized: Post = {
@@ -242,7 +242,7 @@ A spreadsheet can hold this, but it doesn't update a balance quickly between cli
 
 ## where Gymbo fits
 
-[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clear per-client statements (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It gives you pre-written WhatsApp reminder templates and a workout builder. It's built to be the source of truth, so your business stops living in your head.
+[Gymbo](/) is the one place for those four things: every client, every class punched in a couple of taps, an automatic running balance, and each UPI payment recorded against it, plus clear per-client statements. It gives you pre-written WhatsApp reminder templates and a workout builder. It's built to be the source of truth, so your business stops living in your head.
 
 ## managing your training business day to day
 
@@ -252,7 +252,7 @@ Day to day, managing an independent training business comes down to keeping one 
 
 A simple weekly pass ties it together: a quick scan of the roster for who's due to renew, who owes, and who's gone quiet, so you act on small signals before they become lost clients. That daily-log-plus-weekly-review loop *is* managing the business; everything else is training.
 
-You can run this loop on a diary and a UPI app for a small roster, and you should at first. When it gets heavy to hold by hand, that is where a single app that keeps the client/payment ledger reconciled for you earns its place. **Gymbo** (built for the independent trainer in India, on iPhone) is that ledger: class punches in a couple of taps, balances that update themselves, and payments and statements with your GSTIN alongside each client, so the daily management takes minutes, not evenings. (It's the tracking-and-payment layer; it doesn't write programmes or message clients for you.) If you run a *gym* rather than train clients yourself, managing a facility is a different job with different tools. See [Akton vs Gymbo](/alternatives/akton).`,
+You can run this loop on a diary and a UPI app for a small roster, and you should at first. When it gets heavy to hold by hand, that is where a single app that keeps the client/payment ledger reconciled for you earns its place. **Gymbo** (built for the independent trainer in India, in your browser) is that ledger: class punches in a couple of taps, balances that update themselves, and payments and statements alongside each client, so the daily management takes minutes, not evenings. (It's the tracking-and-payment layer; it doesn't write programmes or message clients for you.) If you run a *gym* rather than train clients yourself, managing a facility is a different job with different tools. See [Akton vs Gymbo](/alternatives/akton).`,
 };
 
 const workSmart: Post = {
@@ -267,8 +267,8 @@ const workSmart: Post = {
     "How a solo fitness trainer in India runs a one-person business from their phone: logging sessions, tracking payments, scheduling, and renewing on time.",
   faq: [
     { q: "What does it mean to work smart as a personal trainer?", a: "It means shrinking the admin around your training: the session-counting, payment-chasing, scheduling, and reminders, so it takes minutes a day instead of hours. Practically, that's running your whole one-person business from one place on your phone, and recording sessions and payments as they happen rather than reconstructing them later." },
-    { q: "How can a fitness trainer save time on admin?", a: "Note each session the moment it ends, record every payment against the client and package, keep one schedule you actually trust, and batch the rest into a single five-minute daily review. The time-sink for solo trainers is almost always re-counting and reconciling from memory. Fix that at the source and the admin shrinks." },
-    { q: "Can I run my whole training business from my phone?", a: "Yes. A solo trainer's business is a client list, a schedule, session counts, and payments, all of which fit on a phone. Most trainers start on WhatsApp, a diary, and a UPI app, then move to a single app once juggling those four by hand gets heavy, typically when you can no longer answer, without checking, who has paid and who owes." },
+    { q: "How can a fitness trainer save time on admin?", a: "Note each session the moment it ends, record every payment against the client and package, keep one schedule you actually trust, and batch the rest into a single five-minute daily review. The time-sink for solo trainers is often re-counting and reconciling from memory. Fix that at the source and the admin shrinks." },
+    { q: "Can I run my whole training business from my phone?", a: "Yes. A solo trainer's business is a client list, a schedule, session counts, and payments, all of which fit on a phone. Many trainers start on WhatsApp, a diary, and a UPI app, then move to a single app once juggling those four by hand gets heavy, often when you can no longer answer, without checking, who has paid and who owes." },
     { q: "How many clients can an independent trainer handle solo?", a: "There's no fixed number; it depends on your session length, travel, and how much admin you're carrying. Many trainers find that admin, not training time, is what squeezes their evenings. Reducing it frees up time for the clients you already have." },
     { q: "Do I need to pay for software to work efficiently?", a: "Not at first. WhatsApp, a diary, and UPI run a small roster for free, and that's the right place to start. Paid tools earn their place when the manual version starts costing you more hours (and missed payments) than the tool would." },
   ],
@@ -304,13 +304,13 @@ None of these is training. All of them are the tax on being a one-person busines
 
 **5. Make renewals a signal, not a surprise.** When you can see who's down to their last session or two, you renew before the gap, instead of losing a client to a lapsed package you didn't notice.
 
-**6. Look like a business in two taps.** A professional statement or receipt on request costs you seconds and buys you trust (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). (More on that in [how to brand your training business](/guide/brand-personal-training-business-india).)
+**6. Look like a business in two taps.** A professional statement or receipt on request costs you seconds and buys you trust. (More on that in [how to brand your training business](/guide/brand-personal-training-business-india).)
 
 ## doing this without a second full-time job
 
 For your first several clients, the "phone-plus-diary" version of smart is genuinely fine: it's free and you already know it. The question is what happens as you grow.
 
-When the manual stack stops saving time and starts costing it, the re-counting, the payment-chasing and the week-rebuilding turn into hours you can't bill. That's the point where one app that holds the client list, schedule, session counts, and payment balances together, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built for the independent trainer in India and running on iPhone: you punch a class in a couple of taps, balances update themselves, payments and statements sit alongside each client (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), and pre-written reminder templates are ready for you to review and send. It's the admin layer, so your hours go to training, not bookkeeping. (Gymbo doesn't write your programmes or send messages for you; it's the tracking-and-payment engine, and it's honest about that.)
+When the manual stack stops saving time and starts costing it, the re-counting, the payment-chasing and the week-rebuilding turn into hours you can't bill. That's the point where one app that holds the client list, schedule, session counts, and payment balances together, and reconciles them for you, earns its keep. [Gymbo](/) is one such app, built for the independent trainer in India and running in your browser: you punch a class in a couple of taps, balances update themselves, payments and statements sit alongside each client, and pre-written reminder templates are ready for you to review and send. It's the admin layer, so your hours go to training, not bookkeeping. (Gymbo doesn't write your programmes or send messages for you; it's the tracking-and-payment engine, and it's honest about that.)
 
 If you run a *gym* rather than train clients yourself (members, staff, multiple branches), you need facility software instead, which is a different tool. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -329,7 +329,7 @@ const brandBusiness: Post = {
     { q: "How do personal trainers build a brand?", a: "Less through design than through reliability. For a solo trainer, the brand is the everyday experience: showing up consistently, communicating clearly, keeping money accurate, and sending professional receipts. Clients feel those details every week and repeat them when they refer you; that's your brand doing its work." },
     { q: "Do I need a logo to brand my training business?", a: "No. A logo is nice but it's not what earns renewals or referrals. What sets a solo trainer apart is being reliable, professional, and easy to deal with. Start with a clear one-line positioning and consistent, professional service; a logo can come later and changes little on its own." },
     { q: "How can a personal trainer look more professional?", a: "Be consistent and on time, communicate clearly around each session, keep every client's balance accurate so money is never in dispute, and send clean, professional receipts instead of a figure typed into a chat. These small operational details do more for how professional you seem than any visual makeover." },
-    { q: "What makes clients refer their personal trainer?", a: "Trust and clarity. Clients refer trainers who are reliable, whose numbers are always right, and who make them feel looked-after, and who are easy to describe in one line (\"she's brilliant, always organised, sends a proper receipt\"). Be easy to describe and easy to trust, and clients have more reason to recommend you." },
+    { q: "What makes clients refer their personal trainer?", a: "Trust and clarity. Clients are more likely to recommend trainers who are reliable, whose numbers are clear, who make them feel looked after, and who are easy to describe in one line (\"she's brilliant, always organised, sends a proper receipt\"). Be easy to describe and easy to trust, and clients have more reason to recommend you." },
     { q: "Does sending professional receipts really matter?", a: "Yes. A clean, professional statement signals that you run a real business, which gives clients more reason to trust you and recommend you. It's an easy upgrade to how professional you look." },
   ],
   bodyMd: `${BYLINE}
@@ -346,7 +346,7 @@ This guide is about the brand you actually build: the one your clients feel ever
 |---|---|---|---|
 | **Consistency** | You show up, on time, prepared | Flaky, last-minute reschedules | A schedule you keep and communicate |
 | **Clear communication** | You remember, you follow up | Missed sessions, silence | Timely, personal reminders |
-| **Accurate money** | Your numbers are always right | "How many are left?" disputes | Balances that are never in question |
+| **Accurate money** | Your numbers are clear | "How many are left?" disputes | Balances that are never in question |
 | **Professional receipts** | You look like a real business | A number typed in a chat | A clean, professional statement |
 | **A name that's easy to refer** | Clients can describe you | Vague, forgettable | A simple, clear positioning |
 
@@ -360,17 +360,17 @@ Notice what's *not* on this list: fonts, colours, a fancy Instagram grid. Those 
 
 **3. Communicate like a professional.** A clear reminder before each session and a quick follow-up after tells clients you're organised and you care. (Keep it personal: a message you actually send beats an automated blast.)
 
-**4. Never let your numbers be in doubt.** "Wait, how many sessions do I have left?" is a trust leak. When balances are always accurate, money stays a non-issue, and money being a non-issue is a good signal of a professional business.
+**4. Never let your numbers be in doubt.** "Wait, how many sessions do I have left?" is a trust leak. When balances are accurate, money stays a non-issue, and that is a good signal of a professional business.
 
 **5. Send receipts that look like a business sent them.** A clean, professional statement, not a figure typed into WhatsApp, quietly tells every client you're the real thing. It's an easy upgrade to how professional you look.
 
-**6. Make your service easy to describe.** The best marketing is a client saying "she's great, super organised, always sends a proper receipt." Give them the words by *being* those things consistently.
+**6. Make your service easy to describe.** Good marketing is a client saying "she's great, super organised, always sends a proper receipt." Give them the words by *being* those things consistently.
 
 ## doing this without a marketing budget
 
 You don't need a designer or an agency to build this brand; you need to nail the operational details, every week, without fail. The hard part isn't taste; it's consistency at scale, when you have a full roster and a full day of sessions.
 
-That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running on iPhone, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready), so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
+That consistency is easier when your admin isn't fighting you. As the roster grows, keeping every balance accurate and every receipt clean by hand gets genuinely difficult, and a slipped number or a scrappy receipt is a brand dent you don't see coming. [Gymbo](/) is one app that helps here: built for the independent trainer in India and running in your browser, it keeps every client's balance accurate automatically and turns a payment into a clean statement or receipt, so the professional version is also the easy version. Your reminders stay yours to send; Gymbo has pre-written reminder templates you review and send in WhatsApp, but the message goes out in your voice, not an automated one. It's the professionalism-and-trust layer under your brand, not the brand itself.
 
 If you run a *gym* rather than train clients yourself, branding a facility (members, staff, branches) is a different job with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -430,7 +430,7 @@ The through-line: results come from consistency, and consistency is a *pattern*,
 
 You don't need spreadsheets or a certification in analytics to train smarter; you need a session history you'll actually look at. The hard part isn't the maths; it's keeping an accurate record across a full roster without it becoming another chore.
 
-That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/), built for the independent trainer in India and running on iPhone, keeps an accurate session history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone; that judgment stays yours. It keeps the *record* clear so your coaching decisions rest on what really happened, not on what you half-remember.
+That's where a tool helps, and it's worth being precise about what it does. [Gymbo](/), built for the independent trainer in India and running in your browser, keeps an accurate session history per client automatically, so the pattern (who's consistent, who's fading, who's due to renew) is there when you glance at it, instead of buried in memory or a diary. To be clear about the line: Gymbo doesn't design your programmes or tell you how to train anyone; that judgment stays yours. It keeps the *record* clear so your coaching decisions rest on what really happened, not on what you half-remember.
 
 If you run a *gym* rather than train clients yourself, tracking member attendance across a facility is a different problem with different tools. (We compare that case honestly in [Akton vs Gymbo](/alternatives/akton).)`,
 };
@@ -480,7 +480,7 @@ Work through all four before you name a price. A rate set from only one, usually
 
 ## keeping your pricing straight once clients are in
 
-Deciding the rate is half the job; the other half is holding it, tracking who's on which package, what they've used, and what they owe, without it slipping. Past a handful of clients that's where pricing discipline quietly breaks down. [Gymbo](/) helps with that part: built for the independent trainer in India and running on iPhone, it lets you set each client's package and rate once, then keeps the balance (paid minus used) accurate automatically and turns it into a clean statement (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). It doesn't set your price; that's your call, but it makes sure the price you set is the price you actually collect.`,
+Deciding the rate is half the job; the other half is holding it, tracking who's on which package, what they've used, and what they owe, without it slipping. Past a handful of clients that's where pricing discipline quietly breaks down. [Gymbo](/) helps with that part: built for the independent trainer in India and running in your browser, it lets you set each client's package and rate once, then keeps the balance (paid minus used) accurate automatically and turns it into a clean statement. It doesn't set your price; that's your call, but it makes sure the price you set is the price you actually collect.`,
 };
 
 const upiFaq: Post = {
@@ -528,7 +528,7 @@ UPI has solved collecting for everyone. The gap that's still open, and the one t
 
 ## keeping UPI payments straight without a spreadsheet
 
-You can absolutely track payments in a notebook or a spreadsheet, and for a small roster that's fine. It gets hard once you've got enough clients on different packages and cycles that "who owes what" stops fitting in your head. [Gymbo](/) is built for exactly this part: running on iPhone, it lets you record each UPI payment against the client and package in a couple of taps, then keeps the paid-minus-used balance accurate automatically and turns it into a statement (add your GSTIN in the Gymbo iOS app, under Profile > Business, and your statements become GST-ready). To be precise about what it is, Gymbo isn't a payment gateway and doesn't touch the money; your client pays through their own UPI app as usual, and Gymbo keeps the *record* so your balances stay accurate as you go.`,
+You can absolutely track payments in a notebook or a spreadsheet, and for a small roster that's fine. It gets hard once you've got enough clients on different packages and cycles that "who owes what" stops fitting in your head. [Gymbo](/) is built for exactly this part: running in your browser, it lets you record each UPI payment against the client and package in a couple of taps, then keeps the paid-minus-used balance accurate automatically and turns it into a statement. To be precise about what it is, Gymbo isn't a payment gateway and doesn't touch the money; your client pays through their own UPI app as usual, and Gymbo keeps the *record* so your balances stay accurate as you go.`,
 };
 
 const noShowFaq: Post = {
@@ -577,7 +577,7 @@ The exact numbers are yours to set: some trainers use 12 hours, some 48, but eve
 
 ## enforcing it without the awkwardness
 
-The hard part of a no-show policy isn't writing it. It's the small, repeated friction of tracking cancellations and making a missed session count without an argument. That's where a reliable record earns its keep. [Gymbo](/) helps with the mechanics: running on iPhone, it keeps each client's session history and balance accurate, so a no-show that counts against the package is visible to both of you rather than a matter of memory. It also has pre-written reminder templates: review the message, then send it in WhatsApp, in your own voice, which keeps the message personal; Gymbo doesn't auto-message clients for you. The policy and the judgment stay yours; the record just makes them easy to hold to.`,
+The hard part of a no-show policy isn't writing it. It's the small, repeated friction of tracking cancellations and making a missed session count without an argument. That's where a reliable record earns its keep. [Gymbo](/) helps with the mechanics: running in your browser, it keeps each client's session history and balance accurate, so a no-show that counts against the package is visible to both of you rather than a matter of memory. It also has pre-written message templates for low packages, renewals and overdue payments: review the message, then send it in WhatsApp, in your own voice, which keeps the message personal; Gymbo doesn't auto-message clients for you. The policy and the judgment stay yours; the record just makes them easy to hold to.`,
 };
 
 export const PILLARS: Post[] = [runBusiness, getClients, schedule, getOrganized, workSmart, brandBusiness, trainSmarter];
