@@ -2,6 +2,7 @@
   "_comment": "gy-53qq5. Which BUILT files must state which of content's ruled prices. Keys name entries of `facts` in gymbo-canonical-strings.json; numbers are NEVER typed here, they are read from the facts at check time, so a price change (content bumps the fact) makes every listed file that still carries the old number go RED. Enumerated from dist/ (what ships), not from src/. A built file that states a current Gymbo amount and is NOT listed here fails as price-unregistered: list it or remove the price. `savePercent` files must also say 'Save N%' with N = annualSavingsPercent. A pinned amount must be in the page's VISIBLE text (a meta, alt, script or comment does not count; gy-53qq5.1 M3), and a savings percent is read in every phrasing ('Save N%', 'N% savings', 'N% off', 'N% cheaper'; M5). A thirdPartyAmounts entry may carry \"unit\": \"percent\" to declare a non-Gymbo percentage. Amounts are matched in every spelling (rupee sign raw/entity/split by a React comment or tag, Rs, Rs., INR, 'N rupees', with or without grouping commas). Scope: html/md/txt/xml/json/js/mjs/css/svg/webmanifest in dist (gy-53qq5.1 M4). A hashed bundle is listed WITHOUT its build hash ('assets/terms.js' for terms-6GmOuVPd.js); two files reducing to one name make the scan throw.",
   "surfaces": {
     "index.html": [
+      "freeINR",
       "monthlyINR",
       "annualINR",
       "annualMonthlyEquivalentINR",
@@ -13,12 +14,14 @@
       "annualMonthlyEquivalentINR"
     ],
     "llms.txt": [
+      "freeINR",
       "monthlyINR",
       "annualINR",
       "annualMonthlyEquivalentINR",
       "annualSavingsPercent"
     ],
     "pricing.md": [
+      "freeINR",
       "monthlyINR",
       "annualINR",
       "annualMonthlyEquivalentINR",
@@ -600,30 +603,13 @@
         "amount": 5000,
         "kind": "editorial",
         "reason": "entry-level gym-employed income range start, K11 Academy salary guide (research page), not a Gymbo price"
-      },
-      {
-        "file": "index.html",
-        "amount": 0,
-        "reason": "Gymbo's own Free plan is Rs 0 (option A, gy-1vd9qy.10.4). Not a paid price. Content's canonical facts have no free-plan fact yet; ask content for facts.freeINR in canonical v6, then this declaration becomes a ruled price and goes.",
-        "kind": "editorial"
-      },
-      {
-        "file": "llms.txt",
-        "amount": 0,
-        "reason": "Gymbo's own Free plan is Rs 0 (option A, gy-1vd9qy.10.4). Not a paid price. Content's canonical facts have no free-plan fact yet; ask content for facts.freeINR in canonical v6, then this declaration becomes a ruled price and goes.",
-        "kind": "editorial"
-      },
-      {
-        "file": "pricing.md",
-        "amount": 0,
-        "reason": "Gymbo's own Free plan is Rs 0 (option A, gy-1vd9qy.10.4). Not a paid price. Content's canonical facts have no free-plan fact yet; ask content for facts.freeINR in canonical v6, then this declaration becomes a ruled price and goes.",
-        "kind": "editorial"
       }
     ]
   },
   "priceLedger": {
     "_comment": "gy-53qq5.1 M6. `ruled` = the prices this registry was last reconciled to; it MUST equal content's facts or the gate is red (price-ledger-behind). When content bumps a price: move the old amount into `retired` as { amount, was, note } and set `ruled` to the new one. A retired amount on any page that is not pinned then fails as price-retired-amount (a pinned page already fails as price-unclassified); declare a legitimate third-party figure at the same number in thirdPartyAmounts. Starts empty: the gate cannot know a price it was never told.",
     "ruled": {
+      "freeINR": 0,
       "monthlyINR": 399,
       "annualINR": 2999,
       "annualMonthlyEquivalentINR": 250

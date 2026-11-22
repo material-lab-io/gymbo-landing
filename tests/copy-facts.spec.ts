@@ -81,12 +81,12 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(softwareApp.operatingSystem).toBe('Web');
   });
 
-  test('meta description states the monthly price and says start free, with no trial claim', () => {
+  test('meta description states the monthly price and that it is free to start, with no trial claim (canonical v6)', () => {
     const match = indexHtml.match(/<meta name="description" content="([^"]*)"\s*\/>/);
     expect(match).toBeTruthy();
     const description = match![1];
     expect(description).toContain(`₹${PRICE_MONTHLY_INR}/mo`);
-    expect(description).toContain('Start free');
+    expect(description).toContain('Free to start');
     expect(description.toLowerCase()).not.toContain('trial');
   });
 

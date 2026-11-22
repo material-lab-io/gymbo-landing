@@ -25,6 +25,7 @@
 export const STATUS_LANGUAGE = "Now on the web";
 export const PLATFORM = "iPhone";
 
+export const PRICE_FREE_INR = 0;
 export const PRICE_MONTHLY_INR = 399;
 export const PRICE_ANNUAL_INR = 2999;
 /** Comma-formatted for display (₹2,999 reads correctly; the bare number would render "₹2999"). */

@@ -2,20 +2,20 @@
   "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
   "repo": "material-lab-io/Gymbo-v1",
   "path": "docs/GYMBO-CANONICAL-STRINGS.json",
-  "branch": "main (Gymbo-v1 PR 2324, squash-merged 2026-10-25; this commit IS on main)",
-  "commit": "ac3bff5599021e517aa92f385464b7649552c0a0",
-  "sha256": "01d08aa266a5dad539833f8ffaf498f2d77ce12593cd6f57668fc30c31d355ba",
+  "branch": "main (Gymbo-v1 PR 3600, merged by pm 2026-11-22; this commit IS on main)",
+  "commit": "7fef0b1a01b85016c3ed5764f92e1fd8b273fea8",
+  "sha256": "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54",
   "guideVersion": "v15",
-  "vendoredAt": "2026-10-25 (v5, re-vendored from main after PR 2324 merged)",
-  "vendoredBy": "gymbo_gtm/landing (gm-7xj), from content's ruling on gy-pbnxi",
+  "vendoredAt": "2026-11-22 (v6, re-vendored from main after PR 3600 merged)",
+  "vendoredBy": "gymbo-crew.web_dev (gy-1vd9qy.10.4), from content/marketer ruling gy-1vd9qy.10.6",
   "webSurfaceIdPrefixes": [
     "site.",
     "trial."
   ],
-  "version": 5,
+  "version": 6,
   "supersedes": {
-    "commit": "e0a4467abedbfa455de4724e1287c4d00f2ab7de",
-    "sha256": "f74dd05a322d6ad3790f8bd5cf5d73714fc1f9e9c60e75a5e66022d0d573c768",
-    "change": "v5 retires 'one tap' on the two home meta ids (site.meta.description, site.meta.og) -> 'punch a class in a couple of taps, and balances update themselves' (gy-pbnxi, evidence gy-jf8hj build 5945); all other strings and the facts block are byte-identical (see diff of Gymbo-v1 PR 2324: 6 lines)"
+    "commit": "ac3bff5599021e517aa92f385464b7649552c0a0",
+    "sha256": "01d08aa266a5dad539833f8ffaf498f2d77ce12593cd6f57668fc30c31d355ba",
+    "change": "v6 (gy-1vd9qy.10.6, Kaushik 22 Nov: free plan, no trial on the web) retires trial.line, trial.eligibilityNote, trial.comparisonRow, removes facts.trialDays, adds facts.freeINR=0 and a no-trial site.meta.description; iOS paywall keys (cta.*, finePrint.*, disclosure.*) unchanged"
   }
 }

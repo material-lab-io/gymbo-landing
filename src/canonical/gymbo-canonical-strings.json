@@ -1,8 +1,8 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 5,
+  "version": 6,
   "guideVersion": "v15",
-  "updated": "2026-10-25",
+  "updated": "2026-11-22",
   "terms": {
     "brandVerb": "punch",
     "aiFeature": "Ask Gymbo",
@@ -26,28 +26,6 @@
     "retiredNote": "Advisory only. The pin (strings above) is the gate; this list is context for reviewers. Editorial advice to any trainer and attributed quotes are exempt."
   },
   "strings": [
-    {
-      "id": "trial.line",
-      "surface": "public site + app (eligible state)",
-      "text": "Eligible subscribers can try Gymbo free for 7 days.",
-      "source": "Guide s5; spec 1d",
-      "verbatimIn": "docs/GYMBO-PAYWALL-ASO-VOICE-SPEC.md"
-    },
-    {
-      "id": "trial.eligibilityNote",
-      "surface": "public site: home FAQ, /terms/, pricing.md (a sentence inside larger blocks; match by contains)",
-      "text": "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.",
-      "source": "gy-xmzqr.7 brief; shipped byte-identical on home, /terms/ and pricing.md",
-      "match": "contains",
-      "notes": "The price half of the earlier trial.detail varies by surface on purpose (home FAQ, terms and pricing.md word the price differently), so only this eligibility sentence is pinned."
-    },
-    {
-      "id": "trial.comparisonRow",
-      "surface": "site comparison table, Gymbo row",
-      "text": "7 days for eligible subscribers, Apple payment method required",
-      "source": "gy-xmzqr.7 content ruling 2026-09-24",
-      "notes": "Site builds it as `${TRIAL_DAYS} days for eligible subscribers, Apple payment method required`; the rendered text is this string with TRIAL_DAYS=7."
-    },
     {
       "id": "cta.eligible",
       "surface": "paywall primary CTA (eligible only)",
@@ -110,9 +88,9 @@
     },
     {
       "id": "site.meta.description",
-      "surface": "getgymbo.com home meta description (158 chars)",
-      "text": "For independent personal trainers: punch a class in a couple of taps, and balances update themselves. From ₹399/mo, 7-day free trial for eligible subscribers.",
-      "source": "gy-pbnxi content ruling 2026-10-25 (v5: 'one tap' retired, evidence gy-jf8hj); was gy-xmzqr.7 / gy-afarz.1 2026-09-24"
+      "surface": "getgymbo.com home meta description (134 chars)",
+      "text": "For independent personal trainers: punch a class in a couple of taps, and balances update themselves. Free to start, Pro from ₹399/mo.",
+      "source": "v6 2026-11-22 Kaushik ruling: Free plan, pay to unlock (gy-1vd9qy.10.6); was gy-pbnxi 2026-10-25"
     },
     {
       "id": "site.meta.og",
@@ -181,7 +159,7 @@
   ],
   "facts": {
     "_comment": "Ruled numbers (spec 1c/1d, guide sec 4). Consumers assert their own constants EQUAL these; they do not pin price sentences, which are worded per surface. Numbers are integers (INR) or a whole percent.",
-    "trialDays": 7,
+    "freeINR": 0,
     "monthlyINR": 399,
     "annualINR": 2999,
     "annualMonthlyEquivalentINR": 250,
@@ -191,6 +169,7 @@
     "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
     "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",
     "v1": "2026-09-24: initial 19 strings.",
-    "v4": "2026-09-24: added 3 site.home.* pins (gy-afarz.2 C2 a/b/c). Existing strings and facts unchanged from v3."
+    "v4": "2026-09-24: added 3 site.home.* pins (gy-afarz.2 C2 a/b/c). Existing strings and facts unchanged from v3.",
+    "v6": "2026-11-22: web trial strings retired (trial.line, trial.eligibilityNote, trial.comparisonRow); facts.trialDays removed; facts.freeINR=0 added; site.meta.description rewritten with no trial. iOS paywall keys (cta.*, finePrint.*, disclosure.*) unchanged: iOS submission is held and iOS trial wording is a separate decision."
   }
 }
