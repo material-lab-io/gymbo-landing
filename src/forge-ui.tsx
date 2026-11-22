@@ -1,6 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { useWaitlistReveal } from "./lib/waitlistReveal";
+import { APP_LOGIN_URL, APP_SIGNUP_URL, LOG_IN_LABEL, START_FREE_LABEL } from "./lib/trialAccess";
 
 /* ============================================================================
    forge-ui — shared design tokens and presentational primitives for
@@ -324,7 +325,7 @@ export type CtaLocation = "hero" | "gallery" | "cta-section" | "footer" | "compa
  * so on localhost it is legitimately absent and this must be a no-op, never a
  * crash inside a click handler.
  */
-export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click", location: CtaLocation) {
+export function trackCta(event: "whatsapp_cta_click" | "waitlist_cta_click" | "start_free_click" | "login_click", location: CtaLocation) {
   if (typeof window !== "undefined" && (window as any).umami) {
     (window as any).umami.track(event, { location });
   }
@@ -387,8 +388,8 @@ export function ctaVisual(variant: "primary" | "secondary", { dark, size = "md" 
  * statement that belongs in our own palette. The glyph carries the channel
  * recognition instead, at zero token cost.
  */
-export function WhatsAppCTA({ dark, size = "md", location, className = "", children }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children: React.ReactNode }) {
-  const v = ctaVisual("primary", { dark, size });
+export function WhatsAppCTA({ dark, size = "md", location, className = "", children, variant = "primary", glyph = true }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; children: React.ReactNode; variant?: "primary" | "secondary"; glyph?: boolean }) {
+  const v = ctaVisual(variant, { dark, size });
   return (
     <a
       href={WHATSAPP}
@@ -400,8 +401,43 @@ export function WhatsAppCTA({ dark, size = "md", location, className = "", child
       className={`${v.className} ${className}`}
       style={v.style}
     >
-      <WhatsAppGlyph />
+      {glyph ? <WhatsAppGlyph /> : null}
       {children}
+    </a>
+  );
+}
+
+/**
+ * gy-1vd9qy.10.4 (option A): the primary CTA is a plain link into the app's sign-up, the nav carries a quiet Log in text link.
+ * Real <a href>s: they work without JS, and the visitor lands on app.getgymbo.com with ?src=landing (first-touch, E3.1).
+ */
+export function StartFreeCTA({ dark, size = "md", location, className = "", variant = "primary", children = START_FREE_LABEL }: { dark?: boolean; size?: "md" | "lg"; location: CtaLocation; className?: string; variant?: "primary" | "secondary"; children?: React.ReactNode }) {
+  const v = ctaVisual(variant, { dark, size });
+  return (
+    <a
+      href={APP_SIGNUP_URL}
+      onClick={() => trackCta("start_free_click", location)}
+      data-cta="start-free"
+      data-cta-location={location}
+      className={`${v.className} ${className}`}
+      style={v.style}
+    >
+      {children}
+    </a>
+  );
+}
+
+export function LogInLink({ location, dark = false, className = "" }: { location: CtaLocation; dark?: boolean; className?: string }) {
+  return (
+    <a
+      href={APP_LOGIN_URL}
+      onClick={() => trackCta("login_click", location)}
+      data-cta="log-in"
+      data-cta-location={location}
+      className={`inline-flex items-center min-h-11 px-2 text-[14px] rounded-md focus-visible:outline-none focus-visible:ring-2 ${dark ? "gy-focus-ring-dark" : "gy-focus-ring-light"} ${className}`}
+      style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, fontWeight: 500 }}
+    >
+      {LOG_IN_LABEL}
     </a>
   );
 }

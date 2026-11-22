@@ -476,9 +476,9 @@ test("M4 builtName: a build hash is stripped only from an assets/ file whose 8-c
   for (const [from, to] of Object.entries(cases)) assert.equal(builtName(from), to, from);
 });
 
-test("M4 REAL REGISTRY: the two bundles that state Gymbo's price on the real build are pinned", () => {
+test("M4 REAL REGISTRY: the bundle that states Gymbo's price on the real build is pinned (gy-1vd9qy.10.4: the constants chunk no longer spells a rupee string, only terms-*.js does)", () => {
   const reg = loadPriceSurfaces(REAL);
-  assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js", "assets/trialAccess.js"], "terms-*.js and trialAccess-*.js state the price (measured on dist 09-26) and are pinned");
+  assert.deepEqual(Object.keys(reg.surfaces).filter((k) => k.startsWith("assets/")).sort(), ["assets/terms.js"], "terms-*.js states the price (measured on the 22 Nov option A build) and is pinned; the constants chunk holds bare numbers, tied to content's facts by facts-map.json");
 });
 
 test("R1 (gy-53qq5.1) HIDDEN TEXT IS NOT PRESENCE: a pinned price kept only in a hidden element FAILS; a hidden STALE price is still classified; look-alikes that are visible pass", () => {

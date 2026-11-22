@@ -1,6 +1,6 @@
 # Gymbo
 
-> Gymbo is an iOS business app for independent personal trainers in India. It turns the day-to-day of running a training practice into a few taps: punching classes, recording payments, checking balances, scheduling, and looking professional. Monthly or annual pricing and unlimited clients. Eligible subscribers can try Gymbo free for 7 days.
+> Gymbo is a business app for independent personal trainers in India. It turns the day-to-day of running a training practice into a few taps: punching classes, recording payments, checking balances, scheduling, and looking professional. Start free, then Pro is monthly or annual, paid on the web. Unlimited clients.
 
 Gymbo is built for the independent personal trainer, not a gym chain or dietitian. A trainer's day is classes, schedules, and payments, so Gymbo is built around that: punch a class in a couple of taps, let the client card calculate the balance, and use colour-coded balances to see who owes you. Gymbo also includes a daily email summary, workout builder, Ask Gymbo, and a shareable QR profile card. Clients do not download anything. Gymbo is for the trainer.
 
@@ -15,17 +15,18 @@ Gymbo is built for the independent personal trainer, not a gym chain or dietitia
 
 ## Pricing
 
-- Monthly: ₹399/month (billed monthly)
-- Annual: ₹2,999 per year (₹250/month effective, save 37%)
-- Unlimited clients on every plan; 7-day introductory trial for eligible subscribers
+- Free: ₹0. Sign up and set up your clients.
+- Pro, monthly: ₹399/month
+- Pro, annual: ₹2,999 per year (₹250/month effective, save 37%)
+- Pro is paid on the web with Razorpay. There is no trial.
 
 ## Links
 
-- [Home](https://getgymbo.com/): product overview, features, and how to request access
-- [Pricing](https://getgymbo.com/pricing.md): plans, free trial, and what's included
+- [Home](https://getgymbo.com/): product overview, features, and how to start free
+- [Pricing](https://getgymbo.com/pricing.md): plans and what's included
 - [Gymbo vs WellnessZ](https://getgymbo.com/compare/gymbo-vs-wellnessz/): how Gymbo compares to a nutrition-first alternative
 
 ## Notes
 
-- Status: private alpha on iOS (iPhone).
+- Status: live on the web at app.getgymbo.com. The iPhone app is coming soon.
 - Made by Material Lab (https://materiallab.io). Contact: damini@materiallab.io

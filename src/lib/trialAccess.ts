@@ -19,12 +19,11 @@
 // again. index.html's JSON-LD/meta cannot import this module (static HTML),
 // so tests/copy-facts.spec.ts cross-checks it against these constants instead.
 
-export const TRIAL_DAYS = 7;
-export const CARD_REQUIRED = true;
-export const BILLING_CHANNEL = "the App Store";
+// gy-1vd9qy.10.4 (Kaushik ruling 22 Nov, option A): Gymbo is on the web, Free + Pro, NO trial, Pro is paid on the web with Razorpay,
+// the iPhone app is "coming soon". The trial / App Store billing / iPhone-only / private-alpha facts that lived here are gone on purpose:
+// scripts/check-trial-eligibility.mjs and the price gate (gy-76z5i) now fail the build if a trial or App Store billing claim comes back.
+export const STATUS_LANGUAGE = "Now on the web";
 export const PLATFORM = "iPhone";
-export const PLATFORM_ONLY_CLAUSE = "iPhone only";
-export const STATUS_LANGUAGE = "Private alpha";
 
 export const PRICE_MONTHLY_INR = 399;
 export const PRICE_ANNUAL_INR = 2999;
@@ -33,7 +32,6 @@ export const PRICE_ANNUAL_INR_DISPLAY = PRICE_ANNUAL_INR.toLocaleString("en-US")
 export const PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR = 250;
 export const ANNUAL_SAVINGS_PERCENT = 37;
 
-export const ACCESS_CTA_LABEL = "Request access";
 // The success line BRANCHES on what the visitor gave us, because the two follow-ups are different
 // things: an email gets the confirmation mail (waitlist-notify), a phone-only lead gets a WhatsApp
 // message from the team. Keyed on the email being non-empty, so someone who gives BOTH is told about
@@ -49,42 +47,20 @@ export const PHONE_SHAPE_ERROR = "That number looks too short. Check it, or add 
 export const ACCESS_SUCCESS_MESSAGE_EMAIL = "Request received. Check your inbox for a confirmation.";
 export const ACCESS_SUCCESS_MESSAGE_PHONE_ONLY = "Request received. We'll WhatsApp you on the number you gave us.";
 
-/**
- * gy-xmzqr.7 — the website cannot see a visitor's Apple account, so the trial is
- * never promised unconditionally. One introductory offer is redeemable per
- * person per subscription group. Do not narrow this to "new subscribers only":
- * some lapsed subscribers are eligible.
- */
-export const TRIAL_PRIMARY = `Eligible subscribers can try Gymbo free for ${TRIAL_DAYS} days.`;
-export const TRIAL_ELIGIBILITY_DETAIL = "Apple determines introductory-offer eligibility; one introductory offer is available per subscription group.";
+// Landing copy v1 (marketer gy-1vd9qy.10.2, claim-truth read owed there): each claim is ONE constant, so dropping one is a one-line change.
+export const NO_CARD_LINE = "No card needed.";
+export const RUNS_IN_BROWSER_LINE = "Runs in your browser on any phone or laptop.";
+export const HERO_SMALL_PRINT = `Free to start. ${RUNS_IN_BROWSER_LINE} iPhone app coming soon.`;
+export const FINAL_CTA_SUB = `Start free in your browser. ${NO_CARD_LINE}`;
+export const PRICING_HEADING = "Start free. Upgrade when you are ready.";
+export const PRICING_FREE_LINE = "Sign up and set up your clients.";
+export const PRICING_PRO_ANNUAL_LINE = `Or ₹${PRICE_ANNUAL_INR_DISPLAY} a year (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR} a month, save ${ANNUAL_SAVINGS_PERCENT}%).`;
+export const PRICING_PAYMENT_LINE = "Pro is paid on the web with Razorpay.";
+export const START_FREE_LABEL = "Start free";
+export const LOG_IN_LABEL = "Log in";
+// Sign-up keeps ?src into the trainer row (gy-1vd9qy.10, E3.1 first-touch). One place for both app URLs.
+export const APP_SIGNUP_URL = "https://app.getgymbo.com/signup?src=landing";
+export const APP_LOGIN_URL = "https://app.getgymbo.com/login";
 
-/** Gymbo's own comparison-table trial row (src/content/alternatives/pages.ts). */
-export const GYMBO_TRIAL_ROW = `${TRIAL_DAYS} days for eligible subscribers, Apple payment method required`;
-
-/**
- * The house trial/access-timing line, verbatim wherever it appears above the
- * fold (src/pages/ArticlePage.tsx and src/App.tsx's hero). Do not reword per
- * surface — this one IS meant to be byte-identical, unlike the FAQ answer
- * below which restates the same facts in a different register.
- */
-export const TRIAL_LINE = `Gymbo is in ${STATUS_LANGUAGE.toLowerCase()}. ${TRIAL_PRIMARY} Billed via ${BILLING_CHANNEL}.`;
-
-/** The 3-step access route (src/App.tsx, "what happens next"). */
-export const ACCESS_ROUTE_STEPS = [
-  `${ACCESS_CTA_LABEL}. Leave your WhatsApp number or email.`,
-  "We reach out with your access.",
-  "Install, add your clients, and punch your first class.",
-];
-
-/**
- * gm-t0e.3 — purchase-stage renew/cancel/data-exit facts (gm-s7u gap rank 4).
- * Previously split across /terms/ and /privacy/ with nothing at the point of
- * purchase; see the FAQ entry in src/App.tsx that consumes these.
- */
-export const CANCEL_ROUTE = "in your iPhone Settings";
-export const DATA_EXPORT_ROUTE = "from the app";
-export const DATA_DELETION_ROUTE = "in the app";
-export const PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT = `If you are eligible for the introductory offer, your ${TRIAL_DAYS}-day trial is free. After that, billing starts automatically through ${BILLING_CHANNEL} at ₹${PRICE_MONTHLY_INR}/month or ₹${PRICE_ANNUAL_INR_DISPLAY}/year, whichever you picked. It renews each period until you cancel. Cancel anytime ${CANCEL_ROUTE}. Once you've been billed, cancelling keeps your access until the end of that paid period. You can export your clients' attendance and payment records ${DATA_EXPORT_ROUTE} whenever you like. You can ask us to delete your account ${DATA_DELETION_ROUTE}.`;
-
-/** gm-t0e.3 — pricing-legibility line (gm-kkl item 2), shown once above the pricing cards. */
-export const PRICING_LEGIBILITY_LINE = "One price. No per-client fees.";
+/** Gymbo's own cell in the comparison tables' trial row (src/content/alternatives/pages.ts, blog, compare page). */
+export const GYMBO_FREE_ROW = "Free plan, no trial needed";

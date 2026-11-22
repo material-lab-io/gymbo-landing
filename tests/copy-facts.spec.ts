@@ -4,17 +4,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FAQ } from '../src/App';
 import {
-  TRIAL_DAYS,
   PRICE_MONTHLY_INR,
   PRICE_ANNUAL_INR_DISPLAY,
   PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR,
-  PLATFORM,
   STATUS_LANGUAGE,
-  CANCEL_ROUTE,
-  DATA_EXPORT_ROUTE,
-  DATA_DELETION_ROUTE,
-  PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT,
-  PRICING_LEGIBILITY_LINE,
+  PRICING_PAYMENT_LINE,
 } from '../src/lib/trialAccess';
 
 /**
@@ -84,61 +78,35 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(softwareApp.offers.price).toBe(String(PRICE_MONTHLY_INR));
   });
 
-  test('SoftwareApplication JSON-LD operatingSystem matches PLATFORM\'s OS family (iOS)', () => {
-    // PLATFORM is the consumer-facing device name ("iPhone"); the schema.org
-    // field is the OS family. Both facts come from the same iOS-only ruling,
-    // so this only fails if someone adds a second platform to one but not
-    // the other, not because the two strings must be identical.
-    expect(PLATFORM).toBe('iPhone');
-    expect(softwareApp.operatingSystem).toBe('iOS');
+  test('SoftwareApplication JSON-LD operatingSystem is Web (gy-1vd9qy.10.4: live on the web, the iPhone app is coming soon)', () => {
+    expect(softwareApp.operatingSystem).toBe('Web');
   });
 
-  test('meta description states the monthly price and trial length consistently with the constants', () => {
+  test('meta description states the monthly price and says start free, with no trial claim', () => {
     const match = indexHtml.match(/<meta name="description" content="([^"]*)"\s*\/>/);
     expect(match).toBeTruthy();
     const description = match![1];
     expect(description).toContain(`₹${PRICE_MONTHLY_INR}/mo`);
-    expect(description).toContain(`${TRIAL_DAYS}-day free trial for eligible subscribers`);
+    expect(description).toContain('Start free');
+    expect(description.toLowerCase()).not.toContain('trial');
   });
 
-  test('Terms.tsx states the trial and pricing facts matching the constants (literal legal text, not interpolated)', () => {
-    expect(termsSource).toContain(`Eligible subscribers can try Gymbo free for ${TRIAL_DAYS} days`);
+  // Terms.tsx is legal copy (pm ruling gm-pzp): this goes red until compliance edits the text. It asserts the prices, and that the
+  // retired trial / App Store billing wording is GONE (gy-1vd9qy.10.4, no trial on the web).
+  test('Terms.tsx states the prices and no longer promises a trial or App Store billing (literal legal text, not interpolated)', () => {
     expect(termsSource).toContain(`₹${PRICE_MONTHLY_INR}/month`);
     expect(termsSource).toContain(`₹${PRICE_ANNUAL_INR_DISPLAY} per year`);
     expect(termsSource).toContain(`₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective`);
+    expect(termsSource).not.toMatch(/free for 7 days|introductory[- ]offer|App Store/i);
   });
 
   test('Privacy.tsx states the current status language matching the constant (literal legal text, not interpolated)', () => {
     expect(privacySource).toContain(STATUS_LANGUAGE.toLowerCase());
   });
 
-  // gm-t0e.3 — the purchase-stage renew/cancel/data-exit facts. Asserted
-  // individually (not only as the assembled PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT
-  // paragraph) so the gate catches a drift in one clause even if the others
-  // still happen to read correctly.
-  test('the FAQ purchase-answer paragraph states the cancel route from CANCEL_ROUTE', () => {
-    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(CANCEL_ROUTE);
-  });
-
-  test('the FAQ purchase-answer paragraph states the data export route from DATA_EXPORT_ROUTE', () => {
-    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(DATA_EXPORT_ROUTE);
-  });
-
-  test('the FAQ purchase-answer paragraph states the data deletion route from DATA_DELETION_ROUTE', () => {
-    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).toContain(DATA_DELETION_ROUTE);
-  });
-
-  test('App.tsx FAQ consumes PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT, not a hand-written string', () => {
-    const entry = FAQ.find((f) => f.q === "What happens when my trial ends, and can I cancel or export my clients' records?");
-    expect(entry, 'App.tsx FAQ has no purchase-answer entry').toBeTruthy();
-    expect(entry!.a).toBe(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT);
-  });
-
-  test('App.tsx consumes PRICING_LEGIBILITY_LINE by reference exactly once, not a hand-written string', () => {
-    const occurrences = appSource.split('{PRICING_LEGIBILITY_LINE}').length - 1;
-    expect(occurrences).toBe(1);
-    // AC5 guard: the literal string must not ALSO be hand-written somewhere else in App.tsx.
-    expect(appSource).not.toContain(PRICING_LEGIBILITY_LINE);
+  test('App.tsx states the payment line once, from PRICING_PAYMENT_LINE (Pro is paid on the web)', () => {
+    expect(appSource.split('{PRICING_PAYMENT_LINE}').length - 1).toBe(1);
+    expect(appSource).not.toContain(PRICING_PAYMENT_LINE);
   });
 
   // gy-5kwas part 2 (compliance C1/C2): routes and deletion/export behaviour with no verified operation behind
@@ -151,19 +119,9 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
   test('gy-5kwas: no unverified-route or over-claim phrase in the purchase answer, App, Privacy, index.html, pricing.md', () => {
     const surfaces: Record<string, string> = {
-      answer: PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT, app: appSource, privacy: privacySource, index: indexHtml, pricing: pricingMd,
+      app: appSource, privacy: privacySource, index: indexHtml, pricing: pricingMd,
     };
     for (const [name, text] of Object.entries(surfaces)) expect(bannedIn(text), name).toEqual([]);
-    expect(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT).not.toContain('\u2014');
-  });
-
-  test('gy-5kwas: pricing.md and the Monthly card give the cancel route', () => {
-    expect(pricingMd).toContain(`Cancel anytime ${CANCEL_ROUTE}.`);
-    expect(appSource).toContain('Cancel anytime ${CANCEL_ROUTE}.');
-  });
-
-  test('NEGATIVE CONTROL: the banned-phrase guard fails on a planted "anonymise"', () => {
-    expect(bannedIn(PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT + ' We remove or anonymise it.')).toEqual(['anonymise']);
   });
 
   test('NEGATIVE CONTROL: the guard fails when ANY ONE of the FAQ-swap phrases is reintroduced (on every guarded surface)', () => {
@@ -192,15 +150,9 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(a).not.toContain('\u2014');
   });
 
-  test('NEGATIVE CONTROL: CANCEL_ROUTE assertion actually fails on a deliberately wrong route', () => {
-    const drifted = PURCHASE_ANSWER_RENEW_CANCEL_DATA_EXIT.split(CANCEL_ROUTE).join('by emailing support');
-    expect(drifted).not.toContain(CANCEL_ROUTE);
-    expect(() => expect(drifted).toContain(CANCEL_ROUTE)).toThrow();
-  });
-
-  test('NEGATIVE CONTROL: the pricing-legibility-line-by-reference check actually fails when the reference is absent', () => {
-    const strippedSource = appSource.split('{PRICING_LEGIBILITY_LINE}').join('');
-    const occurrences = strippedSource.split('{PRICING_LEGIBILITY_LINE}').length - 1;
+  test('NEGATIVE CONTROL: the payment-line-by-reference check actually fails when the reference is absent', () => {
+    const strippedSource = appSource.split('{PRICING_PAYMENT_LINE}').join('');
+    const occurrences = strippedSource.split('{PRICING_PAYMENT_LINE}').length - 1;
     expect(occurrences).not.toBe(1);
     expect(() => expect(occurrences).toBe(1)).toThrow();
   });
