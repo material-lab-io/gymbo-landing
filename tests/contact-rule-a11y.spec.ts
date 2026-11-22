@@ -1,3 +1,4 @@
+import { openWaitlistForm, IPHONE_FAQ } from './helpers/waitlist';
 import { test, expect } from '@playwright/test';
 
 /**
@@ -21,7 +22,7 @@ import { test, expect } from '@playwright/test';
  * to the hint node INSIDE ITS OWN FORM.
  */
 
-const CLUSTERS = ['hero', 'nav', 'gallery', 'pricing', 'footer'] as const;
+const CLUSTERS = ['cta-section']; // gy-1vd9qy.10.4: the iPhone FAQ link is the only waitlist CTA left
 
 /**
  * Click a cluster's CTA and report whether it actually REVEALED a form.
@@ -41,6 +42,9 @@ async function openCluster(page: import('@playwright/test').Page, loc: string) {
     await page.evaluate(() => window.scrollTo(0, Math.round(window.innerHeight * 1.2)));
     await page.waitForTimeout(600);
   }
+  const faq = page.locator('details.faq', { hasText: IPHONE_FAQ }).first();
+  await faq.scrollIntoViewIfNeeded();
+  if (!(await faq.evaluate((el) => (el as HTMLDetailsElement).open))) await faq.locator('summary').click();
   const cta = page.locator(`[data-cta="waitlist"][data-cta-location="${loc}"]`).first();
   if (!(await cta.isVisible().catch(() => false))) return { clicked: false, revealed: false };
   await cta.scrollIntoViewIfNeeded().catch(() => {});
@@ -140,10 +144,10 @@ test('every contact input resolves to the hint inside its OWN form', async ({ pa
 test('every text-bearing input names itself from an explicit attribute, not a placeholder', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  await page.locator('#cta').scrollIntoViewIfNeeded();
+  await openWaitlistForm(page);
 
   const unnamed = await page.evaluate(() =>
-    [...document.querySelectorAll('#cta form input')]
+    [...document.querySelectorAll('[role="group"][aria-label="Request access"] form input')]
       .filter((el) => !(el as HTMLInputElement).getAttribute('aria-label') && !el.getAttribute('aria-labelledby'))
       .map((el) => `${(el as HTMLInputElement).type}: placeholder-only name "${(el as HTMLInputElement).placeholder}"`),
   );
@@ -165,7 +169,7 @@ test('every text-bearing input names itself from an explicit attribute, not a pl
 test('no placeholder is wider than the field that renders it', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  await page.locator('#cta').scrollIntoViewIfNeeded();
+  await openWaitlistForm(page);
   await page.waitForTimeout(300);
 
   const over = await page.evaluate(() =>
@@ -209,8 +213,8 @@ test('no placeholder is wider than the field that renders it', async ({ page }) 
 test('the failure alert is visually distinct from the permanent hint, and clears AA', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
-  const opened = await openCluster(page, 'hero');
-  expect(opened.revealed, 'positive control: the hero capture must open, or there is no alert to judge').toBe(true);
+  const opened = await openCluster(page, 'cta-section');
+  expect(opened.revealed, 'positive control: the capture must open, or there is no alert to judge').toBe(true);
 
   const panel = page.locator('[role="group"][aria-label="Request access"]').first();
   await panel.locator('button[type="submit"]').click();

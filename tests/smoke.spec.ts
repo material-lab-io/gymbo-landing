@@ -39,7 +39,8 @@ test('nav and hero render with the headline', async ({ page }) => {
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Main navigation' });
   await expect(nav).toBeVisible();
-  await expect(nav.getByText('Request access', { exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Start free', exact: true })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Log in', exact: true })).toBeVisible();
 
   // gy-w7x93: this used to pin the words "fitness business" / "from your phone".
   // Hero copy is content-owned and was rewritten by the claim-truth pass
@@ -189,23 +190,27 @@ test('retired demo-frame badges are absent', async ({ page }) => {
   // gy-jaooz: "travel-aware" / "AI navigate" badges were removed from the pillar
   // demo artwork; the not-yet-shipped items now live as normal bullets with a
   // "coming soon" tag after the sentence.
-  await page.locator('#why').scrollIntoViewIfNeeded();
+  // scoped to the pillars: the hero small print and the iPhone FAQ say "coming soon" about the iPhone app, on purpose (gy-1vd9qy.10.4)
+  const why = page.locator('#why');
+  await why.scrollIntoViewIfNeeded();
   await expect(page.locator('[data-coming-soon]')).toHaveCount(0);
-  await expect(page.getByText(/travel-aware/i)).toHaveCount(0);
-  await expect(page.getByText('coming soon')).toHaveCount(0);
+  await expect(why.getByText(/travel-aware/i)).toHaveCount(0);
+  await expect(why.getByText('coming soon')).toHaveCount(0);
 });
 
-test('pricing shows the two plans and numbers', async ({ page }) => {
+test('pricing shows the Free and Pro plans and their numbers (option A, no trial)', async ({ page }) => {
   await page.goto('/');
   const pricing = page.locator('#pricing');
   await pricing.scrollIntoViewIfNeeded();
-  await expect(pricing.getByText('Monthly', { exact: true })).toBeVisible();
-  await expect(pricing.getByText('Annual', { exact: true })).toBeVisible();
-  // Quarterly was dropped in the 2026-07-18 founder pricing lock.
-  await expect(pricing.getByText('Quarterly', { exact: true })).toHaveCount(0);
-  for (const amount of ['₹399', '₹250']) {
-    await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
-  }
+  await expect(pricing.getByRole('heading', { name: 'Free', exact: true })).toBeVisible();
+  await expect(pricing.getByRole('heading', { name: 'Pro', exact: true })).toBeVisible();
+  // the old Monthly / Annual / Quarterly cards are gone
+  for (const gone of ['Monthly', 'Annual', 'Quarterly']) await expect(pricing.getByRole('heading', { name: gone, exact: true })).toHaveCount(0);
+  for (const amount of ['₹0', '₹399']) await expect(pricing.getByText(amount, { exact: true })).toBeVisible();
+  await expect(pricing.getByText(/₹2,999 a year/)).toBeVisible();
+  await expect(pricing.getByText('Pro is paid on the web with Razorpay.')).toBeVisible();
+  await expect(pricing.getByText(/trial/i)).toHaveCount(0);
+  await expect(pricing.locator('a[data-cta="start-free"]')).toHaveCount(2);
 });
 
 test('gallery controls make the fourth product screen discoverable', async ({ page }) => {
@@ -228,13 +233,14 @@ test('gallery controls make the fourth product screen discoverable', async ({ pa
   await expect(previous).toBeEnabled();
 });
 
-test('waitlist CTA section and form resolve', async ({ page }) => {
+test('the closing CTA section offers Start free and the founder, and carries no form', async ({ page }) => {
   await page.goto('/');
   const cta = page.locator('#cta');
   await cta.scrollIntoViewIfNeeded();
   await expect(cta).toBeVisible();
-  await expect(cta.locator('input[type="email"]')).toBeVisible();
+  await expect(cta.getByRole('link', { name: 'Start free', exact: true })).toBeVisible();
   await expect(cta.getByText(/talk to the founder/i)).toBeVisible();
+  await expect(cta.locator('form')).toHaveCount(0);
 });
 
 test('footer present, and no web-app references remain', async ({ page }) => {
@@ -285,7 +291,7 @@ test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', asy
  * It deliberately does not assert CTA wording: copy PRs #104/#121 are open and
  * this shape composes with whichever lands.
  */
-test('the hero WhatsApp CTA is a real anchor, and the hero waitlist stays a full button (gy-e9h9y)', async ({ page }) => {
+test('the hero WhatsApp CTA is a real anchor, and the hero Start free is a real anchor with a full hit target (gy-e9h9y, option A)', async ({ page }) => {
   await page.goto('/');
 
   const primary = page.locator('[data-cta="whatsapp"][data-cta-location="hero"]');
@@ -296,16 +302,14 @@ test('the hero WhatsApp CTA is a real anchor, and the hero waitlist stays a full
   await expect(primary).toHaveAttribute('target', '_blank');
   await expect(primary).toHaveAttribute('rel', 'noopener noreferrer');
 
-  // The waitlist demotes in VISUAL WEIGHT ONLY. It must still be a button with a
-  // full hit target — never a text link — because it is the only capture that
-  // produces a row, and reducing its reachability would answer the founder's
-  // friction request with the opposite.
-  const waitlist = page.locator('[data-cta="waitlist"][data-cta-location="hero"]');
-  await expect(waitlist).toHaveCount(1);
-  expect(await waitlist.evaluate((el) => el.tagName)).toBe('BUTTON');
-  const box = await waitlist.boundingBox();
-  expect(box, 'waitlist CTA must render a real box, not inline text').not.toBeNull();
-  expect(box!.height, 'waitlist CTA must keep a full-size hit target, not become a text link').toBeGreaterThanOrEqual(44);
+  // Start free is the primary: a real link into the app sign-up, never a text link, with a full hit target.
+  const start = page.locator('a[data-cta="start-free"][data-cta-position="hero"]');
+  await expect(start).toHaveCount(1);
+  expect(await start.evaluate((el) => el.tagName)).toBe('A');
+  await expect(start).toHaveAttribute('href', 'https://app.getgymbo.com/signup?src=landing');
+  const box = await start.boundingBox();
+  expect(box, 'Start free must render a real box, not inline text').not.toBeNull();
+  expect(box!.height, 'Start free must keep a full-size hit target').toBeGreaterThanOrEqual(44);
 });
 
 /**

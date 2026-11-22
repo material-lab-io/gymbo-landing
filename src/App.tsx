@@ -495,7 +495,7 @@ export default function App() {
 
             <Reveal className="mt-12 flex flex-col items-center gap-3">
               <div className="flex flex-col items-center">
-                <StartFreeCTA dark size="lg" position="gallery" />
+                <StartFreeCTA dark size="lg" position="gallery" variant="secondary" />
               </div>
             </Reveal>
           </div>
