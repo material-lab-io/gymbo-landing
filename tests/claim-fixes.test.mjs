@@ -43,6 +43,15 @@ export function check(files) {
     for (const g of GREPS) if (files[f].includes(g)) bad.push(`banned claim '${g}' on our side: ${f}`);
   return bad;
 }
+// The checked-in shells carry their own FAQ JSON-LD (check-jsonld-sync reads them): the old answers must be gone there too.
+const SHELLS = ["alternatives/akton/index.html", "alternatives/trainerize/index.html", "alternatives/truecoach/index.html"];
+const SHELL_OLD = ["GST-ready", "GST invoicing and are built", "during onboarding", "built for UPI and GST from the ground up", "or GST compliance. Gymbo is."];
+export function checkShells(shells) {
+  const bad = [];
+  for (const f of SHELLS) for (const o of SHELL_OLD) if (shells[f].includes(o)) bad.push(`OLD still in the checked-in shell ${f}: ${o}`);
+  return bad;
+}
+const shells = () => Object.fromEntries(SHELLS.map((f) => [f, read(f)]));
 const files = () => Object.fromEntries(["src/content/alternatives/pages.ts", "src/pages/CompareWellnessZ.tsx", "src/App.tsx", "public/llms.txt"].map((f) => [f, read(f)]));
 
 test("the corpus is non-empty and the table was read", () => {
@@ -69,5 +78,17 @@ test("PLANTED CONTROL: a missing new string goes red", () => {
     const f = files();
     f[file] = f[file].split(newS).join("x");
     assert.ok(check(f).some((b) => b.includes(`NEW missing (${why})`)), `row '${why}' did not go red`);
+  }
+});
+
+test("the checked-in shells' FAQ JSON-LD carries none of the old answers", () => {
+  assert.deepEqual(checkShells(shells()), []);
+});
+
+test("PLANTED CONTROL: an old answer put back into a shell goes red by file", () => {
+  for (const f of SHELLS) for (const o of SHELL_OLD) {
+    const sh = shells();
+    sh[f] += `\n${o}\n`;
+    assert.ok(checkShells(sh).some((b) => b.includes(f) && b.includes(o)), `${f} / ${o} did not go red`);
   }
 });
