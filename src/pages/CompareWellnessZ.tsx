@@ -18,7 +18,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "Built for", gymbo: "independent personal trainers (session-led)", wellnessz: "dietitians / nutritionists & health coaches (nutrition-led)", win: null },
   { label: "The core job", gymbo: "punch a class in a couple of taps; track payments & balances", wellnessz: "create & assign diet / meal plans", win: null },
   { label: "Entry price", gymbo: `₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on annual)`, wellnessz: "₹499/mo", win: "g" },
-  { label: "Client limits", gymbo: "unlimited: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
+  { label: "Client limits", gymbo: "no limit: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
   { label: "Free trial", gymbo: GYMBO_FREE_ROW, wellnessz: "14 days", win: null },
   { label: "Class punches", gymbo: "a couple of taps to punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
   { label: "Payments", gymbo: "UPI and cash, reminders you send yourself", wellnessz: "UPI, GST invoices, reminders", win: null },
@@ -236,7 +236,7 @@ export function CompareWellnessZ() {
                 WellnessZ prices by how many clients you have: ₹499/month gets you up to 40 active clients, and you move to ₹999/month (up to 120) as you grow. That's fair, but it means your cost climbs as your business does, and there's an upgrade waiting at every milestone.
               </p>
               <p className="text-[15px] md:text-[16px]" style={{ color: F.ink, fontFamily: SANS, fontWeight: 400, lineHeight: 1.7 }}>
-                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹{PRICE_MONTHLY_INR}/month, or ₹{PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan</b>, with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
+                Gymbo is one flat price: <b style={{ fontWeight: 600 }}>₹{PRICE_MONTHLY_INR}/month, or ₹{PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/month effective on the annual plan</b>, with no limit on clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.
               </p>
             </Reveal>
             <Reveal className="mt-8">

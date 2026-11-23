@@ -1066,7 +1066,7 @@
       ["visible block","Gymbo is ₹399/month (₹250 effective on annual) with no per-client tiers. WellnessZ starts at ₹499/month for up to 40 clients and ₹999/month for up to 120.","observed"],
       ["visible block","Gymbo is best for you if","observed"],
       ["visible block","Gymbo is new on the web. Real trainer stories will appear here as trainers come on board.","observed"],
-      ["visible block","Gymbo is one flat price: ₹399/month, or ₹250/month effective on the annual plan, with unlimited clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.","observed"],
+      ["visible block","Gymbo is one flat price: ₹399/month, or ₹250/month effective on the annual plan, with no limit on clients, so it doesn't change as you grow. For a trainer at 15–25 clients, Gymbo is both cheaper at the entry point and predictable as you scale.","observed"],
       ["visible block","Gymbo leads with the session. A personal trainer's day isn't meal planning: it's \"did Ravi show up, did he pay, how many classes are left.\" Gymbo is built around that: a class punch in a couple of taps, a structured client card that does the balance math for you, and pre-written WhatsApp reminders ready to send. A workout builder and Ask Gymbo are built in, but the hero is running your training business, not planning nutrition.","observed"],
       ["visible block","Gymbo vs WellnessZ, answered","observed"],
       ["visible block","Gymbo vs WellnessZ: which fits you?","observed"],
@@ -1081,6 +1081,7 @@
       ["visible block","LinkedIn","observed"],
       ["visible block","Log in","observed"],
       ["visible block","Moving from WellnessZ","observed"],
+      ["visible block","no limit: flat price, no per-client tiers","observed"],
       ["visible block","Not directly. Gymbo can't import from WellnessZ or a spreadsheet. On Android Chrome you can add clients from your contacts. On iPhone, add them by hand.","observed"],
       ["visible block","not yet","observed"],
       ["visible block","Now on the web","observed"],
@@ -1107,7 +1108,6 @@
       ["visible block","Terms","observed"],
       ["visible block","The core job","observed"],
       ["visible block","The real difference","observed"],
-      ["visible block","unlimited: flat price, no per-client tiers","observed"],
       ["visible block","UPI and cash, reminders you send yourself","observed"],
       ["visible block","UPI, GST invoices, reminders","observed"],
       ["visible block","We'd rather you pick the right tool than the wrong one. If nutrition is your business, WellnessZ is built for that. If training is, Gymbo is built for you.","observed"],
@@ -2501,7 +2501,7 @@
       ["served line","## Links","observed"],
       ["served line","## Notes","observed"],
       ["served line","## Pricing","observed"],
-      ["served line","> Gymbo is a business app for independent personal trainers in India. It turns the day-to-day of running a training practice into a few taps: punching classes, recording payments, checking balances, scheduling, and looking professional. Start free, then Pro is monthly or annual, paid on the web. Unlimited clients.","observed"],
+      ["served line","> Gymbo is a business app for independent personal trainers in India. It turns the day-to-day of running a training practice into a few taps: punching classes, recording payments, checking balances, scheduling, and looking professional. Start free, then Pro is monthly or annual, paid on the web. No plan has a client limit.","observed"],
       ["served line","Gymbo is built for the independent personal trainer, not a gym chain or dietitian. A trainer's day is classes, schedules, and payments, so Gymbo is built around that: punch a class in a couple of taps, let the client card calculate the balance, and see in red who owes you classes, with a warning when a balance runs low. Gymbo also includes a daily email summary, workout builder, Ask Gymbo, and a shareable QR profile card. Clients do not download anything. Gymbo is for the trainer.","observed"]
     ],
     "/pricing.md": [
