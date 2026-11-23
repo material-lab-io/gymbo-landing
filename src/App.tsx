@@ -5,8 +5,6 @@ import {
   QrCode,
   Share2,
   FileText,
-  Palette,
-  Link,
   ChevronLeft,
   ChevronRight,
   Smartphone,
@@ -111,8 +109,8 @@ const PILLARS = [
     title: "Your brand, your business",
     intro: "Look like the professional you already are. Your name and details on every statement your client sees, plus a QR profile card you can share anywhere.",
     bullets: [
-      "Branded PDF statements: your name, tagline, and details on each one",
-      "A shareable QR profile card in three styles",
+      "PDF statements with your brand name and logo on each one",
+      "A shareable QR profile card",
       "Send any client their statement from the app",
     ],
     brief: "Your brand on a clean statement PDF. Share in a tap (India).",
@@ -127,7 +125,6 @@ const PILLARS = [
     intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains.",
     bullets: [
       "Build and assign workouts from a template library",
-      "A muscle and body map for every plan",
       "Track client progress: class history, adherence, per-exercise gains",
       "Get directions to your next class, right from the app",
     ],
@@ -690,10 +687,14 @@ const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
   { name: "QR profile", icon: QrCode },
   { name: "Share links", icon: Share2 },
   { name: "PDF statements", icon: FileText },
-  { name: "Brand theming", icon: Palette },
-  { name: "Your own URL", icon: Link },
-  { name: "Custom branded client content", icon: Smartphone },
+  { name: "Your logo on client statements", icon: Smartphone },
 ];
+
+/* The track scrolls by -50%, so each HALF must be at least as wide as the widest screen or an empty band shows at the end of the loop
+   (gy-1vd9qy.10.2: 6 chips left ~325px empty at 1440, 4 chips ~670px). Two identical halves of MARQUEE_HALF_COPIES copies each: the half is
+   ~770px at 4 chips, so 3 copies (~2.3k px) fill up to 2300px wide. tests/marquee-fill.spec.ts measures it. */
+const MARQUEE_HALF_COPIES = 3;
+const MARQUEE_TRACK = Array.from({ length: MARQUEE_HALF_COPIES * 2 }, () => MARQUEE_CHIPS).flat();
 
 function BrandMarquee() {
   const prefersReduced = useReducedMotion();
@@ -717,7 +718,7 @@ function BrandMarquee() {
             className="marquee-mask relative overflow-hidden"
           >
             <div className="marquee-track flex gap-2 w-max">
-              {[...MARQUEE_CHIPS, ...MARQUEE_CHIPS].map((c, i) => (
+              {MARQUEE_TRACK.map((c, i) => (
                 <MarqueeChip key={`${c.name}-${i}`} t={c} />
               ))}
             </div>

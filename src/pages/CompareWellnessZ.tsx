@@ -21,7 +21,7 @@ const ROWS: { label: string; gymbo: string; wellnessz: string; win: "g" | "w" | 
   { label: "Client limits", gymbo: "unlimited: flat price, no per-client tiers", wellnessz: "Basic ₹499 = up to 40 clients · Pro ₹999 = up to 120", win: "g" },
   { label: "Free trial", gymbo: GYMBO_FREE_ROW, wellnessz: "14 days", win: null },
   { label: "Class punches", gymbo: "a couple of taps to punch, automatic balance math", wellnessz: "session scheduling (nutrition-centric)", win: "g" },
-  { label: "Payments", gymbo: "UPI + cash, GST invoices, colour-coded reminders", wellnessz: "UPI, GST invoices, reminders", win: null },
+  { label: "Payments", gymbo: "UPI and cash, reminders you send yourself", wellnessz: "UPI, GST invoices, reminders", win: null },
   { label: "Nutrition / meal plans", gymbo: "Workout builder + Ask Gymbo (training-first)", wellnessz: "deep: 20k+ ICMR-verified meals, nutrition AI", win: "w" },
   { label: "Sign-in", gymbo: "phone, Apple, or Google", wellnessz: "account-based", win: null },
   { label: "White-label app", gymbo: "not yet", wellnessz: "custom pricing (white-label)", win: "w" },

@@ -22,7 +22,7 @@ const truecoach: Post = {
   faq: [
     {
       q: "Is there a TrueCoach alternative for Indian personal trainers?",
-      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, WhatsApp reminders, and built-in scheduling), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. TrueCoach is a strong remote-coaching tool but bills in USD and doesn't offer UPI, GST, or WhatsApp.`,
+      a: `Yes. Gymbo is built specifically for independent trainers in India (payments in UPI or cash, INR pricing, reminders you send yourself on WhatsApp, and built-in scheduling), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. TrueCoach is a strong remote-coaching tool but bills in USD and doesn't offer UPI, GST, or WhatsApp.`,
     },
     {
       q: "How much does TrueCoach cost in India?",
@@ -30,7 +30,7 @@ const truecoach: Post = {
     },
     {
       q: "Does TrueCoach support UPI or GST?",
-      a: "There's no evidence TrueCoach offers UPI payments or GST invoicing; it uses USD, Stripe-based billing built for Western coaches. Gymbo is built for UPI and GST from the ground up.",
+      a: "There's no evidence TrueCoach offers UPI payments or GST invoicing; it uses USD, Stripe-based billing built for Western coaches. Gymbo records UPI and cash payments in rupees.",
     },
     {
       q: "Does TrueCoach have scheduling?",
@@ -54,8 +54,7 @@ const truecoach: Post = {
 | Pricing model | One flat price, no per-client tiers | Tiered by active client count (5 / 20 / 50) |
 | Payment fees | UPI via Razorpay (standard rates) | Stripe-based |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing, no UPI |
-| GST-ready invoices | ✅ | ❌ Not built for Indian GST |
-| WhatsApp | ✅ Reminders & sharing | ❌ Uses its own in-app chat |
+| WhatsApp | ✅ You send reminders yourself | ❌ Uses its own in-app chat |
 | Scheduling / session booking | ✅ Week view, day carousel | ❌ No scheduling system |
 | Sign-in | Phone, Apple, or Google | Email/password |
 | Class punches | A couple of taps, balance updates itself | Programming-led; logs workouts, not payments |
@@ -96,7 +95,7 @@ Gymbo isn't trying to out-feature TrueCoach on remote programming. We're built f
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
 - You want class punches in a couple of taps, with balances that reconcile themselves.
-- You need GST-ready statements (once you add your GSTIN), WhatsApp reminders, and a real schedule.
+- You need to track UPI and cash payments, send your own WhatsApp reminders, and run a real schedule.
 - You want one flat, India-priced subscription with no per-client caps.
 
 ## the price story, plainly
@@ -120,7 +119,7 @@ const trainerize: Post = {
   faq: [
     {
       q: "Is there a Trainerize alternative for Indian personal trainers?",
-      a: `Yes. Gymbo is built specifically for independent trainers in India (UPI payments, INR pricing, GST-ready invoices, and WhatsApp reminders), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. Trainerize is a strong global platform but bills in USD and doesn't support UPI, GST, or WhatsApp.`,
+      a: `Yes. Gymbo is built specifically for independent trainers in India (payments in UPI or cash, INR pricing, and reminders you send yourself on WhatsApp), from ₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo (₹${PRICE_MONTHLY_INR}/mo billed monthly), one flat plan with no per-client caps. Trainerize is a strong global platform but bills in USD and doesn't support UPI, GST, or WhatsApp.`,
     },
     {
       q: "How much does Trainerize cost in India?",
@@ -128,11 +127,11 @@ const trainerize: Post = {
     },
     {
       q: "Does Trainerize support UPI or GST?",
-      a: "No. Trainerize uses card/Stripe-based billing in USD and is not built for Indian UPI, INR invoicing, or GST compliance. Gymbo is.",
+      a: "No. Trainerize uses card/Stripe-based billing in USD and is not built for Indian UPI, INR invoicing, or GST compliance. Gymbo records UPI and cash payments in rupees.",
     },
     {
       q: "Can I move my client list from Trainerize to Gymbo?",
-      a: "Yes, you can add your clients to Gymbo in a few minutes, and during onboarding we help set up your client list and first sessions.",
+      a: "Gymbo cannot import from another app. You add clients by hand. On Android Chrome you can add them from your contacts.",
     },
     {
       q: "Is Gymbo cheaper than Trainerize?",
@@ -151,8 +150,7 @@ const trainerize: Post = {
 | Price for a real 5–20 client roster | **₹${PRICE_MONTHLY_INR}/mo flat, no client caps** | **$23+/mo (~₹${inrFromUsd(23)}+)** on Pro, before add-ons |
 | Pricing model | One flat price: your roster grows, your bill doesn't | Tiered by client count; add-ons stack on top |
 | UPI / INR billing | ✅ Razorpay, priced in ₹ | ❌ USD billing |
-| GST-ready invoices | ✅ | ❌ |
-| WhatsApp | ✅ Reminders & sharing | ❌ |
+| WhatsApp | ✅ You send reminders yourself | ❌ |
 | Sign-in | Phone, Apple, or Google | Email/password |
 | Class punches | A couple of taps, balance updates itself | Programming-led; heavier flow |
 | AI | Ask Gymbo + workout builder | Mature AI Workout Builder |
@@ -184,7 +182,7 @@ Gymbo will not win on feature count, and we're not trying to. We do one thing: m
 **Choose Gymbo if:**
 - You train clients in India and get paid in rupees (UPI).
 - You want to punch a class in a couple of taps and see who's paid and who owes.
-- You need GST-ready statements (once you add your GSTIN) and WhatsApp reminders.
+- You need to track UPI and cash payments and send your own WhatsApp reminders.
 - You want one flat, India-priced subscription, not a bill that climbs with every client and add-on.
 
 ## the price story, plainly
@@ -226,7 +224,7 @@ const akton: Post = {
     },
     {
       q: "Do Akton and Gymbo both work in India with UPI and GST?",
-      a: "Yes. Both support UPI payments and GST invoicing and are built for the Indian market. India-native features aren't the deciding factor between them; the deciding factor is whether you run a facility or work solo.",
+      a: "Yes. Both record UPI payments and are built for the Indian market. India-native features aren't the deciding factor between them; the deciding factor is whether you run a facility or work solo.",
     },
   ],
   bodyMd: `But if you're an **independent trainer** (working out of clients' homes, a park, or a society gym, with no turnstile, no front desk, no branches, and no staff), most of that cockpit is dials you'll never touch. Gymbo is built for you: the one-person business, run from your phone.
@@ -280,7 +278,7 @@ Gymbo strips it down to the one-person business:
 
 - **Punch a class in a couple of taps**: balances update themselves.
 - **Payment tracking with a running ledger**: see who's paid, who owes, who's running low; send a reminder when you need to.
-- **GST-ready statements (once you add your GSTIN) and UPI**: built in, India-first.
+- **UPI and cash payments**, recorded in the app.
 - **A real schedule**: day, week, and month views with conflict detection.
 - **A workout builder** with a template library.
 - **No setup.** No branches, staff, or turnstiles to configure.
