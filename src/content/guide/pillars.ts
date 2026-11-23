@@ -19,7 +19,7 @@
 import type { Post } from "../blog/posts";
 
 // Exemplar house-style byline (the tester-blessed live pillar-1 format), identical on all 4.
-const BYLINE = "*Last updated: 15 July 2026 · By Kaushik Naarayan, founder of Gymbo, building with independent trainers in India*";
+const BYLINE = "*Last updated: 23 November 2026 · By Kaushik Naarayan, founder of Gymbo, building with independent trainers in India*";
 
 const runBusiness: Post = {
   slug: "run-personal-training-business-india",
