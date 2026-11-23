@@ -31,12 +31,12 @@ const guideIndiaTrainers: Post = {
     "Why independent personal trainers in India run their business on WhatsApp, a diary, and UPI, and the specific point where that free stack starts costing them money and hours.",
   faq: [
     {
-      q: "What do most personal trainers in India use to manage their clients?",
-      a: "Most use a free stack: WhatsApp for scheduling and reminders, a paper diary for session counts and balances, and UPI (GPay/PhonePe) for payments, often with Instagram as the front door for new clients. It works for a small roster and tends to break down once you can no longer hold who's paid, who's owed, and who trained today in your head.",
+      q: "What do personal trainers in India use to manage their clients?",
+      a: "Many use a free stack: WhatsApp for scheduling and reminders, a paper diary for session counts and balances, and UPI (GPay/PhonePe) for payments, often with Instagram as the front door for new clients. It works for a small roster and tends to break down once you can no longer hold who's paid, who's owed, and who trained today in your head.",
     },
     {
       q: "At what point should a trainer move off WhatsApp and a diary?",
-      a: "Usually when admin starts eating multiple hours a week and payments become hard to track. The signal: when you're no longer sure who's paid, who's owed, and who's down to their last session.",
+      a: "Often when admin starts taking time you would rather spend training and payments become hard to track. The signal: when you're no longer sure who's paid, who's owed, and who's down to their last session.",
     },
     {
       q: "Why not just use a spreadsheet?",
@@ -107,7 +107,7 @@ We've written the practical fix separately: [how to run a personal training busi
 
 ## where gymbo fits
 
-We built **Gymbo** for the trainer who's hit this exact wall: class punches in a couple of taps, automatic balances, UPI payments, GST-ready statements (once you add your GSTIN), WhatsApp reminders, a workout builder, and Ask Gymbo, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
+We built **Gymbo** for the trainer who's hit this exact wall: class punches in a couple of taps, automatic balances, UPI payments, PDF statements, reminders you send yourself on WhatsApp, a workout builder, and Ask Gymbo, at ₹${PRICE_MONTHLY_INR}/mo, priced for an Indian roster, not a Western one.
 
 We're not the right tool for a gym chain or a remote coach billing in dollars. We're the right tool for the one-person training business that's outgrown the notebook.`,
 };
@@ -127,7 +127,7 @@ const roundupBestApps: Post = {
   faq: [
     {
       q: "What is the best app for an independent personal trainer in India?",
-      a: `It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from a phone or laptop, an India-native, session-first tool like Gymbo fits well (UPI, GST, WhatsApp, ₹${PRICE_MONTHLY_INR}/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.`,
+      a: `It depends on your business. For a solo trainer in India tracking their own clients, sessions, and payments from a phone or laptop, an India-native, session-first tool like Gymbo fits well (UPI payment records, reminders you send yourself, ₹${PRICE_MONTHLY_INR}/mo). If you run a gym, Akton is built for facility management. If nutrition is your core offer, WellnessZ is nutrition-first. Global platforms like Trainerize and TrueCoach are strong but priced in dollars with no UPI, GST, or WhatsApp.`,
     },
     {
       q: "Is Akton good for solo personal trainers?",
@@ -135,7 +135,7 @@ const roundupBestApps: Post = {
     },
     {
       q: "Which trainer apps support UPI and GST in India?",
-      a: "India-native tools are built for this. Gymbo, Akton, and WellnessZ all support UPI billing and GST invoices. The global platforms (Trainerize and TrueCoach) bill in USD and don't support UPI or GST.",
+      a: "India-native tools are built for this. Gymbo records UPI payments. Akton and WellnessZ support UPI billing and GST invoices. The global platforms (Trainerize and TrueCoach) bill in USD and don't support UPI or GST.",
     },
     {
       q: "How much do personal trainer apps cost in India?",
@@ -160,7 +160,7 @@ Plenty of independent trainers in India don't use any of these apps yet. They ru
 
 When trainers do look for software, the field splits into three groups:
 
-1. **India-native tools** built for the local market (UPI, INR, GST, WhatsApp): **Gymbo**, **Akton**, **WellnessZ**.
+1. **India-native tools** built for the local market (UPI, INR, WhatsApp): **Gymbo**, **Akton**, **WellnessZ**.
 2. **Global coaching platforms** built for Western economics (USD, no UPI/GST): **Trainerize**, **TrueCoach**.
 3. **Gym-management suites** built for facilities, not solo trainers (Mindbody, Glofox, and in India, Akton leans this way).
 
@@ -168,7 +168,7 @@ The honest truth is that these tools are built for **different people**. The rig
 
 ## the comparison at a glance
 
-| App | Best for | Built for the solo trainer? | India-native (UPI/GST/WhatsApp) | Platform | Entry price | Free trial |
+| App | Best for | Built for the solo trainer? | India-native (UPI/WhatsApp) | Platform | Entry price | Free trial |
 |---|---|---|---|---|---|---|
 | **Gymbo** | The independent trainer in India | ✅ Yes, it's the whole point | ✅ Yes | Web (iPhone app coming soon) | **₹${PRICE_MONTHLY_INR}/mo** (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo on annual) | ${GYMBO_FREE_ROW} |
 | **Akton** | Gyms & multi-branch studios | ➖ It's gym-management software | ✅ Yes | iPhone, Android, web | See akton.in | Not stated |
@@ -182,9 +182,9 @@ The honest truth is that these tools are built for **different people**. The rig
 
 **Who it's for:** A solo personal trainer in India tracking their own clients, sessions, payments, and balances from a phone or laptop.
 
-**What it does (honestly):** Punch a class in a couple of taps and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; GST invoices; day/week/month scheduling with conflict detection; a workout builder plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
+**What it does (honestly):** Punch a class in a couple of taps and balances update themselves; a structured client CRM; payment tracking with a running ledger; see who owes and send a reminder; day/week/month scheduling with conflict detection; a workout builder plus a template library; client vitals, photos and notes; a QR profile card; and CSV/PDF export. ₹${PRICE_MONTHLY_INR}/mo (₹${PRICE_ANNUAL_MONTHLY_EQUIVALENT_INR}/mo effective on the annual plan), one flat price.
 
-**Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI, GST, and an Indian price are built in, not bolted on.
+**Where it's strong:** Speed and focus. It does one job, running a one-person training business in India, and does it without the weight of a gym suite or a Western coaching platform. UPI payment records and an Indian price are built in, not bolted on.
 
 **Be aware:** It runs in your browser (an iPhone app is coming soon). It doesn't generate workouts with AI; it gives you a builder. And it's genuinely not for gyms: no multi-branch, staff payroll, or member-facing app.
 
