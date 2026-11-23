@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 22 November 2026"
+        updated="Last updated 23 November 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -20,6 +20,7 @@ export function Privacy() {
           <ul>
             <li><strong>Your account.</strong> When you sign up as a trainer, the name and the phone number and/or email you use to sign in.</li>
             <li><strong>How you found us.</strong> If you arrive from a link or campaign, we record which one (a short source or campaign code, or a referral code) when you create your account. We use it to count where sign-ups come from and to credit referrals. It holds no free text, no URL and no contact details. We keep it until you delete your account.</li>
+            <li><strong>Shared invoice links.</strong> When a trainer sends a client an invoice link, anyone who has the link can open a page with the trainer's name, the client's first name, the invoice number, the dates, the items and amounts, and what is still due. It shows no phone number, email or notes, and needs no sign-in. The link stops working after 30 days, when the trainer sends a new link or cancels it, or when the trainer deletes the client or their own account. Gymbo does not count or track who opens it.</li>
             <li><strong>Data you enter about your clients.</strong> Client names, contact details, notes and goals, the classes you punch, and the payments and balances you record. You enter this information, and you decide what to add.</li>
             <li><strong>Waitlist and access requests.</strong> If you join the waitlist or request access on getgymbo.com, the name and the phone number and/or email you submit.</li>
             <li><strong>Website analytics.</strong> Privacy-friendly, cookieless analytics (Umami) on getgymbo.com: aggregate page views and events, with no personal profiles and no cross-site tracking.</li>
