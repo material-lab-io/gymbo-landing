@@ -65,7 +65,8 @@ export function Privacy() {
           <h3>Ask Gymbo (AI chat): Anthropic (Claude)</h3>
           <ul>
             <li><strong>What it does:</strong> answers your questions about your business inside the app.</li>
-            <li><strong>What we send:</strong> your typed question, plus a fixed context snippet attached to every question you ask the assistant: a short summary of your top few clients (their name and class counts, ordered by outstanding balance) and today's session client names (everyone on today's schedule, however many that is), so the assistant can answer usefully. This snippet is the same on every question; it isn't tailored to what you actually asked. We do <strong>not</strong> send your full roster.</li>
+            <li><strong>What we send:</strong> your typed question, and a short summary of your business that goes with every question. The summary has your name and business name, how many clients you have, your top five clients by balance (name and classes left), how many clients are overdue, today's session client names and the session client names for the next six days, your collections and attendance totals for the last seven days, and the notes you asked Gymbo to remember. It is the same on every question. If you use the microphone in Ask Gymbo, your speech is first turned into text by Groq (see Voice input: Groq) and then sent as your question.</li>
+            <li><strong>What Gymbo reads when a question needs more:</strong> while it answers, Gymbo reads from your account a client's name, balance, rate, amount due and recent payments (dates and amounts), your schedule, your totals, and your profile. It reads only what the question needs, and a single lookup is limited to 25 clients. It does not read client phone numbers, client notes, health records or photos. When you ask Gymbo to make a change, such as adding a client or recording a payment, it sends the details of that change.</li>
             <li><strong>Per-client control:</strong> any client you mark as opted out of AI is <strong>never</strong> included in what we send.</li>
             <li><strong>Where it's processed:</strong> on Anthropic's infrastructure, located outside India, in the United States.</li>
             <li><strong>Retention:</strong> your data is processed to answer your question and is handled under Anthropic's commercial terms. We are putting a formal data-processing agreement in place with Anthropic; once it is finalised we will update this notice with the specific retention terms.</li>
@@ -74,10 +75,19 @@ export function Privacy() {
           <h3>Voice input: Groq</h3>
           <ul>
             <li><strong>What it does:</strong> turns what you speak into text (speech-to-text) so you can add notes and fill fields by voice instead of typing.</li>
-            <li><strong>What we send:</strong> the microphone audio you record for that action, which is converted to text.</li>
+            <li><strong>What we send:</strong> the microphone audio you record for that action, which is converted to text. Voice notes, and the microphone in the web app, send your recording to our servers, which pass it to Groq to be converted to text. Our servers do not keep the recording. In the iOS app, the microphone in Ask Gymbo is different: it sends your recording from your phone straight to Groq, without passing through our servers.</li>
             <li><strong>A note on sensitive data:</strong> voice notes can sometimes include health-related details about a client. Please avoid dictating information you would not want processed by a third-party provider.</li>
             <li><strong>Where it's processed:</strong> on Groq's infrastructure, located outside India, in the United States.</li>
             <li><strong>Retention:</strong> Groq has signed a zero-data-retention agreement with us. Your audio is processed to produce the transcription and is not retained or used to train models.</li>
+          </ul>
+
+          <h3>Workout notes: Anthropic (Claude)</h3>
+          <ul>
+            <li><strong>What it does:</strong> reads a workout note you type or speak and turns it into exercises you can review and edit before you save.</li>
+            <li><strong>What we send:</strong> the text of your note (for a spoken note, the text made from your voice). When you ask to change an existing plan, we also send that plan's title, length and exercises.</li>
+            <li><strong>A note on your clients:</strong> the per-client AI opt-out does not cover what you type or say in a note. If you say a client's name or a health detail, it is sent. Please avoid dictating information you would not want processed by a third-party provider.</li>
+            <li><strong>Where it's processed:</strong> on Anthropic's infrastructure, located outside India, in the United States.</li>
+            <li><strong>Retention:</strong> we keep the note text and the result with your account so you can open and edit them, and we delete them when your account is deleted. Anthropic processes your note to read it and handles it under Anthropic's commercial terms. We are putting a formal data-processing agreement in place with Anthropic; once it is finalised we will update this notice with the specific retention terms.</li>
           </ul>
 
           <h3>The rest of our infrastructure</h3>
