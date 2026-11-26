@@ -1,4 +1,4 @@
-// Strings: marketer strings-v2 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v2.md sha 44af3fe8d00e488f), pasted with zero wording edits.
+// Strings: marketer strings-v3 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v3.md sha 775ef98c960e695b), pasted with zero wording edits.
 // gy-sk86p2.3 (Damini 26 Nov, STEP 1): EVERY string on the home page ('/') lives in this one file, so marketer's strings land without a
 // layout edit. App.tsx and the hero component read from here and hold no copy of their own. A label set to null is not rendered.
 // Facts (prices, plan names, URLs, the Start free / Log in labels) still come from src/lib/trialAccess.ts and are imported here, never retyped.
@@ -62,7 +62,7 @@ export const HOME = {
       title: "Build your brand",
       intro: "What your clients see carries your name.",
       bullets: [
-        "PDF statements with your brand name and logo on each one.",
+        "PDF statements with your logo or brand name on each one.",
         "A QR profile card you can share anywhere.",
         "Send a client their statement from the app to ask for payment.",
       ],
