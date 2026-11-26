@@ -58,7 +58,7 @@ export const HOME = {
     },
     brand: {
       title: "Build your brand",
-      intro: "What your clients see carries your name.",
+      intro: "Put your brand on your statements and profile card.",
       bullets: [
         "You can put your logo or brand name on your PDF statements.",
         "You can send a client their statement to ask for payment.",
@@ -104,7 +104,7 @@ export const HOME = {
     label: "Why we built Gymbo",
     eyebrow: null as string | null,
     heading: "Built in India for Indian trainers",
-    body: "Trainers keep session counts in their head, payments in UPI history and schedules in WhatsApp. Classes go uncounted and payments get missed. Gymbo keeps classes, payments and schedule in one place, with your name on what clients see. Gymbo does not message your clients.",
+    body: "Trainers keep session counts in their head, payments in UPI history and schedules in WhatsApp. Classes go uncounted and payments get missed. Gymbo keeps classes, payments and schedule in one place, and lets you put your brand on your statements. Gymbo does not message your clients.",
   },
 
   pricing: {
