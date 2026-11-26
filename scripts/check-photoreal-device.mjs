@@ -55,6 +55,8 @@ const files = (await walk(source)).filter((file) => /\.(?:[cm]?[jt]sx?|html)$/.t
 const entries = await Promise.all(files.map(async (file) => [file, await readFile(file, "utf8")]));
 const text = entries.map(([, contents]) => contents).join("\n");
 const app = entries.find(([file]) => file.endsWith(path.join("src", "App.tsx")))?.[1] ?? "";
+// gy-sk86p2.3: the hero moved into its own slot file; its photoreal contract is read there.
+const hero = entries.find(([file]) => file.endsWith(path.join("src", "components", "HomeHero.tsx")))?.[1] ?? app;
 const frame = entries.find(([file]) => file.endsWith(path.join("src", "components", "PhoneMockup.tsx")))?.[1] ?? "";
 const absent = [];
 
@@ -78,8 +80,8 @@ for (const marker of [
 let checks = approved.length + heroHashes.size + 12 + demoIds.length;
 if (!output) {
   const wiredDemoIds = [...app.matchAll(/demoId:\s*"([^"]+)"/g)].map((match) => match[1]);
-  const heroUsages = app.match(/<HeroDeviceArt\b/g)?.length ?? 0;
-  if (!/function HeroDeviceArt\b/.test(app)) absent.push("HeroDeviceArt component");
+  const heroUsages = hero.match(/<HeroDeviceArt\b/g)?.length ?? 0;
+  if (!/function HeroDeviceArt\b/.test(hero)) absent.push("HeroDeviceArt component");
   if (heroUsages !== 2) absent.push(`HeroDeviceArt desktop+mobile usage (found ${heroUsages}, expected 2)`);
   if (!/<ScreenshotFrame\b/.test(app)) absent.push("ScreenshotFrame gallery usage");
   if (!/<DemoFrame\b/.test(app)) absent.push("DemoFrame pillar usage");
