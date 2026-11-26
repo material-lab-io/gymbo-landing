@@ -235,6 +235,26 @@ test('round 2: no horizontal scroll, and every control is at least 44 px', async
   }
 });
 
+// R2-E (gy-sk86p2.4): the whole phone, the line and both buttons are on the first screen, under the nav, on iPhone, iPad and laptop.
+test('round 2: the hero phone is never cut and both buttons are on the first screen', async ({ page }) => {
+  for (const [width, height] of [[390, 844], [768, 1024], [820, 1180], [1024, 1366], [1024, 768], [1180, 820], [1366, 1024], [1280, 720], [1440, 900]]) {
+    await page.setViewportSize({ width, height });
+    await page.goto('/');
+    const r = await page.evaluate((width) => {
+      const box = (s: string) => document.querySelector(s)!.getBoundingClientRect();
+      const nav = box('nav[aria-label="Main navigation"]'), phone = box('video.gh-scr'), line = box('.gh-body');
+      const buttons = Array.from(document.querySelectorAll('.gh-dock > a'), (a) => a.getBoundingClientRect());
+      return {
+        phone: phone.height > 100 && phone.top >= nav.bottom - 0.5 && phone.bottom <= innerHeight + 0.5 && phone.left >= -0.5 && phone.right <= innerWidth + 0.5,
+        line: line.top >= nav.bottom - 0.5 && line.bottom <= innerHeight + 0.5,
+        buttons: buttons.length === 2 && buttons.every((b) => b.bottom <= innerHeight + 0.5 && b.right <= innerWidth + 0.5),
+        oneLine: width < 600 || Math.abs(buttons[0].top - buttons[1].top) < 1,
+      };
+    }, width);
+    expect(r, `first screen at ${width}x${height}`).toEqual({ phone: true, line: true, buttons: true, oneLine: true });
+  }
+});
+
 test('round 2: the footer links back to Material Lab', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('footer').getByRole('link', { name: 'Made by Material Lab' })).toHaveAttribute('href', 'https://www.materiallab.io/');
