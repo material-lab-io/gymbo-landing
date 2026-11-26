@@ -28,8 +28,11 @@
 //                           A monotonic input inside a required check is a
 //                           scheduled outage (gy-fs7pe).
 //
-// So aging BLOCKS when this change TOUCHES the artifact — you may not publish
+// So aging BLOCKS when this change PUBLISHES the artifact — you may not publish
 // or re-publish a stale master, which is the thing the gate exists to stop —
+// (published = its master PNG is touched; or a manifest edit adds or changes its
+// entry, puts it back on the site, or touches its gallery derivatives. A manifest
+// edit that cannot be compared with --base publishes every entry. gy-sk86p2) —
 // and WARNS LOUDLY when the master is merely one that was already live and has
 // since aged. Moving a gate must not delete an alarm (this gate was already
 // silently fail-open 08-12 to 08-19, see MANIFEST.md), so every aged master is
@@ -61,6 +64,10 @@ import { SCREENS } from "./screens-map.mjs";
 // public/, so they are not served on getgymbo.com. SCREENS_DIR stays public/screens/ (the PNGs).
 const MANIFEST_PATH = "ops/screens/manifest.json";
 const SCREENS_DIR = "public/screens/";
+// The master PNGs live in real/, their served derivatives in gallery/.
+const MASTERS_DIR = `${SCREENS_DIR}real/`;
+const GALLERY_DIR = `${SCREENS_DIR}gallery/`;
+const SCREENS_MAP_PATH = "scripts/screens-map.mjs";
 // gy-dwxbm: where the manifest lived before it moved out of the public tree. Only used to tell a
 // RELOCATION (same bytes, new path) from an EDIT. Delete once no open branch predates the move.
 const LEGACY_MANIFEST_PATHS = ["public/screens/manifest.json"];
@@ -87,11 +94,36 @@ export function manifestEdited(read, gitShow, base, paths) {
   return true;
 }
 
+// Key order and whitespace are not an edit; any value is.
+const canon = (v) => JSON.stringify(v, (_, x) => (x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, x[k]])) : x));
+
+// gy-sk86p2 (pm ruling 26 Nov): which gated masters does a manifest EDIT publish? Those whose entry
+// is added or differs from the base's in any field, and those the base's SCREENS map did not publish
+// (a master put back on the site). `redated`: the subset whose capture date is new or moved.
+// Returns null when the two cannot be compared, or when a top-level setting changed: the caller then
+// counts EVERY master (fail-closed).
+export function publishedByManifestEdit(head, base, baseScreens, screens) {
+  if (!head?.entries || !base?.entries || !baseScreens) return null;
+  const settings = ({ entries, ...rest }) => canon(rest);
+  if (settings(head) !== settings(base)) return null;
+  const onBaseSite = new Set(Object.values(baseScreens));
+  const published = new Set();
+  const redated = new Set();
+  for (const file of Object.values(screens)) {
+    const now = head.entries[file];
+    const was = base.entries[file];
+    if (!was || canon(was) !== canon(now) || !onBaseSite.has(file)) published.add(file);
+    if (!was || was.capturedAt !== now?.capturedAt) redated.add(file);
+  }
+  return { published, redated };
+}
+
 // ── which artifacts does THIS change touch? ────────────────────────────────
 // Absent --changed, nothing is considered touched, so aging is warn-only.
 // Present but unreadable is a could-not-look and exits 1 below.
 let touched = null;
 let touchedAll = false;
+let fromManifest = null; // set only for a manifest edit that could be compared with the base
 if (changedFile) {
   let raw;
   try {
@@ -105,26 +137,36 @@ if (changedFile) {
     process.exit(1);
   }
   touched = new Set(raw.split("\n").map((l) => l.trim()).filter(Boolean));
-  // A manifest edit can restate any entry, so it counts as touching all of
-  // them. Conservative on purpose: it blocks in the direction of not
-  // publishing stale art.
+  // A manifest edit publishes the entries it adds or changes. When the base
+  // cannot be compared, it counts as touching all of them: it blocks in the
+  // direction of not publishing stale art.
   touchedAll = touched.has(MANIFEST_PATH) || LEGACY_MANIFEST_PATHS.some((p) => touched.has(p));
   if (touchedAll) {
-    const edited = manifestEdited(
-      () => readFileSync(MANIFEST_PATH, "utf8"),
-      (ref, path) => execFileSync("git", ["show", `${ref}:${path}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }),
-      baseRef,
-      [MANIFEST_PATH, ...LEGACY_MANIFEST_PATHS],
-    );
+    const gitShow = (ref, path) => execFileSync("git", ["show", `${ref}:${path}`], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    const paths = [MANIFEST_PATH, ...LEGACY_MANIFEST_PATHS];
+    const edited = manifestEdited(() => readFileSync(MANIFEST_PATH, "utf8"), gitShow, baseRef, paths);
     if (!edited) {
       touchedAll = false;
       console.log(`manifest was RELOCATED (byte-identical to ${baseRef}'s copy), not edited: it does not re-publish any entry.`);
+    } else if (baseRef) {
+      try {
+        const basePath = paths.find((path) => { try { gitShow(baseRef, path); return true; } catch { return false; } });
+        const baseMap = await import(`data:text/javascript,${encodeURIComponent(gitShow(baseRef, SCREENS_MAP_PATH))}`);
+        fromManifest = publishedByManifestEdit(JSON.parse(await readFile(MANIFEST_PATH, "utf8")), JSON.parse(gitShow(baseRef, basePath)), baseMap.SCREENS, SCREENS);
+      } catch (err) {
+        console.log(`manifest edit could not be compared with ${baseRef} (${String(err.message).split("\n")[0]}): every entry counts as published.`);
+      }
+      if (fromManifest) touchedAll = false;
     }
   }
 }
 
-const isTouched = (sourceFile) =>
-  touchedAll || (touched !== null && touched.has(`${SCREENS_DIR}${sourceFile}`));
+const masterTouched = (sourceFile) =>
+  touched !== null && (touched.has(`${MASTERS_DIR}${sourceFile}`) || touched.has(`${SCREENS_DIR}${sourceFile}`));
+const derivativeTouched = (slug) =>
+  [...(touched ?? [])].some((p) => p.startsWith(GALLERY_DIR) && p.slice(GALLERY_DIR.length).replace(/(-\d+)?\.(webp|png)$/, "") === slug);
+const isTouched = (slug, sourceFile) =>
+  touchedAll || masterTouched(sourceFile) || (fromManifest !== null && (fromManifest.published.has(sourceFile) || derivativeTouched(slug)));
 
 const manifest = JSON.parse(await readFile(MANIFEST_PATH, "utf8"));
 const maxAgeDays = manifest.maxAgeDays ?? 21;
@@ -154,13 +196,16 @@ for (const [slug, sourceFile] of Object.entries(SCREENS)) {
       const ageDays = Math.floor((now - capturedAt) / (24 * 60 * 60 * 1000));
       if (now - capturedAt > maxAgeMs) {
         const aged = { slug, sourceFile, ageDays };
-        if (STRICT || isTouched(sourceFile)) {
+        if (STRICT || isTouched(slug, sourceFile)) {
           publishFailures.push(aged);
           rows.push(`FAIL  ${label} ${ageDays}d old (max ${maxAgeDays}d) — ${STRICT ? "strict mode" : "and this change publishes it"}`);
         } else {
           agedWarnings.push(aged);
           rows.push(`WARN  ${label} ${ageDays}d old (max ${maxAgeDays}d) — already live, not touched here`);
         }
+      } else if (fromManifest?.redated.has(sourceFile) && !masterTouched(sourceFile)) {
+        // A newer date on the same pixels is a stale capture restated as current.
+        integrity(`capturedAt is new or moved but ${MASTERS_DIR}${sourceFile} is not in this change: a date without a new capture`);
       } else {
         rows.push(`OK    ${label} ${ageDays}d old`);
       }
