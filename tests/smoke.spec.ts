@@ -67,7 +67,7 @@ test('hero and all six gallery screens render approved photoreal device assets',
   await expect(hero).toHaveAttribute('src', /\/hero\/photo\.webp/);
   expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
 
-  const gallery = page.getByTestId('gallery-device-art');
+  const gallery = page.getByTestId('gallery-section').getByTestId('gallery-device-art');
   await expect(gallery).toHaveCount(6);
   for (let index = 0; index < 6; index += 1) {
     const frame = gallery.nth(index);
@@ -99,41 +99,37 @@ test('hero and all six gallery screens render approved photoreal device assets',
   }
 });
 
-test('all remaining pillar demos lazy-load and advance as muted looping inline video', async ({ page }) => {
-  // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo had a retired claim burned into its
-  // pixels and was pulled from the "Track your revenue" pillar with no replacement, pending
-  // gy-7zhx1's re-render. 3 demos remain until that lands.
+// Card art since pm ruling 2 on gy-sk86p2.3 (web_designer, 26 Nov): the phone only, no headline or caption in the image. Cards 2 and 4
+// are dark iOS captures in the photoreal frame, card 3 is the approved demo cropped to its phone, card 1 has no art yet.
+test('cards 2 to 4 show phone-only art; card 3 is the demo cropped to its phone and it plays; card 1 has none', async ({ page }) => {
   await page.goto('/');
-  const demos = page.getByTestId('pillar-demo');
-  await expect(demos).toHaveCount(3);
-  const expected = [
-    ['schedule', 'dark'],
-    ['branded-statement', 'dark'],
-    ['build-workout', 'dark'],
-  ] as const;
-
-  for (let index = 0; index < expected.length; index += 1) {
-    const [id, theme] = expected[index];
-    const demo = demos.nth(index);
-    await expect(demo).toHaveAttribute('data-demo-id', id);
-    await demo.scrollIntoViewIfNeeded();
-    const video = demo.locator('video');
-    await expect(video).toHaveCount(1);
-    await expect(video.locator('source')).toHaveAttribute('src', `/demos/${id}-${theme}.mp4`);
-    const playback = await video.evaluate((element: HTMLVideoElement) => ({
-      muted: element.muted,
-      loop: element.loop,
-      playsInline: element.playsInline,
-      autoplay: element.autoplay,
-      preload: element.preload,
-    }));
-    expect(playback).toEqual({ muted: true, loop: true, playsInline: true, autoplay: true, preload: 'metadata' });
-    await expect.poll(() => video.evaluate((element: HTMLVideoElement) => element.currentTime), { timeout: 10000 }).toBeGreaterThan(0.05);
+  for (const [id, slug] of [['organized', 'card-week'], ['workouts', 'card-builder']]) {
+    const art = page.getByTestId(`pillar-${id}`).getByTestId('gallery-device-art');
+    await art.scrollIntoViewIfNeeded();
+    await expect(art).toHaveCount(1);
+    await expect(art.locator('img').first()).toHaveAttribute('src', `/screens/gallery/${slug}.png`);
+    await expect.poll(() => art.locator('img').first().evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
   }
+  await expect(page.getByTestId('pillar-revenue').locator('video, img')).toHaveCount(0);
+  const demos = page.getByTestId('pillar-demo');
+  await expect(demos).toHaveCount(1);
+  const crop = page.getByTestId('pillar-art-crop-brand');
+  await crop.scrollIntoViewIfNeeded();
+  const video = crop.locator('video');
+  await expect(video.locator('source')).toHaveAttribute('src', '/demos/branded-statement-dark.mp4');
+  const playback = await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, playsInline: v.playsInline, autoplay: v.autoplay, preload: v.preload }));
+  expect(playback).toEqual({ muted: true, loop: true, playsInline: true, autoplay: true, preload: 'metadata' });
+  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 10000 }).toBeGreaterThan(0.05);
+  // the burned-in title ends above y 262 and the caption starts at y 1725 of the 1080 x 1920 scene: neither may be inside the box
+  const seen = await crop.evaluate((box) => {
+    const b = box.getBoundingClientRect(), s = box.querySelector('video')!.getBoundingClientRect(), k = s.width / 1080;
+    return { top: (b.top - s.top) / k, bottom: (b.bottom - s.top) / k };
+  });
+  expect(seen.top).toBeGreaterThanOrEqual(255);
+  expect(seen.bottom).toBeLessThanOrEqual(1725);
 });
 
-test('reduced motion renders all remaining matching posters without autoplay', async ({ page }) => {
-  // gy-v9pwo.4: log-payment's poster carried the same retired claim; see the note above.
+test('reduced motion renders the cropped card demo as its poster without autoplay', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.getByTestId('pillar-demo').locator('video')).toHaveCount(0);
@@ -142,15 +138,8 @@ test('reduced motion renders all remaining matching posters without autoplay', a
   await expect(heroClip).toHaveAttribute('poster', '/hero/screen-poster.jpg');
   await expect.poll(() => heroClip.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
   const posters = page.getByTestId('pillar-demo-poster');
-  await expect(posters).toHaveCount(3);
-  const expected = [
-    '/demos/schedule-dark.png',
-    '/demos/branded-statement-dark.png',
-    '/demos/build-workout-dark.png',
-  ];
-  for (let index = 0; index < expected.length; index += 1) {
-    await expect(posters.nth(index)).toHaveAttribute('src', expected[index]);
-  }
+  await expect(posters).toHaveCount(1);
+  await expect(posters).toHaveAttribute('src', '/demos/branded-statement-dark.png');
 });
 
 test('a pre-seeded theme localStorage value is ignored — there is no theme switch (gy-uesmd)', async ({ page }) => {

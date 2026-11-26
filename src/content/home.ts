@@ -93,7 +93,7 @@ export const HOME = {
       payments: { caption: "What came in, month by month", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
       workouts: { caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
       ai: { caption: "Ask Gymbo", alt: "The Ask Gymbo chat screen" },
-      export: { caption: "A statement with your name on it", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
+      export: { caption: "A statement with your name on it", alt: "Exporting a client's statement as a PDF or CSV file in Gymbo" },
     },
   },
 

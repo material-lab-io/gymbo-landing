@@ -73,6 +73,12 @@ test("PLANTED CONTROL: each old string put back goes red by its own row", () => 
   }
 });
 
+test("PLANTED CONTROL: a banned claim typed into the home content file goes red by name", () => {
+  const f = files();
+  f["src/content/home.ts"] += '\nname: "Brand theming"\n';
+  assert.ok(check(f).includes("banned claim 'Brand theming' on our side: src/content/home.ts"), check(f).join("\n"));
+});
+
 test("PLANTED CONTROL: a missing new string goes red", () => {
   for (const [file, , newS, why] of ROWS.filter((r) => r[2])) {
     const f = files();
