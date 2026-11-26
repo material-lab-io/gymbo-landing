@@ -8,7 +8,14 @@ import {
   FileText,
   ChevronLeft,
   ChevronRight,
-  Smartphone,
+  Image as ImageIcon,
+  Type,
+  FileSpreadsheet,
+  MessageCircle,
+  IdCard,
+  AtSign,
+  Globe,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
@@ -444,7 +451,7 @@ export default function App() {
             </div>
             <Reveal className="mt-6 text-center">
               <a href="/compare/gymbo-vs-wellnessz" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
-                {HOME.faq.compare}
+                {HOME.faq.compare} →
               </a>
             </Reveal>
           </div>
@@ -537,13 +544,13 @@ export default function App() {
    (pm ruling on gy-l6dsr): not built, so they must not sit in a strip
    readers take as shipped. They return only with product proof of shipped
    status (a screenshot on a released build). */
-const CHIP_ICONS: Record<string, LucideIcon> = { qr: QrCode, share: Share2, pdf: FileText, logo: Smartphone };
+const CHIP_ICONS: Record<string, LucideIcon> = { pdf: FileText, logo: ImageIcon, brandname: Type, share: Share2, csv: FileSpreadsheet, qr: QrCode, whatsapp: MessageCircle, card: IdCard, social: AtSign, website: Globe, bio: UserRound };
 const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = HOME.brandStrip.chips.map((c) => ({ name: c.name, icon: CHIP_ICONS[c.icon] }));
 
 /* The track scrolls by -50%, so each HALF must be at least as wide as the widest screen or an empty band shows at the end of the loop
    (gy-1vd9qy.10.2: 6 chips left ~325px empty at 1440, 4 chips ~670px). Two identical halves of MARQUEE_HALF_COPIES copies each: the half is
    ~770px at 4 chips, so 3 copies (~2.3k px) fill up to 2300px wide. tests/marquee-fill.spec.ts measures it. */
-const MARQUEE_HALF_COPIES = 3;
+const MARQUEE_HALF_COPIES = MARQUEE_CHIPS.length >= 8 ? 2 : 3; // 11 chips (strings-v2): one copy is ~2.1k px, two fill a 2300 px screen
 const MARQUEE_TRACK = Array.from({ length: MARQUEE_HALF_COPIES * 2 }, () => MARQUEE_CHIPS).flat();
 
 function BrandMarquee() {

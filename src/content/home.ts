@@ -1,13 +1,10 @@
+// Strings: marketer strings-v2 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v2.md sha 44af3fe8d00e488f), pasted with zero wording edits.
 // gy-sk86p2.3 (Damini 26 Nov, STEP 1): EVERY string on the home page ('/') lives in this one file, so marketer's strings land without a
 // layout edit. App.tsx and the hero component read from here and hold no copy of their own. A label set to null is not rendered.
 // Facts (prices, plan names, URLs, the Start free / Log in labels) still come from src/lib/trialAccess.ts and are imported here, never retyped.
 import {
-  STATUS_LANGUAGE,
   PRICE_MONTHLY_INR,
   PRICE_ANNUAL_INR_DISPLAY,
-  HERO_SMALL_PRINT,
-  FINAL_CTA_SUB,
-  PRICING_HEADING,
   PRICING_FREE_LINE,
   PRICING_PRO_ANNUAL_LINE,
   PRICING_PAYMENT_LINE,
@@ -19,66 +16,66 @@ export const HOME = {
   nav: { why: "Why Gymbo", pricing: "Pricing", faq: "FAQ", backToTop: "Gymbo, back to top", skip: "Skip to content" },
 
   hero: {
-    eyebrow: STATUS_LANGUAGE as string | null,
+    eyebrow: null as string | null,
+    // The word above the tagline (round 7/8 hero, gy-de3dbt.11). web_designer's hero component (gy-sk86p2.2) owns how it looks.
+    word: "GYMBO" as string | null,
     // The title renders as `before` + highlighted `highlight` + `after`. highlight: null = one plain line.
-    title: { before: "The ", highlight: "business app" as string | null, after: " for independent personal trainers." },
-    // The sub renders `lead` in ink and `rest` muted, as live does.
-    sub: { lead: "Track payments and balances, see who owes you, and keep clients and classes in one place", rest: ". Built for independent trainers in India." },
+    title: { before: "Business App for Personal Coaches", highlight: null as string | null, after: "" },
+    // The sub renders `lead` in ink and `rest` muted.
+    sub: { lead: "See who owes you, how many classes each client has left, and what came in this month.", rest: "" },
     talk: "Talk to the founder",
-    smallPrint: HERO_SMALL_PRINT,
+    smallPrint: "Free to start. No laptop needed. Your clients download nothing. iPhone app coming soon.",
     deviceAlt: "Gymbo dashboard, balances, and payment records shown across three phones.",
   },
 
   why: {
     label: "Why trainers use Gymbo",
-    eyebrow: "Why trainers use Gymbo" as string | null,
+    eyebrow: null as string | null,
     heading: "What your training business runs on.",
   },
 
   // Keyed by the pillar id in App.tsx (which keeps the demo id and surface, the photoreal-device contract).
   pillars: {
     revenue: {
-      eyebrow: "01 · The Gymbo ledger",
+      eyebrow: null,
       title: "Track your revenue",
-      intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
+      intro: "Punch each class and add each payment. Gymbo shows this month's total and what each client owes or has left.",
       bullets: [
-        "Every balance, clear: credit and classes left, updated the moment you punch a class.",
-        "Track every class, payment, and balance.",
-        "Cash or UPI recorded, so you don't lose track.",
+        "Credit and classes left update the moment you punch a class.",
+        "Cash and UPI payments in one record.",
       ],
       brief: "Record a payment: UPI or cash, and the balance clears.",
     },
     organized: {
-      eyebrow: "02 · Your whole roster",
-      title: "Get organized",
-      intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
+      eyebrow: null,
+      title: "Your whole roster in one place",
+      intro: "Clients, classes and time slots together, not spread across WhatsApp chats and a diary.",
       bullets: [
-        "Punch a class in a couple of taps, and balances update themselves",
-        "Recurring time slots, sorted by day",
-        "No more paper register or notes app",
-        "Save a class location and open directions when you need them.",
+        "Recurring time slots, sorted by day.",
+        "A client asks how many classes are left: check their count and reply.",
+        "Save a class location and open directions from it.",
       ],
       brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
     },
     brand: {
-      eyebrow: "03 · Look professional",
-      title: "Your brand, your business",
-      intro: "Look like the professional you already are. Your name and details on every statement your client sees, plus a QR profile card you can share anywhere.",
+      eyebrow: null,
+      title: "Build your brand",
+      intro: "What your clients see carries your name.",
       bullets: [
-        "PDF statements with your brand name and logo on each one",
-        "A shareable QR profile card",
-        "Send any client their statement from the app",
+        "PDF statements with your brand name and logo on each one.",
+        "A QR profile card you can share anywhere.",
+        "Send a client their statement from the app to ask for payment.",
       ],
       brief: "Your brand on a clean statement PDF. Share in a tap (India).",
     },
     workouts: {
-      eyebrow: "04 · Coaching tools",
-      title: "Train smarter",
-      intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains.",
+      eyebrow: null,
+      title: "Build and track workouts",
+      intro: "Plan training and see each client's progress.",
       bullets: [
-        "Build and assign workouts from a template library",
-        "Track client progress: class history, adherence, per-exercise gains",
-        "Get directions to your next class, right from the app",
+        "Build and assign workouts from a template library.",
+        "Track client progress: adherence and per-exercise gains.",
+        "Class history for each client.",
       ],
       brief: "Build a plan (squat, bench, row) and assign it to a client.",
     },
@@ -86,21 +83,29 @@ export const HOME = {
 
   // The strip under the brand pillar. Icons are layout (App.tsx), keyed by `icon`.
   brandStrip: {
-    label: "Your brand, everywhere" as string | null,
+    label: null as string | null,
     region: "Brand touchpoints",
+    // strings-v2 [Card 3: ticker], one item per chip, in its order. Sources per item: strings-v2 'Ticker sources'.
     chips: [
-      { name: "QR profile", icon: "qr" },
-      { name: "Share links", icon: "share" },
-      { name: "PDF statements", icon: "pdf" },
-      { name: "Your logo on client statements", icon: "logo" },
+      { name: "PDF client statements", icon: "pdf" },
+      { name: "Your logo on statements", icon: "logo" },
+      { name: "Brand name on statements", icon: "brandname" },
+      { name: "Share statements in-app", icon: "share" },
+      { name: "Export records as CSV", icon: "csv" },
+      { name: "QR profile card", icon: "qr" },
+      { name: "QR opens your WhatsApp", icon: "whatsapp" },
+      { name: "Share your profile card", icon: "card" },
+      { name: "Instagram and YouTube links", icon: "social" },
+      { name: "Your website link", icon: "website" },
+      { name: "Specialities and bio", icon: "bio" },
     ],
   },
 
   gallery: {
     label: "See Gymbo in action",
-    eyebrow: "A closer look" as string | null,
-    heading: "See Gymbo in action.",
-    note: "Screens shown with sample data.",
+    eyebrow: null as string | null,
+    heading: "See Gymbo in action",
+    note: "Screens show sample data.",
     controls: "Gallery controls",
     prev: "Show previous Gymbo screen",
     next: "Show next Gymbo screen",
@@ -109,26 +114,26 @@ export const HOME = {
     help: (n: number) => `Use the previous and next buttons, arrow keys, or horizontal swipe to browse all ${n} Gymbo screens.`,
     // Keyed by screenshot slug (App.tsx keeps the slug order).
     screens: {
-      dashboard: { caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
+      dashboard: { caption: "Classes left, client by client", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
       schedule: { caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
-      payments: { caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
+      payments: { caption: "What came in, month by month", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
       workouts: { caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
       ai: { caption: "Ask Gymbo", alt: "The Ask Gymbo chat screen" },
-      export: { caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
+      export: { caption: "A statement with your name on it", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
     },
   },
 
   built: {
     label: "Why we built Gymbo",
-    eyebrow: "Why we built Gymbo" as string | null,
+    eyebrow: null as string | null,
     heading: "Built in India for Indian trainers",
-    body: "WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: Gymbo does not send messages to your clients.",
+    body: "Trainers keep session counts in their head, payments in UPI history and schedules in WhatsApp. Classes go uncounted and payments get missed. Gymbo keeps classes, payments and schedule in one place, with your name on what clients see. Gymbo does not message your clients.",
   },
 
   pricing: {
     label: "Pricing",
-    eyebrow: "Pricing" as string | null,
-    heading: PRICING_HEADING,
+    eyebrow: null as string | null,
+    heading: "Start free and upgrade when you are ready.",
     plans: [
       { name: "Free", tagline: "Free", note: PRICING_FREE_LINE },
       { name: "Pro", tagline: "Pro", period: "/month", note: PRICING_PRO_ANNUAL_LINE },
@@ -138,25 +143,25 @@ export const HOME = {
 
   faq: {
     label: "Frequently asked questions",
-    eyebrow: "Questions" as string | null,
-    heading: "Everything you might ask." as string | null,
+    eyebrow: null as string | null,
+    heading: null as string | null,
     items: [
-      { q: "Is it free?", a: `You can start free. Pro is ₹${PRICE_MONTHLY_INR} a month or ₹${PRICE_ANNUAL_INR_DISPLAY} a year, paid on the web.` },
-      { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
-      { q: "Can I export my clients' records?", a: "Yes. You can export your clients' attendance and payment records from the app whenever you like." },
-      { q: "Is there an iPhone app?", a: "Coming soon. Leave your email and we will tell you when it is in the App Store. Until then Gymbo runs in your browser.", waitlist: true },
-      { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
-      { q: "Can I import my existing clients?", a: "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand." },
+      { q: "Is it free?", a: `Yes, to start. Pro is ₹${PRICE_MONTHLY_INR} a month or ₹${PRICE_ANNUAL_INR_DISPLAY} a year, paid on the web.` },
+      { q: "Do my clients need to download anything?", a: "No: you punch the class and your clients just train." },
+      { q: "Can I export my clients' records?", a: "Yes: attendance and payment records, from the app, any time." },
+      { q: "Is there an iPhone app?", a: "Coming soon: until then Gymbo runs in your browser. Leave your email and we will tell you when it is in the App Store.", waitlist: true },
+      { q: "How do payments work?", a: "You record cash and UPI payments. Gymbo keeps the running balance and never touches your money." },
+      { q: "Can I import my existing clients?", a: "On Android Chrome, add clients from your contacts. On iPhone, add them by hand." },
     ] as { q: string; a: string; waitlist?: boolean }[],
     waitlist: "Tell me when the iPhone app is out",
-    compare: "Comparing trainer apps? See how Gymbo compares to WellnessZ →",
+    compare: "See how Gymbo compares to WellnessZ", // the arrow after it is layout (App.tsx)
   },
 
   closing: {
     label: "Start free",
-    eyebrow: STATUS_LANGUAGE as string | null,
-    heading: "Payments, schedules, and clients in one app.",
-    sub: FINAL_CTA_SUB,
+    eyebrow: null as string | null,
+    heading: "You coach, Gymbo keeps your business records.",
+    sub: "Start free in your browser, no payment needed.",
     talk: "Talk to the founder",
   },
 
