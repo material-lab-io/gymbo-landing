@@ -65,6 +65,22 @@
       "capturedAt": "2026-08-12T10:32:00+05:30",
       "verified": true,
       "note": "Provenance transcribed from the capture-run record in gymbo-landing commit 2809c37 (gy-5xmxm, 'recapture all landing screenshots from current build', authored by the operator who ran the pass): every master under public/screens/real/ was re-shot in ONE run on 2026-08-12 ~10:32 IST from Gymbo-v1 commit 86f34ef2 (branch gy-5xmxm-landing-recapture, off the gy-bhcbo landing lane fd0d72a4), app 1.0.0 build 1 Debug, iPhone 17 Pro sim, iOS 26.2, 1206x2622, light theme, status bar pinned 9:41. Attested by file identity rather than by re-running the capture: this file at HEAD is byte-identical to the blob 2809c37 introduced (git-verifiable), so this entry describes the image that actually ships. CORRECTION (gy-k095b, 2026-08-19): the six pre-existing entries here claimed capturedAt 2026-08-08 / gymboCommitSha ba35b647 from the gy-bhcbo pass, but 2809c37 replaced every master on 08-12 without updating this manifest — so the freshness gate was passing on metadata that described files no longer on disk. Corrected to the real capture run."
+    },
+    "card-4-workout-builder-dark.png": {
+      "appVersion": "1.0.0",
+      "buildNumber": "1",
+      "gymboCommitSha": "912ff05d",
+      "capturedAt": "2026-11-16T12:03:00Z",
+      "verified": true,
+      "note": "gy-sk86p2.4 card art (feature card 4). Byte-identical copy of Gymbo-v1 docs/business-web/parity-frames/ios-ref-v1/14-workouts/WK-06-builder-filled-dark.png (png_sha256 4bb71e0b0d10..., provenance WK-06-builder-filled-dark.provenance.json: ios_tester, iPhone 16 sim iOS 26.5, build 912ff05de, 2026-11-16T12:03Z, New Workout builder with 2 exercises, dark theme, synthetic fixture account). Copied by web_designer 26 Nov."
+    },
+    "card-2-schedule-week-web-dark.png": {
+      "appVersion": "web",
+      "buildNumber": "1",
+      "gymboCommitSha": "806b39cf",
+      "capturedAt": "2026-11-26T14:28:22Z",
+      "verified": true,
+      "note": "gy-sk86p2.4 card art (feature card 2), pm F2 14:2xZ: a FILLED current week. Business web app Schedule > Week, Gymbo-v1 main 806b39cf7304057b31e40db962b8346f1c2ac348 (web phone = shipped iOS Week view, W1), dark, 393x793 window @3x + 59 pt black top strip added outside the browser so the phone camera clears the month (1179x2556), sha256 3919a8c1b024..., captured 2026-11-26T14:28:22Z by web_dev on a local gt8 seat stack (no prod data), seeded week 23-29 Nov, 8 classes, first names. Source + kit: GT2 ~/gymbo-evidence/gy-sk86p2/web_dev-card2-week/."
     }
   }
 }

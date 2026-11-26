@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkThirdPartyProvenance, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_LESS_CONTEXT, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256 } from "../scripts/canonical-strings.mjs";
+import { checkCanonical, checkFacts, canonicalRuled, loadCanonical, loadFactsMap, readConstants, findBuiltPrices, loadPriceSurfaces, checkBuiltPricePin, checkThirdPartyProvenance, checkPriceLedger, checkLedgerAppendOnly, ledgerBaseFromEnv, readBaseLedger, NAMED_LIMITS, SAVING_LESS_CONTEXT, SAVING_WORDS, SAVING_FILLERS, SAVING_AFTER, priceDrill, priceOccurrences, priceText, builtName, rupees, sha256, VENDOR_NOT_PRICE_READ } from "../scripts/canonical-strings.mjs";
 import { GATES, gateArgs } from "../scripts/shifted-clock-control.mjs";
 // The CLI tests spawn the real gate. On a CI runner the gate reads GITHUB_* to find its base commit (gy-53qq5.1 R3), so
 // an inherited runner environment would make these tests depend on WHERE they run: scrub it. Tests that mean CI say so.
@@ -99,7 +99,7 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54");
+  assert.equal(c.sha, "0f8cac3baff4c50b55a3c1470218a140423bef6d15b889ec1d613e5064ab2a94");
   assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 7);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });
@@ -173,6 +173,20 @@ test("SCOPE DISCLOSURE: built files that state a rupee amount are FOUND and name
   writeFileSync(join(root, "app.js"), "const x = '\u20b9399'"); // gy-53qq5.1 M4: scripts are read now, not a named gap
   assert.deepEqual(findBuiltPrices(root), [{ file: "alternatives/akton/", count: 2 }, { file: "app.js", count: 1 }, { file: "llms.txt", count: 1 }, { file: "pricing.md", count: 2 }]);
   assert.throws(() => findBuiltPrices(join(root, "nope")), /does not exist/, "a missing dist is an error, not an empty list");
+});
+
+test("VENDOR EXCLUDE gy-sk86p2.3: only the exact GSAP chunk is not price-read; the same text anywhere else is still RED", () => {
+  const canon = loadCanonical(REAL), reg = loadPriceSurfaces(REAL);
+  assert.deepEqual([...VENDOR_NOT_PRICE_READ], ["assets/vendor-gsap.js"], "one exact name; adding another is a ruling");
+  const gsap = "var e={Power0,rs:1};"; // the minified shape that read as a rupee amount
+  const kinds = (rel) => {
+    const dist = fixtureDist(canon); mkdirSync(join(dist, rel, ".."), { recursive: true }); writeFileSync(join(dist, rel), gsap);
+    return checkBuiltPricePin(canon.doc.facts, reg, dist).filter((f) => f.kind === "price-unregistered").map((f) => f.detail);
+  };
+  assert.deepEqual(kinds("assets/vendor-gsap-Ab3dEf9h.js"), [], "the GSAP chunk, hash with digits");
+  assert.deepEqual(kinds("assets/vendor-gsap-abcdefgh.js"), [], "the GSAP chunk, all-lowercase hash");
+  for (const rel of ["assets/heroMotion-Ab3dEf9h.js", "assets/vendor-gsap-extra-Ab3dEf9h.js", "assets/vendor-other-Ab3dEf9h.js", "assets/nested/vendor-gsap-Ab3dEf9h.js", "vendor-gsap.js"])
+    assert.equal(kinds(rel).length, 1, `planted control: ${rel} must still be read and go red`);
 });
 
 test("PRICE PIN gy-53qq5: the 399 -> 449 drill. A bumped price goes RED on every listed built file (llms.txt and pricing.md included); the unbumped build is GREEN", () => {

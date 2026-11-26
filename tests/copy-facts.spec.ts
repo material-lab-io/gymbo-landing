@@ -37,7 +37,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const indexHtml = readFileSync(path.resolve(__dirname, '../index.html'), 'utf-8');
 const termsSource = readFileSync(path.resolve(__dirname, '../src/pages/Terms.tsx'), 'utf-8');
 const privacySource = readFileSync(path.resolve(__dirname, '../src/pages/Privacy.tsx'), 'utf-8');
-const appSource = readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf-8');
+// gy-sk86p2.3: every home string lives in src/content/home.ts and App.tsx renders it, so "the home sources" are the two files together.
+const homeSource = readFileSync(path.resolve(__dirname, '../src/content/home.ts'), 'utf-8');
+const appSource = readFileSync(path.resolve(__dirname, '../src/App.tsx'), 'utf-8') + '\n' + homeSource;
 
 function extractJsonLdBlocks(html: string): Record<string, unknown>[] {
   const blocks: Record<string, unknown>[] = [];
@@ -110,7 +112,8 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
 
 
   test('App.tsx states the payment line once, from PRICING_PAYMENT_LINE (Pro is paid on the web)', () => {
-    expect(appSource.split('{PRICING_PAYMENT_LINE}').length - 1).toBe(1);
+    expect(appSource.split('payment: PRICING_PAYMENT_LINE,').length - 1).toBe(1);
+    expect(appSource.split('{HOME.pricing.payment}').length - 1).toBe(1);
     expect(appSource).not.toContain(PRICING_PAYMENT_LINE);
   });
 
@@ -142,13 +145,13 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
     expect(bannedIn('Gymbo does not send messages to your clients.')).toEqual([]);
   });
 
-  test('gy-5kwas: the never-contact sentences say what Gymbo does as sender, byte-for-byte (content 28 Oct)', () => {
-    expect(appSource).toContain('Your client list stays yours too: Gymbo does not send messages to your clients.');
+  test('gy-5kwas: the never-contact sentences say what Gymbo does as sender, byte-for-byte (content 28 Oct; home line = marketer strings-v6)', () => {
+    expect(appSource).toContain('Gymbo does not message your clients.');
     expect(privacySource).toContain('Gymbo does not send messages to your clients.');
   });
 
   test('the home FAQ answers the export question and the JSON-LD carries the same question and answer byte-for-byte', () => {
-    const q = "Can I export my clients' records?", a = "Yes. You can export your clients' attendance and payment records from the app whenever you like.";
+    const q = "Can I export my clients' records?", a = "Yes: attendance and payment records, from the app, any time.";
     expect(appSource).toContain(`{ q: "${q}", a: "${a}" }`);
     expect(indexHtml).toContain(`"name": "${q}"`);
     expect(indexHtml).toContain(`"text": "${a}"`);
@@ -156,8 +159,8 @@ test.describe('copy facts: index.html JSON-LD, Terms and Privacy must not drift 
   });
 
   test('NEGATIVE CONTROL: the payment-line-by-reference check actually fails when the reference is absent', () => {
-    const strippedSource = appSource.split('{PRICING_PAYMENT_LINE}').join('');
-    const occurrences = strippedSource.split('{PRICING_PAYMENT_LINE}').length - 1;
+    const strippedSource = appSource.split('{HOME.pricing.payment}').join('');
+    const occurrences = strippedSource.split('{HOME.pricing.payment}').length - 1;
     expect(occurrences).not.toBe(1);
     expect(() => expect(occurrences).toBe(1)).toThrow();
   });
@@ -203,13 +206,13 @@ const BANNED_IMPORT_PHRASES = [
 ];
 const IMPORT_SURFACES: Record<string, string> = {
   'index.html': indexHtml,
-  'src/App.tsx': appSource,
+  'src/App.tsx + content/home.ts': appSource,
   'src/lib/trialAccess.ts': trialAccessSource,
   'src/pages/CompareWellnessZ.tsx': compareSource,
   'compare/gymbo-vs-wellnessz/index.html': compareHtml,
 };
 const HOME_IMPORT_ANSWER =
-  "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand.";
+  "On Android Chrome, add clients from your contacts. On iPhone, add them by hand.";
 const COMPARE_IMPORT_ANSWER =
   "Not directly. Gymbo can't import from WellnessZ or a spreadsheet. On Android Chrome you can add clients from your contacts. On iPhone, add them by hand.";
 
@@ -243,9 +246,9 @@ test.describe('gm-t0e.7: no bulk-import overclaim on the home or /compare/gymbo-
   });
 
   test('NEGATIVE CONTROL: reintroducing one banned phrase in memory makes the check go red', () => {
-    const mutated = { ...IMPORT_SURFACES, 'src/App.tsx': appSource.replace(HOME_IMPORT_ANSWER, 'Yes. Bring your current roster over in minutes.') };
+    const mutated = { ...IMPORT_SURFACES, 'src/App.tsx + content/home.ts': appSource.replace(HOME_IMPORT_ANSWER, 'Yes. Bring your current roster over in minutes.') };
     const hits = offendingImportPhrases(mutated);
-    expect(hits).toContain('src/App.tsx: "in minutes"');
+    expect(hits).toContain('src/App.tsx + content/home.ts: "in minutes"');
     expect(() => expect(hits).toEqual([])).toThrow();
   });
 });

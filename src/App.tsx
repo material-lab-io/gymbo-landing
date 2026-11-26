@@ -1,137 +1,52 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Check,
-  Plus,
-  QrCode,
-  Share2,
-  FileText,
-  ChevronLeft,
-  ChevronRight,
-  Smartphone,
-  type LucideIcon,
-} from "lucide-react";
+import { HomeHero } from "./components/HomeHero";
+import { Check, Plus } from "lucide-react";
 import { DemoFrame, ScreenshotFrame, type ClipMap } from "./components/PhoneMockup";
 import { InlineWaitlist } from "./components/InlineWaitlist";
 import { WaitlistOverlayProvider, useWaitlistOverlayOwner } from "./lib/waitlistOverlay";
 import { useReducedMotion } from "./hooks/useReducedMotion";
-import { F, SERIF, SANS, WHATSAPP_PLAIN, scrollToId, signupCtaProps, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, darkIconButton, StartFreeCTA, LogInLink } from "./forge-ui";
+import { F, PAGE_BLACK, SANS, WHATSAPP_PLAIN, scrollToId, signupCtaProps, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, StartFreeCTA, LogInLink } from "./forge-ui";
 import { FIGURE_SURFACE } from "./figure-surface";
-import {
-  STATUS_LANGUAGE,
-  PRICE_MONTHLY_INR,
-  PRICE_ANNUAL_INR_DISPLAY,
-  HERO_SMALL_PRINT,
-  FINAL_CTA_SUB,
-  PRICING_HEADING,
-  PRICING_FREE_LINE,
-  PRICING_PRO_ANNUAL_LINE,
-  PRICING_PAYMENT_LINE,
-  START_FREE_LABEL,
-} from "./lib/trialAccess";
+import { PRICE_MONTHLY_INR, START_FREE_LABEL } from "./lib/trialAccess";
+import { HOME, type PillarCopy } from "./content/home";
 
 /* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
    to the support contact (#support, App Review 1.5), never the waitlist form. */
-const FOOTER_GROUPS: { label: string; links: { label: string; href: string }[] }[] = [
-  { label: "Learn", links: [
-    { label: "Guides", href: "/guide/" },
-    { label: "Research", href: "/research/state-of-indias-independent-trainers-2026/" },
-    { label: "Blog", href: "/blog/" },
-  ] },
-  { label: "Compare", links: [
-    { label: "Gymbo vs WellnessZ", href: "/compare/gymbo-vs-wellnessz/" },
-    { label: "Trainerize alternative", href: "/alternatives/trainerize/" },
-    { label: "TrueCoach alternative", href: "/alternatives/truecoach/" },
-    { label: "Akton alternative", href: "/alternatives/akton/" },
-  ] },
-  { label: "Help", links: [
-    { label: "Support", href: "#support" },
-    { label: "Contact", href: "mailto:damini@materiallab.io" },
-    { label: "Request video removal", href: "/m/takedown" },
-  ] },
-  { label: "Legal", links: [
-    { label: "Privacy", href: "/privacy/" },
-    { label: "Terms", href: "/terms/" },
-  ] },
-];
+const FOOTER_GROUPS = HOME.footer.groups;
 
 /* ============================================================================
-   getgymbo.com — Forge redesign (epic gy-9bmwm)
-   Founder-reviewed build: sentence case site-wide, NO gradients (flat Forge
-   beige/charcoal + solid amber accent). Brand = Forge amber #F59E0B / marigold
-   #FBBF24, accent only. Hero and gallery use the approved licensed photoreal
-   device compositions; all 4 pillars use the approved light/dark photoreal demo
-   clips. Masters are the founder-approved curated set, optimized to WebP via
-   scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.9).
+   getgymbo.com — Forge redesign (epic gy-9bmwm); Damini round 2 (gy-sk86p2.3, 26 Nov).
+   The whole page is BLACK (her words: "Keep it all black and let the cards that you
+   are building define the sections"): one page colour (PAGE_BLACK = the hero's), no
+   light band anywhere. Brand = Forge marigold #FBBF24, accent only. Hero and gallery
+   use the approved licensed photoreal device compositions; the feature cards use the
+   approved DARK photoreal demo clips. Masters are the founder-approved curated set,
+   optimized to WebP via scripts/optimize-gallery.mjs (gy-9bmwm.4, gy-dyu6r.9).
    ============================================================================ */
 
-/* Design tokens (F, SHADOW, SERIF, SANS), the WhatsApp constants and button,
+/* Design tokens (F, SHADOW, SANS), the WhatsApp constants and button,
    scrollToId, and the shared presentational primitives now live in ./forge-ui
    (SSOT shared with the comparison pages). */
 
-/* ── 4 pillars ── */
-const PILLARS = [
-  {
-    id: "revenue",
-    demoId: "log-payment",
-    n: "01",
-    eyebrow: "The Gymbo ledger",
-    title: "Track your revenue",
-    intro: "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
-    bullets: [
-      "Every balance, clear: credit and classes left, updated the moment you punch a class.",
-      "Track every class, payment, and balance.",
-      "Cash or UPI recorded, so you don't lose track.",
-    ],
-    brief: "Record a payment: UPI or cash, and the balance clears.",
-    dark: false,
-  },
-  {
-    id: "organized",
-    demoId: "schedule",
-    n: "02",
-    eyebrow: "Your whole roster",
-    title: "Get organized",
-    intro: "Less busywork, more training. Every client, schedule, and class in one place, not in your head.",
-    bullets: [
-      "Punch a class in a couple of taps, and balances update themselves",
-      "Recurring time slots, sorted by day",
-      "No more paper register or notes app",
-      "Save a class location and open directions when you need them.",
-    ],
-    brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
-    dark: true,
-  },
-  {
-    id: "brand",
-    demoId: "branded-statement",
-    n: "03",
-    eyebrow: "Look professional",
-    title: "Your brand, your business",
-    intro: "Look like the professional you already are. Your name and details on every statement your client sees, plus a QR profile card you can share anywhere.",
-    bullets: [
-      "PDF statements with your brand name and logo on each one",
-      "A shareable QR profile card",
-      "Send any client their statement from the app",
-    ],
-    brief: "Your brand on a clean statement PDF. Share in a tap (India).",
-    dark: false,
-  },
-  {
-    id: "workouts",
-    demoId: "build-workout",
-    n: "04",
-    eyebrow: "Coaching tools",
-    title: "Train smarter",
-    intro: "Build workouts, assign them to clients, and track real progress: adherence and per-exercise gains.",
-    bullets: [
-      "Build and assign workouts from a template library",
-      "Track client progress: class history, adherence, per-exercise gains",
-      "Get directions to your next class, right from the app",
-    ],
-    brief: "Build a plan (squat, bench, row) and assign it to a client.",
-    dark: false,
-  },
-];
+/* ── the four feature cards, in her order ── */
+// gy-sk86p2.3 L3 (Damini 26 Nov): no orange icon highlight. Icon tiles are neutral: white on a faint white wash.
+const NEUTRAL_TILE = "rgba(240,240,235,0.10)";
+const CARD_LINE = "rgba(240,240,235,0.14)";
+// Card art (pm ruling 2 on gy-sk86p2.3, web_designer 26 Nov): the phone only, no headline or caption in the image, a CURRENT app screen.
+// "screen" = a real dark iOS capture in the photoreal frame (gallery pipeline, freshness-gated in ops/screens/manifest.json);
+// "demo-crop" = interim: an approved demo cropped to its phone so the burned-in title + caption never show (card 1 uses the hero's
+// punch-a-class clip, pm 13:4xZ: class punched + classes left; log-payment stays pulled for its retired claim).
+// Owed captures (fresh dark iOS, then these switch to "screen"): card 1 Activity Log with month total, card 3 a statement PDF with a
+// trainer logo, card 4 the builder with a neutral client name.
+// Size (web_designer 13:5xZ): phone 240 px wide on phones (page shorter than round 1), 280 px beside the text from md, where the
+// text sits at the card top under its numeral (a centred 330 phone left ~200 px above the title at 1440).
+const PILLAR_LAYOUT = [
+  { id: "revenue", demoId: "log-payment", art: { kind: "demo-crop", demo: "punch-class" } },
+  { id: "organized", demoId: "schedule", art: { kind: "screen", slug: "card-week" } },
+  { id: "brand", demoId: "branded-statement", art: { kind: "demo-crop", demo: "branded-statement" } },
+  { id: "workouts", demoId: "build-workout", art: { kind: "screen", slug: "card-builder" } },
+] as const;
+const PILLARS = PILLAR_LAYOUT.map((l) => ({ ...l, ...HOME.pillars[l.id] }));
 
 const demoClip = (id: string): ClipMap => ({
   light: `/demos/${id}-light.mp4`,
@@ -147,30 +62,17 @@ const demoPoster = (id: string): ClipMap => ({
    photoreal frame. Pillar visuals use the approved animated demo scenes. Source
    files: public/screens/real/* → optimized via scripts/optimize-gallery.mjs
    (gy-9bmwm.4, gy-dyu6r.6). ── */
-const SCREENS: { slug: string; caption: string; alt: string }[] = [
-  { slug: "dashboard", caption: "Every client, at a glance", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
-  { slug: "schedule", caption: "Your week, tap to punch", alt: "Gymbo schedule for Wednesday with classes booked at 8 and 10 in the morning" },
-  { slug: "payments", caption: "Every class and payment, tracked", alt: "Gymbo class history showing ₹45,663 in payments recorded for June" },
-  { slug: "workouts", caption: "Build and assign workouts", alt: "A full-body strength workout template in Gymbo with squat, bench press and barbell row" },
-  { slug: "ai", caption: "Ask Gymbo", alt: "The Ask Gymbo chat screen" },
-  { slug: "export", caption: "Branded statements in a tap", alt: "Exporting a branded client statement as a PDF or CSV in Gymbo" },
-];
+const SCREEN_ORDER = ["dashboard", "schedule", "payments", "workouts", "ai", "export"] as const;
+const SCREENS = SCREEN_ORDER.map((slug) => ({ slug, ...HOME.gallery.screens[slug] }));
 
 /* ── pricing ── */
 const PRICING = [
-  { name: "Free", tagline: "Free", price: "0", period: "", note: PRICING_FREE_LINE, highlight: false },
-  { name: "Pro", tagline: "Pro", price: String(PRICE_MONTHLY_INR), period: "/month", note: PRICING_PRO_ANNUAL_LINE, highlight: true },
+  { ...HOME.pricing.plans[0], price: "0", period: "", highlight: false },
+  { ...HOME.pricing.plans[1], price: String(PRICE_MONTHLY_INR), highlight: true },
 ];
 
 /* ── FAQ ── */
-export const FAQ = [
-  { q: "Is it free?", a: `You can start free. Pro is ₹${PRICE_MONTHLY_INR} a month or ₹${PRICE_ANNUAL_INR_DISPLAY} a year, paid on the web.` },
-  { q: "Do my clients need to download anything?", a: "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." },
-  { q: "Can I export my clients' records?", a: "Yes. You can export your clients' attendance and payment records from the app whenever you like." },
-  { q: "Is there an iPhone app?", a: "Coming soon. Leave your email and we will tell you when it is in the App Store. Until then Gymbo runs in your browser.", waitlist: true },
-  { q: "How do payments work?", a: "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." },
-  { q: "Can I import my existing clients?", a: "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand." },
-];
+export const FAQ = HOME.faq.items;
 
 /* ============================================================================
    building blocks
@@ -183,11 +85,6 @@ function Reveal({ children, className = "" }: { children: React.ReactNode; class
 /* ============================================================================
    page
    ============================================================================ */
-
-const HERO_SRCSET = "/mockups/hero-three-panel-800.webp 800w, /mockups/hero-three-panel-1200.webp 1200w, /mockups/hero-three-panel-1800.webp 1800w";
-function HeroDeviceArt({ alt = "", priority = false }: { alt?: string; priority?: boolean }) {
-  return <div data-testid="hero-device-art" style={{ aspectRatio: "4800 / 3236", lineHeight: 0 }}><picture><source type="image/webp" srcSet={HERO_SRCSET} sizes="(min-width: 1024px) min(46vw, 720px), min(92vw, 560px)" /><img src="/mockups/hero-three-panel-1200.png" alt={alt} aria-hidden={alt ? undefined : true} decoding="async" {...(priority ? { fetchpriority: "high" as const } : {})} style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} /></picture></div>;
-}
 
 export default function App() {
   const prefersReduced = useReducedMotion();
@@ -209,7 +106,8 @@ export default function App() {
       galleryNavigationTimer.current = null;
     }, 100);
     setGalleryIndex(index);
-    card.scrollIntoView({ block: "nearest", inline: "center", behavior: "auto" });
+    // Centre the card by scrolling the STRIP only: scrollIntoView would also move the page.
+    gallery.scrollTo({ left: card.offsetLeft - (gallery.clientWidth - card.offsetWidth) / 2, behavior: "auto" });
   };
 
   const syncGalleryPosition = () => {
@@ -225,7 +123,9 @@ export default function App() {
           : winner,
       0,
     );
-    setGalleryIndex(closest);
+    // On a wide screen several cards fit, so the first and last never reach the centre: at either end the end dot is the current one.
+    const max = gallery.scrollWidth - gallery.clientWidth;
+    setGalleryIndex(gallery.scrollLeft <= 1 ? 0 : gallery.scrollLeft >= max - 1 ? cards.length - 1 : closest);
   };
 
   useEffect(() => {
@@ -273,11 +173,11 @@ export default function App() {
   return (
     // gy-w77x3 B5: the ONE owner of which capture overlay (nav or sticky) is open.
     <WaitlistOverlayProvider>
-    <div style={{ background: F.beige, color: F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
+    <div style={{ background: PAGE_BLACK, color: F.bone, fontFamily: SANS, lineHeight: 1.5 }}>
       <ForgeStyle />
 
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:rounded-lg" style={{ background: F.amber, color: F.onCta }}>
-        Skip to content
+        {HOME.nav.skip}
       </a>
 
       {/* ───────── nav ───────── */}
@@ -285,11 +185,11 @@ export default function App() {
         aria-label="Main navigation"
         data-fixed-chrome="nav"
         className="sticky top-0 z-40 flex items-center justify-between px-5 md:px-12 py-4"
-        style={{ background: "var(--c-nav-bg)", backdropFilter: "saturate(140%) blur(14px)", WebkitBackdropFilter: "saturate(140%) blur(14px)", borderBottom: "1px solid var(--c-line)" }}
+        style={{ background: PAGE_BLACK, borderBottom: `1px solid ${CARD_LINE}` }}
       >
-        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center focus-visible:outline-none gy-focus-ring-light" aria-label="Gymbo, back to top">
+        <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center justify-center min-h-11 min-w-11 rounded-md focus-visible:outline-none gy-focus-ring-dark" aria-label={HOME.nav.backToTop}>
           <img
-            src="/gymbo-mark-darkorange-9d3900.svg"
+            src="/gymbo-mark-amber-ff9800.svg" /* the mark for DARK grounds (forge --g-color-mark-amber) */
             alt=""
             className="h-[38px] w-[38px]"
           />
@@ -297,11 +197,11 @@ export default function App() {
 
         <div className="hidden md:flex items-center gap-8">
           {[
-            { label: "Why Gymbo", id: "why" },
-            { label: "Pricing", id: "pricing" },
-            { label: "FAQ", id: "faq" },
+            { label: HOME.nav.why, id: "why" },
+            { label: HOME.nav.pricing, id: "pricing" },
+            { label: HOME.nav.faq, id: "faq" },
           ].map((l) => (
-            <button key={l.id} onClick={() => scrollToId(l.id)} className="text-[14px] transition-colors" style={{ color: F.inkMuted, fontFamily: SANS, fontWeight: 500 }}>
+            <button key={l.id} onClick={() => scrollToId(l.id)} className="inline-flex items-center justify-center min-h-11 min-w-11 px-1 rounded-md text-[14px] transition-colors focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.boneMuted, fontFamily: SANS, fontWeight: 500 }}>
               {l.label}
             </button>
           ))}
@@ -310,8 +210,8 @@ export default function App() {
         {/* gy-1vd9qy.10.4 option A: Log in is a quiet text link next to the amber Start free pill. Both are real links into
             app.getgymbo.com, so there is no reveal panel in the nav any more. */}
         <div className="flex items-center gap-1.5">
-          <LogInLink location="nav" />
-          <StartFreeCTA position="nav" />
+          <LogInLink location="nav" dark />
+          <StartFreeCTA position="nav" dark />
         </div>
       </nav>
 
@@ -320,329 +220,263 @@ export default function App() {
         {/* Competitor-scale device (gy-k2543.10): copy column verbatim; device stage
             breaks out of the 1180 box and bleeds to the right viewport edge on lg+,
             stacks below the copy on mobile/tablet. */}
-        <header data-testid="hero-section" className="relative overflow-hidden" style={{ background: F.beige }}>
-          {/* desktop device stage — absolute to the section, bleeds past 1180 off the right
-              edge. The three-panel mockup is a single flat landscape image (not stacked
-              portrait phones), so it's vertically centered rather than stretched the full
-              header height. Floating "class logged" / "paid" chips removed (gy-dfl55.1 —
-              tags read as nonsense at this distance from the screens). */}
-          {/* gy-k095b: the stage used to bleed flush to the right viewport edge
-              (gy-k2543.10) — correct for the old landscape raster, which had its
-              own margin baked in and read as art running off the page. Three
-              discrete screen cards bleeding off the edge instead read as a
-              clipping BUG: the third card loses its right corner radius and its
-              shadow. Inset so all three cards sit whole. */}
-          <div aria-hidden="true" className={`hidden lg:block absolute right-0 top-1/2 -translate-y-1/2 z-[1] ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(46vw, 720px)" }}>
-            <HeroDeviceArt priority />
-          </div>
+        <HomeHero prefersReduced={prefersReduced} />
 
-          <div className="relative z-[2] max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-16 pb-16 md:pb-24">
-            <div className="max-w-[600px] lg:w-[46%]">
-              <div className={prefersReduced ? "" : "hero-rise d1"}>
-                <Eyebrow>{STATUS_LANGUAGE}</Eyebrow>
-              </div>
-              <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
-                The{" "}
-                <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
-                  <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
-                  business app
-                </span>{" "}
-                for independent personal trainers.
-              </h1>
-              <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
-                <b style={{ color: F.ink, fontWeight: 400 }}>Track payments and balances, see who owes you, and keep clients and classes in one place</b>. Built for independent trainers in India.
-              </p>
-              {/* gy-1vd9qy.10.4 option A: Start free is the one filled amber CTA; the founder's WhatsApp is the outline one. */}
-              <div className={`mt-8 ${prefersReduced ? "" : "hero-rise d4"}`}>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3.5">
-                  <StartFreeCTA size="lg" position="hero" />
-                  <WhatsAppCTA size="lg" location="hero" variant="secondary" glyph={false}>Talk to the founder</WhatsAppCTA>
-                </div>
-                <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                  {HERO_SMALL_PRINT}
-                </p>
-              </div>
-              {/* Mobile/tablet keeps the approved three-phone composition below
-                  the copy, scaled as one coherent image so its screens and device
-                  silhouettes remain legible without clipping. */}
-              <div className={`lg:hidden mt-12 flex justify-center ${prefersReduced ? "" : "hero-fade d6"}`} style={{ width: "min(92vw, 560px)" }}>
-                <HeroDeviceArt alt="Gymbo dashboard, balances, and payment records shown across three phones." priority />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* ───────── why — 4 pillars ───────── */}
-        <section id="why" aria-label="Why trainers use Gymbo">
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
-            <Reveal>
-              <Eyebrow>Why trainers use Gymbo</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
-                What your training business runs on.
-              </h2>
-            </Reveal>
-          </div>
-
-          {PILLARS.map((p, i) => {
-            const dark = p.dark;
-            // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo video/poster has the retired
-            // "Get paid for every class you teach." claim burned into its pixels. Pulled
-            // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
-            const hasDemo = p.demoId !== "log-payment";
-            return (
-              <div key={p.id} data-testid={`pillar-band-${p.id}`} style={{ background: hasDemo ? (dark ? FIGURE_SURFACE.dark : FIGURE_SURFACE.light) : (dark ? F.charcoal : F.beige) }}>
-                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-10 md:gap-16 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
-                  <Reveal className={hasDemo ? undefined : "md:text-center md:mx-auto md:max-w-[640px]"}>
-                    <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
-                      {p.n} · {p.eyebrow}
-                    </span>
-                    <h3 className="text-[clamp(26px,3.4vw,40px)] font-black mb-4" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: dark ? F.bone : F.ink }}>
-                      {p.title}
-                    </h3>
-                    <p className="text-[15px] md:text-[16px] mb-6" style={{ color: dark ? F.boneMuted : F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "44ch" }}>
-                      {p.intro}
-                    </p>
-                    <ul className="flex flex-col gap-3">
-                      {p.bullets.map((b) => {
-                        return (
+        {/* ───────── the four feature cards ───────── */}
+        <section id="why" aria-label={HOME.why.label}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-2 pb-4 md:pb-6 flex flex-col gap-2 md:gap-4">
+            {PILLARS.map((p, i) => {
+              // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo video/poster has the retired
+              // "Get paid for every class you teach." claim burned into its pixels. Pulled
+              // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
+              return (
+                <div key={p.id} data-testid={`pillar-band-${p.id}`} className="gy-card">
+                  {/* Her round 2: a big yellow numeral sits across the join between sections, with the same top-lit fade as GYMBO.
+                      Merriweather is used for these numerals only. Half the numeral is above the card, half inside it. */}
+                  <span data-testid={`pillar-numeral-${p.id}`} aria-hidden="true" className="gy-numeral">
+                    {i + 1}
+                  </span>
+                  <div data-testid={`pillar-${p.id}`} className={`gy-card-body grid items-center md:items-start gap-4 md:gap-10 rounded-[var(--g-radius-xl)] px-5 pb-6 md:px-10 md:pb-8 md:grid-cols-[minmax(0,1fr)_minmax(0,280px)]`} style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
+                    <Reveal>
+                      <h2 className="text-[clamp(24px,3.2vw,36px)] font-black mb-3" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
+                        {p.title}
+                      </h2>
+                      <p className="text-[15px] md:text-[16px] mb-4" style={{ color: F.boneMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "52ch" }}>
+                        {p.intro}
+                      </p>
+                      <ul className="grid gap-3">
+                        {p.bullets.map((b) => (
                           <li key={b} className="flex items-start gap-3">
-                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
+                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: NEUTRAL_TILE, color: F.bone }}>
                               <Check size={13} strokeWidth={2.5} />
                             </span>
-                            <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
+                            <span className="text-[14px] md:text-[15px]" style={{ color: F.bone, fontFamily: SANS, lineHeight: 1.5 }}>
                               {b}
                             </span>
                           </li>
-                        );
-                      })}
-                    </ul>
-                  </Reveal>
-
-                  {hasDemo && (
-                    <Reveal className="relative flex items-center justify-center" >
-                      <div className="relative">
-                        <DemoFrame
-                          demoId={p.demoId}
-                          clip={demoClip(p.demoId)}
-                          poster={demoPoster(p.demoId)}
-                          theme={dark ? "dark" : "light"}
-                          label={`${p.title}: demo`}
-                          maxWidth={360}
-                        />
-                      </div>
+                        ))}
+                      </ul>
                     </Reveal>
-                  )}
-                </div>
 
-                {p.id === "brand" && <BrandMarquee />}
-              </div>
-            );
-          })}
+                    {/* every card has art (pm 13:4xZ) */}
+                    {(
+                      <Reveal className="w-full max-w-[240px] md:max-w-[280px] mx-auto">
+                        {p.art.kind === "screen" ? (
+                          <ScreenshotFrame slug={p.art.slug} alt={(HOME.pillars[p.id] as PillarCopy).artAlt ?? p.title} screenWidth={280} style={{ width: "100%" }} />
+                        ) : (
+                          /* Interim crop: the demo scene is 1080 x 1920; the box shows x 190-890, y 270-1690 = the phone only (title ends at y 258,
+                             phone 280-1666, caption from y 1712). Percent margins resolve against the box width. */
+                          <div data-testid={`pillar-art-crop-${p.id}`} style={{ position: "relative", overflow: "hidden", aspectRatio: "700 / 1420", width: "100%" }}>
+                            <div style={{ position: "absolute", width: "154.286%", left: "-27.143%", top: 0, marginTop: "-38.571%" }}>
+                              <DemoFrame
+                                demoId={p.art.demo}
+                                clip={demoClip(p.art.demo)}
+                                poster={demoPoster(p.art.demo)}
+                                theme="dark"
+                                label={`${p.title}: demo`}
+                                maxWidth={1080}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </Reveal>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
-        <section data-testid="gallery-section" aria-label="See Gymbo in action" style={{ background: F.charcoal }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
+        <section data-testid="gallery-section" aria-label={HOME.gallery.label}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-8 md:py-10">
             <Reveal className="text-center">
-              <Eyebrow dark>A closer look</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
-                See Gymbo in action.
+              {HOME.gallery.eyebrow ? <Eyebrow dark>{HOME.gallery.eyebrow}</Eyebrow> : null}
+              <h2 className="text-[clamp(24px,3.2vw,36px)] font-black mx-auto" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
+                {HOME.gallery.heading}
               </h2>
-              <p className="mt-4 text-[15px] mx-auto" style={{ color: F.boneMuted, fontFamily: SANS, maxWidth: "40ch" }}>
-                Screens shown with sample data.
+              <p className="mt-2 text-[14px] mx-auto" style={{ color: F.boneMuted, fontFamily: SANS, maxWidth: "40ch" }}>
+                {HOME.gallery.note}
               </p>
             </Reveal>
 
-            <div className="mt-10 flex items-center justify-center gap-4" aria-label="Gallery controls">
-              <button
-                type="button"
-                onClick={() => scrollGalleryTo(galleryIndex - 1)}
-                disabled={galleryIndex === 0}
-                aria-label="Show previous Gymbo screen"
-                {...darkIconButton("h-10 w-10")}
-              >
-                <ChevronLeft size={18} aria-hidden="true" />
-              </button>
-              <p className="min-w-[5.5rem] text-center text-[13px] font-bold tabular-nums" style={{ color: F.boneMuted, fontFamily: SANS }} aria-live="polite">
-                {galleryIndex + 1} of {SCREENS.length}
-              </p>
-              <button
-                type="button"
-                onClick={() => scrollGalleryTo(galleryIndex + 1)}
-                disabled={galleryIndex === SCREENS.length - 1}
-                aria-label="Show next Gymbo screen"
-                {...darkIconButton("h-10 w-10")}
-              >
-                <ChevronRight size={18} aria-hidden="true" />
-              </button>
-            </div>
-
-            <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel mt-6 flex gap-6 md:gap-10 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label="See Gymbo in action gallery" aria-describedby="gallery-position">
+            <div ref={galleryRef} onScroll={syncGalleryPosition} className="carousel relative mt-5 flex gap-5 md:gap-8 overflow-x-auto snap-x snap-mandatory -mx-5 px-5 md:mx-0 md:px-0 pb-2" role="region" aria-label={HOME.gallery.region} aria-describedby="gallery-position">
               {SCREENS.map((s, index) => (
                 <div key={s.slug} data-gallery-index={index} tabIndex={0} className="snap-center shrink-0 flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
-                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={360} />
-                  <p className="mt-6 text-center text-[14px] md:text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
+                  {/* Her round 2: smaller screens on phone, iPad and laptop. */}
+                  <ScreenshotFrame slug={s.slug} alt={s.alt} screenWidth={210} />
+                  <p className="mt-3 text-center text-[13px] md:text-[14px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.5, maxWidth: "22ch" }}>
                     {s.caption}
                   </p>
                 </div>
               ))}
             </div>
-            <p id="gallery-position" className="sr-only">Use the previous and next buttons, arrow keys, or horizontal swipe to browse all {SCREENS.length} Gymbo screens.</p>
+            <p id="gallery-position" className="sr-only">{HOME.gallery.help(SCREENS.length)}</p>
 
-            <Reveal className="mt-12 flex flex-col items-center gap-3">
-              <div className="flex flex-col items-center">
-                <StartFreeCTA dark size="lg" position="gallery" variant="secondary" />
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ───────── why we built gymbo (F5 dedup + F6 restructure) ───────── */}
-        <section aria-label="Why we built Gymbo" style={{ background: F.beige }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
-            <Reveal className="text-center">
-              <Eyebrow>Why we built Gymbo</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
-                Built in India for Indian trainers
-              </h2>
-              <p className="mt-4 text-[16px] mx-auto" style={{ color: F.inkAnchor, fontFamily: SANS, maxWidth: "50ch" }}>
-                WhatsApp threads, paper registers, and mental math can only carry a training business so far. Payments start slipping through the cracks, schedules live in someone's head, and looking professional means building your own invoices from scratch. We built Gymbo to replace all of that: one app that tracks every class and payment, keeps your schedule straight, and makes you look like the business you already are. Your client list stays yours too: Gymbo does not send messages to your clients.
-              </p>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ───────── pricing ───────── */}
-        <section id="pricing" data-testid="pricing-section" aria-label="Pricing" style={{ background: F.charcoal }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
-            <Reveal className="text-center">
-              <Eyebrow dark>Pricing</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
-                {PRICING_HEADING}
-              </h2>
-            </Reveal>
-
-            <div className="mt-12 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
-              {PRICING.map((plan) => {
-                const hi = plan.highlight;
+            {/* Dots instead of "1 of 6". Each dot is a 44px button; the visible mark is small. */}
+            <div className="mt-1 flex items-center justify-center" role="group" aria-label={HOME.gallery.controls}>
+              {SCREENS.map((s, index) => {
+                const current = index === galleryIndex;
                 return (
-                  <Reveal key={plan.name} className="flex">
-                    <div className="flex flex-col w-full p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
-                      <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
-                        {plan.tagline}
-                      </span>
-                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
-                      <div className="flex items-baseline gap-1.5 mb-1">
-                        <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
-                        {plan.period ? <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span> : null}
-                      </div>
-                      <p className="text-[12px] mb-5" style={{ color: hi ? "rgba(26,26,26,0.6)" : F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
-                      {/* gy-1vd9qy.10.4: both cards say Start free and go to the app's sign-up (mt-auto pins the button to the card bottom). */}
-                      <a
-                        {...signupCtaProps(plan.highlight ? "pricing-pro" : "pricing-free")}
-                        className={`mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`}
-                        style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}
-                      >
-                        {START_FREE_LABEL}
-                      </a>
-                    </div>
-                  </Reveal>
+                  <button key={s.slug} type="button" data-testid="gallery-dot" onClick={() => scrollGalleryTo(index)} aria-label={HOME.gallery.dot(index + 1, SCREENS.length, s.caption)} aria-current={current ? "true" : undefined} className="grid place-items-center w-11 h-11 rounded-full focus-visible:outline-none gy-focus-ring-dark">
+                    <span aria-hidden="true" className="block h-2 rounded-full transition-all duration-150" style={{ width: current ? 20 : 8, background: current ? F.marigold : "var(--g-color-grey-icon-muted-dark)" }} />
+                  </button>
                 );
               })}
             </div>
-            <Reveal className="text-center mt-8">
-              <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{PRICING_PAYMENT_LINE}</p>
+
+            <Reveal className="mt-3 flex flex-col items-center">
+              <StartFreeCTA dark size="lg" position="gallery" />
             </Reveal>
           </div>
         </section>
 
-        {/* ───────── faq ───────── */}
-        <section id="faq" aria-label="Frequently asked questions" style={{ background: F.beige }}>
-          <div className="max-w-[800px] mx-auto px-5 md:px-12 py-16 md:py-24">
-            <Reveal className="text-center mb-10">
-              <Eyebrow>Questions</Eyebrow>
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "16ch" }}>
-                Everything you might ask.
-              </h2>
-            </Reveal>
-            <div className="flex flex-col">
+        {/* ───────── why we built gymbo + pricing, ONE section (her round 2) ───────── */}
+        <section id="pricing" data-testid="pricing-section" aria-label={HOME.pricing.label}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-8 md:py-10">
+            <div data-testid="built-and-pricing" className="rounded-[var(--g-radius-xl)] px-5 py-6 md:px-10 md:py-8 grid lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] gap-8 lg:gap-10 items-center" style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
+              <Reveal>
+                {HOME.built.eyebrow ? <Eyebrow dark>{HOME.built.eyebrow}</Eyebrow> : null}
+                <h2 className="text-[clamp(24px,3.2vw,36px)] font-black" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
+                  {HOME.built.heading}
+                </h2>
+                <p className="mt-3 text-[15px]" style={{ color: F.boneMuted, fontFamily: SANS, maxWidth: "60ch" }}>
+                  {HOME.built.body}
+                </p>
+              </Reveal>
+              <div>
+                <Reveal>
+                  {HOME.pricing.eyebrow ? <Eyebrow dark>{HOME.pricing.eyebrow}</Eyebrow> : null}
+                  <h3 className="text-[17px] md:text-[19px] font-bold" style={{ fontFamily: SANS, lineHeight: 1.3, color: F.bone }}>
+                    {HOME.pricing.heading}
+                  </h3>
+                </Reveal>
+                <div className="mt-4 grid sm:grid-cols-2 gap-4 items-stretch">
+                  {PRICING.map((plan) => {
+                    const hi = plan.highlight;
+                    return (
+                      <Reveal key={plan.name} className="flex">
+                        <div className="flex flex-col w-full p-5 rounded-[var(--g-radius-lg)]" style={{ background: F.charcoalCard2, border: hi ? `2px solid ${F.marigold}` : `1px solid ${CARD_LINE}` }}>
+                          <h4 className="text-[18px] font-bold" style={{ fontFamily: SANS, color: F.bone }}>{plan.name}</h4>
+                          <div className="flex items-baseline gap-1.5 mt-1 mb-1">
+                            <span className="text-[28px] font-bold" style={{ fontFamily: SANS, color: F.bone }}>₹{plan.price}</span>
+                            {plan.period ? <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: F.boneLabel, fontFamily: SANS }}>{plan.period}</span> : null}
+                          </div>
+                          <p className="text-[12px] mb-4" style={{ color: F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
+                          {/* gy-1vd9qy.10.4: both cards say Start free and go to the app's sign-up (mt-auto pins the button to the card bottom). */}
+                          <a
+                            {...signupCtaProps(plan.highlight ? "pricing-pro" : "pricing-free")}
+                            className="mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-dark"
+                            style={{ background: F.marigold, color: F.onCta, fontFamily: SANS }}
+                          >
+                            {START_FREE_LABEL}
+                          </a>
+                        </div>
+                      </Reveal>
+                    );
+                  })}
+                </div>
+                <Reveal className="mt-3">
+                  <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{HOME.pricing.payment}</p>
+                </Reveal>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ───────── faq (her round 2: less height; two columns from md) ───────── */}
+        <section id="faq" aria-label={HOME.faq.label}>
+          <div className="max-w-[1000px] mx-auto px-5 md:px-12 py-4 md:py-6">
+            {HOME.faq.eyebrow || HOME.faq.heading ? (
+              <Reveal className="text-center mb-4">
+                {HOME.faq.eyebrow ? <Eyebrow dark>{HOME.faq.eyebrow}</Eyebrow> : null}
+                {HOME.faq.heading ? (
+                  <h2 className="text-[clamp(24px,3.2vw,36px)] font-black mx-auto" style={{ fontFamily: SANS, lineHeight: 1.2, color: F.bone }}>
+                    {HOME.faq.heading}
+                  </h2>
+                ) : null}
+              </Reveal>
+            ) : null}
+            <div className="grid md:grid-cols-2 md:gap-x-8 items-start">
               {FAQ.map((item) => (
                 <Reveal key={item.q}>
-                  <details className="faq py-1" style={{ borderBottom: "1px solid var(--c-line)" }}>
-                    <summary className="flex items-center justify-between gap-4 py-5">
-                      <span className="text-[16px] md:text-[18px] font-bold" style={{ fontFamily: SERIF, color: F.ink }}>{item.q}</span>
-                      <span className="faq-plus shrink-0 grid place-items-center w-7 h-7 rounded-full transition-transform duration-200" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText }}>
+                  <details className="faq" style={{ borderBottom: `1px solid ${CARD_LINE}` }}>
+                    <summary className="flex items-center justify-between gap-4 py-2.5 min-h-12 rounded-md focus-visible:outline-none gy-focus-ring-dark">
+                      <span className="text-[15px] font-bold" style={{ fontFamily: SANS, color: F.bone }}>{item.q}</span>
+                      <span className="faq-plus shrink-0 grid place-items-center w-7 h-7 rounded-full transition-transform duration-200" style={{ background: NEUTRAL_TILE, color: F.bone }}>
                         <Plus size={15} strokeWidth={2.4} />
                       </span>
                     </summary>
-                    <p className="pb-3 pr-10 text-[14px] md:text-[15px]" style={{ color: F.inkMuted, fontFamily: SANS, lineHeight: 1.6 }}>{item.a}</p>
+                    <p className="pb-3 pr-10 text-[14px]" style={{ color: F.boneMuted, fontFamily: SANS, lineHeight: 1.6 }}>{item.a}</p>
                     {"waitlist" in item && item.waitlist ? (
                       // Secondary path (gy-1vd9qy.10.4): the iPhone-app email list stays reachable from this answer.
-                      <InlineWaitlist className="pb-5" reducedMotion={prefersReduced}>
-                        <WaitlistPlainButton location="cta-section" className="inline-flex items-center min-h-11 text-[14px] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-light" style={{ color: F.amberText, fontFamily: SANS, fontWeight: 600 }}>
-                          Tell me when the iPhone app is out
+                      <InlineWaitlist className="pb-3" reducedMotion={prefersReduced}>
+                        <WaitlistPlainButton location="cta-section" className="inline-flex items-center min-h-11 text-[14px] underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-dark" style={{ color: F.bone, fontFamily: SANS, fontWeight: 600 }}>
+                          {HOME.faq.waitlist}
                         </WaitlistPlainButton>
                       </InlineWaitlist>
-                    ) : <div className="pb-2" />}
+                    ) : null}
                   </details>
                 </Reveal>
               ))}
             </div>
-            <Reveal className="mt-10 text-center">
-              <a href="/compare/gymbo-vs-wellnessz/" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
-                Comparing trainer apps? See how Gymbo compares to WellnessZ →
+            <Reveal className="mt-2 text-center">
+              <a href="/compare/gymbo-vs-wellnessz/" className="inline-flex items-center min-h-11 text-[14px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80 rounded-md focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.bone, fontFamily: SANS }}>
+                {HOME.faq.compare} →
               </a>
             </Reveal>
           </div>
         </section>
 
         {/* ───────── final cta ───────── */}
-        <section id="cta" data-testid="footer-cta-section" aria-label="Start free" style={{ background: F.charcoal }}>
-          <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
+        <section id="cta" data-testid="footer-cta-section" aria-label={HOME.closing.label}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-8 md:py-10 flex flex-col items-center text-center">
             <Reveal>
-              <Eyebrow dark>{STATUS_LANGUAGE}</Eyebrow>
-              <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
-                Payments, schedules, and clients in one app.
+              {HOME.closing.eyebrow ? <Eyebrow dark>{HOME.closing.eyebrow}</Eyebrow> : null}
+              {/* Her round 2: ONE line on iPad and desktop. The size follows the width from 768 up. */}
+              <h2 data-testid="closing-heading" className="text-[28px] md:text-[clamp(24px,3.2vw,40px)] md:whitespace-nowrap font-black" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
+                {HOME.closing.heading}
               </h2>
-              <p className="mt-4 text-[15px] gy-text-balance" style={{ color: F.boneMuted, fontFamily: SANS }}>
-                {FINAL_CTA_SUB}
+              <p className="mt-2 text-[15px] gy-text-balance" style={{ color: F.boneMuted, fontFamily: SANS }}>
+                {HOME.closing.sub}
               </p>
             </Reveal>
 
-            <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
+            {/* Her round 2: the two buttons share one line from 640 up (iPad included). */}
+            <Reveal className="mt-4 w-full flex flex-col sm:flex-row items-center justify-center gap-3">
               <StartFreeCTA dark size="lg" position="final" className="w-full sm:w-auto" />
-              <WhatsAppButton location="cta-section">Talk to the founder</WhatsAppButton>
+              <WhatsAppButton location="cta-section">{HOME.closing.talk}</WhatsAppButton>
             </Reveal>
-
           </div>
         </section>
       </main>
 
       {/* ───────── footer ───────── */}
-      <footer className="gy-clear-sticky-bar" style={{ background: F.charcoal, borderTop: "1px solid rgba(240,240,235,0.06)" }}>
-        <div className="max-w-[1100px] mx-auto px-5 md:px-12 py-8">
-          <span className="block text-[13px] mb-6" style={{ color: F.boneMuted, fontFamily: SANS }}>
-            <span className="font-bold" style={{ fontFamily: SERIF, color: F.bone }}>Gymbo.</span> Your business, in your pocket.
+      <footer className="gy-clear-sticky-bar" style={{ borderTop: `1px solid ${CARD_LINE}` }}>
+        <div className="max-w-[1100px] mx-auto px-5 md:px-12 py-6">
+          <span className="block text-[13px] mb-4" style={{ color: F.boneMuted, fontFamily: SANS }}>
+            <span className="font-bold" style={{ fontFamily: SANS, color: F.bone }}>{HOME.footer.name}</span> {HOME.footer.tagline}
           </span>
           {/* gm-1w6 slice 3 / gy-3mpvo designer ruling — the footer is the canonical way
               into the content estate: four labelled groups, no SEO links in the top nav,
               no in-page band. 2 cols below 1024 (2x2 from 640), 4 at >=1024. Research
               links the deep slug on purpose: /research/ has no index and 404s. */}
-          <nav aria-label="Footer navigation" className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+          <nav aria-label={HOME.footer.nav} className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-4">
             {FOOTER_GROUPS.map((g) => (
               <div key={g.label}>
                 <p id={`footer-${g.label.toLowerCase()}`} className="text-[12px] font-bold uppercase mb-2" style={{ color: F.boneLabel, fontFamily: SANS, letterSpacing: "0.09em" }}>{g.label}</p>
                 <ul aria-labelledby={`footer-${g.label.toLowerCase()}`} className="list-none p-0 m-0">
                   {g.links.map((l) => (
                     <li key={l.label}>
-                      <a href={l.href} className="flex items-center min-h-11 text-[13px] transition-colors" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
+                      <a href={l.href} className="flex items-center min-h-11 text-[13px] transition-colors rounded-md focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.boneMuted, fontFamily: SANS }}>{l.label}</a>
                     </li>
                   ))}
                 </ul>
               </div>
             ))}
           </nav>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-8 pt-4" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-3 mt-4 pt-3" style={{ borderTop: "1px solid rgba(240,240,235,0.05)" }}>
             {/* App Review guideline 1.5 (pm, 2026-09-18): the Support URL (getgymbo.com)
                 must show a visible contact method. The address was already here; it is
                 now LABELLED as support and anchored, so the footer "Support" link lands on
@@ -650,14 +484,19 @@ export default function App() {
                 because the zone's email obfuscation otherwise serves "[email protected]"
                 to anything that reads the page without JavaScript (the audit did). */}
             <p id="support" className="text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>
-              Support: <a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
+              {`${HOME.footer.support} `}<a href="mailto:damini@materiallab.io" className="inline-flex items-center min-h-11 underline" style={{ color: F.boneMuted }}>damini@materiallab.io</a>
             </p>
             <div className="flex items-center gap-4">
               <a href="https://www.linkedin.com/company/material-lab-io" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>LinkedIn</a>
               <a href={WHATSAPP_PLAIN} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center min-h-11 min-w-11 text-[12px]" style={{ color: F.boneLabel, fontFamily: SANS }}>WhatsApp</a>
-              <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>© 2026 Material Lab.</span>
+              <span className="text-[11px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{HOME.footer.copyright}</span>
             </div>
           </div>
+          <p className="text-center">
+            <a data-testid="made-by" href={HOME.footer.madeBy.href} target="_blank" rel="noopener" className="inline-flex items-center justify-center min-h-11 px-2 text-[13px] underline underline-offset-4 rounded-md focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.boneMuted, fontFamily: SANS }}>
+              {HOME.footer.madeBy.label}
+            </a>
+          </p>
         </div>
       </footer>
 
@@ -665,88 +504,6 @@ export default function App() {
       <StickyCtaBar show={showStickyCTA && !barHiddenBySection} />
     </div>
     </WaitlistOverlayProvider>
-  );
-}
-
-/* ── brand-touchpoint marquee (under the "Your brand" pillar, F2 gy-wh9li.2) ──
-   Kaushik (round 7): "Your brand everywhere" is a subset of "Look
-   professional" — no standalone section, just "a little marquee ... that
-   talks about all the brand touch points". Replaces the old two-grid
-   BrandTouchpoints block. Designer spec (2026-08-14): compact chips, single
-   continuous auto-scroll, label-free (gy-slagn — no shipped/forthcoming
-   split), pause on hover + keyboard focus, static wrapped row under
-   prefers-reduced-motion.
-
-   Chip list is the source-verified touchpoints (marketer, gy-mdqxp
-   2026-08-13) — shortened to scannable labels, tangible/shipped ones
-   leading. 'Booking link' and 'Fitness reports' were REMOVED 2026-09-26
-   (pm ruling on gy-l6dsr): not built, so they must not sit in a strip
-   readers take as shipped. They return only with product proof of shipped
-   status (a screenshot on a released build). */
-const MARQUEE_CHIPS: { name: string; icon: LucideIcon }[] = [
-  { name: "QR profile", icon: QrCode },
-  { name: "Share links", icon: Share2 },
-  { name: "PDF statements", icon: FileText },
-  { name: "Your logo on client statements", icon: Smartphone },
-];
-
-/* The track scrolls by -50%, so each HALF must be at least as wide as the widest screen or an empty band shows at the end of the loop
-   (gy-1vd9qy.10.2: 6 chips left ~325px empty at 1440, 4 chips ~670px). Two identical halves of MARQUEE_HALF_COPIES copies each: the half is
-   ~770px at 4 chips, so 3 copies (~2.3k px) fill up to 2300px wide. tests/marquee-fill.spec.ts measures it. */
-const MARQUEE_HALF_COPIES = 3;
-const MARQUEE_TRACK = Array.from({ length: MARQUEE_HALF_COPIES * 2 }, () => MARQUEE_CHIPS).flat();
-
-function BrandMarquee() {
-  const prefersReduced = useReducedMotion();
-  return (
-    <div style={{ background: F.charcoal }}>
-      <div className="pt-10 md:pt-14 pb-16 md:pb-24">
-        <span className="block text-center text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>
-          Your brand, everywhere
-        </span>
-        {prefersReduced ? (
-          <div role="region" aria-label="Brand touchpoints" className="mx-auto flex flex-wrap justify-center gap-2 max-w-[820px] px-5">
-            {MARQUEE_CHIPS.map((c) => (
-              <MarqueeChip key={c.name} t={c} />
-            ))}
-          </div>
-        ) : (
-          <div
-            role="region"
-            aria-label="Brand touchpoints"
-            tabIndex={0}
-            className="marquee-mask relative overflow-hidden"
-          >
-            <div className="marquee-track flex gap-2 w-max">
-              {MARQUEE_TRACK.map((c, i) => (
-                <MarqueeChip key={`${c.name}-${i}`} t={c} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* One brand-touchpoint chip — compact, icon + name only (no description),
-   same gradient-border card treatment as the rest of the site's chips. */
-function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
-  return (
-    <span
-      className="shrink-0 flex items-center gap-2 rounded-[var(--g-radius-lg)] pl-2.5 pr-4 h-11"
-      style={{
-        border: "1px solid transparent",
-        backgroundImage: `linear-gradient(${F.charcoalCard}, ${F.charcoalCard}), linear-gradient(155deg, rgba(240,240,235,0.14), rgba(240,240,235,0.02) 45%, rgba(240,240,235,0.06))`,
-        backgroundOrigin: "border-box",
-        backgroundClip: "padding-box, border-box",
-      }}
-    >
-      <span aria-hidden="true" className="grid place-items-center shrink-0 w-[26px] h-[26px] rounded-md" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
-        <t.icon size={14} strokeWidth={2} />
-      </span>
-      <span className="text-[13px] md:text-[14px] font-bold whitespace-nowrap" style={{ fontFamily: SANS, color: F.bone }}>{t.name}</span>
-    </span>
   );
 }
 
@@ -784,14 +541,12 @@ function StickyCtaBar({ show }: { show: boolean }) {
       className="md:hidden fixed left-0 right-0 bottom-0 z-50 px-4 pt-3 transition-transform duration-300"
       style={{
         paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)",
-        background: "var(--c-nav-bg)",
-        backdropFilter: "saturate(140%) blur(12px)",
-        WebkitBackdropFilter: "saturate(140%) blur(12px)",
-        borderTop: "1px solid var(--c-line)",
+        background: PAGE_BLACK,
+        borderTop: `1px solid ${CARD_LINE}`,
         transform: show ? "translateY(0)" : "translateY(120%)",
       }}
     >
-      <WhatsAppCTA size="lg" className="w-full" location="footer">Talk to the founder</WhatsAppCTA>
+      <WhatsAppCTA dark size="lg" className="w-full" location="footer">{HOME.footer.talk}</WhatsAppCTA>
     </div>
   );
 }

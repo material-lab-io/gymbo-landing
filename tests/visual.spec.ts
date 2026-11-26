@@ -73,16 +73,18 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
   if (!hasCarousel) return;
   // gy-okffji: no fixed waits. Each jump is followed by "the strip is at rest and
   // its position cue has not changed for two frames", which a fast runner meets
-  // at once and a slow one meets when it has actually caught up. The cue
-  // must also equal the card nearest the strip's centre at the current scroll
-  // position, so a runner that has not yet processed the scroll event cannot be
-  // mistaken for a settled one.
+  // at once and a slow one meets when it has actually caught up. The cue is the
+  // current dot (gy-sk86p2: round 2 replaced the "N of M" counter with dots); it
+  // must also equal what App.tsx derives from the current scroll position, so a
+  // runner that has not yet processed the scroll event cannot be mistaken for a
+  // settled one.
   const settle = (target: 'end' | 'start') =>
     locator.evaluate(
       (el, which) =>
         new Promise<void>((resolve, reject) => {
           const strips = Array.from(el.querySelectorAll<HTMLElement>('.carousel'));
-          const cue = () => el.querySelector('[aria-live="polite"]')?.textContent?.trim() ?? '';
+          const dots = () => Array.from(el.querySelectorAll('[data-testid="gallery-dot"]'));
+          const cue = () => dots().flatMap((d, i) => (d.getAttribute('aria-current') === 'true' ? [i] : [])).join(',');
           const snapshot = () => JSON.stringify([strips.map((c) => c.scrollLeft), cue()]);
           const deadline = Date.now() + 10000;
           let last = '';
@@ -99,11 +101,11 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
                 ? c.scrollLeft <= 24
                 : c.scrollLeft >= c.scrollWidth - c.clientWidth - 24,
             );
-            // The cue is "the card closest to the strip's centre" (App.tsx
-            // syncGalleryPosition), so at rest on a wide viewport it can read
-            // "2 of N" at scrollLeft 0. Require it to equal that same
-            // function of the CURRENT scroll position: a runner that has not
-            // processed the scroll event yet still shows the old cue.
+            // The cue is App.tsx syncGalleryPosition: the first dot at the start of
+            // the strip, the last at its end, else the card closest to the centre.
+            // Require it to equal that same function of the CURRENT scroll
+            // position: a runner that has not processed the scroll event yet still
+            // shows the old dot.
             const cueOk = strips.every((c) => {
               const cards = Array.from(c.querySelectorAll<HTMLElement>('[data-gallery-index]'));
               if (!cards.length) return true;
@@ -114,7 +116,9 @@ async function scrollHorizontalCarousels(page: Page, locator: Locator) {
                 const b = Math.abs(cards[best].offsetLeft + cards[best].offsetWidth / 2 - centre);
                 if (d < b) best = i;
               });
-              return cue() === `${best + 1} of ${cards.length}`;
+              const max = c.scrollWidth - c.clientWidth;
+              const expected = c.scrollLeft <= 1 ? 0 : c.scrollLeft >= max - 1 ? cards.length - 1 : best;
+              return dots().length === cards.length && cue() === String(expected);
             });
             if (calm >= 2 && atRest && cueOk) return resolve();
             if (Date.now() > deadline) return reject(new Error(`carousel never settled at ${which}: ${now}`));
@@ -228,13 +232,13 @@ test.describe('visual baselines', () => {
       await scrollHorizontalCarousels(page, locator);
       await waitImagesLoaded(locator);
       if (section.testId === 'gallery-section') {
-        // gy-okffji AC1: the gallery's "N of M" position cue is the value that was
-        // runner-speed dependent. Assert it by name so a run that never saw it is
-        // red, not a silent "none" in the log.
+        // gy-okffji AC1: the gallery's position cue (now the current dot) is the value
+        // that was runner-speed dependent. Assert it by name so a run that never saw
+        // it is red, not a silent "none" in the log.
         await expect(
-          locator.locator('[aria-live="polite"]'),
+          locator.locator('[data-testid="gallery-dot"][aria-current="true"]'),
           'GALLERY POSITION CUE IS PRESENT AND SETTLED',
-        ).toHaveText(/^\d+ of \d+$/);
+        ).toHaveCount(1);
       }
       const snapshotName = `${section.name}-light.png`;
       // gy-h2z6x: refuse (or record) BEFORE the pixel comparison — see

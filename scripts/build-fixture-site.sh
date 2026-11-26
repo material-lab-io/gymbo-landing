@@ -23,12 +23,13 @@ TITLE_TAG='<title>Gymbo — the app for independent trainers</title>'
 PRICING_LINE='<p>Built for trainers. Just ₹399/mo or ₹2,999/yr (save 37%).</p>'
 [ "$MODE" = "missing-pricing" ] && PRICING_LINE='<p>Built for trainers.</p>'
 
-# A dark-mode theme-flip script — reintroduced only for the dark-theme-leak
-# fixture, to prove the light-only invariant gate (PM scope addition,
-# 2026-08-12) would catch a regression of gy-uesmd/gy-31moh.
+# A theme-flip script, reintroduced only for the theme-leak fixture, to prove the one-theme
+# invariant gate would catch a regression of gy-uesmd/gy-31moh. The mode keeps its old name
+# (gate-selftest.yml calls it): since gy-sk86p2 the site is black, so the leak is a stored
+# "light" value flipping the page light.
 THEME_SCRIPT=""
 if [ "$MODE" = "dark-theme-leak" ]; then
-  THEME_SCRIPT='<script>if(localStorage.getItem("theme")==="dark"){document.documentElement.setAttribute("data-theme","dark");document.body.style.background="#0b0b0d";}</script>'
+  THEME_SCRIPT='<script>if(localStorage.getItem("theme")==="light"){document.documentElement.setAttribute("data-theme","light");document.body.style.background="#fafaf7";}</script>'
 fi
 
 ERROR_SCRIPT=""
@@ -65,8 +66,8 @@ cat > "$OUT/index.html" <<HTML
 <head>
 $TITLE_TAG
 <meta property="og:title" content="Gymbo">
-<meta name="theme-color" content="#FAFAF7">
-<style>body{background:#FAFAF7;}</style>
+<meta name="theme-color" content="#0f0f0f">
+<style>body{background:#0f0f0f;}</style>
 </head>
 <body>
 $PRICING_LINE

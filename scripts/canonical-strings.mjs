@@ -90,6 +90,10 @@ export function checkFacts(doc, factsMap, tsSource) {
 // 8-letter word ('data-analysis.js') is never mistaken for one; if two files still reduce to one name the
 // scan throws instead of guessing.
 const SCANNED = /\.(html?|md|txt|xml|json|m?js|css|svg|webmanifest)$/i;
+// gy-sk86p2.3 (pm ruling on gy-sk86p2.2): minified GSAP carries names such as "Power0,rs" that read as a rupee amount. GSAP ships in
+// its own chunk (vite.config.ts manualChunks: node_modules/gsap only), and THAT ONE built name is not price-read. EXACT names only:
+// no pattern, no directory, and the price rule itself is unchanged. Everything of ours (heroMotion included) stays read.
+export const VENDOR_NOT_PRICE_READ = Object.freeze(["assets/vendor-gsap.js"]);
 // gy-123aq: a build hash that happens to be 8 lowercase letters ('posts-pnqcffbs.js', which is what the
 // real build emitted for this content, deterministically) carries no digit or capital, so the strict rule above
 // leaves it unstripped and the gate then reports the registered 'assets/posts.js' missing and 'posts-pnqcffbs.js'
@@ -98,8 +102,8 @@ const SCANNED = /\.(html?|md|txt|xml|json|m?js|css|svg|webmanifest)$/i;
 let knownAssetNames;
 const registeredAssetNames = () => {
   if (!knownAssetNames) {
-    try { knownAssetNames = new Set([...readFileSync(join(CANON_DIR, "price-surfaces.json"), "utf8").matchAll(/"(assets\/[^"]+\.(?:m?js|css))"/g)].map((m) => m[1])); }
-    catch { knownAssetNames = new Set(); }
+    try { knownAssetNames = new Set([...VENDOR_NOT_PRICE_READ, ...[...readFileSync(join(CANON_DIR, "price-surfaces.json"), "utf8").matchAll(/"(assets\/[^"]+\.(?:m?js|css))"/g)].map((m) => m[1])]); }
+    catch { knownAssetNames = new Set(VENDOR_NOT_PRICE_READ); }
   }
   return knownAssetNames;
 };
@@ -259,6 +263,7 @@ const listBuiltText = (root, visibleOnly = false) => {
       if (statSync(join(root, rel)).isDirectory()) { walk(rel); continue; }
       if (!SCANNED.test(e)) continue;
       const name = builtName(rel);
+      if (VENDOR_NOT_PRICE_READ.includes(name)) continue;
       if (out.has(name)) throw new Error(`${rel} and another built file both reduce to the same built name ${name}; the price pin cannot tell them apart, so it refuses to guess`);
       out.set(name, priceText(readFileSync(join(root, rel), "utf8"), rel, visibleOnly));
     }

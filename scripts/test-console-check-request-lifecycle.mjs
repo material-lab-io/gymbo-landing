@@ -35,12 +35,15 @@ const htmlFor = (mode) => {
     "net-sub-plus-404": '<script src="/net-fault.js"></script><script src="/broken.js"></script>',
     "first-party-500": '<script src="/server-error.js"></script>',
     "isolated-third-party": '<script src="https://analytics.getgymbo.com/stall.js"></script>',
+    "flip-light": '<script>if (localStorage.getItem("theme") === "light") document.body.style.background = "#fafaf7";</script>',
+    "flip-dark-attr": '<script>if (localStorage.getItem("theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");</script>',
+    "flip-dark-shade": '<script>if (localStorage.getItem("gymbo-theme") === "dark") document.body.style.background = "#0b0b0d";</script>',
   };
 
   return `<!doctype html>
 <html>
   <head><title>Gymbo fixture</title></head>
-  <body style="background:#FAFAF7">${scripts[mode]}</body>
+  <body style="background:#0f0f0f">${scripts[mode]}</body>
 </html>`;
 };
 
@@ -78,9 +81,9 @@ const runFixture = async (mode, env = {}) => {
 
     if (request.url === "/net-once.js") {
       // Chromium silently retries one reset on a reused socket, so key the
-      // fault on the page load, not the request count: load 1 = dark-seed
-      // check, load 2 = first route attempt (faulted), load 3 = the retry.
-      if (pageLoads === 2) {
+      // fault on the page load, not the request count: loads 1 and 2 = the two
+      // theme-seed checks, load 3 = first route attempt (faulted), load 4 = retry.
+      if (pageLoads === 3) {
         request.socket.destroy();
         return;
       }
@@ -90,8 +93,8 @@ const runFixture = async (mode, env = {}) => {
     }
 
     if (request.url === "/net-twice.js") {
-      // Churn that outlasts one retry: loads 2 and 3 fault, load 4 is clean.
-      if (pageLoads === 2 || pageLoads === 3) {
+      // Churn that outlasts one retry: loads 3 and 4 fault, load 5 is clean.
+      if (pageLoads === 3 || pageLoads === 4) {
         request.socket.destroy();
         return;
       }
@@ -101,7 +104,7 @@ const runFixture = async (mode, env = {}) => {
     }
 
     if (request.url === "/net-dark-once.js") {
-      // The dark-seed check is load 1; it must be retried like a route.
+      // The theme-seed check is load 1; it must be retried like a route.
       if (pageLoads === 1) {
         request.socket.destroy();
         return;
@@ -268,10 +271,24 @@ assert.match(netTwice.output, /RETRY \/: runner-network fault on attempt 2/);
 assert.match(netTwice.output, /settling 200 ms before attempt 3\/3/);
 assert.match(netTwice.output, /all 1 pages clean/);
 
-// ... the dark-seed check is retried too ...
+// gy-sk86p2: a stored value must not change the one theme. Each leak reacts to one seeded value only, so a
+// check that seeds one value, or reads only the background or only data-theme, lets one of them through.
+for (const [mode, seed, seen] of [
+  ["flip-light", "light", /theme changed \(bg=rgb\(250, 250, 247\), data-theme=null\)/],
+  ["flip-dark-attr", "dark", /theme changed \(bg=rgb\(15, 15, 15\), data-theme=dark\)/],
+  ["flip-dark-shade", "dark", /theme changed \(bg=rgb\(11, 11, 13\), data-theme=null\)/],
+]) {
+  const flipped = await runFixture(mode);
+  assert.equal(flipped.code, 1, `${mode} must FAIL:\n${flipped.output}`);
+  assert.match(flipped.output, new RegExp(`FAIL / with localStorage theme="${seed}" pre-seeded`));
+  assert.match(flipped.output, seen);
+  assert.match(flipped.output, new RegExp(`OK   / stays the one black even with localStorage theme="${seed === "dark" ? "light" : "dark"}"`));
+}
+
+// ... the theme-seed check is retried too ...
 const netDark = await runFixture("net-dark-once", netAlias);
-assert.equal(netDark.code, 0, `dark-seed network fault should pass on retry:\n${netDark.output}`);
-assert.match(netDark.output, /RETRY \/ \(dark-seeded\): runner-network fault on attempt 1/);
+assert.equal(netDark.code, 0, `theme-seed network fault should pass on retry:\n${netDark.output}`);
+assert.match(netDark.output, /RETRY \/ \(theme-seeded\): runner-network fault on attempt 1/);
 assert.match(netDark.output, /all 1 pages clean/);
 
 // ... and a fault that never clears is still COULD-NOT-EVALUATE after all 3

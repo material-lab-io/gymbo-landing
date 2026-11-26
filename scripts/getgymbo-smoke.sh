@@ -60,21 +60,19 @@ else
   fail "homepage not fetched (HTTP ${CODE:-none}): title/body/og/theme/price checks NOT RUN on a page that was never received. This is a fetch failure, not missing copy (gy-45fv7)"
 fi
 
-# --- 1b. Light-only theme invariant (PM scope addition, gy-ruxbj, 2026-08-12) ---
-# Kaushik was served a dark site with no escape (gy-31moh removed the toggle
-# but a runtime theme-flip script was still reading localStorage). Ruling:
-# LIGHT ONLY, dark removed entirely (gy-uesmd). This is a STATIC regression
-# guard on the served HTML — it cannot see a post-hydration localStorage
-# flip (that needs a browser; see console-check.mjs's dark-seed check for
-# the assertion that covers gy-31moh's exact failure mode), but it does
-# catch the theme ever shipping dark by default again.
+# --- 1b. One-theme invariant (gy-ruxbj, 2026-08-12; colour moved by gy-sk86p2, 26 Nov) ---
+# Kaushik was served a theme he could not leave: a script read localStorage and flipped the
+# site after the toggle was removed (gy-31moh, gy-uesmd). The rule is ONE theme with no
+# switch. Damini's round 2 makes that theme the page black, #0f0f0f. This is a STATIC guard
+# on the served HTML; it cannot see a post-hydration flip (console-check.mjs's theme-seed
+# check covers that), but it catches another theme shipping by default.
 if [ "$HOME_OK" = 1 ]; then
-grep -qiE 'theme-color["'"'"'][^>]*content="#FAFAF[0-9A-F]"' "$HOME_FILE" \
-  && log "OK   theme-color meta is light (#FAFAFx family)" \
-  || fail "theme-color meta missing or not light — dark-by-default regression?"
-grep -qiE 'data-theme="dark"' "$HOME_FILE" \
-  && fail "raw HTML ships data-theme=\"dark\" — light-only invariant (gy-uesmd) broken" \
-  || log "OK   no data-theme=\"dark\" baked into served HTML"
+grep -qiE 'theme-color["'"'"'][^>]*content="#0f0f0f"' "$HOME_FILE" \
+  && log "OK   theme-color meta is the page black (#0f0f0f)" \
+  || fail "theme-color meta missing or not the page black (#0f0f0f): another theme shipping by default?"
+grep -qiE '<(html|body)[^>]*[[:space:]]data-theme=' "$HOME_FILE" \
+  && fail "raw HTML ships a data-theme attribute: one-theme invariant (gy-uesmd) broken" \
+  || log "OK   no data-theme attribute baked into served HTML"
 else
   log "SKIP theme checks: homepage not fetched (reported above)"
 fi

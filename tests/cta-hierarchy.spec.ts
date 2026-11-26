@@ -141,7 +141,10 @@ for (const where of ['top', 'middle', 'pricing', 'closing section'] as const) {
     if (where === 'closing section') await page.evaluate(() => document.getElementById('cta')!.scrollIntoView({ block: 'start' }));
     await settle(page);
     const filled = await filledAmberInViewport(page, { includePricing: where === 'pricing' });
-    expect(filled.length, `filled amber CTAs sharing this screen: ${JSON.stringify(filled)}`).toBeLessThanOrEqual(1);
+    // gy-sk86p2.3 L3 (Damini 26 Nov: every Start free button is yellow) outranks the one-per-screen rule inside pricing only:
+    // the two plan buttons may share a screen, and nothing else filled (the sticky bar) may join them.
+    if (where === 'pricing') expect(filled.filter((f) => f !== 'start-free:pricing'), `only the two plan buttons are filled here: ${JSON.stringify(filled)}`).toEqual([]);
+    else expect(filled.length, `filled amber CTAs sharing this screen: ${JSON.stringify(filled)}`).toBeLessThanOrEqual(1);
     if (where === 'top') {
       // Positive control: the count is not vacuous. The hero Start free is the one filled CTA on the first screen
       // at every width, so zero would mean the probe broke, not that the rule held.

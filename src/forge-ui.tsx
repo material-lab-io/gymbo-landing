@@ -77,6 +77,10 @@ export const SHADOW = {
   card: "var(--c-elevation-2)",
 };
 
+// gy-sk86p2.3 (Damini round 2): the home page is one black, the hero's own (the photo fades into exactly this value, gy-sk86p2.2).
+// The Forge black (--g-color-neutral-dark-0, #000) shows an edge against the hero art, so this is the art's colour, stated once.
+export const PAGE_BLACK = "#0f0f0f";
+
 export const SERIF = "var(--font-serif)"; // Merriweather
 export const SANS = "var(--font-sans)"; // Open Sans
 
@@ -264,17 +268,19 @@ const FORGE_CSS = `
           .feature-card-hover:hover{transform:scale(1.02);background-color:rgba(240,240,235,0.04)}
           .feature-card-hover:hover .feature-card-icon{transform:rotate(8deg) scale(1.08)}
         }
-        @keyframes g-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-        .marquee-mask{-webkit-mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent);mask-image:linear-gradient(to right,transparent,black 8%,black 92%,transparent)}
-        .marquee-track{animation:g-marquee 38s linear infinite}
-        .marquee-mask:hover .marquee-track,.marquee-mask:focus-within .marquee-track{animation-play-state:paused}
+        /* gy-sk86p2.3 round 2: the numbered feature cards. Size (web_designer, sheet ac9b43325f03, pm pick A): 300 px at 1440 (GYMBO 355),
+           ~200 on iPad, 150 on phones. --gy-num is the numeral's size; half of it sits above the card (the join
+           between sections), half inside, so the card pads its content down by the same amount. The fade is GYMBO's top-lit ellipse in
+           the yellows. Decorative (aria-hidden). */
+        .gy-card{--gy-num:clamp(150px,20.8vw,300px);position:relative;padding-top:calc(var(--gy-num) * .5)}
+        .gy-card-body{padding-top:calc(var(--gy-num) * .38)}
+        .gy-numeral{position:absolute;z-index:1;top:0;left:clamp(24px,4vw,56px);font-family:var(--font-serif);font-weight:900;font-size:var(--gy-num);line-height:1;pointer-events:none;color:var(--g-color-brand-marigold-500);background:radial-gradient(ellipse 90% 120% at 50% 0%,var(--g-color-brand-marigold-text-dark-hc) 0%,var(--g-color-brand-marigold-500) 45%,var(--g-color-brand-amber-text-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}
           .waiting-pulse{animation:none!important;box-shadow:0 0 0 0 rgba(245,158,11,.22)!important}
           .feature-card-hover,.feature-card-icon{transition:none!important}
           .feature-card-hover:hover,.feature-card-hover:hover .feature-card-icon{transform:none!important}
-          .marquee-track{animation:none!important;transform:none!important}
         }
       `;
 
@@ -430,6 +436,8 @@ export function signupCtaProps(position: SignupPosition) {
  */
 export function StartFreeCTA({ dark, size = "md", position, className = "", variant = "primary", children = START_FREE_LABEL }: { dark?: boolean; size?: "md" | "lg"; position: SignupPosition; className?: string; variant?: "primary" | "secondary"; children?: React.ReactNode }) {
   const v = ctaVisual(variant, { dark, size });
+  // gy-sk86p2.3 L3 (Damini 26 Nov): every Start free CTA is YELLOW = marigold (--g-color-brand-marigold-500, #FBBF24) on light and dark surfaces.
+  if (variant === "primary") v.style = { ...v.style, background: F.marigold };
   return (
     <a
       {...signupCtaProps(position)}

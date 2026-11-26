@@ -2,11 +2,16 @@ import { createHash } from "node:crypto";
 import { access, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
+// gy-sk86p2.2/.3 (pm ruling 26 Nov 11:0xZ): the HERO contract is the approved GYMBO hero (photo phone + app loop in the screen),
+// pinned by name AND bytes. The three-panel art it replaced must not come back (no file in public/mockups, no reference in src).
 const heroHashes = new Map([
-  ["mockups/hero-three-panel-800.webp", "8f85bed10239137286b9f2fd2b98fa81b29a1b0fa58c92b7de147191ed85b1d2"],
-  ["mockups/hero-three-panel-1200.webp", "b4cf57aebc029835663518a6b814185f9d0b25485c22aaa21d6165d86fc90286"],
-  ["mockups/hero-three-panel-1800.webp", "006706ef31dfb6fb9f3ba84336013189a595aa22d0f82d57784f3083fbdae3fe"],
-  ["mockups/hero-three-panel-1200.png", "b79fb8e9b4c8be4f9cc1d7915ae01a26dd9f799035b55d82db3de99474adac82"],
+  ["hero/photo.webp", "e46be11ba867a3b6eff5a35253214eb2a87e84a43035f79b4f3f2cb31fd90aa9"],
+  ["hero/phone.webp", "6ccca22659afcd79d5d87981974b903965274aba3ad5d8ed8c481e15f6dd63e1"],
+  ["hero/screen-loop.webm", "47ad451aab6fa2474d425fe80548954131d294d182718d7e07839bb01a41b208"],
+  ["hero/screen-loop.mp4", "1d3d1483452b023211150cd9968bb3dc7c2247cfec76de5261f3b62b6633147f"],
+  ["hero/screen-poster.jpg", "fc48411b9c52d5602a8a46913df8cac6733dce4a73566c33faf2eecdf784b2a3"],
+  ["hero/phone-frame.webp", "b6240fa08ef414ffbefdd962a43e0fa0a82d1196d6d3f7c71183b285d765d486"],
+  ["hero/screen-mask.png", "43f6354541595c471fd289623ae416b8048135e636c30845169353ee3d11135c"],
 ]);
 const frames = [
   "mockups/iphone-frame-single-520.webp",
@@ -46,7 +51,7 @@ for (const [asset, expected] of heroHashes) {
 }
 
 const mockupDir = path.join(root, "mockups");
-const approvedMockupNames = new Set([...heroHashes.keys(), ...frames].map((asset) => path.basename(asset)));
+const approvedMockupNames = new Set(frames.map((asset) => path.basename(asset)));
 const unexpected = (await readdir(mockupDir).catch(() => []))
   .filter((name) => /^(?:hero-three-panel|iphone-frame-single)/.test(name))
   .filter((name) => !approvedMockupNames.has(name));
@@ -55,32 +60,47 @@ const files = (await walk(source)).filter((file) => /\.(?:[cm]?[jt]sx?|html)$/.t
 const entries = await Promise.all(files.map(async (file) => [file, await readFile(file, "utf8")]));
 const text = entries.map(([, contents]) => contents).join("\n");
 const app = entries.find(([file]) => file.endsWith(path.join("src", "App.tsx")))?.[1] ?? "";
+// gy-sk86p2.3: the hero moved into its own slot file; its photoreal contract is read there.
+const hero = entries.find(([file]) => file.endsWith(path.join("src", "components", "HomeHero.tsx")))?.[1] ?? app;
 const frame = entries.find(([file]) => file.endsWith(path.join("src", "components", "PhoneMockup.tsx")))?.[1] ?? "";
 const absent = [];
 
-for (const marker of [
-  "hero-device-art",
+const markers = [
+  "hero-section",
   "gallery-device-art",
   "pillar-demo",
-  "hero-three-panel-800.webp",
-  "hero-three-panel-1200.webp",
-  "hero-three-panel-1800.webp",
-  "hero-three-panel-1200.png",
+  "/hero/photo.webp",
+  "/hero/phone.webp",
+  "/hero/screen-loop.webm",
+  "/hero/screen-loop.mp4",
+  "/hero/screen-poster.jpg",
+  "/hero/phone-frame.webp",
   "iphone-frame-single-520.webp",
   "iphone-frame-single-720.webp",
   "iphone-frame-single-1080.webp",
   "iphone-frame-single.png",
   ...demoIds,
-]) {
+];
+for (const marker of markers) {
   if (!text.includes(marker)) absent.push(marker);
 }
+if (text.includes("hero-three-panel")) absent.push("no three-panel hero art reference (hero-three-panel found)");
 
-let checks = approved.length + heroHashes.size + 12 + demoIds.length;
+let checks = approved.length + heroHashes.size + markers.length + 1;
 if (!output) {
   const wiredDemoIds = [...app.matchAll(/demoId:\s*"([^"]+)"/g)].map((match) => match[1]);
-  const heroUsages = app.match(/<HeroDeviceArt\b/g)?.length ?? 0;
-  if (!/function HeroDeviceArt\b/.test(app)) absent.push("HeroDeviceArt component");
-  if (heroUsages !== 2) absent.push(`HeroDeviceArt desktop+mobile usage (found ${heroUsages}, expected 2)`);
+  // The hero clip: one <video> that is muted, loops, plays inline, carries the poster frame, and offers webm + mp4.
+  const heroVideo = hero.match(/<video\b[^>]*>/)?.[0] ?? "";
+  if (!heroVideo) absent.push("hero screen clip <video>");
+  if (!/\bmuted\b/.test(heroVideo)) absent.push("hero clip muted");
+  if (!/\bloop\b/.test(heroVideo)) absent.push("hero clip loop");
+  if (!/\bplaysInline\b/.test(heroVideo)) absent.push("hero clip playsInline");
+  if (!/poster="\/hero\/screen-poster\.jpg"/.test(heroVideo)) absent.push("hero clip poster (/hero/screen-poster.jpg)");
+  if (!/<source src="\/hero\/screen-loop\.webm" type="video\/webm"/.test(hero) || !/<source src="\/hero\/screen-loop\.mp4" type="video\/mp4"/.test(hero)) absent.push("hero clip webm + mp4 sources");
+  // Reduced motion serves the still: the clip never autoplays and is paused on its poster frame.
+  if (!/autoPlay=\{!prefersReduced\}/.test(heroVideo) || !/if \(prefersReduced\) \{ v\.pause\(\); return; \}/.test(hero)) absent.push("hero reduced-motion still (no autoplay, paused on the poster)");
+  if (!/<header\b[^>]*data-testid="hero-section"/.test(hero)) absent.push("hero-section header");
+  if (/HeroDeviceArt|hero-three-panel/.test(hero)) absent.push("no three-panel hero art in HomeHero");
   if (!/<ScreenshotFrame\b/.test(app)) absent.push("ScreenshotFrame gallery usage");
   if (!/<DemoFrame\b/.test(app)) absent.push("DemoFrame pillar usage");
   if (wiredDemoIds.length !== 4 || demoIds.some((id) => !wiredDemoIds.includes(id))) {
@@ -124,7 +144,7 @@ if (!output) {
     }
   }
   if (runnerDeclarations === 0) absent.push("nonzero workflow runner coverage");
-  checks += geometry.length + runnerDeclarations + 10;
+  checks += geometry.length + runnerDeclarations + 17; // 8 frame/pillar rules + 9 hero rules
 }
 
 if (missing.length || alteredHero.length || unexpected.length || absent.length) {
