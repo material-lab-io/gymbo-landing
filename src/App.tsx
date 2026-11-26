@@ -230,7 +230,7 @@ export default function App() {
         {/* ───────── why — 4 pillars ───────── */}
         <section id="why" aria-label={HOME.why.label}>
           {/* pm H1 ruling 26 Nov 11:1xZ: this heading band is CHARCOAL, so the black hero joins a dark band (no black-to-light edge under the first screen). */}
-          <div data-testid="why-heading-band" style={{ background: F.charcoal }}>
+          <div data-testid="why-heading-band" style={{ background: "#0f0f0f" /* = the hero (HomeHero .gh), so the join has no edge */ }}>
           <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-14 pb-10 md:pb-14 text-center">
             <Reveal>
               {HOME.why.eyebrow ? <Eyebrow dark>{HOME.why.eyebrow}</Eyebrow> : null}
