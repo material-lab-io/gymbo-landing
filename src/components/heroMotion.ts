@@ -1,5 +1,5 @@
-// gy-sk86p2.2: GSAP + ScrollTrigger for the hero rise, in one module that HomeHero imports dynamically, so GSAP ships in its own
-// chunk (not in assets/index.js, a registered price surface: minified GSAP names such as "Power4,rs" read as a price there).
+// gy-sk86p2.2: GSAP + ScrollTrigger for the hero rise, in one module that HomeHero imports dynamically, so neither is in
+// assets/index.js (a registered price surface). GSAP itself builds into assets/vendor-gsap-<hash>.js (vite.config.ts).
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 

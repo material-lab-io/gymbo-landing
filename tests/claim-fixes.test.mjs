@@ -24,10 +24,10 @@ const ROWS = [
   ["public/llms.txt", "GST invoices, colour-coded reminders", "reminders you send yourself", "llms.txt carried row 14's claim"],
   ["src/App.tsx", 'name: "Your own URL"', "", "row 15"],
   ["src/App.tsx", "A muscle and body map for every plan", "", "row 16"],
-  ["src/App.tsx", 'name: "Custom branded client content"', 'name: "Your logo on client statements"', "row 17"],
+  ["src/content/home.ts", 'name: "Custom branded client content"', "You can put your logo or brand name on your PDF statements.", "row 17"],
   ["src/App.tsx", 'name: "Brand theming"', "", "row 18"],
-  ["src/App.tsx", "your name, tagline, and details on each one", "PDF statements with your brand name and logo on each one", "row 19"],
-  ["src/App.tsx", "A shareable QR profile card in three styles", "A shareable QR profile card", "row 20"],
+  ["src/content/home.ts", "your name, tagline, and details on each one", "You can send a client their statement to ask for payment.", "row 19"],
+  ["src/content/home.ts", "A shareable QR profile card in three styles", "You can share a profile card with a QR code that opens your WhatsApp or website.", "row 20"],
 ];
 const GREPS = ["GST-ready", "GSTIN", "during onboarding", "Your own URL", "body map", "Brand theming", "Custom branded client content", "three styles", "tagline, and details"];
 
@@ -39,7 +39,7 @@ export function check(files) {
     if (t.includes(oldS)) bad.push(`OLD still present (${why}): ${file}: ${oldS}`);
     if (newS && !t.includes(newS)) bad.push(`NEW missing (${why}): ${file}: ${newS}`);
   }
-  for (const f of ["src/App.tsx", "src/pages/CompareWellnessZ.tsx", "public/llms.txt"])
+  for (const f of ["src/App.tsx", "src/content/home.ts", "src/pages/CompareWellnessZ.tsx", "public/llms.txt"])
     for (const g of GREPS) if (files[f].includes(g)) bad.push(`banned claim '${g}' on our side: ${f}`);
   return bad;
 }
@@ -52,7 +52,7 @@ export function checkShells(shells) {
   return bad;
 }
 const shells = () => Object.fromEntries(SHELLS.map((f) => [f, read(f)]));
-const files = () => Object.fromEntries(["src/content/alternatives/pages.ts", "src/pages/CompareWellnessZ.tsx", "src/App.tsx", "public/llms.txt"].map((f) => [f, read(f)]));
+const files = () => Object.fromEntries(["src/content/alternatives/pages.ts", "src/pages/CompareWellnessZ.tsx", "src/App.tsx", "src/content/home.ts", "public/llms.txt"].map((f) => [f, read(f)]));
 
 test("the corpus is non-empty and the table was read", () => {
   const f = files();

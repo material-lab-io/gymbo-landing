@@ -70,6 +70,9 @@ export default defineConfig(({ isSsrBuild }) => ({
     : {
         rollupOptions: {
           input: Object.fromEntries(ROUTES.map((r) => [r.key, resolve(root, r.entry)])),
+          // gy-sk86p2.3: GSAP alone in one named chunk (assets/vendor-gsap-<hash>.js). The price scanner skips that exact name
+          // (scripts/canonical-strings.mjs VENDOR_NOT_PRICE_READ), so nothing but node_modules/gsap may go in it.
+          output: { manualChunks: (id: string) => (id.includes('/node_modules/gsap/') ? 'vendor-gsap' : undefined) },
         },
       },
 }))

@@ -1,8 +1,8 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 6,
+  "version": 7,
   "guideVersion": "v15",
-  "updated": "2026-11-22",
+  "updated": "2026-11-26",
   "terms": {
     "brandVerb": "punch",
     "aiFeature": "Ask Gymbo",
@@ -137,23 +137,23 @@
     },
     {
       "id": "site.home.revenue.intro",
-      "surface": "home '/', 'Track your revenue' card intro paragraph (App.tsx PILLARS[revenue].intro)",
-      "text": "The Gymbo ledger tracks every class you punch and every payment you record, so you can see where each client stands.",
-      "source": "gy-afarz.2 content ruling 2026-09-24 (C2a); applied on gymbo-landing PR 217 d40ab7fb",
+      "surface": "home '/', 'Track your revenue' card intro paragraph (src/content/home.ts)",
+      "text": "Punch each class and add each payment. Gymbo shows this month's total and what each client owes or has left.",
+      "source": "gy-sk86p2.1 marketer registry v1, 26 Nov 2026 (Damini landing revision); applied on gymbo-landing PR 364",
       "match": "equals"
     },
     {
       "id": "site.home.revenue.bullet3",
-      "surface": "home '/', 'Track your revenue' card, third bullet (PILLARS[revenue].bullets[2])",
-      "text": "Cash or UPI recorded, so you don't lose track.",
-      "source": "gy-afarz.2 content ruling 2026-09-24 (C2b); PR 217 d40ab7fb",
+      "surface": "home '/', 'Track your revenue' card, SECOND action line (bullets[1]) since 26 Nov; id kept from v4 so consumers keep working",
+      "text": "You can record cash and UPI payments in one place.",
+      "source": "gy-sk86p2.1 marketer registry v1, 26 Nov 2026 (Damini landing revision); applied on gymbo-landing PR 364",
       "match": "equals"
     },
     {
       "id": "site.home.faq.clientsDownload.answer",
       "surface": "home '/', FAQ 'Do my clients need to download anything?' answer, visible AND FAQPage JSON-LD (same string)",
-      "text": "No. Gymbo is for you, the trainer. Your clients just train. You punch the class.",
-      "source": "gy-afarz.2 content ruling 2026-09-24 (C2c); PR 217 d40ab7fb",
+      "text": "No: you punch the class and your clients just train.",
+      "source": "gy-sk86p2.1 marketer registry v1, 26 Nov 2026 (Damini landing revision); applied on gymbo-landing PR 364",
       "match": "equals"
     }
   ],
@@ -166,6 +166,7 @@
     "annualSavingsPercent": 37
   },
   "changelog": {
+    "v7": "2026-11-26: site.home.revenue.intro, revenue.bullet3 and faq.clientsDownload.answer reworded for the Damini 26 Nov landing revision (gy-sk86p2); ids kept. Other strings and facts unchanged from v6.",
     "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
     "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",
     "v1": "2026-09-24: initial 19 strings.",

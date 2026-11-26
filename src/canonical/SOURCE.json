@@ -2,20 +2,21 @@
   "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
   "repo": "material-lab-io/Gymbo-v1",
   "path": "docs/GYMBO-CANONICAL-STRINGS.json",
-  "branch": "main (Gymbo-v1 PR 3600, merged by pm 2026-11-22; this commit IS on main)",
-  "commit": "7fef0b1a01b85016c3ed5764f92e1fd8b273fea8",
-  "sha256": "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54",
+  "branch": "web_dev/gy-sk86p2.3-canonical-v7 in Gymbo-v1: NOT YET ON main (Gymbo-v1 push freeze on 26 Nov). Re-point commit and branch to the merge commit before gymbo-landing PR 364 leaves draft.",
+  "commit": "34609329172e56bca8e0094c8ccce11fcba9e974",
+  "sha256": "0f8cac3baff4c50b55a3c1470218a140423bef6d15b889ec1d613e5064ab2a94",
   "guideVersion": "v15",
-  "vendoredAt": "2026-11-22 (v6, re-vendored from main after PR 3600 merged)",
-  "vendoredBy": "gymbo-crew.web_dev (gy-1vd9qy.10.4), from content/marketer ruling gy-1vd9qy.10.6",
+  "vendoredAt": "2026-11-26 (v7, from the unmerged Gymbo-v1 branch)",
+  "vendoredBy": "gymbo-crew.web_dev (gy-sk86p2.3), from content/marketer ruling gy-sk86p2.1",
   "webSurfaceIdPrefixes": [
     "site.",
     "trial."
   ],
-  "version": 6,
+  "version": 7,
   "supersedes": {
-    "commit": "ac3bff5599021e517aa92f385464b7649552c0a0",
-    "sha256": "01d08aa266a5dad539833f8ffaf498f2d77ce12593cd6f57668fc30c31d355ba",
-    "change": "v6 (gy-1vd9qy.10.6, Kaushik 22 Nov: free plan, no trial on the web) retires trial.line, trial.eligibilityNote, trial.comparisonRow, removes facts.trialDays, adds facts.freeINR=0 and a no-trial site.meta.description; iOS paywall keys (cta.*, finePrint.*, disclosure.*) unchanged"
-  }
+    "commit": "7fef0b1a01b85016c3ed5764f92e1fd8b273fea8",
+    "sha256": "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54",
+    "change": "v7 (gy-sk86p2.1 marketer registry v3, 26 Nov 2026, Damini landing revision) rewords site.home.revenue.intro, site.home.revenue.bullet3 and site.home.faq.clientsDownload.answer; ids and facts unchanged"
+  },
+  "mergedToMain": false
 }
