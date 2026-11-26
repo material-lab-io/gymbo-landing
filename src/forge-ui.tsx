@@ -268,10 +268,11 @@ const FORGE_CSS = `
           .feature-card-hover:hover{transform:scale(1.02);background-color:rgba(240,240,235,0.04)}
           .feature-card-hover:hover .feature-card-icon{transform:rotate(8deg) scale(1.08)}
         }
-        /* gy-sk86p2.3 round 2: the numbered feature cards. --gy-num is the numeral's size; half of it sits above the card (the join
+        /* gy-sk86p2.3 round 2: the numbered feature cards. Size (web_designer, sheet ac9b43325f03, pm pick A): 300 px at 1440 (GYMBO 355),
+           ~200 on iPad, 150 on phones. --gy-num is the numeral's size; half of it sits above the card (the join
            between sections), half inside, so the card pads its content down by the same amount. The fade is GYMBO's top-lit ellipse in
            the yellows. Decorative (aria-hidden). */
-        .gy-card{--gy-num:clamp(112px,15vw,200px);position:relative;padding-top:calc(var(--gy-num) * .5)}
+        .gy-card{--gy-num:clamp(150px,20.8vw,300px);position:relative;padding-top:calc(var(--gy-num) * .5)}
         .gy-card-body{padding-top:calc(var(--gy-num) * .38)}
         .gy-numeral{position:absolute;z-index:1;top:0;left:clamp(24px,4vw,56px);font-family:var(--font-serif);font-weight:900;font-size:var(--gy-num);line-height:1;pointer-events:none;color:var(--g-color-brand-marigold-500);background:radial-gradient(ellipse 90% 120% at 50% 0%,var(--g-color-brand-marigold-text-dark-hc) 0%,var(--g-color-brand-marigold-500) 45%,var(--g-color-brand-amber-text-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @media (prefers-reduced-motion:reduce){
