@@ -19,8 +19,9 @@ export const HOME = {
     eyebrow: null as string | null,
     // The word above the tagline (round 7/8 hero, gy-de3dbt.11). web_designer's hero component (gy-sk86p2.2) owns how it looks.
     word: "GYMBO" as string | null,
-    // The title renders as `before` + highlighted `highlight` + `after`. highlight: null = one plain line.
-    title: { before: "Business App for Personal Coaches", highlight: null as string | null, after: "" },
+    // The tagline is ONE sentence in two halves (web_designer's hero sets them either side of the phone; a plain hero joins them with a space).
+    // Same words as strings-v3 'Business App for Personal Coaches': the split is layout data, not a wording change.
+    title: { left: "Business App for", right: "Personal Coaches" },
     // The sub renders `lead` in ink and `rest` muted.
     sub: { lead: "See who owes you, how many classes each client has left, and what came in this month.", rest: "" },
     talk: "Talk to the founder",

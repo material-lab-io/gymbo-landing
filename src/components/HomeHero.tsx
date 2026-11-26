@@ -38,14 +38,7 @@ export function HomeHero({ prefersReduced }: { prefersReduced: boolean }) {
               <p className={`text-[clamp(20px,2.2vw,26px)] font-black mb-3 ${prefersReduced ? "" : "hero-rise d1"}`} style={{ fontFamily: SERIF, letterSpacing: "0.12em" }}>{HOME.hero.word}</p>
             ) : null}
             <h1 className={`text-[clamp(34px,5.4vw,62px)] font-black ${prefersReduced ? "" : "hero-rise d2"}`} style={{ fontFamily: SERIF, lineHeight: 1.08, letterSpacing: "-0.022em" }}>
-              {HOME.hero.title.before}
-              {HOME.hero.title.highlight ? (
-                <span className="relative whitespace-nowrap" style={{ color: F.amberText }}>
-                  <span aria-hidden="true" className="absolute rounded-lg" style={{ inset: "-0.04em -0.14em", background: "rgba(245,158,11,0.18)", zIndex: -1 }} />
-                  {HOME.hero.title.highlight}
-                </span>
-              ) : null}
-              {HOME.hero.title.after}
+              {`${HOME.hero.title.left} ${HOME.hero.title.right}`}
             </h1>
             <p className={`mt-6 text-[clamp(15px,1.6vw,18px)] ${prefersReduced ? "" : "hero-rise d3"}`} style={{ color: F.inkMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "46ch" }}>
               <b style={{ color: F.ink, fontWeight: 400 }}>{HOME.hero.sub.lead}</b>{HOME.hero.sub.rest}
