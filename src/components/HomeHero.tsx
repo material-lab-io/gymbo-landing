@@ -21,12 +21,12 @@ import { HOME } from "../content/home";
 const SCREEN = { left: 35.7048, top: 2.1956, width: 20.2128, height: 79.2415 };
 
 const CSS = `
-.gh{--nav:81px;--u:min(calc(100vw / 1440),calc((100svh - var(--nav)) / 828));position:relative;z-index:1;background:#0f0f0f;color:#fff;height:max(calc(940*var(--u)),calc(100svh - var(--nav)));overflow-x:clip;overflow-y:visible}
+.gh{--nav:81px;--u:min(calc(100vw / 1440),calc((100svh - var(--nav)) / 828));position:relative;z-index:1;background:#0f0f0f;color:var(--g-color-neutral-dark-fg);height:max(calc(940*var(--u)),calc(100svh - var(--nav)));overflow-x:clip;overflow-y:visible}
 .gh-first{position:relative;height:calc(828*var(--u));width:calc(1440*var(--u));margin:0 auto}
 .gh-stage{position:absolute;inset:0;overflow:visible}
 .gh-photo,.gh-fg{position:absolute;left:calc(167.6*var(--u));top:calc(215.9*var(--u));width:calc(1116*var(--u));height:calc(743.5*var(--u));will-change:transform;backface-visibility:hidden}
 .gh-photo img,.gh-fg img{display:block;width:100%;height:100%}
-.gh-photo{-webkit-mask-image:linear-gradient(transparent,#000 calc(150*var(--u)),#000 calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,#000 calc(110*var(--u)),#000 calc(100% - calc(110*var(--u))),transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(transparent,#000 calc(150*var(--u)),#000 calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,#000 calc(110*var(--u)),#000 calc(100% - calc(110*var(--u))),transparent);mask-composite:intersect}
+.gh-photo{-webkit-mask-image:linear-gradient(transparent,var(--g-color-neutral-dark-0) calc(150*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,var(--g-color-neutral-dark-0) calc(110*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(110*var(--u))),transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(transparent,var(--g-color-neutral-dark-0) calc(150*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,var(--g-color-neutral-dark-0) calc(110*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(110*var(--u))),transparent);mask-composite:intersect}
 .gh-fg{z-index:3;pointer-events:none}
 .gh-fg .gh-base{filter:drop-shadow(0 calc(26*var(--u)) calc(34*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(22*var(--u)) rgba(0,0,0,.7))}
 .gh-scr{position:absolute;left:${SCREEN.left}%;top:${SCREEN.top}%;width:${SCREEN.width}%;height:${SCREEN.height}%;object-fit:fill;-webkit-mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat;mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat}
@@ -35,7 +35,7 @@ const CSS = `
 .gh-shine::before{content:"";will-change:transform;position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(105deg,transparent,rgb(255 255 255 / .26) 50%,transparent);transform:translateX(-120%);animation:gh-sheen 7s cubic-bezier(.22,.9,.3,1) infinite 1.2s}
 @keyframes gh-sheen{0%{transform:translateX(-120%)}16%{transform:translateX(260%)}100%{transform:translateX(260%)}}
 html.gh-scrolling .gh-shine{visibility:hidden}
-.gh-word{font-family:"Open Sans",system-ui,sans-serif;font-weight:800;line-height:1;white-space:nowrap;color:#fff;background:radial-gradient(ellipse 62% 150% at 50% -25%,#ffffff 0%,#f4f4f4 42%,#b4b4b4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.gh-word{font-family:"Open Sans",system-ui,sans-serif;font-weight:800;line-height:1;white-space:nowrap;color:var(--g-color-neutral-dark-fg);background:radial-gradient(ellipse 62% 150% at 50% -25%,var(--g-color-neutral-dark-fg) 0%,#f4f4f4 42%,#b4b4b4 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .gh-big{position:absolute;z-index:2;margin:0;left:calc(38.246*var(--u));top:calc(-45.9722*var(--u));font-size:calc(355.08*var(--u))}
 .gh-mq{display:none}
 .gh-h1{position:absolute;z-index:4;margin:0;left:0;top:calc(292*var(--u));width:100%;font-family:"Open Sans",system-ui,sans-serif;font-weight:400;text-transform:uppercase;line-height:1.1;letter-spacing:0;font-size:calc(52.201*var(--u));text-shadow:0 1px 12px rgba(0,0,0,.85)}
@@ -63,13 +63,13 @@ html.gh-scrolling .gh-shine{visibility:hidden}
  .gh-first{width:auto;height:auto;min-height:calc(100svh - 72px);display:flex;flex-direction:column}
  .gh-h1{position:relative;order:0;top:auto;padding:calc(18*var(--u)) calc(24*var(--u)) 0;font-size:calc(17.7991*var(--u));text-shadow:none;white-space:nowrap}
  .gh-h1 span{position:static}
- .gh-stage{position:relative;inset:auto;order:1;width:100%;height:calc(500*var(--u));overflow:hidden;-webkit-mask-image:linear-gradient(#000 calc(100% - calc(70*var(--u))),transparent);mask-image:linear-gradient(#000 calc(100% - calc(70*var(--u))),transparent)}
+ .gh-stage{position:relative;inset:auto;order:1;width:100%;height:calc(500*var(--u));overflow:hidden;-webkit-mask-image:linear-gradient(var(--g-color-neutral-dark-0) calc(100% - calc(70*var(--u))),transparent);mask-image:linear-gradient(var(--g-color-neutral-dark-0) calc(100% - calc(70*var(--u))),transparent)}
  .gh-big{display:none}
  .gh-mq{display:block;position:absolute;z-index:2;left:calc(12*var(--u));top:calc(-10*var(--u))}
  .gh-track{display:flex;width:max-content;animation:gh-slide 16s linear infinite;will-change:transform}
  .gh-track span{font-size:calc(180*var(--u));padding-right:calc(64*var(--u))}
  .gh-photo,.gh-fg{left:calc(-135.18*var(--u));top:calc(74*var(--u));width:calc(705.38*var(--u));height:calc(469.94*var(--u))}
- .gh-photo{-webkit-mask-image:linear-gradient(transparent,#000 calc(40*var(--u)),#000 calc(100% - calc(60*var(--u))),transparent);mask-image:linear-gradient(transparent,#000 calc(40*var(--u)),#000 calc(100% - calc(60*var(--u))),transparent)}
+ .gh-photo{-webkit-mask-image:linear-gradient(transparent,var(--g-color-neutral-dark-0) calc(40*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(60*var(--u))),transparent);mask-image:linear-gradient(transparent,var(--g-color-neutral-dark-0) calc(40*var(--u)),var(--g-color-neutral-dark-0) calc(100% - calc(60*var(--u))),transparent)}
  .gh-fg .gh-base{filter:drop-shadow(0 calc(12*var(--u)) calc(16*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(10*var(--u)) rgba(0,0,0,.7))}
  .gh-col{position:static;order:2;width:auto;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:calc(36*var(--u)) calc(24*var(--u)) calc(24*var(--u))}
  .gh-body{font-size:calc(16*var(--u));max-width:none;text-shadow:none}
