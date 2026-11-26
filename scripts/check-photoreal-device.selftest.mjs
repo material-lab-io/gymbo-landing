@@ -7,7 +7,7 @@ const sourceRoot = process.cwd();
 const fixture = await mkdtemp(path.join(tmpdir(), "gymbo-photoreal-gate-"));
 const gate = path.resolve("scripts/check-photoreal-device.mjs");
 // gy-sk86p2.2/.3: the approved GYMBO hero (public/hero/), pinned by bytes in the gate.
-const hero = ["photo.webp", "phone.webp", "screen-loop.webm", "screen-loop.mp4", "screen-poster.jpg", "screen-mask.png"];
+const hero = ["photo.webp", "phone.webp", "screen-loop.webm", "screen-loop.mp4", "screen-poster.jpg", "screen-mask.png", "phone-frame.webp"];
 const frames = [
   "iphone-frame-single-520.webp",
   "iphone-frame-single-720.webp",
@@ -33,7 +33,7 @@ const heroContract = `
     useEffect(() => { const v = video.current; if (!v) return; if (prefersReduced) { v.pause(); return; } v.play(); }, [prefersReduced]);
     return (
       <header ref={root} data-testid="hero-section" className="gh">
-        <img src="/hero/photo.webp" alt="" /><img src="/hero/phone.webp" alt="" />
+        <img src="/hero/photo.webp" alt="" /><img src="/hero/phone.webp" alt="" /><img src="/hero/phone-frame.webp" alt="" />
         <video ref={video} className="gh-scr" muted loop playsInline autoPlay={!prefersReduced} preload="metadata" poster="/hero/screen-poster.jpg" width={296} height={786}>
           <source src="/hero/screen-loop.webm" type="video/webm" />
           <source src="/hero/screen-loop.mp4" type="video/mp4" />
