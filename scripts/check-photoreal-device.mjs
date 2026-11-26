@@ -9,7 +9,7 @@ const heroHashes = new Map([
   ["hero/phone.webp", "6ccca22659afcd79d5d87981974b903965274aba3ad5d8ed8c481e15f6dd63e1"],
   ["hero/screen-loop.webm", "4ff605dd74ff450bf782b2d44c5a7362a0bc32f8becbcb871e7b132e9eb1e203"],
   ["hero/screen-loop.mp4", "d9817f68a95914b4e9894f1ed677d1038f3ae24b49b077cbe2d27501c44afa8c"],
-  ["hero/screen-poster.jpg", "0c1092a1fa353545e4a4bd4a3665f9ab3dd6d8ffa52538de84014d3bc983b24d"],
+  ["hero/screen-poster.jpg", "c5e679eea990b29ca5ba7808da75d5ed5e76502610c142a9b359b3e5b28fed37"],
   ["hero/screen-mask.png", "5b3fa76db99c4901d17a54936609bc5a6338a00891a1f05e78e470f0112fe642"],
 ]);
 const frames = [
