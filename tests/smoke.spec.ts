@@ -99,9 +99,11 @@ test('hero and all six gallery screens render approved photoreal device assets',
   }
 });
 
-// Card art since pm ruling 2 on gy-sk86p2.3 (web_designer, 26 Nov): the phone only, no headline or caption in the image. Cards 2 and 4
-// are dark iOS captures in the photoreal frame, card 3 is the approved demo cropped to its phone, card 1 has no art yet.
-test('cards 2 to 4 show phone-only art; card 3 is the demo cropped to its phone and it plays; card 1 has none', async ({ page }) => {
+// Card art since pm ruling 2 + 13:4xZ on gy-sk86p2.3 (web_designer): the phone only, no headline or caption in the image. Cards 2 and 4
+// are dark iOS captures in the photoreal frame; cards 1 (punch-a-class clip) and 3 (branded statement) are demos cropped to the phone.
+// gy-v9pwo.4: log-payment's demo (retired claim burned in) stays pulled.
+const CROPPED = [['revenue', 'punch-class'], ['brand', 'branded-statement']] as const;
+test('every card has phone-only art: two framed captures, and two demos cropped to their phone that play', async ({ page }) => {
   await page.goto('/');
   for (const [id, slug] of [['organized', 'card-week'], ['workouts', 'card-builder']]) {
     const art = page.getByTestId(`pillar-${id}`).getByTestId('gallery-device-art');
@@ -110,26 +112,27 @@ test('cards 2 to 4 show phone-only art; card 3 is the demo cropped to its phone 
     await expect(art.locator('img').first()).toHaveAttribute('src', `/screens/gallery/${slug}.png`);
     await expect.poll(() => art.locator('img').first().evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
   }
-  await expect(page.getByTestId('pillar-revenue').locator('video, img')).toHaveCount(0);
-  const demos = page.getByTestId('pillar-demo');
-  await expect(demos).toHaveCount(1);
-  const crop = page.getByTestId('pillar-art-crop-brand');
-  await crop.scrollIntoViewIfNeeded();
-  const video = crop.locator('video');
-  await expect(video.locator('source')).toHaveAttribute('src', '/demos/branded-statement-dark.mp4');
-  const playback = await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, playsInline: v.playsInline, autoplay: v.autoplay, preload: v.preload }));
-  expect(playback).toEqual({ muted: true, loop: true, playsInline: true, autoplay: true, preload: 'metadata' });
-  await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 10000 }).toBeGreaterThan(0.05);
-  // the burned-in title ends above y 262 and the caption starts at y 1725 of the 1080 x 1920 scene: neither may be inside the box
-  const seen = await crop.evaluate((box) => {
-    const b = box.getBoundingClientRect(), s = box.querySelector('video')!.getBoundingClientRect(), k = s.width / 1080;
-    return { top: (b.top - s.top) / k, bottom: (b.bottom - s.top) / k };
-  });
-  expect(seen.top).toBeGreaterThanOrEqual(255);
-  expect(seen.bottom).toBeLessThanOrEqual(1725);
+  await expect(page.getByTestId('pillar-demo')).toHaveCount(2);
+  await expect(page.locator('[src*="/demos/log-payment"]')).toHaveCount(0);
+  for (const [id, demo] of CROPPED) {
+    const crop = page.getByTestId(`pillar-art-crop-${id}`);
+    await crop.scrollIntoViewIfNeeded();
+    const video = crop.locator('video');
+    await expect(video.locator('source')).toHaveAttribute('src', `/demos/${demo}-dark.mp4`);
+    const playback = await video.evaluate((v: HTMLVideoElement) => ({ muted: v.muted, loop: v.loop, playsInline: v.playsInline, autoplay: v.autoplay, preload: v.preload }));
+    expect(playback).toEqual({ muted: true, loop: true, playsInline: true, autoplay: true, preload: 'metadata' });
+    await expect.poll(() => video.evaluate((v: HTMLVideoElement) => v.currentTime), { timeout: 10000 }).toBeGreaterThan(0.05);
+    // in the 1080 x 1920 scene the burned-in title ends at y 258 and the caption starts at y 1712: neither may be inside the box
+    const seen = await crop.evaluate((box) => {
+      const b = box.getBoundingClientRect(), s = box.querySelector('video')!.getBoundingClientRect(), k = s.width / 1080;
+      return { top: (b.top - s.top) / k, bottom: (b.bottom - s.top) / k };
+    });
+    expect(seen.top, demo).toBeGreaterThanOrEqual(258);
+    expect(seen.bottom, demo).toBeLessThanOrEqual(1712);
+  }
 });
 
-test('reduced motion renders the cropped card demo as its poster without autoplay', async ({ page }) => {
+test('reduced motion renders the cropped card demos as posters without autoplay', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.getByTestId('pillar-demo').locator('video')).toHaveCount(0);
@@ -138,8 +141,9 @@ test('reduced motion renders the cropped card demo as its poster without autopla
   await expect(heroClip).toHaveAttribute('poster', '/hero/screen-poster.jpg');
   await expect.poll(() => heroClip.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
   const posters = page.getByTestId('pillar-demo-poster');
-  await expect(posters).toHaveCount(1);
-  await expect(posters).toHaveAttribute('src', '/demos/branded-statement-dark.png');
+  await expect(posters).toHaveCount(2);
+  for (let i = 0; i < CROPPED.length; i += 1) await expect(posters.nth(i)).toHaveAttribute('src', `/demos/${CROPPED[i][1]}-dark.png`);
+  await expect(page.locator('#why [data-testid="gallery-device-art"]')).toHaveCount(2);
 });
 
 test('a pre-seeded theme localStorage value is ignored — there is no theme switch (gy-uesmd)', async ({ page }) => {
