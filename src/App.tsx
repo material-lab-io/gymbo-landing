@@ -8,7 +8,7 @@ import { useReducedMotion } from "./hooks/useReducedMotion";
 import { F, PAGE_BLACK, SANS, WHATSAPP_PLAIN, scrollToId, signupCtaProps, ForgeStyle, Eyebrow, WhatsAppCTA, WhatsAppButton, WaitlistPlainButton, StartFreeCTA, LogInLink } from "./forge-ui";
 import { FIGURE_SURFACE } from "./figure-surface";
 import { PRICE_MONTHLY_INR, START_FREE_LABEL } from "./lib/trialAccess";
-import { HOME } from "./content/home";
+import { HOME, type PillarCopy } from "./content/home";
 
 /* gm-1w6 slice 3 (gy-3mpvo designer ruling) — home footer link groups. Support anchors
    to the support contact (#support, App Review 1.5), never the waitlist form. */
@@ -262,7 +262,7 @@ export default function App() {
                     {(
                       <Reveal className="w-full max-w-[240px] md:max-w-[280px] mx-auto">
                         {p.art.kind === "screen" ? (
-                          <ScreenshotFrame slug={p.art.slug} alt={`${p.title}: app screen`} screenWidth={280} style={{ width: "100%" }} />
+                          <ScreenshotFrame slug={p.art.slug} alt={(HOME.pillars[p.id] as PillarCopy).artAlt ?? p.title} screenWidth={280} style={{ width: "100%" }} />
                         ) : (
                           /* Interim crop: the demo scene is 1080 x 1920; the box shows x 190-890, y 270-1690 = the phone only (title ends at y 258,
                              phone 280-1666, caption from y 1712). Percent margins resolve against the box width. */

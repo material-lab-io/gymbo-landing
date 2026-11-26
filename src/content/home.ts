@@ -10,7 +10,8 @@ import {
   PRICING_PAYMENT_LINE,
 } from "../lib/trialAccess";
 
-export type PillarCopy = { title: string; intro: string; bullets: string[] };
+// artAlt: what a card's screenshot shows, for a screen reader (marketer, gy-sk86p2.3). Cards whose art is a clip are labelled by the card title.
+export type PillarCopy = { title: string; intro: string; bullets: string[]; artAlt?: string };
 
 export const HOME = {
   nav: { why: "Why Gymbo", pricing: "Pricing", faq: "FAQ", backToTop: "Gymbo, back to top", skip: "Skip to content" },
@@ -48,6 +49,7 @@ export const HOME = {
     },
     organized: {
       title: "Your whole roster in one place",
+      artAlt: "Gymbo week view with time slots by day",
       intro: "Clients, classes and time slots together, not spread across WhatsApp chats and a diary.",
       bullets: [
         "You can set recurring time slots, sorted by day.",
@@ -66,6 +68,7 @@ export const HOME = {
     },
     workouts: {
       title: "Build and track workouts",
+      artAlt: "Building a workout in Gymbo: back squat and pushups, 3 sets of 10",
       intro: "Plan training and see each client's progress.",
       bullets: [
         "You can build workouts from a template library and assign them to clients.",
