@@ -422,7 +422,7 @@ export default function App() {
               ))}
             </div>
             <Reveal className="mt-2 text-center">
-              <a href="/compare/gymbo-vs-wellnessz" className="inline-flex items-center min-h-11 text-[14px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80 rounded-md focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.bone, fontFamily: SANS }}>
+              <a href="/compare/gymbo-vs-wellnessz/" className="inline-flex items-center min-h-11 text-[14px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80 rounded-md focus-visible:outline-none gy-focus-ring-dark" style={{ color: F.bone, fontFamily: SANS }}>
                 {HOME.faq.compare} →
               </a>
             </Reveal>
