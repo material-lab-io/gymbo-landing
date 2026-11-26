@@ -19,7 +19,7 @@ const contract = JSON.parse(readFileSync(resolve(ROOT, "product-contract.json"),
 const jq = spawnSync("jq", ["--version"]).status === 0;
 
 const HOME = `<!doctype html><html><head><title>Gymbo for trainers</title><meta property="og:title" content="Gymbo"/>` +
-  `<meta name="theme-color" content="#FAFAF8"/></head><body>trainer app. ₹${contract.pricing.monthly_inr}/month, ₹${contract.pricing.annual_inr_display}/year, save ${contract.pricing.annual_savings_percent}%. Join the waitlist.</body></html>`;
+  `<meta name="theme-color" content="#0f0f0f"/></head><body>trainer app. ₹${contract.pricing.monthly_inr}/month, ₹${contract.pricing.annual_inr_display}/year, save ${contract.pricing.annual_savings_percent}%. Join the waitlist.</body></html>`;
 const ROBOTS = "User-agent: *\nAllow: /\nSitemap: https://example.test/sitemap.xml\n";
 const PRIVACY_OK = "<html><body>We send today&#x27;s session client names to Anthropic.</body></html>";
 const PRIVACY_WITHOUT = "<html><body>We keep data. Nothing else.</body></html>";
@@ -81,4 +81,15 @@ test("FETCH FAILURE: nothing listening at all (connection refused) -> fetch fail
   assert.equal(r.code, 1);
   assert.match(r.out, /FAIL: homepage HTTP 000/);
   assert.doesNotMatch(r.out, /does not disclose|body missing|og:title missing|missing 'Gymbo'|theme-color meta missing/);
+});
+
+// gy-sk86p2: one theme, and since Damini's round 2 it is the page black.
+test("THEME: another theme-color, or a baked-in data-theme, is refused; the page black passes", async () => {
+  const run = async (home) => { const { s, url } = await serve(good({ "/": [200, home] })); try { return await smoke(url); } finally { s.close(); } };
+  assert.match((await run(HOME)).out, /OK   theme-color meta is the page black/);
+  assert.match((await run(HOME.replace("#0f0f0f", "#FAFAF7"))).out, /theme-color meta missing or not the page black/);
+  for (const baked of ['<html data-theme="light">', '<html data-theme="dark">']) {
+    const r = await run(HOME.replace("<html>", baked));
+    assert.notEqual(r.code, 0, r.out); assert.match(r.out, /raw HTML ships a data-theme attribute/);
+  }
 });

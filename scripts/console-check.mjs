@@ -265,33 +265,36 @@ const navigateToLoad = async ({ page, diagnostics }, url, label, willRetry = fal
   }
 };
 // gy-pvi8y: tracked separately from `failures`/`paths` on purpose. The
-// dark-seed check below is a single extra assertion, not one of the
+// theme-seed check below is a single extra assertion, not one of the
 // sitemap routes -- folding its failure into `failures` while reporting
 // against `paths.length` produced impossible counts like "23/22 pages"
 // (23 failures against a 22-page denominator that never counted this
 // check in the first place).
-let darkSeedFailed = null;
+let themeSeedFailed = null;
 
-// Light-only theme invariant, dark-seed case (gy-ruxbj, PM scope addition
-// 2026-08-12 — "the one that matters"). Kaushik was served a dark site
-// because a runtime theme-flip script read a pre-existing localStorage
-// value with no way to escape it (gy-31moh removed the toggle, not the
-// flip). Pre-seed localStorage BEFORE the app boots and assert the site
-// still renders light — this is the one check that would have caught the
-// actual incident; a plain page-load check (no seeded storage) never would.
-const checkDarkSeed = async (willRetry) => {
+// One-theme invariant, theme-seed case (gy-ruxbj, 2026-08-12, "the one that
+// matters"; expected colour moved to the page black by gy-sk86p2). Kaushik was
+// served a theme a runtime script flipped from a pre-existing localStorage value,
+// with no way to escape it (gy-31moh removed the toggle, not the flip). Pre-seed
+// each theme value, light then dark, BEFORE the app boots and assert the page is
+// still the one black with no data-theme: a plain page-load check (no seeded
+// storage) never would.
+const checkThemeSeed = async (seed, willRetry) => {
   const checkedThemePage = await newCheckedPage();
   const { page: themePage, diagnostics } = checkedThemePage;
   const themeErrors = [];
-  await themePage.addInitScript(() => localStorage.setItem("theme", "dark"));
-  const navigation = await navigateToLoad(checkedThemePage, base + "/", "/ (dark-seeded)", willRetry);
+  await themePage.addInitScript((value) => {
+    localStorage.setItem("theme", value);
+    localStorage.setItem("gymbo-theme", value);
+  }, seed);
+  const navigation = await navigateToLoad(checkedThemePage, base + "/", "/ (theme-seeded)", willRetry);
   let bg = "not-evaluated";
-  let htmlDark = false;
+  let dataTheme = null;
   if (navigation.kind === "loaded") {
     await themePage.waitForTimeout(300);
     bg = await themePage.evaluate(() => getComputedStyle(document.body).backgroundColor);
-    htmlDark = await themePage.evaluate(
-      () => document.documentElement.getAttribute("data-theme") === "dark",
+    dataTheme = await themePage.evaluate(
+      () => document.documentElement.getAttribute("data-theme") ?? document.body.getAttribute("data-theme"),
     );
   }
   themeErrors.push(...diagnostics.firstPartyFailures());
@@ -306,36 +309,34 @@ const checkDarkSeed = async (willRetry) => {
     return false;
   }
   if (themeFaults.length) {
-    // A runner-network fault means the dark-seed assertion was not evaluated.
-    couldNotEvaluate.push("/ (dark-seeded)");
-    console.error("COULD-NOT-EVALUATE: runner-network fault route=/ (dark-seeded)");
+    // A runner-network fault means the theme-seed assertion was not evaluated.
+    couldNotEvaluate.push("/ (theme-seeded)");
+    console.error("COULD-NOT-EVALUATE: runner-network fault route=/ (theme-seeded)");
     [...new Set(themeFaults)].forEach((fault) => console.error(`     ${fault}`));
   }
 
   if (navigation.kind === "loaded" && !themeFaults.length) {
-    // Light token is #FAFAF7 -> rgb(250, 250, 247). Allow the whole FAFAFx
-    // family (a couple of points of anti-aliasing/rounding slack) rather than
-    // an exact string match.
-    const m = bg.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    const isLight = m && Number(m[1]) > 240 && Number(m[2]) > 240 && Number(m[3]) > 235;
-    if (htmlDark || !isLight) {
-      themeErrors.push(`rendered dark (bg=${bg}, data-theme dark=${htmlDark})`);
+    // The page black, #0f0f0f. Exact: any other surface colour is another theme.
+    if (dataTheme !== null || bg !== "rgb(15, 15, 15)") {
+      themeErrors.push(`theme changed (bg=${bg}, data-theme=${dataTheme})`);
     }
   }
 
   if (themeErrors.length) {
-    darkSeedFailed = "/ (dark-seeded)";
-    console.error('FAIL / with localStorage theme="dark" pre-seeded');
+    themeSeedFailed = "/ (theme-seeded)";
+    console.error(`FAIL / with localStorage theme="${seed}" pre-seeded`);
     [...new Set(themeErrors)].forEach((error) => console.error(`     ${error}`));
   } else if (navigation.kind === "loaded" && !themeFaults.length) {
-    console.log(`OK   / stays light even with localStorage theme="dark" pre-seeded (bg=${bg})`);
+    console.log(`OK   / stays the one black even with localStorage theme="${seed}" pre-seeded (bg=${bg})`);
   }
   return true;
 };
-for (let attempt = 1; attempt <= networkAttempts; attempt++) {
-  if (await checkDarkSeed(attempt < networkAttempts)) break;
-  console.error(`RETRY / (dark-seeded): runner-network fault on attempt ${attempt}`);
-  await settle("/ (dark-seeded)", attempt);
+for (const seed of ["light", "dark"]) {
+  for (let attempt = 1; attempt <= networkAttempts; attempt++) {
+    if (await checkThemeSeed(seed, attempt < networkAttempts)) break;
+    console.error(`RETRY / (theme-seeded): runner-network fault on attempt ${attempt}`);
+    await settle("/ (theme-seeded)", attempt);
+  }
 }
 
 // Up to networkAttempts tries with a settle delay, and only for a runner-network fault with no other finding on the
@@ -398,7 +399,7 @@ if (isolatedThirdPartyHosts.size) {
   console.log(`console-check: isolated non-gating third-party host(s): ${hosts}`);
 }
 
-if (darkSeedFailed) console.error(`\nconsole-check: dark-seed invariant FAILED (${darkSeedFailed})`);
+if (themeSeedFailed) console.error(`\nconsole-check: theme-seed invariant FAILED (${themeSeedFailed})`);
 if (failures.length) {
   console.error(
     `console-check: ${failures.length}/${paths.length} page(s) have first-party or console error(s) → gate FAIL`,
@@ -409,8 +410,8 @@ if (couldNotEvaluate.length) {
     `console-check: COULD-NOT-EVALUATE: ${couldNotEvaluate.length} browser assertion(s) did not reach the load boundary; product verdict incomplete`,
   );
 }
-if (darkSeedFailed || failures.length) process.exit(1);
+if (themeSeedFailed || failures.length) process.exit(1);
 if (couldNotEvaluate.length) {
   process.exit(2);
 }
-console.log(`\nconsole-check: all ${paths.length} pages clean, dark-seed invariant holds`);
+console.log(`\nconsole-check: all ${paths.length} pages clean, theme-seed invariant holds`);
