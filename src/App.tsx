@@ -34,13 +34,15 @@ const NEUTRAL_TILE = "rgba(240,240,235,0.10)";
 const CARD_LINE = "rgba(240,240,235,0.14)";
 // Card art (pm ruling 2 on gy-sk86p2.3, web_designer 26 Nov): the phone only, no headline or caption in the image, a CURRENT app screen.
 // "screen" = a real dark iOS capture in the photoreal frame (gallery pipeline, freshness-gated in ops/screens/manifest.json);
-// "demo-crop" = interim: the approved demo cropped to its phone so the burned-in title + caption never show; "none" = no art yet.
+// "demo-crop" = interim: an approved demo cropped to its phone so the burned-in title + caption never show (card 1 uses the hero's
+// punch-a-class clip, pm 13:4xZ: class punched + classes left; log-payment stays pulled for its retired claim).
 // Owed captures (fresh dark iOS, then these switch to "screen"): card 1 Activity Log with month total, card 3 a statement PDF with a
-// trainer logo, card 4 the builder with a neutral client name.
+// trainer logo, card 4 the builder with a neutral client name. From md the phone is 280 wide and the text sits at the card top under
+// its numeral (a centred 330 phone left a ~200 px gap above the title at 1440).
 const PILLAR_LAYOUT = [
-  { id: "revenue", demoId: "log-payment", art: { kind: "none" } },
+  { id: "revenue", demoId: "log-payment", art: { kind: "demo-crop", demo: "punch-class" } },
   { id: "organized", demoId: "schedule", art: { kind: "screen", slug: "card-week" } },
-  { id: "brand", demoId: "branded-statement", art: { kind: "demo-crop" } },
+  { id: "brand", demoId: "branded-statement", art: { kind: "demo-crop", demo: "branded-statement" } },
   { id: "workouts", demoId: "build-workout", art: { kind: "screen", slug: "card-builder" } },
 ] as const;
 const PILLARS = PILLAR_LAYOUT.map((l) => ({ ...l, ...HOME.pillars[l.id] }));
@@ -226,7 +228,6 @@ export default function App() {
               // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo video/poster has the retired
               // "Get paid for every class you teach." claim burned into its pixels. Pulled
               // entirely (no crop, no overlay) until video re-renders it under gy-7zhx1.
-              const hasDemo = p.art.kind !== "none" && p.demoId !== "log-payment";
               return (
                 <div key={p.id} data-testid={`pillar-band-${p.id}`} className="gy-card">
                   {/* Her round 2: a big yellow numeral sits across the join between sections, with the same top-lit fade as GYMBO.
@@ -234,7 +235,7 @@ export default function App() {
                   <span data-testid={`pillar-numeral-${p.id}`} aria-hidden="true" className="gy-numeral">
                     {i + 1}
                   </span>
-                  <div data-testid={`pillar-${p.id}`} className={`gy-card-body grid items-center gap-4 md:gap-10 rounded-[var(--g-radius-xl)] px-5 pb-6 md:px-10 md:pb-8 ${hasDemo ? "md:grid-cols-[minmax(0,1fr)_minmax(0,330px)]" : ""}`} style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
+                  <div data-testid={`pillar-${p.id}`} className={`gy-card-body grid items-center md:items-start gap-4 md:gap-10 rounded-[var(--g-radius-xl)] px-5 pb-6 md:px-10 md:pb-8 md:grid-cols-[minmax(0,1fr)_minmax(0,280px)]`} style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
                     <Reveal>
                       <h2 className="text-[clamp(24px,3.2vw,36px)] font-black mb-3" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
                         {p.title}
@@ -242,7 +243,7 @@ export default function App() {
                       <p className="text-[15px] md:text-[16px] mb-4" style={{ color: F.boneMuted, fontWeight: 400, lineHeight: 1.6, maxWidth: "52ch" }}>
                         {p.intro}
                       </p>
-                      <ul className={`grid gap-3 ${hasDemo ? "" : "md:grid-cols-3 md:gap-6"}`}>
+                      <ul className="grid gap-3">
                         {p.bullets.map((b) => (
                           <li key={b} className="flex items-start gap-3">
                             <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: NEUTRAL_TILE, color: F.bone }}>
@@ -256,19 +257,20 @@ export default function App() {
                       </ul>
                     </Reveal>
 
-                    {hasDemo && (
-                      <Reveal className="w-full max-w-[300px] md:max-w-[330px] mx-auto">
+                    {/* every card has art (pm 13:4xZ) */}
+                    {(
+                      <Reveal className="w-full max-w-[300px] md:max-w-[280px] mx-auto">
                         {p.art.kind === "screen" ? (
                           <ScreenshotFrame slug={p.art.slug} alt={`${p.title}: app screen`} screenWidth={300} style={{ width: "100%" }} />
                         ) : (
-                          /* Interim crop: the demo scene is 1080 x 1920; the box shows x 190-890, y 262-1708 = the phone only (the title ends above y 262,
-                             the caption starts at y 1725). Percent margins resolve against the box width. */
-                          <div data-testid={`pillar-art-crop-${p.id}`} style={{ position: "relative", overflow: "hidden", aspectRatio: "700 / 1446", width: "100%" }}>
-                            <div style={{ position: "absolute", width: "154.286%", left: "-27.143%", top: 0, marginTop: "-37.429%" }}>
+                          /* Interim crop: the demo scene is 1080 x 1920; the box shows x 190-890, y 270-1690 = the phone only (title ends at y 258,
+                             phone 280-1666, caption from y 1712). Percent margins resolve against the box width. */
+                          <div data-testid={`pillar-art-crop-${p.id}`} style={{ position: "relative", overflow: "hidden", aspectRatio: "700 / 1420", width: "100%" }}>
+                            <div style={{ position: "absolute", width: "154.286%", left: "-27.143%", top: 0, marginTop: "-38.571%" }}>
                               <DemoFrame
-                                demoId={p.demoId}
-                                clip={demoClip(p.demoId)}
-                                poster={demoPoster(p.demoId)}
+                                demoId={p.art.demo}
+                                clip={demoClip(p.art.demo)}
+                                poster={demoPoster(p.art.demo)}
                                 theme="dark"
                                 label={`${p.title}: demo`}
                                 maxWidth={1080}
