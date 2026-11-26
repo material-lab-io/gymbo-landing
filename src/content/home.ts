@@ -1,4 +1,4 @@
-// Strings: marketer strings-v3 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v3.md sha 775ef98c960e695b), pasted with zero wording edits.
+// Strings: marketer strings-v4 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v4.md sha 69e4b0b8f08aa099), pasted with zero wording edits.
 // gy-sk86p2.3 (Damini 26 Nov, STEP 1): EVERY string on the home page ('/') lives in this one file, so marketer's strings land without a
 // layout edit. App.tsx and the hero component read from here and hold no copy of their own. A label set to null is not rendered.
 // Facts (prices, plan names, URLs, the Start free / Log in labels) still come from src/lib/trialAccess.ts and are imported here, never retyped.
@@ -25,7 +25,7 @@ export const HOME = {
     // The sub renders `lead` in ink and `rest` muted.
     sub: { lead: "See who owes you, how many classes each client has left, and what came in this month.", rest: "" },
     talk: "Talk to the founder",
-    // pm ruling 26 Nov 11:0xZ (gy-sk86p2.3): Damini's approved hero has no small print; marketer drops the line in strings-v4. null = not rendered.
+    // pm ruling 26 Nov 11:0xZ (gy-sk86p2.3): Damini's approved hero has no small print; strings-v4 has no such line. null = not rendered.
     smallPrint: null as string | null,
     deviceAlt: "Gymbo dashboard, balances, and payment records shown across three phones.",
   },
