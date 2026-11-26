@@ -589,7 +589,7 @@ export default function App() {
               ))}
             </div>
             <Reveal className="mt-10 text-center">
-              <a href="/compare/gymbo-vs-wellnessz" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
+              <a href="/compare/gymbo-vs-wellnessz/" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
                 Comparing trainer apps? See how Gymbo compares to WellnessZ →
               </a>
             </Reveal>
