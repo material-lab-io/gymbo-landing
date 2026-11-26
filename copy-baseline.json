@@ -205,14 +205,18 @@
     ],
     "/_headers": [
       ["served line","/fonts/*","observed"],
+      ["served line","/llms.txt","observed"],
+      ["served line","/pricing.md","observed"],
       ["served line","/robots.txt","observed"],
       ["served line","/screens/*","observed"],
       ["served line","/sitemap-*.xml","observed"],
       ["served line","/sitemap-index.xml","observed"],
+      ["served line","# gy-4rlx9l: plain-text copies of page content. They stay readable (AI crawlers) and are kept out of the search index.","observed"],
       ["served line","Cache-Control: public, max-age=31536000, immutable","observed"],
       ["served line","Cache-Control: public, max-age=60, must-revalidate","observed"],
       ["served line","Content-Type: application/xml; charset=utf-8","observed"],
-      ["served line","Content-Type: text/plain; charset=utf-8","observed"]
+      ["served line","Content-Type: text/plain; charset=utf-8","observed"],
+      ["served line","X-Robots-Tag: noindex","observed"]
     ],
     "/_redirects": [
       ["served line","/ig https://getgymbo.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio 301","observed"],
@@ -220,7 +224,14 @@
       ["served line","# Instagram bio short-link → UTM-tagged homepage (so Umami attributes IG traffic)","observed"],
       ["served line","# Referral short-link /r/<token> is NOT here: it is functions/r/[token].js (gy-3jb0t).","observed"],
       ["served line","# substitute placeholders in the query string.","observed"],
-      ["served line","https://www.getgymbo.com/* https://getgymbo.com/:splat 301","observed"]
+      ["served line","# www -> apex is NOT here: Pages ignores host rules in this file. It is functions/_middleware.js (gy-xndr3x).","observed"]
+    ],
+    "/_routes.json": [
+      ["served line","\"exclude\": [\"/assets/*\", \"/fonts/*\", \"/demos/*\", \"/screens/*\", \"/mockups/*\", \"/favicon.ico\", \"/favicon.svg\"]","observed"],
+      ["served line","\"include\": [\"/*\"],","observed"],
+      ["served line","\"version\": 1,","observed"],
+      ["served line","{","observed"],
+      ["served line","}","observed"]
     ],
     "/alternatives/akton/": [
       ["accessibility aria-label","Footer navigation","observed"],

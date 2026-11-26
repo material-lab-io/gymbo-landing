@@ -12,3 +12,10 @@
 
 /robots.txt
   Content-Type: text/plain; charset=utf-8
+
+# gy-4rlx9l: plain-text copies of page content. They stay readable (AI crawlers) and are kept out of the search index.
+/pricing.md
+  X-Robots-Tag: noindex
+
+/llms.txt
+  X-Robots-Tag: noindex

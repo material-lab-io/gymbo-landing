@@ -1,4 +1,4 @@
-https://www.getgymbo.com/* https://getgymbo.com/:splat 301
+# www -> apex is NOT here: Pages ignores host rules in this file. It is functions/_middleware.js (gy-xndr3x).
 
 # Instagram bio short-link → UTM-tagged homepage (so Umami attributes IG traffic)
 /ig https://getgymbo.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio 301
