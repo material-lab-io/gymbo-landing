@@ -7,7 +7,7 @@ export function Privacy() {
     <PageShell>
       <Prose
         title="Privacy policy"
-        updated="Last updated 23 November 2026"
+        updated="Last updated 26 November 2026"
         intro="Gymbo is made by Material Lab for independent personal trainers in India. This policy explains what we collect, why, and the choices you have. Plain language, no surprises."
       >
         <section className="flex flex-col gap-3">
@@ -55,7 +55,7 @@ export function Privacy() {
 
         <section className="flex flex-col gap-3">
           <h2>How we share it</h2>
-          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), payment collection for Gymbo Pro on the web (Razorpay), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
+          <p>We do not sell your data. We share it only with service providers who help us run Gymbo: our cloud database and hosting (Supabase), email delivery (Resend), sign-in (Google), login SMS (MSG91), payment collection for Gymbo Pro on the web (Razorpay), analytics (Umami on the website, PostHog in the app), and the AI providers described below, under appropriate confidentiality terms, and where required by law. <strong>Gymbo does not send messages to your clients.</strong></p>
         </section>
 
         <section className="flex flex-col gap-3">
@@ -66,10 +66,24 @@ export function Privacy() {
           <ul>
             <li><strong>What it does:</strong> answers your questions about your business inside the app.</li>
             <li><strong>What we send:</strong> your typed question, and a short summary of your business that goes with every question. The summary has your name and business name, how many clients you have, your top five clients by balance (name and classes left), how many clients are overdue, today's session client names and the session client names for the next six days, your collections and attendance totals for the last seven days, and the notes you asked Gymbo to remember. It is the same on every question. If you use the microphone in Ask Gymbo, your speech is first turned into text by Groq (see Voice input: Groq) and then sent as your question.</li>
-            <li><strong>What Gymbo reads when a question needs more:</strong> while it answers, Gymbo reads from your account a client's name, balance, rate, amount due and recent payments (dates and amounts), your schedule, your totals, and your profile. It reads only what the question needs, and a single lookup is limited to 25 clients. It does not read client phone numbers, client notes, health records or photos. When you ask Gymbo to make a change, such as adding a client or recording a payment, it sends the details of that change.</li>
+            <li>
+              <strong>What Gymbo reads when a question needs more:</strong> while it answers, Gymbo reads from your account a client's name, record ID and client code, classes left or owed, prepaid credit, rate and the date it changed, package size, classes taken and skipped, trial classes left, amount due, recent payments (dates, amounts, classes added), your schedule, your totals, and your profile. When you ask from one client's screen, it also reads that client's attendance, missed classes, last attended date and next class.
+              <p className="pt-2">A client lookup sends the AI provider at most 25 clients. A schedule lookup sends every client booked on that day. To show your client list on your screen, or to total what is owed, our servers read more client records and send the AI provider only counts and totals.</p>
+              <p className="pt-2">Our servers read client phone numbers to remove opted-out clients from your remembered notes. Gymbo does not look up phone numbers for the AI provider. A number you type, or ask Gymbo to remember, is sent as part of your text.</p>
+              <p className="pt-2">Gymbo does not read client notes, health records or photos. When you ask Gymbo to make a change, such as adding a client or recording a payment, it sends the details of that change.</p>
+            </li>
             <li><strong>Per-client control:</strong> any client you mark as opted out of AI is <strong>never</strong> included in what we send.</li>
             <li><strong>Where it's processed:</strong> on Anthropic's infrastructure, located outside India, in the United States.</li>
             <li><strong>Retention:</strong> your data is processed to answer your question and is handled under Anthropic's commercial terms. We are putting a formal data-processing agreement in place with Anthropic; once it is finalised we will update this notice with the specific retention terms.</li>
+          </ul>
+
+          <h3>Client summary: Anthropic (Claude)</h3>
+          <ul>
+            <li><strong>What it does:</strong> writes a short status note about one client.</li>
+            <li><strong>When it runs:</strong> when you open that client's screen, unless the client is opted out of AI.</li>
+            <li><strong>What we send:</strong> the client's name, classes left or owed, prepaid credit, rate, trial classes left, attendance and missed classes in the last 14 days, last attended date, last payment (amount, classes, date) and next class.</li>
+            <li><strong>Where it's processed:</strong> on Anthropic's infrastructure in the United States.</li>
+            <li><strong>What we keep:</strong> the summary, saved in your account and rewritten after the client's data changes.</li>
           </ul>
 
           <h3>Voice input: Groq</h3>
