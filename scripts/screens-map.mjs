@@ -24,6 +24,6 @@ export const SCREENS = {
   export: "revenue-02-export-statement.png", // gallery
   workouts: "workouts-01-template-fullbody.png", // gallery
   ai: "extra-ai-assistant.png", // gallery
-  "card-week": "card-2-schedule-week-dark.png", // feature card 2 (gy-sk86p2.4 card art)
+  "card-week": "card-2-schedule-week-web-dark.png", // feature card 2 (gy-sk86p2.4 card art)
   "card-builder": "card-4-workout-builder-dark.png", // feature card 4 (gy-sk86p2.4 card art)
 };
