@@ -49,9 +49,11 @@ export function HomeHero({ prefersReduced }: { prefersReduced: boolean }) {
                 <StartFreeCTA size="lg" position="hero" />
                 <WhatsAppCTA size="lg" location="hero" variant="secondary" glyph={false}>{HOME.hero.talk}</WhatsAppCTA>
               </div>
-              <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
-                {HOME.hero.smallPrint}
-              </p>
+              {HOME.hero.smallPrint ? (
+                <p className="mt-4 text-[13px]" style={{ color: F.inkLabel, fontFamily: SANS }}>
+                  {HOME.hero.smallPrint}
+                </p>
+              ) : null}
             </div>
             {/* Mobile/tablet keeps the approved three-phone composition below
                 the copy, scaled as one coherent image so its screens and device

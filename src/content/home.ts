@@ -25,7 +25,8 @@ export const HOME = {
     // The sub renders `lead` in ink and `rest` muted.
     sub: { lead: "See who owes you, how many classes each client has left, and what came in this month.", rest: "" },
     talk: "Talk to the founder",
-    smallPrint: "Free to start. No laptop needed. Your clients download nothing. iPhone app coming soon.",
+    // pm ruling 26 Nov 11:0xZ (gy-sk86p2.3): Damini's approved hero has no small print; marketer drops the line in strings-v4. null = not rendered.
+    smallPrint: null as string | null,
     deviceAlt: "Gymbo dashboard, balances, and payment records shown across three phones.",
   },
 
