@@ -38,6 +38,8 @@ const CARD_LINE = "rgba(240,240,235,0.14)";
 // punch-a-class clip, pm 13:4xZ: class punched + classes left; log-payment stays pulled for its retired claim).
 // Owed captures (fresh dark iOS, then these switch to "screen"): card 1 Activity Log with month total, card 3 a statement PDF with a
 // trainer logo, card 4 the builder with a neutral client name.
+// Size (web_designer 13:5xZ): phone 240 px wide on phones (page shorter than round 1), 280 px beside the text from md, where the
+// text sits at the card top under its numeral (a centred 330 phone left ~200 px above the title at 1440).
 const PILLAR_LAYOUT = [
   { id: "revenue", demoId: "log-payment", art: { kind: "demo-crop", demo: "punch-class" } },
   { id: "organized", demoId: "schedule", art: { kind: "screen", slug: "card-week" } },
@@ -234,7 +236,7 @@ export default function App() {
                   <span data-testid={`pillar-numeral-${p.id}`} aria-hidden="true" className="gy-numeral">
                     {i + 1}
                   </span>
-                  <div data-testid={`pillar-${p.id}`} className={`gy-card-body grid items-center gap-4 md:gap-10 rounded-[var(--g-radius-xl)] px-5 pb-6 md:px-10 md:pb-8 md:grid-cols-[minmax(0,1fr)_minmax(0,330px)]`} style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
+                  <div data-testid={`pillar-${p.id}`} className={`gy-card-body grid items-center md:items-start gap-4 md:gap-10 rounded-[var(--g-radius-xl)] px-5 pb-6 md:px-10 md:pb-8 md:grid-cols-[minmax(0,1fr)_minmax(0,280px)]`} style={{ background: FIGURE_SURFACE.dark, border: `1px solid ${CARD_LINE}` }}>
                     <Reveal>
                       <h2 className="text-[clamp(24px,3.2vw,36px)] font-black mb-3" style={{ fontFamily: SANS, letterSpacing: "-0.01em", lineHeight: 1.2, color: F.bone }}>
                         {p.title}
@@ -258,9 +260,9 @@ export default function App() {
 
                     {/* every card has art (pm 13:4xZ) */}
                     {(
-                      <Reveal className="w-full max-w-[300px] md:max-w-[330px] mx-auto">
+                      <Reveal className="w-full max-w-[240px] md:max-w-[280px] mx-auto">
                         {p.art.kind === "screen" ? (
-                          <ScreenshotFrame slug={p.art.slug} alt={`${p.title}: app screen`} screenWidth={300} style={{ width: "100%" }} />
+                          <ScreenshotFrame slug={p.art.slug} alt={`${p.title}: app screen`} screenWidth={280} style={{ width: "100%" }} />
                         ) : (
                           /* Interim crop: the demo scene is 1080 x 1920; the box shows x 190-890, y 270-1690 = the phone only (title ends at y 258,
                              phone 280-1666, caption from y 1712). Percent margins resolve against the box width. */
