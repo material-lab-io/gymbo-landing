@@ -59,9 +59,10 @@ test('nav and hero render with the headline', async ({ page }) => {
 // assertions prove that all three user-visible slots render the contract.
 test('hero and all six gallery screens render approved photoreal device assets', async ({ page }) => {
   await page.goto('/');
-  const hero = page.getByTestId('hero-device-art').locator('img:visible');
+  // gy-sk86p2.2: the hero is the approved GYMBO photo with the app playing in the phone (the three-panel art is retired).
+  const hero = page.getByTestId('hero-section').locator('.gh-photo img');
   await expect(hero).toBeVisible();
-  await expect(hero).toHaveAttribute('src', /hero-three-panel-1200\.png/);
+  await expect(hero).toHaveAttribute('src', /\/hero\/photo\.webp/);
   expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
 
   const gallery = page.getByTestId('gallery-device-art');

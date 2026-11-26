@@ -6,12 +6,8 @@ import path from "node:path";
 const sourceRoot = process.cwd();
 const fixture = await mkdtemp(path.join(tmpdir(), "gymbo-photoreal-gate-"));
 const gate = path.resolve("scripts/check-photoreal-device.mjs");
-const hero = [
-  "hero-three-panel-800.webp",
-  "hero-three-panel-1200.webp",
-  "hero-three-panel-1800.webp",
-  "hero-three-panel-1200.png",
-];
+// gy-sk86p2.2/.3: the approved GYMBO hero (public/hero/), pinned by bytes in the gate.
+const hero = ["photo.webp", "phone.webp", "screen-loop.webm", "screen-loop.mp4", "screen-poster.jpg", "screen-mask.png"];
 const frames = [
   "iphone-frame-single-520.webp",
   "iphone-frame-single-720.webp",
@@ -30,9 +26,21 @@ const appContract = `
     { demoId: "branded-statement" },
     { demoId: "build-workout" },
   ];
-  const assets = "hero-three-panel-800.webp hero-three-panel-1200.webp hero-three-panel-1800.webp hero-three-panel-1200.png";
-  function HeroDeviceArt() { return <div data-testid="hero-device-art">{assets}</div>; }
-  function App() { return <><HeroDeviceArt/><HeroDeviceArt/><DemoFrame/><ScreenshotFrame/></>; }
+  function App() { return <><HomeHero/><DemoFrame/><ScreenshotFrame/></>; }
+`;
+const heroContract = `
+  export function HomeHero({ prefersReduced }) {
+    useEffect(() => { const v = video.current; if (!v) return; if (prefersReduced) { v.pause(); return; } v.play(); }, [prefersReduced]);
+    return (
+      <header ref={root} data-testid="hero-section" className="gh">
+        <img src="/hero/photo.webp" alt="" /><img src="/hero/phone.webp" alt="" />
+        <video ref={video} className="gh-scr" muted loop playsInline autoPlay={!prefersReduced} preload="metadata" poster="/hero/screen-poster.jpg" width={296} height={786}>
+          <source src="/hero/screen-loop.webm" type="video/webm" />
+          <source src="/hero/screen-loop.mp4" type="video/mp4" />
+        </video>
+      </header>
+    );
+  }
 `;
 const frameContract = `
   const FRAME_W = 1538;
@@ -44,7 +52,7 @@ const frameContract = `
   export function ScreenshotFrame() { return <div data-testid="gallery-device-art" style={{ filter: SHADOW.elevation4Filter, containerType: "inline-size" }}><div style={{ overflow: "hidden", borderRadius: \`\${APERTURE_RADIUS_CQW}cqw\` }}><img loading="lazy" decoding="async" style={{ objectFit: "cover" }}/></div><img src="iphone-frame-single.png" aria-hidden="true" style={{ pointerEvents: "none" }}/>iphone-frame-single-520.webp iphone-frame-single-720.webp iphone-frame-single-1080.webp</div>; }
   export function DemoFrame() { const query = matchMedia("(prefers-reduced-motion: reduce)"); return <div data-testid="pillar-demo"><video muted loop playsInline autoPlay preload="metadata"/><img data-testid="pillar-demo-poster" loading="lazy" decoding="async"/></div>; }
 `;
-const distContract = `hero-device-art gallery-device-art pillar-demo ${hero.join(" ")} ${frames.join(" ")} ${demoIds.join(" ")}`;
+const distContract = `hero-section gallery-device-art pillar-demo ${hero.map((h) => `/hero/${h}`).join(" ")} ${frames.join(" ")} ${demoIds.join(" ")}`;
 
 function runGate(args = []) {
   return spawnSync(process.execPath, ["scripts/check-photoreal-device.mjs", ...args], {
@@ -55,8 +63,14 @@ function runGate(args = []) {
 
 let positiveCases = 0;
 let negativeCases = 0;
-function expectResult(name, result, shouldPass) {
+// A negative case may also name the rule it must fail on (a planted control is RED BY NAME, not just red).
+function expectResult(name, result, shouldPass, mustName) {
   const passed = result.status === 0;
+  if (!shouldPass && mustName && !`${result.stdout}${result.stderr}`.includes(mustName)) {
+    console.error(`${name}: failed, but not on '${mustName}'`);
+    console.error(result.stderr);
+    process.exit(1);
+  }
   if (passed !== shouldPass) {
     console.error(`${name}: expected ${shouldPass ? "PASS" : "FAIL"}, got exit ${result.status}`);
     console.error(result.stdout);
@@ -71,6 +85,7 @@ function expectResult(name, result, shouldPass) {
 async function restoreSourceContracts() {
   await writeFile(path.join(fixture, "src", "App.tsx"), appContract);
   await writeFile(path.join(fixture, "src", "components", "PhoneMockup.tsx"), frameContract);
+  await writeFile(path.join(fixture, "src", "components", "HomeHero.tsx"), heroContract);
   await writeFile(path.join(fixture, ".github", "workflows", "gate.yml"), "jobs:\n  gate:\n    runs-on: [self-hosted, pool]\n");
 }
 
@@ -81,13 +96,19 @@ try {
   await mkdir(path.join(fixture, "src", "components"), { recursive: true });
   await mkdir(path.join(fixture, ".github", "workflows"), { recursive: true });
   await mkdir(path.join(fixture, "dist", "mockups"), { recursive: true });
+  await mkdir(path.join(fixture, "public", "hero"), { recursive: true });
+  await mkdir(path.join(fixture, "dist", "hero"), { recursive: true });
   await mkdir(path.join(fixture, "dist", "demos"), { recursive: true });
   await mkdir(path.join(fixture, "dist", "assets"), { recursive: true });
   await cp(gate, path.join(fixture, "scripts", "check-photoreal-device.mjs"));
 
-  for (const name of [...hero, ...frames]) {
+  for (const name of frames) {
     await cp(path.join(sourceRoot, "public", "mockups", name), path.join(fixture, "public", "mockups", name));
     await cp(path.join(sourceRoot, "public", "mockups", name), path.join(fixture, "dist", "mockups", name));
+  }
+  for (const name of hero) {
+    await cp(path.join(sourceRoot, "public", "hero", name), path.join(fixture, "public", "hero", name));
+    await cp(path.join(sourceRoot, "public", "hero", name), path.join(fixture, "dist", "hero", name));
   }
   for (const name of demos) {
     await cp(path.join(sourceRoot, "public", "demos", name), path.join(fixture, "public", "demos", name));
@@ -99,13 +120,26 @@ try {
   expectResult("positive source fixture", runGate(), true);
   expectResult("positive dist fixture", runGate(["--dist"]), true);
 
-  await unlink(path.join(fixture, "public", "mockups", hero[0]));
-  expectResult("missing hero asset", runGate(), false);
-  await cp(path.join(sourceRoot, "public", "mockups", hero[0]), path.join(fixture, "public", "mockups", hero[0]));
+  await unlink(path.join(fixture, "public", "hero", hero[0]));
+  expectResult("missing hero asset", runGate(), false, "hero/photo.webp");
+  await cp(path.join(sourceRoot, "public", "hero", hero[0]), path.join(fixture, "public", "hero", hero[0]));
 
-  await appendFile(path.join(fixture, "public", "mockups", hero[1]), "altered");
-  expectResult("altered hero identity", runGate(), false);
-  await cp(path.join(sourceRoot, "public", "mockups", hero[1]), path.join(fixture, "public", "mockups", hero[1]));
+  await appendFile(path.join(fixture, "public", "hero", hero[1]), "altered");
+  expectResult("altered hero identity", runGate(), false, "Altered approved hero assets: hero/phone.webp");
+  await cp(path.join(sourceRoot, "public", "hero", hero[1]), path.join(fixture, "public", "hero", hero[1]));
+
+  // PLANTED CONTROL (pm 11:0xZ): the clip loses its poster frame -> RED by name.
+  await writeFile(path.join(fixture, "src", "components", "HomeHero.tsx"), heroContract.replace(' poster="/hero/screen-poster.jpg"', ""));
+  expectResult("hero clip poster removed", runGate(), false, "hero clip poster (/hero/screen-poster.jpg)");
+  await restoreSourceContracts();
+
+  await writeFile(path.join(fixture, "src", "components", "HomeHero.tsx"), heroContract.replace("autoPlay={!prefersReduced}", "autoPlay"));
+  expectResult("hero clip autoplays under reduced motion", runGate(), false, "hero reduced-motion still");
+  await restoreSourceContracts();
+
+  await writeFile(path.join(fixture, "src", "components", "HomeHero.tsx"), `${heroContract}\nconst old = "/mockups/hero-three-panel-1200.png";`);
+  expectResult("three-panel hero art referenced again", runGate(), false, "no three-panel hero art");
+  await restoreSourceContracts();
 
   await unlink(path.join(fixture, "public", "demos", "log-payment-light.mp4"));
   expectResult("missing demo clip", runGate(), false);
@@ -143,7 +177,7 @@ try {
   await writeFile(path.join(fixture, "public", "mockups", "hero-three-panel-unapproved.png"), "fixture");
   expectResult("unexpected device art", runGate(), false);
 
-  if (positiveCases !== 3 || negativeCases !== 11) {
+  if (positiveCases !== 3 || negativeCases !== 14) {
     throw new Error(`nonzero coverage assertion failed: ${positiveCases} positive, ${negativeCases} negative`);
   }
   console.log(`Photoreal-device gate self-test: ${positiveCases} positive and ${negativeCases} negative cases passed.`);
