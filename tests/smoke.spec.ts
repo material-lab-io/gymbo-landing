@@ -67,7 +67,8 @@ test('hero and all six gallery screens render approved photoreal device assets',
   await expect(hero).toHaveAttribute('src', /\/hero\/photo\.webp/);
   expect(await hero.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0);
 
-  const gallery = page.getByTestId('gallery-device-art');
+  // gy-sk86p2.4: feature cards 2 and 4 also use the photoreal frame, so the six are counted inside the gallery section.
+  const gallery = page.getByTestId('gallery-section').getByTestId('gallery-device-art');
   await expect(gallery).toHaveCount(6);
   for (let index = 0; index < 6; index += 1) {
     const frame = gallery.nth(index);
@@ -100,16 +101,14 @@ test('hero and all six gallery screens render approved photoreal device assets',
 });
 
 test('all remaining pillar demos lazy-load and advance as muted looping inline video', async ({ page }) => {
-  // gy-v9pwo.4 (pm 2026-09-28): log-payment's demo had a retired claim burned into its
-  // pixels and was pulled from the "Track your revenue" pillar with no replacement, pending
-  // gy-7zhx1's re-render. 3 demos remain until that lands.
+  // gy-v9pwo.4: log-payment's demo (retired claim burned in) stays pulled. gy-sk86p2.4 card art (pm ruling 2 + 13:4xZ): cards 2 and 4
+  // are real iOS screens in the photoreal frame; cards 1 and 3 are demos cropped to the phone (card 1 = the punch-a-class clip).
   await page.goto('/');
   const demos = page.getByTestId('pillar-demo');
-  await expect(demos).toHaveCount(3);
+  await expect(demos).toHaveCount(2);
   const expected = [
-    ['schedule', 'dark'],
+    ['punch-class', 'dark'],
     ['branded-statement', 'dark'],
-    ['build-workout', 'dark'],
   ] as const;
 
   for (let index = 0; index < expected.length; index += 1) {
@@ -142,12 +141,13 @@ test('reduced motion renders all remaining matching posters without autoplay', a
   await expect(heroClip).toHaveAttribute('poster', '/hero/screen-poster.jpg');
   await expect.poll(() => heroClip.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
   const posters = page.getByTestId('pillar-demo-poster');
-  await expect(posters).toHaveCount(3);
+  await expect(posters).toHaveCount(2);
   const expected = [
-    '/demos/schedule-dark.png',
+    '/demos/punch-class-dark.png',
     '/demos/branded-statement-dark.png',
-    '/demos/build-workout-dark.png',
   ];
+  await expect(page.locator('#why [data-testid=gallery-device-art]')).toHaveCount(2);
+  await expect(page.locator('[src*="/demos/log-payment"]')).toHaveCount(0);
   for (let index = 0; index < expected.length; index += 1) {
     await expect(posters.nth(index)).toHaveAttribute('src', expected[index]);
   }
