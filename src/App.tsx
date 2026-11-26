@@ -39,6 +39,8 @@ const FOOTER_GROUPS = HOME.footer.groups;
    (SSOT shared with the comparison pages). */
 
 /* ── 4 pillars ── */
+// gy-sk86p2.3 L3 (Damini 26 Nov): no orange icon highlight. Icon tiles are neutral: ink on a faint ink wash (light), bone on a faint bone wash (dark).
+const NEUTRAL_TILE = { light: "rgba(26,26,26,0.06)", dark: "rgba(240,240,235,0.10)" } as const;
 const PILLAR_LAYOUT = [
   { id: "revenue", demoId: "log-payment", dark: false },
   { id: "organized", demoId: "schedule", dark: true },
@@ -220,7 +222,7 @@ export default function App() {
 
         {/* ───────── why — 4 pillars ───────── */}
         <section id="why" aria-label={HOME.why.label}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-16 md:pt-24 pb-4 text-center">
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-14 pb-2 text-center">
             <Reveal>
               {HOME.why.eyebrow ? <Eyebrow>{HOME.why.eyebrow}</Eyebrow> : null}
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
@@ -237,7 +239,7 @@ export default function App() {
             const hasDemo = p.demoId !== "log-payment";
             return (
               <div key={p.id} data-testid={`pillar-band-${p.id}`} style={{ background: hasDemo ? (dark ? FIGURE_SURFACE.dark : FIGURE_SURFACE.light) : (dark ? F.charcoal : F.beige) }}>
-                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-12 md:py-16 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-10 md:gap-16 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
+                <div data-testid={`pillar-${p.id}`} className={`max-w-[1180px] mx-auto px-5 md:px-12 py-8 md:py-10 grid ${hasDemo ? "md:grid-cols-2" : "md:grid-cols-1"} items-center gap-6 md:gap-12 ${hasDemo && i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}>
                   <Reveal className={hasDemo ? undefined : "md:text-center md:mx-auto md:max-w-[640px]"}>
                     {p.eyebrow ? (
                       <span className="block text-[13px] font-bold mb-3" style={{ color: dark ? F.marigold : F.amberText, fontFamily: SANS, letterSpacing: "0.04em" }}>
@@ -254,7 +256,7 @@ export default function App() {
                       {p.bullets.map((b) => {
                         return (
                           <li key={b} className="flex items-start gap-3">
-                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? "rgba(251,191,36,0.14)" : "rgba(245,158,11,0.14)", color: dark ? F.marigold : F.amberText }}>
+                            <span className="grid place-items-center shrink-0 w-[22px] h-[22px] rounded-md mt-0.5" style={{ background: dark ? NEUTRAL_TILE.dark : NEUTRAL_TILE.light, color: dark ? F.bone : F.ink }}>
                               <Check size={13} strokeWidth={2.5} />
                             </span>
                             <span className="text-[14px] md:text-[15px]" style={{ color: dark ? F.bone : F.ink, fontFamily: SANS, lineHeight: 1.5 }}>
@@ -290,7 +292,7 @@ export default function App() {
 
         {/* ───────── in-action gallery (current real-app screenshots, framed) ───────── */}
         <section data-testid="gallery-section" aria-label={HOME.gallery.label} style={{ background: F.charcoal }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-10 md:py-14">
             <Reveal className="text-center">
               {HOME.gallery.eyebrow ? <Eyebrow dark>{HOME.gallery.eyebrow}</Eyebrow> : null}
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
@@ -301,7 +303,7 @@ export default function App() {
               </p>
             </Reveal>
 
-            <div className="mt-10 flex items-center justify-center gap-4" aria-label={HOME.gallery.controls}>
+            <div className="mt-6 flex items-center justify-center gap-4" aria-label={HOME.gallery.controls}>
               <button
                 type="button"
                 onClick={() => scrollGalleryTo(galleryIndex - 1)}
@@ -337,7 +339,7 @@ export default function App() {
             </div>
             <p id="gallery-position" className="sr-only">{HOME.gallery.help(SCREENS.length)}</p>
 
-            <Reveal className="mt-12 flex flex-col items-center gap-3">
+            <Reveal className="mt-6 flex flex-col items-center gap-3">
               <div className="flex flex-col items-center">
                 <StartFreeCTA dark size="lg" position="gallery" variant="secondary" />
               </div>
@@ -347,7 +349,7 @@ export default function App() {
 
         {/* ───────── why we built gymbo (F5 dedup + F6 restructure) ───────── */}
         <section aria-label={HOME.built.label} style={{ background: F.beige }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-10 md:py-14">
             <Reveal className="text-center">
               {HOME.built.eyebrow ? <Eyebrow>{HOME.built.eyebrow}</Eyebrow> : null}
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", maxWidth: "22ch", lineHeight: 1.15 }}>
@@ -362,7 +364,7 @@ export default function App() {
 
         {/* ───────── pricing ───────── */}
         <section id="pricing" data-testid="pricing-section" aria-label={HOME.pricing.label} style={{ background: F.charcoal }}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-16 md:py-24">
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 py-10 md:py-14">
             <Reveal className="text-center">
               {HOME.pricing.eyebrow ? <Eyebrow dark>{HOME.pricing.eyebrow}</Eyebrow> : null}
               <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "24ch" }}>
@@ -370,26 +372,26 @@ export default function App() {
               </h2>
             </Reveal>
 
-            <div className="mt-12 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
+            <div className="mt-8 grid md:grid-cols-2 gap-6 items-stretch max-w-[720px] mx-auto">
               {PRICING.map((plan) => {
                 const hi = plan.highlight;
                 return (
                   <Reveal key={plan.name} className="flex">
-                    <div className="flex flex-col w-full p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: hi ? F.marigold : F.charcoalCard, border: hi ? "none" : "1px solid rgba(240,240,235,0.08)" }}>
-                      <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: hi ? "rgba(26,26,26,0.14)" : "rgba(240,240,235,0.06)", color: hi ? "rgba(26,26,26,0.75)" : F.boneMuted, fontFamily: SANS }}>
+                    <div className="flex flex-col w-full p-[var(--g-space-6)] md:p-[var(--g-space-8)] rounded-[var(--g-radius-xl)]" style={{ background: F.charcoalCard, border: hi ? `2px solid ${F.marigold}` : "1px solid rgba(240,240,235,0.08)" }}>
+                      <span className="inline-flex self-start text-[11px] font-bold px-3 py-1.5 rounded-md mb-5" style={{ letterSpacing: "0.04em", background: "rgba(240,240,235,0.06)", color: F.boneMuted, fontFamily: SANS }}>
                         {plan.tagline}
                       </span>
-                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: hi ? F.onCta : F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
+                      <h3 className="text-[clamp(30px,4vw,42px)] font-black mb-3" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", color: F.bone, lineHeight: 1.15 }}>{plan.name}</h3>
                       <div className="flex items-baseline gap-1.5 mb-1">
-                        <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: hi ? F.onCta : F.bone }}>₹{plan.price}</span>
-                        {plan.period ? <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: hi ? "rgba(26,26,26,0.55)" : F.boneLabel, fontFamily: SANS }}>{plan.period}</span> : null}
+                        <span className="text-[30px] font-bold" style={{ fontFamily: SANS, color: F.bone }}>₹{plan.price}</span>
+                        {plan.period ? <span className="text-[12px]" style={{ letterSpacing: "0.04em", color: F.boneLabel, fontFamily: SANS }}>{plan.period}</span> : null}
                       </div>
-                      <p className="text-[12px] mb-5" style={{ color: hi ? "rgba(26,26,26,0.6)" : F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
+                      <p className="text-[12px] mb-5" style={{ color: F.boneLabel, fontFamily: SANS }}>{plan.note}</p>
                       {/* gy-1vd9qy.10.4: both cards say Start free and go to the app's sign-up (mt-auto pins the button to the card bottom). */}
                       <a
                         {...signupCtaProps(plan.highlight ? "pricing-pro" : "pricing-free")}
-                        className={`mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 ${hi ? "gy-focus-ring-light" : "gy-focus-ring-dark"}`}
-                        style={{ background: hi ? F.charcoal : F.marigold, color: hi ? F.bone : F.onCta, fontFamily: SANS }}
+                        className="mt-auto w-full inline-flex items-center justify-center h-12 rounded-full text-[14px] font-bold transition-transform duration-150 hover:-translate-y-px active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 gy-focus-ring-dark"
+                        style={{ background: F.marigold, color: F.onCta, fontFamily: SANS }}
                       >
                         {START_FREE_LABEL}
                       </a>
@@ -398,7 +400,7 @@ export default function App() {
                 );
               })}
             </div>
-            <Reveal className="text-center mt-8">
+            <Reveal className="text-center mt-5">
               <p className="text-[13px]" style={{ color: F.boneLabel, fontFamily: SANS }}>{HOME.pricing.payment}</p>
             </Reveal>
           </div>
@@ -406,9 +408,9 @@ export default function App() {
 
         {/* ───────── faq ───────── */}
         <section id="faq" aria-label={HOME.faq.label} style={{ background: F.beige }}>
-          <div className="max-w-[800px] mx-auto px-5 md:px-12 py-16 md:py-24">
+          <div className="max-w-[800px] mx-auto px-5 md:px-12 py-10 md:py-14">
             {HOME.faq.eyebrow || HOME.faq.heading ? (
-              <Reveal className="text-center mb-10">
+              <Reveal className="text-center mb-6">
                 {HOME.faq.eyebrow ? <Eyebrow>{HOME.faq.eyebrow}</Eyebrow> : null}
                 {HOME.faq.heading ? (
                   <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "16ch" }}>
@@ -423,7 +425,7 @@ export default function App() {
                   <details className="faq py-1" style={{ borderBottom: "1px solid var(--c-line)" }}>
                     <summary className="flex items-center justify-between gap-4 py-5">
                       <span className="text-[16px] md:text-[18px] font-bold" style={{ fontFamily: SERIF, color: F.ink }}>{item.q}</span>
-                      <span className="faq-plus shrink-0 grid place-items-center w-7 h-7 rounded-full transition-transform duration-200" style={{ background: "rgba(245,158,11,0.14)", color: F.amberText }}>
+                      <span className="faq-plus shrink-0 grid place-items-center w-7 h-7 rounded-full transition-transform duration-200" style={{ background: NEUTRAL_TILE.light, color: F.ink }}>
                         <Plus size={15} strokeWidth={2.4} />
                       </span>
                     </summary>
@@ -440,7 +442,7 @@ export default function App() {
                 </Reveal>
               ))}
             </div>
-            <Reveal className="mt-10 text-center">
+            <Reveal className="mt-6 text-center">
               <a href="/compare/gymbo-vs-wellnessz" className="text-[14px] md:text-[15px] font-semibold underline underline-offset-4 transition-opacity hover:opacity-80" style={{ color: F.amberText, fontFamily: SANS }}>
                 {HOME.faq.compare}
               </a>
@@ -450,7 +452,7 @@ export default function App() {
 
         {/* ───────── final cta ───────── */}
         <section id="cta" data-testid="footer-cta-section" aria-label={HOME.closing.label} style={{ background: F.charcoal }}>
-          <div className="max-w-[640px] mx-auto px-5 md:px-12 py-16 md:py-24 flex flex-col items-center text-center">
+          <div className="max-w-[640px] mx-auto px-5 md:px-12 py-10 md:py-14 flex flex-col items-center text-center">
             <Reveal>
               {HOME.closing.eyebrow ? <Eyebrow dark>{HOME.closing.eyebrow}</Eyebrow> : null}
               <h2 className="text-[clamp(30px,4.5vw,48px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, color: F.bone, maxWidth: "16ch" }}>
@@ -461,7 +463,7 @@ export default function App() {
               </p>
             </Reveal>
 
-            <Reveal className="mt-8 w-full flex flex-col items-center gap-4">
+            <Reveal className="mt-6 w-full flex flex-col items-center gap-4">
               <StartFreeCTA dark size="lg" position="final" className="w-full sm:w-auto" />
               <WhatsAppButton location="cta-section">{HOME.closing.talk}</WhatsAppButton>
             </Reveal>
@@ -548,7 +550,7 @@ function BrandMarquee() {
   const prefersReduced = useReducedMotion();
   return (
     <div style={{ background: F.charcoal }}>
-      <div className="pt-10 md:pt-14 pb-16 md:pb-24">
+      <div className="pt-6 md:pt-8 pb-8 md:pb-10">
         {HOME.brandStrip.label ? (
           <span className="block text-center text-[13px] font-bold mb-4" style={{ color: F.marigold, fontFamily: SANS, letterSpacing: "0.04em" }}>
             {HOME.brandStrip.label}
@@ -592,7 +594,7 @@ function MarqueeChip({ t }: { t: { name: string; icon: LucideIcon } }) {
         backgroundClip: "padding-box, border-box",
       }}
     >
-      <span aria-hidden="true" className="grid place-items-center shrink-0 w-[26px] h-[26px] rounded-md" style={{ background: "rgba(251,191,36,0.14)", color: F.marigold }}>
+      <span aria-hidden="true" className="grid place-items-center shrink-0 w-[26px] h-[26px] rounded-md" style={{ background: NEUTRAL_TILE.dark, color: F.bone }}>
         <t.icon size={14} strokeWidth={2} />
       </span>
       <span className="text-[13px] md:text-[14px] font-bold whitespace-nowrap" style={{ fontFamily: SANS, color: F.bone }}>{t.name}</span>

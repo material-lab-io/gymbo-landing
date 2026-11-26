@@ -430,6 +430,8 @@ export function signupCtaProps(position: SignupPosition) {
  */
 export function StartFreeCTA({ dark, size = "md", position, className = "", variant = "primary", children = START_FREE_LABEL }: { dark?: boolean; size?: "md" | "lg"; position: SignupPosition; className?: string; variant?: "primary" | "secondary"; children?: React.ReactNode }) {
   const v = ctaVisual(variant, { dark, size });
+  // gy-sk86p2.3 L3 (Damini 26 Nov): every Start free CTA is YELLOW = marigold (--g-color-brand-marigold-500, #FBBF24) on light and dark surfaces.
+  if (variant === "primary") v.style = { ...v.style, background: F.marigold };
   return (
     <a
       {...signupCtaProps(position)}
