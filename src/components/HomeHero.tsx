@@ -12,7 +12,10 @@ import { WhatsAppCTA, StartFreeCTA } from "../forge-ui";
 import { HOME } from "../content/home";
 
 // Photo box and screen box in photo pixels (photo.webp is 1504 x 1002). Screen box from the homography fit (screen-box2.json, 26 Nov).
-const SCREEN = { left: 35.9707, top: 2.5948, width: 19.6809, height: 78.4431 };
+// R2-D: the video box is 4 photo px bigger than the glass on every side (screen-box3.json) and the video is drawn UNDER phone-frame.webp
+// (phone.webp with the glass cut out 8 px inside the outline). The video's mask is the phone outline 4 px in, so its edge always sits
+// under >= 4 px of opaque bezel: no video edge shows at any scroll position (r2d.py + mask2.py on gy-sk86p2.4 print the checks).
+const SCREEN = { left: 35.7048, top: 2.1956, width: 20.2128, height: 79.2415 };
 
 const CSS = `
 .gh{--u:calc(100vw / 1440);position:relative;z-index:1;background:#0f0f0f;color:#fff;height:calc(1208*var(--u));overflow-x:clip;overflow-y:visible}
@@ -22,8 +25,9 @@ const CSS = `
 .gh-photo img,.gh-fg img{display:block;width:100%;height:100%}
 .gh-photo{-webkit-mask-image:linear-gradient(transparent,#000 calc(150*var(--u)),#000 calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,#000 calc(110*var(--u)),#000 calc(100% - calc(110*var(--u))),transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(transparent,#000 calc(150*var(--u)),#000 calc(100% - calc(170*var(--u))),transparent),linear-gradient(90deg,transparent,#000 calc(110*var(--u)),#000 calc(100% - calc(110*var(--u))),transparent);mask-composite:intersect}
 .gh-fg{z-index:3;pointer-events:none}
-.gh-fg img{filter:drop-shadow(0 calc(26*var(--u)) calc(34*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(22*var(--u)) rgba(0,0,0,.7))}
-.gh-scr{position:absolute;left:${SCREEN.left}%;top:${SCREEN.top}%;width:${SCREEN.width}%;height:${SCREEN.height}%;object-fit:fill;will-change:transform;-webkit-mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat;mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat}
+.gh-fg .gh-base{filter:drop-shadow(0 calc(26*var(--u)) calc(34*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(22*var(--u)) rgba(0,0,0,.7))}
+.gh-scr{position:absolute;left:${SCREEN.left}%;top:${SCREEN.top}%;width:${SCREEN.width}%;height:${SCREEN.height}%;object-fit:fill;-webkit-mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat;mask:url(/hero/screen-mask.png) 0 0/100% 100% no-repeat}
+.gh-frame{position:absolute;inset:0}
 .gh-shine{position:absolute;inset:0;overflow:hidden;-webkit-mask:url(/hero/phone.webp) 0 0/100% 100% no-repeat;mask:url(/hero/phone.webp) 0 0/100% 100% no-repeat}
 .gh-shine::before{content:"";will-change:transform;position:absolute;top:0;bottom:0;left:0;width:40%;background:linear-gradient(105deg,transparent,rgb(255 255 255 / .26) 50%,transparent);transform:translateX(-120%);animation:gh-sheen 7s cubic-bezier(.22,.9,.3,1) infinite 1.2s}
 @keyframes gh-sheen{0%{transform:translateX(-120%)}16%{transform:translateX(260%)}100%{transform:translateX(260%)}}
@@ -52,7 +56,7 @@ html.gh-scrolling .gh-shine{visibility:hidden}
  .gh-track span{font-size:calc(180*var(--u));padding-right:calc(64*var(--u))}
  .gh-photo,.gh-fg{left:calc(-135.18*var(--u));top:calc(74*var(--u));width:calc(705.38*var(--u));height:calc(469.94*var(--u))}
  .gh-photo{-webkit-mask-image:linear-gradient(transparent,#000 calc(40*var(--u)),#000 calc(100% - calc(60*var(--u))),transparent);mask-image:linear-gradient(transparent,#000 calc(40*var(--u)),#000 calc(100% - calc(60*var(--u))),transparent)}
- .gh-fg img{filter:drop-shadow(0 calc(12*var(--u)) calc(16*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(10*var(--u)) rgba(0,0,0,.7))}
+ .gh-fg .gh-base{filter:drop-shadow(0 calc(12*var(--u)) calc(16*var(--u)) rgba(0,0,0,.78)) drop-shadow(0 0 calc(10*var(--u)) rgba(0,0,0,.7))}
  .gh-col{position:static;order:2;width:auto;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:calc(36*var(--u)) calc(24*var(--u)) calc(24*var(--u))}
  .gh-body{font-size:calc(16*var(--u));max-width:none;text-shadow:none}
  .gh-dock{margin-top:calc(20*var(--u));gap:10px}
@@ -102,11 +106,12 @@ export function HomeHero({ prefersReduced }: { prefersReduced: boolean }) {
           <div className="gh-mq" aria-hidden="true"><div className="gh-track"><span className="gh-word">{word}</span><span className="gh-word">{word}</span></div></div>
           <div className="gh-photo"><img src="/hero/photo.webp" alt={HOME.hero.deviceAlt} width={1504} height={1002} decoding="async" {...{ fetchpriority: "high" as const }} /></div>
           <div className="gh-fg" aria-hidden="true">
-            <img src="/hero/phone.webp" alt="" width={1504} height={1002} decoding="async" />
-            <video ref={video} className="gh-scr" muted loop playsInline autoPlay={!prefersReduced} preload="metadata" poster="/hero/screen-poster.jpg" width={296} height={786}>
+            <img className="gh-base" src="/hero/phone.webp" alt="" width={1504} height={1002} decoding="async" />
+            <video ref={video} className="gh-scr" muted loop playsInline autoPlay={!prefersReduced} preload="metadata" poster="/hero/screen-poster.jpg" width={608} height={1588}>
               <source src="/hero/screen-loop.webm" type="video/webm" />
               <source src="/hero/screen-loop.mp4" type="video/mp4" />
             </video>
+            <img className="gh-frame" src="/hero/phone-frame.webp" alt="" width={1504} height={1002} decoding="async" />
             {prefersReduced ? null : <div className="gh-shine" />}
           </div>
         </div>

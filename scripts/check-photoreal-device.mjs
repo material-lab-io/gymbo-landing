@@ -7,10 +7,11 @@ import path from "node:path";
 const heroHashes = new Map([
   ["hero/photo.webp", "e46be11ba867a3b6eff5a35253214eb2a87e84a43035f79b4f3f2cb31fd90aa9"],
   ["hero/phone.webp", "6ccca22659afcd79d5d87981974b903965274aba3ad5d8ed8c481e15f6dd63e1"],
-  ["hero/screen-loop.webm", "4ff605dd74ff450bf782b2d44c5a7362a0bc32f8becbcb871e7b132e9eb1e203"],
-  ["hero/screen-loop.mp4", "d9817f68a95914b4e9894f1ed677d1038f3ae24b49b077cbe2d27501c44afa8c"],
-  ["hero/screen-poster.jpg", "c5e679eea990b29ca5ba7808da75d5ed5e76502610c142a9b359b3e5b28fed37"],
-  ["hero/screen-mask.png", "5b3fa76db99c4901d17a54936609bc5a6338a00891a1f05e78e470f0112fe642"],
+  ["hero/screen-loop.webm", "47ad451aab6fa2474d425fe80548954131d294d182718d7e07839bb01a41b208"],
+  ["hero/screen-loop.mp4", "1d3d1483452b023211150cd9968bb3dc7c2247cfec76de5261f3b62b6633147f"],
+  ["hero/screen-poster.jpg", "fc48411b9c52d5602a8a46913df8cac6733dce4a73566c33faf2eecdf784b2a3"],
+  ["hero/phone-frame.webp", "b6240fa08ef414ffbefdd962a43e0fa0a82d1196d6d3f7c71183b285d765d486"],
+  ["hero/screen-mask.png", "43f6354541595c471fd289623ae416b8048135e636c30845169353ee3d11135c"],
 ]);
 const frames = [
   "mockups/iphone-frame-single-520.webp",
@@ -73,6 +74,7 @@ const markers = [
   "/hero/screen-loop.webm",
   "/hero/screen-loop.mp4",
   "/hero/screen-poster.jpg",
+  "/hero/phone-frame.webp",
   "iphone-frame-single-520.webp",
   "iphone-frame-single-720.webp",
   "iphone-frame-single-1080.webp",
