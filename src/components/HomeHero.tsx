@@ -5,8 +5,8 @@
 // (public/hero/screen-loop.*: the screen of assets-src/demos/punch-class-dark.mp4, perspective-mapped), and the photo ending on black
 // before the next section (H1, H3). Every layout value is fixed in CSS (no measuring script, no layout shift); --u = 1/1440 of the width
 // on laptops and 1/390 on phones, so the composition scales with the window.
-// prefers-reduced-motion: no rise, no sweep, no moving word; the screen shows one still frame.
-// Strings: src/content/home.ts (HOME.hero). The tagline comes as its two halves (HOME.hero.title.left / .right), set either side of the phone.
+// prefers-reduced-motion: no rise, no sweep, no moving word; the screen shows its poster (the loop's first frame).
+// Strings: src/content/home.ts (HOME.hero); the tagline halves are HOME.hero.title.left / .right, set either side of the phone.
 import { useEffect, useRef } from "react";
 import { WhatsAppCTA, StartFreeCTA } from "../forge-ui";
 import { HOME } from "../content/home";
