@@ -8,12 +8,14 @@ gsap.registerPlugin(ScrollTrigger);
 export function heroRise(el: HTMLElement): () => void {
   const ctx = gsap.context(() => {
     const mm = gsap.matchMedia();
-    mm.add({ desk: "(min-width: 821px)", phone: "(max-width: 820px)" }, (c) => {
-      const desk = Boolean(c.conditions?.desk);
-      const u = document.documentElement.clientWidth / (desk ? 1440 : 390);
+    mm.add({ desk: "(min-width: 600px) and (orientation: landscape)", tab: "(min-width: 600px) and (orientation: portrait)", phone: "(max-width: 599px)" }, (c) => {
+      const k = c.conditions?.desk ? "desk" : c.conditions?.tab ? "tab" : "phone";
+      // One unit = the hero's own layout unit (HomeHero CSS --u): the composition box width / its unit width.
+      const first = el.querySelector<HTMLElement>(".gh-first");
+      const u = k === "phone" ? document.documentElement.clientWidth / 390 : (first?.offsetWidth ?? 0) / (k === "desk" ? 1440 : 820);
       gsap.to(el.querySelectorAll(".gh-photo, .gh-fg"), {
-        y: -(desk ? 150 : 64) * u, ease: "none",
-        scrollTrigger: { trigger: el, start: "top top", end: desk ? `+=${828 * u}` : "+=600", scrub: 0.4, invalidateOnRefresh: true },
+        y: -(k === "phone" ? 64 : 120) * u, ease: "none",
+        scrollTrigger: { trigger: el, start: "top top", end: k === "phone" ? "+=600" : `+=${(k === "desk" ? 828 : 1056) * u}`, scrub: 0.4, invalidateOnRefresh: true },
       });
     });
   }, el);
