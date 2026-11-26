@@ -27,8 +27,10 @@
     <meta name="twitter:description" content="Built for independent personal trainers." />
     <meta name="twitter:image" content="https://getgymbo.com/og-image-v2.png" />
 
-    <!-- Theme: getgymbo.com is light-only (gy-uesmd), matches --c-bg -->
-    <meta name="theme-color" content="#FAFAF7" />
+    <!-- Theme: the HOME page is one black (gy-sk86p2.3, Damini 26 Nov round 2); the colour is the hero art's (PAGE_BLACK, src/forge-ui.tsx).
+         The other pages stay light. The html/body rule keeps overscroll and the first paint black. -->
+    <meta name="theme-color" content="#0f0f0f" />
+    <style>html,body{background:#0f0f0f;color-scheme:dark}</style>
     <link rel="canonical" href="https://getgymbo.com/" />
 
     <!-- JSON-LD -->
@@ -109,32 +111,32 @@
         {
           "@type": "Question",
           "name": "Is it free?",
-          "acceptedAnswer": { "@type": "Answer", "text": "You can start free. Pro is ₹399 a month or ₹2,999 a year, paid on the web." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes, to start. Pro is ₹399 a month or ₹2,999 a year, paid on the web." }
         },
         {
           "@type": "Question",
           "name": "Do my clients need to download anything?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Gymbo is for you, the trainer. Your clients just train. You punch the class." }
+          "acceptedAnswer": { "@type": "Answer", "text": "No: you punch the class and your clients just train." }
         },
         {
           "@type": "Question",
           "name": "Can I export my clients' records?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. You can export your clients' attendance and payment records from the app whenever you like." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes: attendance and payment records, from the app, any time." }
         },
         {
           "@type": "Question",
           "name": "Is there an iPhone app?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Coming soon. Leave your email and we will tell you when it is in the App Store. Until then Gymbo runs in your browser." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Coming soon: until then Gymbo runs in your browser. Leave your email and we will tell you when it is in the App Store." }
         },
         {
           "@type": "Question",
           "name": "How do payments work?",
-          "acceptedAnswer": { "@type": "Answer", "text": "You record cash or UPI payments yourself. Gymbo keeps the running balance. It doesn't touch your money." }
+          "acceptedAnswer": { "@type": "Answer", "text": "You record cash and UPI payments. Gymbo keeps the running balance and never touches your money." }
         },
         {
           "@type": "Question",
           "name": "Can I import my existing clients?",
-          "acceptedAnswer": { "@type": "Answer", "text": "On Android Chrome you can add clients from your contacts. On iPhone, add them by hand." }
+          "acceptedAnswer": { "@type": "Answer", "text": "On Android Chrome, add clients from your contacts. On iPhone, add them by hand." }
         }
       ]
     }

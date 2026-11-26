@@ -95,7 +95,9 @@ export function HomeHero({ prefersReduced }: { prefersReduced: boolean }) {
 
   return (
     <header ref={root} data-testid="hero-section" className="gh">
-      <style>{CSS}</style>
+      {/* __html, not children: renderToString HTML-escapes the quotes in element children, so the prerendered <style> differed from the
+          client's and React threw #425 / #418 on every load (gy-sk86p2.3). */}
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
       <div className="gh-first">
         <div className="gh-stage">
           <p className="gh-big gh-word" aria-hidden="true">{word}</p>

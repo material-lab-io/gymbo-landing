@@ -3,7 +3,7 @@
 // Every public/demos/*-{light,dark}.png is an opaque 1080x1920 frame with its page colour baked into every pixel, and the clips are MP4 (no alpha). When Forge
 // set B moved the page to #FFF and the dark band to #000, the art did not move, so each figure showed as a box (web_designer, #332). FIGURE_SURFACE in
 // src/figure-surface.ts is that baked colour. This test reads the real corner pixel of every poster, so the constant cannot drift from the art, and reads App.tsx so
-// the demo bands cannot go back to the tokens while the art is unchanged.
+// the demo cards cannot go back to the tokens while the art is unchanged. Since gy-sk86p2.3 (the all-black page) every feature card uses the DARK art.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
@@ -59,7 +59,16 @@ test("control: a surface one level off the art is NOT accepted (the comparison c
   assert.notEqual(baked, "#FFFFFF", "the light art is not white: that is the whole defect");
 });
 
-test("the pillar bands that carry a demo are drawn on FIGURE_SURFACE, not on the page tokens", () => {
+// The rule: a feature card is drawn on FIGURE_SURFACE.dark and plays the dark art. Both halves, or the figure shows as a box.
+export const cardsMatchDarkArt = (app) =>
+  /className=\{`gy-card-body [\s\S]{0,200}?style=\{\{ background: FIGURE_SURFACE\.dark,/.test(app) && /<DemoFrame\b[\s\S]{0,300}?theme="dark"/.test(app);
+
+test("the feature cards that carry a demo are drawn on FIGURE_SURFACE.dark with the dark art", () => {
+  assert.ok(cardsMatchDarkArt(readFileSync(join(ROOT, "src/App.tsx"), "utf8")), "a feature card must use FIGURE_SURFACE.dark and theme=\"dark\"");
+});
+
+test("control: a card on a page token, or light art, is NOT accepted", () => {
   const app = readFileSync(join(ROOT, "src/App.tsx"), "utf8");
-  assert.match(app, /pillar-band-\$\{p\.id\}[^\n]*hasDemo \? \(dark \? FIGURE_SURFACE\.dark : FIGURE_SURFACE\.light\) : \(dark \? F\.charcoal : F\.beige\)/, "a demo band must use FIGURE_SURFACE");
+  assert.equal(cardsMatchDarkArt(app.replace("background: FIGURE_SURFACE.dark,", "background: F.charcoal,")), false);
+  assert.equal(cardsMatchDarkArt(app.replace('theme="dark"', 'theme="light"')), false);
 });

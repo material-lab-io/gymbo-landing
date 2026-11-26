@@ -5,8 +5,8 @@ import { test, expect } from '@playwright/test';
  * Runs on both the `desktop` and `mobile` (Pixel 5) projects (see playwright.config.ts).
  * Covers: page renders / no JS errors, nav + hero, pricing, waitlist CTA, footer,
  * plus the current static product imagery and no layout break.
- * getgymbo.com is LIGHT ONLY (gy-uesmd, founder ruling 2026-08-12) — there is
- * no global theme toggle or dark palette.
+ * There is no theme toggle and no second palette (gy-uesmd, founder ruling 2026-08-12).
+ * The HOME page is one black since Damini's 26 Nov round 2 (gy-sk86p2.3); the other pages stay light.
  */
 
 const IGNORE = [
@@ -50,7 +50,9 @@ test('nav and hero render with the headline', async ({ page }) => {
   // pin is structure: exactly one h1, on screen, carrying a real sentence.
   const h1 = page.locator('h1');
   await expect(h1).toHaveCount(1);
-  await expect(h1).toBeVisible();
+  // gy-sk86p2.2: the hero sets the h1 in two halves either side of the phone, so the h1 box itself has no height: its halves are what a reader sees.
+  for (const half of await h1.locator('span').all()) await expect(half).toBeVisible();
+  await expect(h1.locator('span')).toHaveCount(2);
   const headline = ((await h1.textContent()) ?? '').trim();
   expect(headline.length, 'the hero h1 must carry a real headline, not an empty or stub node').toBeGreaterThan(20);
 });
@@ -106,8 +108,8 @@ test('all remaining pillar demos lazy-load and advance as muted looping inline v
   await expect(demos).toHaveCount(3);
   const expected = [
     ['schedule', 'dark'],
-    ['branded-statement', 'light'],
-    ['build-workout', 'light'],
+    ['branded-statement', 'dark'],
+    ['build-workout', 'dark'],
   ] as const;
 
   for (let index = 0; index < expected.length; index += 1) {
@@ -134,56 +136,108 @@ test('reduced motion renders all remaining matching posters without autoplay', a
   // gy-v9pwo.4: log-payment's poster carried the same retired claim; see the note above.
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
-  await expect(page.locator('video')).toHaveCount(0);
+  await expect(page.getByTestId('pillar-demo').locator('video')).toHaveCount(0);
+  // gy-sk86p2.2: the hero keeps its <video> element but never plays it: it holds the poster.
+  const heroClip = page.getByTestId('hero-section').locator('video');
+  await expect(heroClip).toHaveAttribute('poster', '/hero/screen-poster.jpg');
+  await expect.poll(() => heroClip.evaluate((v: HTMLVideoElement) => v.paused)).toBe(true);
   const posters = page.getByTestId('pillar-demo-poster');
   await expect(posters).toHaveCount(3);
   const expected = [
     '/demos/schedule-dark.png',
-    '/demos/branded-statement-light.png',
-    '/demos/build-workout-light.png',
+    '/demos/branded-statement-dark.png',
+    '/demos/build-workout-dark.png',
   ];
   for (let index = 0; index < expected.length; index += 1) {
     await expect(posters.nth(index)).toHaveAttribute('src', expected[index]);
   }
 });
 
-test('a pre-seeded dark localStorage value is ignored — site is light only (gy-uesmd)', async ({ page }) => {
+test('a pre-seeded theme localStorage value is ignored — there is no theme switch (gy-uesmd)', async ({ page }) => {
   // Regression for the founder-visible bug: gy-31moh removed the theme
   // toggle but left the no-flash script + dark palette in place, so anyone
   // with a stale gymbo-theme='dark' from before the toggle was removed got
   // stuck on a dark site with no way to escape it. Both are now deleted
   // outright — getgymbo.com never reads gymbo-theme and never sets
   // data-theme, so a pre-seeded 'dark' value must have zero effect.
-  await page.addInitScript(() => localStorage.setItem('gymbo-theme', 'dark'));
+  await page.addInitScript(() => localStorage.setItem('gymbo-theme', 'light'));
   await page.goto('/');
   const html = page.locator('html');
   await expect(html).not.toHaveAttribute('data-theme', /.+/);
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(255, 255, 255)'); // --c-bg #ffffff (token set B; was #fafaf7)
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(15, 15, 15)'); // the home page's one black (gy-sk86p2.3)
 });
 
-test('pillar-organized keeps its fixed dark accent band (unrelated to page theme)', async ({ page }) => {
-  // PILLARS[].dark is a per-section design constant (charcoal accent band),
-  // independent of the removed global theme system — this is NOT dark mode.
-  //
-  // The organized pillar also selects the dark clip variant so the baked scene
-  // blends into this fixed charcoal band; this remains independent of page theme.
+// ── Damini round 2 (gy-sk86p2.3, 26 Nov) ─────────────────────────────────────
+
+// Every painted background on the page is dark. A surface counts as light when it is opaque enough to be seen and its luminance is high,
+// and it is bigger than a button (the yellow CTAs, the dots and the numerals are accents, not sections).
+const lightSections = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => {
+    const bad: string[] = [];
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('body, body *'))) {
+      const m = getComputedStyle(el).backgroundColor.match(/rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?\)/);
+      if (!m || Number(m[4] ?? 1) < 0.5) continue;
+      const lum = (0.2126 * Number(m[1]) + 0.7152 * Number(m[2]) + 0.0722 * Number(m[3])) / 255;
+      const r = el.getBoundingClientRect();
+      if (lum > 0.35 && r.width * r.height > 40_000) bad.push(`${el.tagName}.${el.getAttribute('data-testid') ?? ''} ${m[0]}`);
+    }
+    return bad;
+  });
+
+test('round 2: the whole home page is black, with no light section and no features heading', async ({ page }) => {
   await page.goto('/');
-  const pillar = page.locator('[data-testid="pillar-organized"]');
-  await pillar.scrollIntoViewIfNeeded();
-  await expect(pillar).toBeVisible();
-  // gy-0ho2lx: a demo band is drawn on the colour its art was composed on (src/figure-surface.ts, tied to the poster pixels by tests/figure-surface.test.mjs),
-  // NOT on the set-B token (#000): the baked #0A0A0A frame would otherwise show as a box on it.
-  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(10, 10, 10)');
-  await expect(pillar.locator('video')).toHaveAttribute('data-theme-variant', 'dark');
+  expect(await lightSections(page)).toEqual([]);
+  await expect(page.getByText('What your training business runs on.')).toHaveCount(0);
+  // control: the detector sees a light section when there is one
+  await page.evaluate(() => { (document.querySelector('#faq') as HTMLElement).style.background = '#fafaf7'; });
+  expect((await lightSections(page)).join()).toContain('SECTION');
 });
 
-test('pillar-brand (a light demo band) sits on the colour its art was composed on, not the white page', async ({ page }) => {
-  // gy-0ho2lx: the demo posters bake #FAFAF7 into every pixel; on set B's #FFF page that frame showed as a box. The band, not the page, takes the art's colour.
+test('round 2: four numbered cards in her order, drawn on the dark art, and no ticker', async ({ page }) => {
   await page.goto('/');
-  const pillar = page.locator('[data-testid="pillar-brand"]');
-  await pillar.scrollIntoViewIfNeeded();
-  await expect(pillar).toBeVisible();
-  await expect(pillar.locator('xpath=..')).toHaveCSS('background-color', 'rgb(250, 250, 247)');
+  const why = page.locator('#why');
+  await expect(why.getByRole('heading', { level: 2 })).toHaveText([
+    'Track your revenue', 'Your whole roster in one place', 'Build your brand', 'Build and track workouts',
+  ]);
+  await expect(why.locator('[data-testid^="pillar-numeral-"]')).toHaveText(['1', '2', '3', '4']);
+  for (const id of ['revenue', 'organized', 'brand', 'workouts']) {
+    // gy-0ho2lx: a card is drawn on the colour its art was composed on (src/figure-surface.ts), or the figure shows as a box.
+    await expect(why.getByTestId(`pillar-${id}`)).toHaveCSS('background-color', 'rgb(10, 10, 10)');
+  }
+  await expect(page.locator('.marquee-track, [aria-label="Brand touchpoints"]')).toHaveCount(0);
+});
+
+test('round 2: the closing line is one line on iPad and desktop', async ({ page }) => {
+  for (const width of [768, 820, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const lines = await page.getByTestId('closing-heading').evaluate((el) => {
+      const r = el.getBoundingClientRect();
+      return { lines: Math.round(r.height / parseFloat(getComputedStyle(el).lineHeight)), fits: el.scrollWidth <= el.clientWidth + 1 && r.right <= innerWidth };
+    });
+    expect(lines, `closing line at ${width}`).toEqual({ lines: 1, fits: true });
+  }
+});
+
+test('round 2: no horizontal scroll, and every control is at least 44 px', async ({ page }) => {
+  for (const width of [375, 390, 820, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `overflow at ${width}`).toBeLessThanOrEqual(0);
+    const small = await page.evaluate(() =>
+      Array.from(document.querySelectorAll<HTMLElement>('a[href], button, summary'))
+        .filter((el) => !el.classList.contains('sr-only') && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden')
+        .map((el) => ({ name: (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 40), r: el.getBoundingClientRect() }))
+        .filter(({ r }) => r.width > 1 && (r.width < 43.5 || r.height < 43.5))
+        .map(({ name, r }) => `${name} ${Math.round(r.width)}x${Math.round(r.height)}`),
+    );
+    expect(small, `targets under 44 px at ${width}`).toEqual([]);
+  }
+});
+
+test('round 2: the footer links back to Material Lab', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('footer').getByRole('link', { name: 'Made by Material Lab' })).toHaveAttribute('href', 'https://www.materiallab.io/');
 });
 
 test('retired demo-frame badges are absent', async ({ page }) => {
@@ -214,24 +268,25 @@ test('pricing shows the Free and Pro plans and their numbers (option A, no trial
   await expect(pricing.locator('a[data-cta="start-free"]')).toHaveCount(2);
 });
 
-test('gallery controls make the fourth product screen discoverable', async ({ page }) => {
+test('gallery dots make every product screen reachable, with no "1 of 6" counter', async ({ page }) => {
   await page.goto('/');
   const gallery = page.getByRole('region', { name: 'See Gymbo in action gallery' });
   await gallery.scrollIntoViewIfNeeded();
-  const previous = page.getByRole('button', { name: 'Show previous Gymbo screen' });
-  const next = page.getByRole('button', { name: 'Show next Gymbo screen' });
-
-  await expect(page.getByText('1 of 6', { exact: true })).toBeVisible();
-  await expect(previous).toBeDisabled();
-  for (let step = 2; step <= 4; step += 1) {
-    await next.click();
-    await expect(page.getByText(`${step} of 6`, { exact: true })).toBeVisible();
+  const dots = page.getByTestId('gallery-dot');
+  await expect(dots).toHaveCount(6);
+  await expect(page.getByText(/\b\d of 6\b/).filter({ visible: true })).toHaveCount(0);
+  await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true');
+  const pageY = await page.evaluate(() => scrollY);
+  for (const index of [3, 5, 0]) {
+    await dots.nth(index).click();
+    await expect(gallery.locator(`[data-gallery-index="${index}"]`)).toBeInViewport({ ratio: 0.9 });
+    // the strip's own scroll event must not move the current dot off the one just pressed
+    await page.waitForTimeout(300);
+    await expect(dots.nth(index)).toHaveAttribute('aria-current', 'true');
+    await expect(page.locator('[data-testid="gallery-dot"][aria-current="true"]')).toHaveCount(1);
   }
-
-  const workouts = gallery.locator('[data-gallery-index="3"]');
-  await expect(workouts).toBeInViewport();
-  await expect(workouts.getByText('Build and assign workouts', { exact: true })).toBeVisible();
-  await expect(previous).toBeEnabled();
+  await expect(gallery.getByText('Build and assign workouts', { exact: true })).toHaveCount(1);
+  expect(Math.abs((await page.evaluate(() => scrollY)) - pageY), 'a dot moves the strip, not the page').toBeLessThan(80);
 });
 
 test('the closing CTA section offers Start free and the founder, and carries no form', async ({ page }) => {
@@ -252,24 +307,18 @@ test('footer present, and no web-app references remain', async ({ page }) => {
   await expect(page.locator('a[href="https://app.getgymbo.com"]')).toHaveCount(0);
 });
 
-test('hero subheadline uses sans-serif, not the heading serif (gy-a73px.3)', async ({ page }) => {
+// gy-sk86p2.3 (Damini round 2): "we use Merryweather only for the numbers". Replaces the older rule that the h1 and headings were serif.
+test('Merriweather is used for the card numerals only; the hero and every heading are sans', async ({ page }) => {
   await page.goto('/');
-  const h1 = page.locator('h1');
-  // gy-w7x93: addressed as "the paragraph directly under the h1", not by its
-  // wording — the old locator matched the sentence 'Track revenue, stay
-  // organized', which the claim-truth pass (gm-muo, ac308f4) rewrote, so the
-  // font assertion below never got to run. A font-family test must not depend on
-  // the copy it is measuring.
-  const subheadline = page.locator('h1 + p');
-  await expect(subheadline).toHaveCount(1);
-  await expect(subheadline).toBeVisible();
-
-  const h1Family = await h1.evaluate((el) => getComputedStyle(el).fontFamily);
-  const subFamily = await subheadline.evaluate((el) => getComputedStyle(el).fontFamily);
-
-  expect(h1Family).toContain('Merriweather');
-  expect(subFamily).toContain('Open Sans');
-  expect(subFamily).not.toContain('Merriweather');
+  await expect(page.locator('[data-testid^="pillar-numeral-"]')).toHaveCount(4);
+  await expect(page.getByTestId('hero-section').locator('.gh-body')).toHaveCount(1);
+  const serif = await page.evaluate(() =>
+    Array.from(document.querySelectorAll<HTMLElement>('body *'))
+      .filter((el) => el.getClientRects().length > 0 && Array.from(el.childNodes).some((n) => n.nodeType === 3 && n.textContent!.trim()))
+      .filter((el) => /^"?Merriweather/i.test(getComputedStyle(el).fontFamily))
+      .map((el) => (el.textContent ?? '').trim()),
+  );
+  expect(serif).toEqual(['1', '2', '3', '4']);
 });
 
 /**

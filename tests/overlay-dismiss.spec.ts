@@ -111,7 +111,7 @@ test('B6: both pricing Start free buttons draw a focus ring in the colour of the
   }
   expect(seen.map((s) => s.split('|').slice(0, 4).join('|'))).toEqual([
     'true|solid|true|rgb(255, 255, 255)', // Free: bone ring (--g-color-neutral-dark-fg, #fff in token set B; was #f0f0eb), dark card ground
-    'true|solid|true|rgb(0, 0, 0)', // Pro: charcoal ring (--g-color-neutral-dark-0, #000 in set B; was #0a0a0a), amber card ground
+    'true|solid|true|rgb(255, 255, 255)', // Pro: the same bone ring: since gy-sk86p2.3 both cards are dark (a marigold edge marks Pro)
   ]);
 });
 
@@ -184,7 +184,7 @@ test.describe('B7: focus is never hidden behind the sticky bar (phone)', () => {
  * on getgymbo.com. The close control is #162's own. Every keyboard-reachable
  * icon control must draw a computed outline, not just match the pseudo-class.
  */
-test('icon controls (gallery arrows, logo) draw a focus ring', async ({ page }) => {
+test('icon controls (gallery dots, logo) draw a focus ring', async ({ page }) => {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
   const ring = (sel: string) =>
@@ -193,13 +193,13 @@ test('icon controls (gallery arrows, logo) draw a focus ring', async ({ page }) 
       return `${el.matches(':focus-visible')}|${cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2}`;
     });
   const seen: Record<string, string> = {};
-  for (const sel of ['[aria-label="Gymbo, back to top"]', '[aria-label="Show next Gymbo screen"]']) {
+  for (const sel of ['[aria-label="Gymbo, back to top"]', '[data-testid="gallery-dot"]']) {
     await page.keyboard.press('Shift');
     await page.locator(sel).first().focus();
     seen[sel] = await ring(sel);
   }
   expect(seen).toEqual({
     '[aria-label="Gymbo, back to top"]': 'true|true',
-    '[aria-label="Show next Gymbo screen"]': 'true|true',
+    '[data-testid="gallery-dot"]': 'true|true',
   });
 });

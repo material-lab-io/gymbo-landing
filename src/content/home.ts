@@ -1,4 +1,4 @@
-// Strings: marketer strings-v4 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v4.md sha 69e4b0b8f08aa099), pasted with zero wording edits.
+// Strings: marketer strings-v6 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v6.md sha fd19b8d8fa85b5ce), pasted with zero wording edits.
 // gy-sk86p2.3 (Damini 26 Nov, STEP 1): EVERY string on the home page ('/') lives in this one file, so marketer's strings land without a
 // layout edit. App.tsx and the hero component read from here and hold no copy of their own. A label set to null is not rendered.
 // Facts (prices, plan names, URLs, the Start free / Log in labels) still come from src/lib/trialAccess.ts and are imported here, never retyped.
@@ -10,7 +10,7 @@ import {
   PRICING_PAYMENT_LINE,
 } from "../lib/trialAccess";
 
-export type PillarCopy = { eyebrow: string | null; title: string; intro: string; bullets: string[]; brief: string };
+export type PillarCopy = { title: string; intro: string; bullets: string[] };
 
 export const HOME = {
   nav: { why: "Why Gymbo", pricing: "Pricing", faq: "FAQ", backToTop: "Gymbo, back to top", skip: "Skip to content" },
@@ -30,78 +30,51 @@ export const HOME = {
     deviceAlt: "Gymbo dashboard, balances, and payment records shown across three phones.",
   },
 
+  // Her round 2 (26 Nov): no heading above the features; the page starts at card 1. This label is read by screen readers only.
   why: {
     label: "Why trainers use Gymbo",
-    eyebrow: null as string | null,
-    heading: "What your training business runs on.",
   },
 
-  // Keyed by the pillar id in App.tsx (which keeps the demo id and surface, the photoreal-device contract).
+  // Keyed by the card id in App.tsx (which keeps the demo id, the photoreal-device contract). Order = cards 1 to 4.
   pillars: {
     revenue: {
-      eyebrow: null,
       title: "Track your revenue",
       intro: "Punch each class and add each payment. Gymbo shows this month's total and what each client owes or has left.",
       bullets: [
-        "Credit and classes left update the moment you punch a class.",
-        "Cash and UPI payments in one record.",
+        "You can see a client's credit update the moment you punch a class.",
+        "You can record cash and UPI payments in one place.",
+        "You can export a client's records as a PDF or CSV file.",
       ],
-      brief: "Record a payment: UPI or cash, and the balance clears.",
     },
     organized: {
-      eyebrow: null,
       title: "Your whole roster in one place",
       intro: "Clients, classes and time slots together, not spread across WhatsApp chats and a diary.",
       bullets: [
-        "Recurring time slots, sorted by day.",
-        "A client asks how many classes are left: check their count and reply.",
-        "Save a class location and open directions from it.",
+        "You can set recurring time slots, sorted by day.",
+        "You can save a class location and open directions from it.",
       ],
-      brief: "Your week, classes morning to evening: Ravi, Sara, group, Imran.",
     },
     brand: {
-      eyebrow: null,
       title: "Build your brand",
       intro: "What your clients see carries your name.",
       bullets: [
-        "PDF statements with your logo or brand name on each one.",
-        "A QR profile card you can share anywhere.",
-        "Send a client their statement from the app to ask for payment.",
+        "You can put your logo or brand name on your PDF statements.",
+        "You can send a client their statement to ask for payment.",
+        "You can share a profile card with a QR code that opens your WhatsApp or website.",
+        "You can add your bio, specialities, Instagram, YouTube and website to that card.",
       ],
-      brief: "Your brand on a clean statement PDF. Share in a tap (India).",
     },
     workouts: {
-      eyebrow: null,
       title: "Build and track workouts",
       intro: "Plan training and see each client's progress.",
       bullets: [
-        "Build and assign workouts from a template library.",
-        "Track client progress: adherence and per-exercise gains.",
-        "Class history for each client.",
+        "You can build workouts from a template library and assign them to clients.",
+        "You can share a workout with a client as a link they open without signing in.",
+        "You can track each client's adherence to their plan.",
+        "You can compare a client's before and after photos side by side.",
       ],
-      brief: "Build a plan (squat, bench, row) and assign it to a client.",
     },
   } satisfies Record<string, PillarCopy>,
-
-  // The strip under the brand pillar. Icons are layout (App.tsx), keyed by `icon`.
-  brandStrip: {
-    label: null as string | null,
-    region: "Brand touchpoints",
-    // strings-v2 [Card 3: ticker], one item per chip, in its order. Sources per item: strings-v2 'Ticker sources'.
-    chips: [
-      { name: "PDF client statements", icon: "pdf" },
-      { name: "Your logo on statements", icon: "logo" },
-      { name: "Brand name on statements", icon: "brandname" },
-      { name: "Share statements in-app", icon: "share" },
-      { name: "Export records as CSV", icon: "csv" },
-      { name: "QR profile card", icon: "qr" },
-      { name: "QR opens your WhatsApp", icon: "whatsapp" },
-      { name: "Share your profile card", icon: "card" },
-      { name: "Instagram and YouTube links", icon: "social" },
-      { name: "Your website link", icon: "website" },
-      { name: "Specialities and bio", icon: "bio" },
-    ],
-  },
 
   gallery: {
     label: "See Gymbo in action",
@@ -109,11 +82,10 @@ export const HOME = {
     heading: "See Gymbo in action",
     note: "Screens show sample data.",
     controls: "Gallery controls",
-    prev: "Show previous Gymbo screen",
-    next: "Show next Gymbo screen",
-    of: "of",
+    // One dot per screen (her round 2: dots, not "1 of 6"). The name a screen reader hears for each dot.
+    dot: (n: number, total: number, caption: string) => `Show screen ${n} of ${total}: ${caption}`,
     region: "See Gymbo in action gallery",
-    help: (n: number) => `Use the previous and next buttons, arrow keys, or horizontal swipe to browse all ${n} Gymbo screens.`,
+    help: (n: number) => `Use the dots, arrow keys, or horizontal swipe to browse all ${n} Gymbo screens.`,
     // Keyed by screenshot slug (App.tsx keeps the slug order).
     screens: {
       dashboard: { caption: "Classes left, client by client", alt: "Gymbo home screen showing a client's punch card: Aadesh, 3 of 10 classes used" },
@@ -196,5 +168,7 @@ export const HOME = {
     support: "Support:",
     copyright: "© 2026 Material Lab.",
     talk: "Talk to the founder",
+    // strings-v6 [Footer]: new last line.
+    madeBy: { label: "Made by Material Lab", href: "https://www.materiallab.io/" },
   },
 };
