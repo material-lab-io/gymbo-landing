@@ -229,13 +229,16 @@ export default function App() {
 
         {/* ───────── why — 4 pillars ───────── */}
         <section id="why" aria-label={HOME.why.label}>
-          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-14 pb-2 text-center">
+          {/* pm H1 ruling 26 Nov 11:1xZ: this heading band is CHARCOAL, so the black hero joins a dark band (no black-to-light edge under the first screen). */}
+          <div data-testid="why-heading-band" style={{ background: F.charcoal }}>
+          <div className="max-w-[1180px] mx-auto px-5 md:px-12 pt-10 md:pt-14 pb-10 md:pb-14 text-center">
             <Reveal>
-              {HOME.why.eyebrow ? <Eyebrow>{HOME.why.eyebrow}</Eyebrow> : null}
-              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch" }}>
+              {HOME.why.eyebrow ? <Eyebrow dark>{HOME.why.eyebrow}</Eyebrow> : null}
+              <h2 className="text-[clamp(28px,4vw,44px)] font-black mx-auto" style={{ fontFamily: SERIF, letterSpacing: "-0.02em", lineHeight: 1.15, maxWidth: "18ch", color: F.bone }}>
                 {HOME.why.heading}
               </h2>
             </Reveal>
+          </div>
           </div>
 
           {PILLARS.map((p, i) => {
