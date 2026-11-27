@@ -240,8 +240,7 @@ async function inkTop(page: import('@playwright/test').Page, clip: { x: number; 
     for (let i = 0; i < px.length; i += 4) if (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2] > 90) return Math.floor(i / 4 / img.width);
     return -1;
   }, png);
-  expect(row, `nothing painted inside ${JSON.stringify(clip)}`).toBeGreaterThanOrEqual(0);
-  return clip.y + row;
+  return row < 0 ? null : clip.y + row;
 }
 
 async function titleProblems(page: import('@playwright/test').Page) {
@@ -251,8 +250,10 @@ async function titleProblems(page: import('@playwright/test').Page) {
     if (p.inCard) bad.push(`${id}: the title is not above its card`);
     if (!p.beside) bad.push(`${id}: the title is not beside its number`);
     if (!p.inside) bad.push(`${id}: the title runs past the card edge`);
-    const off = (await inkTop(page, p.capital)) - (await inkTop(page, p.number));
-    if (Math.abs(off) > 3.5) bad.push(`${id}: the title top is ${Math.round(off)} px from the number top`);
+    const title = await inkTop(page, p.capital), number = await inkTop(page, p.number);
+    // nothing lit where the letter or the number should be is a problem too, never a pass
+    if (title === null || number === null) bad.push(`${id}: nothing is painted for the ${title === null ? 'title' : 'number'}`);
+    else if (Math.abs(title - number) > 3.5) bad.push(`${id}: the title top is ${Math.round(title - number)} px from the number top`);
   }
   return bad;
 }
