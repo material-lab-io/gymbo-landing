@@ -2,21 +2,21 @@
   "_comment": "Provenance of gymbo-canonical-strings.json. That file is VENDORED VERBATIM from content's canonical strings in the Gymbo-v1 repo; never hand-edit it. Re-vendor = a content ruling + a new commit + a new sha256 here, in one change. scripts/check-canonical-strings.mjs fails if the file's sha256 differs from this record.",
   "repo": "material-lab-io/Gymbo-v1",
   "path": "docs/GYMBO-CANONICAL-STRINGS.json",
-  "branch": "main (Gymbo-v1 PR 3816, squash-merged by pm 2026-11-26; this commit IS on main)",
-  "commit": "91d7474ef19f9971f5eda76fe2b15c0b0fd5b6db",
-  "sha256": "0f8cac3baff4c50b55a3c1470218a140423bef6d15b889ec1d613e5064ab2a94",
+  "branch": "web_dev2/gy-sk86p2.5-canonical-v8 (Gymbo-v1 PR 3835, NOT yet merged: re-point to the squash commit on main before this goes to prod)",
+  "commit": "f15dc77830aa89f1bdc916b71d0e88077436f6ba",
+  "sha256": "3a21d3648e38e667cc7d071e3a674c5e482f746bda99c6c6a8433cf14b5a5642",
   "guideVersion": "v15",
-  "vendoredAt": "2026-11-26 (v7, bytes identical to docs/GYMBO-CANONICAL-STRINGS.json at the merge commit)",
-  "vendoredBy": "gymbo-crew.web_dev (gy-sk86p2.3), from content/marketer ruling gy-sk86p2.1",
+  "vendoredAt": "2026-11-27 (v8, bytes identical to docs/GYMBO-CANONICAL-STRINGS.json at that commit)",
+  "vendoredBy": "gymbo-crew.web_dev2 (gy-sk86p2.5), from marketer strings-v7",
   "webSurfaceIdPrefixes": [
     "site.",
     "trial."
   ],
-  "version": 7,
+  "version": 8,
   "supersedes": {
-    "commit": "7fef0b1a01b85016c3ed5764f92e1fd8b273fea8",
-    "sha256": "a9b52744e043c0d1ed497e257c70f7773dace88da7062526de2ed8f0375fec54",
-    "change": "v7 (gy-sk86p2.1 marketer registry v3, 26 Nov 2026, Damini landing revision) rewords site.home.revenue.intro, site.home.revenue.bullet3 and site.home.faq.clientsDownload.answer; ids and facts unchanged"
+    "commit": "91d7474ef19f9971f5eda76fe2b15c0b0fd5b6db",
+    "sha256": "0f8cac3baff4c50b55a3c1470218a140423bef6d15b889ec1d613e5064ab2a94",
+    "change": "v8 (gy-sk86p2.5 marketer strings-v7, 27 Nov 2026, Damini landing round 3) shortens site.home.revenue.bullet3; ids and facts unchanged"
   },
-  "mergedToMain": true
+  "mergedToMain": false
 }

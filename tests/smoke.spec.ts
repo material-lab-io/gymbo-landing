@@ -200,6 +200,47 @@ test('round 2: four numbered cards in her order, drawn on the dark art, and no t
   await expect(page.locator('.marquee-track, [aria-label="Brand touchpoints"]')).toHaveCount(0);
 });
 
+// gy-sk86p2.5 (Damini 27 Nov): "come outside of the card top aligned with the number 1, do this for all cards." What can be wrong: the
+// title back inside its card or running onto it, beside the wrong side of the number, or not level with the number's visible top.
+const titlePlacement = (page: import('@playwright/test').Page) =>
+  page.evaluate(() =>
+    ['revenue', 'organized', 'brand', 'workouts'].flatMap((id) => {
+      const num = document.querySelector<HTMLElement>(`[data-testid="pillar-numeral-${id}"]`)!;
+      const title = document.querySelector<HTMLElement>(`[data-testid="pillar-band-${id}"] h2`)!;
+      const card = document.querySelector<HTMLElement>(`[data-testid="pillar-${id}"]`)!;
+      // the top of the ink, not of the line box: where the font draws this text's highest pixel inside its element
+      const inkTop = (el: HTMLElement, text: string) => {
+        const s = getComputedStyle(el), c = document.createElement('canvas').getContext('2d')!;
+        c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
+        const m = c.measureText(text), line = parseFloat(s.lineHeight) || parseFloat(s.fontSize);
+        return el.getBoundingClientRect().top + (line - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
+      };
+      const t = title.getBoundingClientRect(), n = num.getBoundingClientRect(), k = card.getBoundingClientRect();
+      const bad: string[] = [];
+      if (card.contains(title) || t.bottom > k.top + 0.5) bad.push(`${id}: the title is not above its card`);
+      if (t.left < n.right - 0.5) bad.push(`${id}: the title is not beside its number`);
+      if (t.right > k.right + 0.5) bad.push(`${id}: the title runs past the card edge`);
+      const off = inkTop(title, 'H') - inkTop(num, num.textContent!.trim());
+      if (Math.abs(off) > 3) bad.push(`${id}: the title top is ${Math.round(off)} px from the number top`);
+      return bad;
+    }),
+  );
+
+test('round 3: every card title is outside its card, top-aligned with its number', async ({ page }) => {
+  for (const width of [320, 390, 820, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    expect(await titlePlacement(page), `card titles at ${width}`).toEqual([]);
+  }
+  // controls: the detector reports a title pushed down from the number, and one pushed onto the card
+  await page.addStyleTag({ content: '.gy-title{padding-top:60px!important}' });
+  expect((await titlePlacement(page)).join()).toContain('from the number top');
+  await page.addStyleTag({ content: '.gy-title{margin-bottom:-120px!important;padding-bottom:140px!important}.gy-card-body{margin-top:-60px}' });
+  expect((await titlePlacement(page)).join()).toContain('not above its card');
+});
+
 test('round 2: the closing line is one line on iPad and desktop', async ({ page }) => {
   for (const width of [768, 820, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });

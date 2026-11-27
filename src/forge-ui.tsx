@@ -271,10 +271,17 @@ const FORGE_CSS = `
         /* gy-sk86p2.3 round 2: the numbered feature cards. Size (web_designer, sheet ac9b43325f03, pm pick A): 300 px at 1440 (GYMBO 355),
            ~200 on iPad, 150 on phones. --gy-num is the numeral's size; half of it sits above the card (the join
            between sections), half inside, so the card pads its content down by the same amount. The fade is GYMBO's top-lit ellipse in
-           the yellows. Decorative (aria-hidden). */
-        .gy-card{--gy-num:clamp(150px,20.8vw,300px);position:relative;padding-top:calc(var(--gy-num) * .5)}
-        .gy-card-body{padding-top:calc(var(--gy-num) * .38)}
-        .gy-numeral{position:absolute;z-index:1;top:0;left:clamp(24px,4vw,56px);font-family:var(--font-serif);font-weight:900;font-size:var(--gy-num);line-height:1;pointer-events:none;color:var(--g-color-brand-marigold-500);background:radial-gradient(ellipse 90% 120% at 50% 0%,var(--g-color-brand-marigold-text-dark-hc) 0%,var(--g-color-brand-marigold-500) 45%,var(--g-color-brand-amber-text-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+           the yellows. Decorative (aria-hidden).
+           gy-sk86p2.5 (Damini 27 Nov): the card title sits OUTSIDE its card, beside the number, its capitals level with the top of the
+           number. Grid: row 1 = the half of the number above the card (it grows if a title needs more, so a title never lands on the card),
+           row 2 = the card, which the number still overlaps. --gy-ink is how far the number's visible top sits below its box top, measured
+           in Merriweather 900 at 150 / 171 / 300 px (optical sizing makes it not quite proportional); .274em is Open Sans' space above a
+           capital at line-height 1.2. */
+        .gy-card{--gy-num:clamp(150px,20.8vw,300px);--gy-ink:calc(var(--gy-num) * .076 + 3.8px);--gy-title:clamp(24px,3.2vw,36px);display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:minmax(calc(var(--gy-num) * .5),auto) auto}
+        .gy-title{grid-column:2;grid-row:1;padding-top:calc(var(--gy-ink) - var(--gy-title) * .274);padding-bottom:8px}
+        .gy-title h2{font-size:var(--gy-title);line-height:1.2;text-wrap:balance}
+        .gy-card-body{grid-column:1 / -1;grid-row:2;padding-top:calc(var(--gy-num) * .38 + 8px)}
+        .gy-numeral{grid-column:1;grid-row:1 / span 2;align-self:start;justify-self:start;position:relative;z-index:1;margin-left:clamp(24px,4vw,56px);margin-right:clamp(12px,1.6vw,24px);font-family:var(--font-serif);font-weight:900;font-size:var(--gy-num);line-height:1;pointer-events:none;color:var(--g-color-brand-marigold-500);background:radial-gradient(ellipse 90% 120% at 50% 0%,var(--g-color-brand-marigold-text-dark-hc) 0%,var(--g-color-brand-marigold-500) 45%,var(--g-color-brand-amber-text-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
         @media (prefers-reduced-motion:reduce){
           .hero-rise,.hero-fade{opacity:1!important;transform:none!important;animation:none!important}
           .reveal-on-scroll{opacity:1!important;transform:none!important;transition:none!important}

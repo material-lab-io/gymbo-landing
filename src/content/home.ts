@@ -1,4 +1,5 @@
 // Strings: marketer strings-v6 (gy-sk86p2.1, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v6.md sha fd19b8d8fa85b5ce), pasted with zero wording edits.
+// The four cards' bullets: marketer strings-v7 (gy-sk86p2.5, /home/kanaba/gymbo-evidence/gtm-gy-sk86p2/strings-v7.md sha 4b6bb5d79f53b9ca), pasted with zero wording edits.
 // gy-sk86p2.3 (Damini 26 Nov, STEP 1): EVERY string on the home page ('/') lives in this one file, so marketer's strings land without a
 // layout edit. App.tsx and the hero component read from here and hold no copy of their own. A label set to null is not rendered.
 // Facts (prices, plan names, URLs, the Start free / Log in labels) still come from src/lib/trialAccess.ts and are imported here, never retyped.
@@ -42,9 +43,9 @@ export const HOME = {
       title: "Track your revenue",
       intro: "Punch each class and add each payment. Gymbo shows this month's total and what each client owes or has left.",
       bullets: [
-        "You can see a client's credit update the moment you punch a class.",
-        "You can record cash and UPI payments in one place.",
-        "You can export a client's records as a PDF or CSV file.",
+        "See a client's credit update the moment you punch a class.",
+        "Record cash and UPI payments in one place.",
+        "Export a client's records as PDF or CSV.",
       ],
     },
     organized: {
@@ -52,18 +53,18 @@ export const HOME = {
       artAlt: "Gymbo week view with time slots by day",
       intro: "Clients, classes and time slots together, not spread across WhatsApp chats and a diary.",
       bullets: [
-        "You can set recurring time slots, sorted by day.",
-        "You can save a class location and open directions from it.",
+        "Set recurring time slots, sorted by day.",
+        "Save a class location and open directions.",
       ],
     },
     brand: {
       title: "Build your brand",
       intro: "Put your brand on your statements and profile card.",
       bullets: [
-        "You can put your logo or brand name on your PDF statements.",
-        "You can send a client their statement to ask for payment.",
-        "You can share a profile card with a QR code that opens your WhatsApp or website.",
-        "You can add your bio, specialities, Instagram, YouTube and website to that card.",
+        "Show your logo or brand name on PDF statements.",
+        "Send a client their statement to ask for payment.",
+        "Share a profile card whose QR opens your WhatsApp or website.",
+        "Add bio, specialities, Instagram, YouTube and website to the card.",
       ],
     },
     workouts: {
@@ -71,10 +72,10 @@ export const HOME = {
       artAlt: "Building a workout in Gymbo: back squat and pushups, 3 sets of 10",
       intro: "Plan training and see each client's progress.",
       bullets: [
-        "You can build workouts from a template library and assign them to clients.",
-        "You can share a workout with a client as a link they open without signing in.",
-        "You can track each client's adherence to their plan.",
-        "You can compare a client's before and after photos side by side.",
+        "Build workouts from templates and assign them to clients.",
+        "Share a workout link that clients open without signing in.",
+        "Track each client's adherence to their plan.",
+        "Compare before and after photos side by side.",
       ],
     },
   } satisfies Record<string, PillarCopy>,

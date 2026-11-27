@@ -24,10 +24,10 @@ const ROWS = [
   ["public/llms.txt", "GST invoices, colour-coded reminders", "reminders you send yourself", "llms.txt carried row 14's claim"],
   ["src/App.tsx", 'name: "Your own URL"', "", "row 15"],
   ["src/App.tsx", "A muscle and body map for every plan", "", "row 16"],
-  ["src/content/home.ts", 'name: "Custom branded client content"', "You can put your logo or brand name on your PDF statements.", "row 17"],
+  ["src/content/home.ts", 'name: "Custom branded client content"', "Show your logo or brand name on PDF statements.", "row 17"],
   ["src/App.tsx", 'name: "Brand theming"', "", "row 18"],
-  ["src/content/home.ts", "your name, tagline, and details on each one", "You can send a client their statement to ask for payment.", "row 19"],
-  ["src/content/home.ts", "A shareable QR profile card in three styles", "You can share a profile card with a QR code that opens your WhatsApp or website.", "row 20"],
+  ["src/content/home.ts", "your name, tagline, and details on each one", "Send a client their statement to ask for payment.", "row 19"],
+  ["src/content/home.ts", "A shareable QR profile card in three styles", "Share a profile card whose QR opens your WhatsApp or website.", "row 20"],
 ];
 const GREPS = ["GST-ready", "GSTIN", "during onboarding", "Your own URL", "body map", "Brand theming", "Custom branded client content", "three styles", "tagline, and details"];
 
