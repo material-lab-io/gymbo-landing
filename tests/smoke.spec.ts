@@ -202,43 +202,76 @@ test('round 2: four numbered cards in her order, drawn on the dark art, and no t
 
 // gy-sk86p2.5 (Damini 27 Nov): "come outside of the card top aligned with the number 1, do this for all cards." What can be wrong: the
 // title back inside its card or running onto it, beside the wrong side of the number, or not level with the number's visible top.
-const titlePlacement = (page: import('@playwright/test').Page) =>
-  page.evaluate(() =>
-    ['revenue', 'organized', 'brand', 'workouts'].flatMap((id) => {
-      const num = document.querySelector<HTMLElement>(`[data-testid="pillar-numeral-${id}"]`)!;
-      const title = document.querySelector<HTMLElement>(`[data-testid="pillar-band-${id}"] h2`)!;
-      const card = document.querySelector<HTMLElement>(`[data-testid="pillar-${id}"]`)!;
-      // the top of the ink, not of the line box: where the font draws this text's highest pixel inside its element
-      const inkTop = (el: HTMLElement, text: string) => {
-        const s = getComputedStyle(el), c = document.createElement('canvas').getContext('2d')!;
-        c.font = `${s.fontWeight} ${s.fontSize} ${s.fontFamily}`;
-        const m = c.measureText(text), line = parseFloat(s.lineHeight) || parseFloat(s.fontSize);
-        return el.getBoundingClientRect().top + (line - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent;
-      };
-      const t = title.getBoundingClientRect(), n = num.getBoundingClientRect(), k = card.getBoundingClientRect();
-      const bad: string[] = [];
-      if (card.contains(title) || t.bottom > k.top + 0.5) bad.push(`${id}: the title is not above its card`);
-      if (t.left < n.right - 0.5) bad.push(`${id}: the title is not beside its number`);
-      if (t.right > k.right + 0.5) bad.push(`${id}: the title runs past the card edge`);
-      const off = inkTop(title, 'H') - inkTop(num, num.textContent!.trim());
-      if (Math.abs(off) > 3) bad.push(`${id}: the title top is ${Math.round(off)} px from the number top`);
-      return bad;
-    }),
-  );
+// "Top" is read from the PAINTED PIXELS (the number's highest lit row against the title's first capital): canvas text metrics passed a
+// layout that was 7 px off on screen.
+// With the fix the capitals sit 0.6 to 2.7 px under the number top (ascenders about level); the failed layout was 4 to 5 px above.
+const CARD_IDS = ['revenue', 'organized', 'brand', 'workouts'];
+
+const placement = (page: import('@playwright/test').Page, id: string) =>
+  page.evaluate((id) => {
+    const num = document.querySelector<HTMLElement>(`[data-testid="pillar-numeral-${id}"]`)!;
+    const title = document.querySelector<HTMLElement>(`[data-testid="pillar-band-${id}"] h2`)!;
+    const card = document.querySelector<HTMLElement>(`[data-testid="pillar-${id}"]`)!;
+    const t = title.getBoundingClientRect(), n = num.getBoundingClientRect(), k = card.getBoundingClientRect();
+    const first = document.createRange();
+    first.setStart(title.firstChild!, 0);
+    first.setEnd(title.firstChild!, 1);
+    const c = first.getBoundingClientRect();
+    return {
+      inCard: card.contains(title) || t.bottom > k.top + 0.5,
+      beside: t.left >= n.right - 0.5,
+      inside: t.right <= k.right + 0.5,
+      number: { x: n.left, y: n.top + scrollY, width: n.width, height: n.height / 2 },
+      capital: { x: c.left, y: t.top + scrollY, width: c.width, height: c.bottom - t.top },
+    };
+  }, id);
+
+// The page y of the highest lit row inside a box (the page is black; the number and the title are light).
+async function inkTop(page: import('@playwright/test').Page, clip: { x: number; y: number; width: number; height: number }) {
+  const png = (await page.screenshot({ fullPage: true, clip, scale: 'css', animations: 'disabled' })).toString('base64');
+  const row = await page.evaluate(async (data) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${data}`;
+    await img.decode();
+    const canvas = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+    const px = ctx.getImageData(0, 0, img.width, img.height).data;
+    for (let i = 0; i < px.length; i += 4) if (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2] > 90) return Math.floor(i / 4 / img.width);
+    return -1;
+  }, png);
+  expect(row, `nothing painted inside ${JSON.stringify(clip)}`).toBeGreaterThanOrEqual(0);
+  return clip.y + row;
+}
+
+async function titleProblems(page: import('@playwright/test').Page) {
+  const bad: string[] = [];
+  for (const id of CARD_IDS) {
+    const p = await placement(page, id);
+    if (p.inCard) bad.push(`${id}: the title is not above its card`);
+    if (!p.beside) bad.push(`${id}: the title is not beside its number`);
+    if (!p.inside) bad.push(`${id}: the title runs past the card edge`);
+    const off = (await inkTop(page, p.capital)) - (await inkTop(page, p.number));
+    if (Math.abs(off) > 3.5) bad.push(`${id}: the title top is ${Math.round(off)} px from the number top`);
+  }
+  return bad;
+}
 
 test('round 3: every card title is outside its card, top-aligned with its number', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   for (const width of [320, 390, 820, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
+    // the fixed nav and phone bar would paint over the pixels being read
+    await page.addStyleTag({ content: 'nav[aria-label="Main navigation"],[data-fixed-chrome]{visibility:hidden!important}' });
     await page.evaluate(() => document.fonts.ready);
-    expect(await titlePlacement(page), `card titles at ${width}`).toEqual([]);
+    expect(await titleProblems(page), `card titles at ${width}`).toEqual([]);
   }
-  // controls: the detector reports a title pushed down from the number, and one pushed onto the card
-  await page.addStyleTag({ content: '.gy-title{padding-top:60px!important}' });
-  expect((await titlePlacement(page)).join()).toContain('from the number top');
-  await page.addStyleTag({ content: '.gy-title{margin-bottom:-120px!important;padding-bottom:140px!important}.gy-card-body{margin-top:-60px}' });
-  expect((await titlePlacement(page)).join()).toContain('not above its card');
+  // controls: the detector reports a title that sits 7 px high (the layout web_designer failed), and one pushed onto the card
+  await page.addStyleTag({ content: '.gy-title{margin-top:0!important}' });
+  expect((await titleProblems(page)).join()).toContain('from the number top');
+  await page.addStyleTag({ content: '.gy-card-body{margin-top:-130px}' });
+  expect((await titleProblems(page)).join()).toContain('not above its card');
 });
 
 test('round 2: the closing line is one line on iPad and desktop', async ({ page }) => {
