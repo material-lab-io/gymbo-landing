@@ -20,12 +20,15 @@ import { recordOrVerifyProvenance } from './visual-provenance';
  * while smoke tests independently prove real playback advances.
  */
 
+// fromTop (gy-sk86p2.5): scroll the section's top to the viewport's top before capturing. A card a little SHORTER than the phone viewport,
+// left starting just above it, was captured with its first rows blank (page colour over the number: card 2 at 375x812, 26 px, once the
+// shorter copy made it 771 px tall). A refresh would have kept that band in the baseline.
 const SECTIONS = [
   { name: 'hero', testId: 'hero-section' },
-  { name: 'pillar-revenue', testId: 'pillar-revenue' },
-  { name: 'pillar-organized', testId: 'pillar-organized' },
-  { name: 'pillar-brand', testId: 'pillar-brand' },
-  { name: 'pillar-workouts', testId: 'pillar-workouts' },
+  { name: 'pillar-revenue', testId: 'pillar-revenue', fromTop: true },
+  { name: 'pillar-organized', testId: 'pillar-organized', fromTop: true },
+  { name: 'pillar-brand', testId: 'pillar-brand', fromTop: true },
+  { name: 'pillar-workouts', testId: 'pillar-workouts', fromTop: true },
   { name: 'gallery', testId: 'gallery-section' },
   { name: 'pricing', testId: 'pricing-section' },
   // snapTop: see sectionClip. footer-cta is the only section that sits between two sections of a DIFFERENT ground
@@ -239,6 +242,10 @@ test.describe('visual baselines', () => {
           locator.locator('[data-testid="gallery-dot"][aria-current="true"]'),
           'GALLERY POSITION CUE IS PRESENT AND SETTLED',
         ).toHaveCount(1);
+      }
+      if ('fromTop' in section && section.fromTop) {
+        await locator.evaluate((el) => el.scrollIntoView({ block: 'start', behavior: 'instant' }));
+        await expect.poll(() => locator.evaluate((el) => Math.round(el.getBoundingClientRect().top)), { message: `${section.name} starts inside the viewport` }).toBeGreaterThanOrEqual(0);
       }
       const snapshotName = `${section.name}-light.png`;
       // gy-h2z6x: refuse (or record) BEFORE the pixel comparison — see

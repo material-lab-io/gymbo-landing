@@ -1,8 +1,8 @@
 {
   "_comment": "Machine-readable ruled strings. SOURCE OF TRUTH for the positive-pin wording gate (gy-uu7mt). Owner: content. Byte-exact: consumers must compare with ==, never retype. Entries with verbatimIn also appear verbatim in that doc. Template entries contain {placeholders}. Any change here is a content ruling and bumps `version`.",
-  "version": 7,
+  "version": 8,
   "guideVersion": "v15",
-  "updated": "2026-11-26",
+  "updated": "2026-11-27",
   "terms": {
     "brandVerb": "punch",
     "aiFeature": "Ask Gymbo",
@@ -145,8 +145,8 @@
     {
       "id": "site.home.revenue.bullet3",
       "surface": "home '/', 'Track your revenue' card, SECOND action line (bullets[1]) since 26 Nov; id kept from v4 so consumers keep working",
-      "text": "You can record cash and UPI payments in one place.",
-      "source": "gy-sk86p2.1 marketer registry v1, 26 Nov 2026 (Damini landing revision); applied on gymbo-landing PR 364",
+      "text": "Record cash and UPI payments in one place.",
+      "source": "gy-sk86p2.5 marketer strings-v7, 27 Nov 2026 (Damini landing round 3)",
       "match": "equals"
     },
     {
@@ -166,6 +166,7 @@
     "annualSavingsPercent": 37
   },
   "changelog": {
+    "v8": "2026-11-27: site.home.revenue.bullet3 shortened for Damini's landing round 3 (gy-sk86p2.5); id kept. Other strings and facts unchanged from v7.",
     "v7": "2026-11-26: site.home.revenue.intro, revenue.bullet3 and faq.clientsDownload.answer reworded for the Damini 26 Nov landing revision (gy-sk86p2); ids kept. Other strings and facts unchanged from v6.",
     "v3": "2026-09-24: added facts block (price pin for gy-uu7mt). Strings unchanged from v2.",
     "v2": "2026-09-24: trial.detail replaced by trial.eligibilityNote.",

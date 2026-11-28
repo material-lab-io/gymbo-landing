@@ -99,7 +99,7 @@ test("canonicalRuled derives ruled entries from content's file and never from a 
 test("REAL FILES: the vendored file's sha256 equals SOURCE.json, and content's stated hash", () => {
   const c = loadCanonical(REAL);
   assert.equal(c.sha, c.source.sha256);
-  assert.equal(c.sha, "0f8cac3baff4c50b55a3c1470218a140423bef6d15b889ec1d613e5064ab2a94");
+  assert.equal(c.sha, "3a21d3648e38e667cc7d071e3a674c5e482f746bda99c6c6a8433cf14b5a5642");
   assert.equal(c.doc.strings.filter((s) => c.source.webSurfaceIdPrefixes.some((p) => s.id.startsWith(p))).length, 7);
   for (const id of c.doc.strings.map((s) => s.id).filter((i) => /^(site|trial)\./.test(i))) assert.ok(c.map[id], `${id} unmapped`);
 });

@@ -200,6 +200,81 @@ test('round 2: four numbered cards in her order, drawn on the dark art, and no t
   await expect(page.locator('.marquee-track, [aria-label="Brand touchpoints"]')).toHaveCount(0);
 });
 
+// gy-sk86p2.5 (Damini 27 Nov): "come outside of the card top aligned with the number 1, do this for all cards." What can be wrong: the
+// title back inside its card or running onto it, beside the wrong side of the number, or not level with the number's visible top.
+// "Top" is read from the PAINTED PIXELS (the number's highest lit row against the title's first capital): canvas text metrics passed a
+// layout that was 7 px off on screen.
+// With the fix the capitals sit 0.6 to 2.7 px under the number top (ascenders about level); the failed layout was 4 to 5 px above.
+const CARD_IDS = ['revenue', 'organized', 'brand', 'workouts'];
+
+const placement = (page: import('@playwright/test').Page, id: string) =>
+  page.evaluate((id) => {
+    const num = document.querySelector<HTMLElement>(`[data-testid="pillar-numeral-${id}"]`)!;
+    const title = document.querySelector<HTMLElement>(`[data-testid="pillar-band-${id}"] h2`)!;
+    const card = document.querySelector<HTMLElement>(`[data-testid="pillar-${id}"]`)!;
+    const t = title.getBoundingClientRect(), n = num.getBoundingClientRect(), k = card.getBoundingClientRect();
+    const first = document.createRange();
+    first.setStart(title.firstChild!, 0);
+    first.setEnd(title.firstChild!, 1);
+    const c = first.getBoundingClientRect();
+    return {
+      inCard: card.contains(title) || t.bottom > k.top + 0.5,
+      beside: t.left >= n.right - 0.5,
+      inside: t.right <= k.right + 0.5,
+      number: { x: n.left, y: n.top + scrollY, width: n.width, height: n.height / 2 },
+      capital: { x: c.left, y: t.top + scrollY, width: c.width, height: c.bottom - t.top },
+    };
+  }, id);
+
+// The page y of the highest lit row inside a box (the page is black; the number and the title are light).
+async function inkTop(page: import('@playwright/test').Page, clip: { x: number; y: number; width: number; height: number }) {
+  const png = (await page.screenshot({ fullPage: true, clip, scale: 'css', animations: 'disabled' })).toString('base64');
+  const row = await page.evaluate(async (data) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${data}`;
+    await img.decode();
+    const canvas = Object.assign(document.createElement('canvas'), { width: img.width, height: img.height });
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+    const px = ctx.getImageData(0, 0, img.width, img.height).data;
+    for (let i = 0; i < px.length; i += 4) if (0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2] > 90) return Math.floor(i / 4 / img.width);
+    return -1;
+  }, png);
+  return row < 0 ? null : clip.y + row;
+}
+
+async function titleProblems(page: import('@playwright/test').Page) {
+  const bad: string[] = [];
+  for (const id of CARD_IDS) {
+    const p = await placement(page, id);
+    if (p.inCard) bad.push(`${id}: the title is not above its card`);
+    if (!p.beside) bad.push(`${id}: the title is not beside its number`);
+    if (!p.inside) bad.push(`${id}: the title runs past the card edge`);
+    const title = await inkTop(page, p.capital), number = await inkTop(page, p.number);
+    // nothing lit where the letter or the number should be is a problem too, never a pass
+    if (title === null || number === null) bad.push(`${id}: nothing is painted for the ${title === null ? 'title' : 'number'}`);
+    else if (Math.abs(title - number) > 3.5) bad.push(`${id}: the title top is ${Math.round(title - number)} px from the number top`);
+  }
+  return bad;
+}
+
+test('round 3: every card title is outside its card, top-aligned with its number', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const width of [320, 390, 820, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    // the fixed nav and phone bar would paint over the pixels being read
+    await page.addStyleTag({ content: 'nav[aria-label="Main navigation"],[data-fixed-chrome]{visibility:hidden!important}' });
+    await page.evaluate(() => document.fonts.ready);
+    expect(await titleProblems(page), `card titles at ${width}`).toEqual([]);
+  }
+  // controls: the detector reports a title that sits 7 px high (the layout web_designer failed), and one pushed onto the card
+  await page.addStyleTag({ content: '.gy-title{margin-top:0!important}' });
+  expect((await titleProblems(page)).join()).toContain('from the number top');
+  await page.addStyleTag({ content: '.gy-card-body{margin-top:-130px}' });
+  expect((await titleProblems(page)).join()).toContain('not above its card');
+});
+
 test('round 2: the closing line is one line on iPad and desktop', async ({ page }) => {
   for (const width of [768, 820, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
