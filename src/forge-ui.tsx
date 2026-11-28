@@ -1,7 +1,9 @@
 import { ArrowRight } from "lucide-react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, ReactNode, SyntheticEvent } from "react";
 import { useWaitlistReveal } from "./lib/waitlistReveal";
 import { APP_LOGIN_URL, APP_SIGNUP_URL, LOG_IN_LABEL, START_FREE_LABEL } from "./lib/trialAccess";
+import { getAttributionSource } from "./lib/attribution";
+import { signupHref } from "./lib/signupHref.mjs";
 
 /* ============================================================================
    forge-ui — shared design tokens and presentational primitives for
@@ -427,7 +429,10 @@ export function trackSignupCta(position: SignupPosition) {
 export function signupCtaProps(position: SignupPosition) {
   // data-cta-location keeps the older placement vocabulary (pricing / cta-section) that tests/cta-hierarchy.spec.ts groups by.
   const location = position === "pricing-free" || position === "pricing-pro" ? "pricing" : position === "final" || position === "compare-final" ? "cta-section" : position;
-  return { href: APP_SIGNUP_URL, onClick: () => trackSignupCta(position), "data-cta": "start-free", "data-cta-position": position, "data-cta-location": location } as const;
+  // gy-ufxgo.11: the prerendered href stays the bare sign-up URL (works without JS, same markup on every visit); the moment the
+  // link is used (click, Enter, middle-click, right-click to copy) it becomes that URL plus the visitor's resolved source.
+  const forward = (e: SyntheticEvent<HTMLAnchorElement>) => { e.currentTarget.href = signupHref(APP_SIGNUP_URL, getAttributionSource()); };
+  return { href: APP_SIGNUP_URL, onClick: (e: SyntheticEvent<HTMLAnchorElement>) => { forward(e); trackSignupCta(position); }, onAuxClick: forward, onContextMenu: forward, "data-cta": "start-free", "data-cta-position": position, "data-cta-location": location } as const;
 }
 
 /**

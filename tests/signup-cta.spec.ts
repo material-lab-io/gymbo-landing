@@ -44,3 +44,37 @@ test('NEGATIVE CONTROL: without umami the click is a plain navigation and nothin
   await page.locator('a[data-cta="start-free"][data-cta-position="hero"]').click();
   await expect(page).toHaveURL(/app\.getgymbo\.com\/signup/);
 });
+
+/**
+ * gy-ufxgo.11 AC3: using a Start free link forwards the visitor's RESOLVED source, never a raw value. The rendered href stays the
+ * bare SIGNUP (asserted above); it is rewritten when the link is used. Each test is a fresh context, so first touch is this visit.
+ */
+async function hrefAfterClick(page: import('@playwright/test').Page, path: string) {
+  await page.goto(path);
+  const cta = page.locator('a[data-cta="start-free"][data-cta-position="hero"]');
+  await page.evaluate(() => document.addEventListener('click', (e) => e.preventDefault()));
+  await cta.click();
+  return new URL((await cta.getAttribute('href'))!);
+}
+
+test('gy-ufxgo.11: an Instagram arrival (/ig target) forwards utm_source=instagram to sign-up', async ({ page }) => {
+  const url = await hrefAfterClick(page, '/?utm_source=instagram&utm_medium=social&utm_campaign=bio');
+  expect(Object.fromEntries(url.searchParams)).toEqual({ src: 'landing', utm_source: 'instagram' });
+});
+
+test('gy-ufxgo.11: a visit with no signal forwards utm_source=unknown to sign-up', async ({ page }) => {
+  const url = await hrefAfterClick(page, '/');
+  expect(Object.fromEntries(url.searchParams)).toEqual({ src: 'landing', utm_source: 'unknown' });
+});
+
+test('gy-ufxgo.11: a referral arrival (/r/ target) forwards referral but never the code', async ({ page }) => {
+  const url = await hrefAfterClick(page, '/?utm_source=referral&utm_medium=referral&utm_campaign=priya-jan');
+  expect(Object.fromEntries(url.searchParams)).toEqual({ src: 'landing', utm_source: 'referral', utm_medium: 'referral' });
+  expect(url.toString()).not.toContain('priya-jan');
+});
+
+test('gy-ufxgo.11: a name in utm_source is never carried to sign-up', async ({ page }) => {
+  const url = await hrefAfterClick(page, '/?utm_source=damini-rathi');
+  expect(url.searchParams.get('utm_source')).toBe('unknown');
+  expect(url.toString()).not.toContain('damini');
+});

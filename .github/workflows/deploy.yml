@@ -178,7 +178,8 @@ jobs:
         # placeholder guard. Carries its own in-memory mutation controls.
 
       - name: "gy-0v33y: the lead-source rule is bounded and never guesses"
-        run: node --test tests/attribution-source.test.mjs
+        run: node --test tests/attribution-source.test.mjs tests/signup-forward.test.mjs
+        # gy-ufxgo.11: signup-forward.test.mjs = the Start free hop forwards only a registry source (never a raw slug).
         # AC5/AC7. public.waitlist.source carried DEFAULT 'getgymbo.com' and was
         # never written, so every row claimed the website — including the
         # Instagram ones. The risk in fixing that is not an empty column, it is
